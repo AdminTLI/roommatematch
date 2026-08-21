@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
@@ -149,7 +149,32 @@ function DiscoveryCardWrapper({
 
 export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<TabType>('suggested')
+  const searchParams = useSearchParams()
+  const initialTab = ((): TabType => {
+    const tab = searchParams.get('tab')
+    if (tab === 'suggested' || tab === 'pending' || tab === 'confirmed' || tab === 'history') {
+      return tab
+    }
+    return 'suggested'
+  })()
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab)
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'suggested' || tab === 'pending' || tab === 'confirmed' || tab === 'history') {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
+
+  const selectTab = useCallback(
+    (tab: TabType) => {
+      setActiveTab(tab)
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('tab', tab)
+      router.replace(`/matches?${params.toString()}`, { scroll: false })
+    },
+    [router, searchParams]
+  )
   const [suggestions, setSuggestions] = useState<MatchWithStatus[]>([])
   const [pendingSuggestions, setPendingSuggestions] = useState<MatchWithStatus[]>([])
   const [confirmedMatches, setConfirmedMatches] = useState<MatchWithStatus[]>([])
@@ -985,7 +1010,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       <div className="mb-4 sm:mb-6">
         {/* Mobile: Dropdown Select (< 640px) */}
         <div className="block sm:hidden mb-4">
-          <Select value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)}>
+          <Select value={activeTab} onValueChange={(value) => selectTab(value as TabType)}>
             <SelectTrigger className="w-full rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-900 backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:text-white [&>span]:text-zinc-900 dark:[&>span]:text-white [&>span[data-placeholder]]:text-zinc-500 dark:[&>span[data-placeholder]]:text-zinc-400 [&_svg]:text-zinc-600 dark:[&_svg]:text-white/80">
               <SelectValue>
                 <span className="font-medium text-inherit">
@@ -1014,7 +1039,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => selectTab(tab.id)}
                   className={`flex-1 flex items-center justify-center px-4 py-3 text-sm font-medium transition-all duration-300 rounded-xl ${activeTab === tab.id
                     ? 'bg-indigo-500 text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/5'

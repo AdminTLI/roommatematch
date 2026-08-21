@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
-import { createNotificationsForUsers } from '@/lib/notifications/create'
+import { createNotificationsForUsers, createReportStatusNotification } from '@/lib/notifications/create'
 import { CHAT_REPORT_CATEGORY_LABELS, isValidChatReportCategory } from '@/lib/chat/report-categories'
 
 type ChatContextRow = {
@@ -229,6 +229,12 @@ export async function POST(request: NextRequest) {
       }
     } catch (notifyError) {
       safeLogger.error('[Report] Failed to notify admins', notifyError)
+    }
+
+    try {
+      await createReportStatusNotification(user.id, report.id, 'open')
+    } catch (reporterNotifyError) {
+      safeLogger.error('[Report] Failed to notify reporter of under-review status', reporterNotifyError)
     }
 
     return NextResponse.json({

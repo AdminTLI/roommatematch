@@ -500,6 +500,13 @@ export const RATE_LIMITS = {
     failClosed: true
   }, getSharedStore),
 
+  // Product bug reports from the floating widget
+  bug_report: new RateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 8,
+    failClosed: true
+  }, getSharedStore),
+
   // Data export (DSAR) - fail-closed to prevent abuse
   data_export: new RateLimiter({
     windowMs: 24 * 60 * 60 * 1000, // 24 hours

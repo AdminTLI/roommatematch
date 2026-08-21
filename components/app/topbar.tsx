@@ -379,9 +379,7 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
             <NotificationBell userId={user.id} />
           </div>
 
-          <div className="hidden sm:block">
-            <ThemeToggle size="sm" />
-          </div>
+          <ThemeToggle size="sm" />
 
           {context === 'user' && (
             <>

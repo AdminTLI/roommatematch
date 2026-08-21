@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
-import { Home, Users, MessageCircle, Shield, Settings, LayoutDashboard, BarChart3 } from 'lucide-react'
+import { Home, Users, MessageCircle, Shield, Settings, LayoutDashboard, BarChart3, Bug } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context'
 
@@ -53,7 +53,7 @@ export function FloatingDock() {
         ? [
             { id: 'admin-dashboard', label: 'Overview', icon: LayoutDashboard, href: '/admin' },
             { id: 'admin-users', label: 'Users', icon: Users, href: '/admin/users' },
-            { id: 'admin-matches', label: 'Matches', icon: MessageCircle, href: '/admin/matches' },
+            { id: 'admin-bugs', label: 'Bugs', icon: Bug, href: '/admin/bug-reports' },
             { id: 'admin-metrics', label: 'Metrics', icon: BarChart3, href: '/admin/metrics' },
             { id: 'admin-settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
         ]

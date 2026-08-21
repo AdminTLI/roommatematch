@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { deleteMessageNotificationsForThread } from '@/lib/notifications/clear-chat-notifications'
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,22 +88,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to update read status' }, { status: 500 })
     }
 
-    // Keep notification center in sync with chat reads:
-    // when this chat is opened, mark unread message and reaction notifications
-    // for this chat as read for the current user.
-    const nowIso = new Date().toISOString()
-    const { error: notificationsError } = await supabase
-      .from('notifications')
-      .update({ is_read: true, updated_at: nowIso })
-      .eq('user_id', user.id)
-      .in('type', ['chat_message', 'chat_message_reaction'])
-      .eq('metadata->chat_id', chat_id)
-      .eq('is_read', false)
-
-    if (notificationsError) {
-      // Non-blocking: chat read receipts have already been updated.
-      console.warn('Failed to mark chat notifications as read:', notificationsError)
-    }
+    // Drop message notifications for this conversation only so they leave the panel
+    // once the user has opened/read this chat. Other chats' notifications stay.
+    await deleteMessageNotificationsForThread({
+      userId: user.id,
+      chatId: chat_id,
+    })
 
     return NextResponse.json({ success: true }, { status: 200 })
 

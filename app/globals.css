@@ -300,7 +300,7 @@
 
   /*
    * Focus ring for interactive controls. Omit input/textarea/select so text fields
-   * use component styles (or browser default) — the purple double ring on every
+   * use component styles (or browser default) -- the purple double ring on every
    * :focus-visible was especially noisy in chat composers.
    */
   *:focus-visible:not(input):not(textarea):not(select) {
@@ -471,24 +471,17 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
 }
 
 /*
- * Open thread on mobile: hard-lock the page and pin the chat column to the visible viewport.
+ * Open thread on mobile: hard-lock the page and size the chat column to the visual viewport.
  *
- * iOS Safari behaves inconsistently when the soft keyboard appears:
- *   - It sometimes pans the visual viewport, sometimes scrolls the layout viewport.
- *   - `position: fixed` elements have changed semantics across iOS versions — they may stay glued
- *     to the visual viewport or scroll with the page.
- *   - Earlier attempts to compensate with `top: var(--vv-offset-top)` over-shifted on modern iOS;
- *     dropping the compensation broke older iOS where the page does scroll out.
+ * With `interactiveWidget: resizes-content`, the visual viewport shrinks when the keyboard opens.
+ * We pin body + [data-chat-page] to `height: var(--vv-height)` at top: 0 (no translateY) so the
+ * flex column (messages + in-flow composer) stays visible above the keyboard.
  *
- * To make the behaviour version-independent we remove the scrollable surface entirely:
- *   1. `body` becomes `position: fixed; height: var(--vv-height)` while a thread is open below
- *      `lg`. With no scrollable root, iOS has nothing to "scroll into view" — the focused composer
- *      stays in place because the page literally cannot move.
- *   2. The chat container ([data-chat-page]) remains `position: fixed; top: 0; height: var(--vv-height)`
- *      so it tracks the visual viewport (its bottom hugs the top of the keyboard while the composer
- *      stays just above it).
- *   3. The shell's dynamic `--app-visual-top-inset` padding is zeroed so it cannot leave a
- *      stray strip of body chrome behind the fixed header banner.
+ * Do NOT:
+ *   - translateY(var(--vv-top)) -- iOS Chrome often reports offsetTop while keyboard is open and
+ *     shifts the whole column off-screen (white blank).
+ *   - position:fixed the composer with bottom: var(--kb-inset) -- double-counts the keyboard against
+ *     an already-resized shell and can park the input (and messages) out of view.
  */
 @media (max-width: 1023px) {
   body.mobile-chat-active-conversation,
@@ -520,29 +513,24 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
     width: 100% !important;
     height: var(--vv-height, 100dvh) !important;
     max-height: var(--vv-height, 100dvh) !important;
-    transform: translateY(var(--vv-top, 0px)) !important;
-    will-change: transform !important;
+    transform: none !important;
     flex: none !important;
     box-sizing: border-box !important;
   }
 
-  /*
-   * iOS keyboard: keep composer anchored to visual viewport bottom.
-   * Keyboard inset is applied via `bottom` only (not also padding), so the field stays visible.
-   */
+  /* Composer stays in document flow at the bottom of the resized shell. */
   body.mobile-chat-active-conversation [data-messenger-composer],
   body:has([data-chat-page]).mobile-chat-active-conversation [data-messenger-composer] {
-    position: fixed !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: var(--kb-inset, 0px) !important;
-    z-index: 70 !important;
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 60 !important;
   }
 
   body.mobile-chat-active-conversation [data-messenger-messages],
   body:has([data-chat-page]).mobile-chat-active-conversation [data-messenger-messages] {
-    padding-bottom: calc(7.5rem + var(--kb-inset, 0px)) !important;
+    padding-bottom: 0.75rem !important;
   }
 }
 
@@ -694,6 +682,25 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   animation: chat-presence-pulse 2.2s ease-in-out infinite;
 }
 
+/* Expanding ring lives inside a padded wrapper so overflow-x scrollers do not square-clip the glow. */
+@keyframes chat-presence-ring-pulse {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0;
+  }
+}
+
+.chat-presence-ring {
+  background: transparent;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.55);
+  animation: chat-presence-ring-pulse 2.2s ease-in-out infinite;
+}
+
 .chat-left-sidebar {
   width: 320px;
   flex-shrink: 0;
@@ -788,6 +795,75 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   }
   .glass-dark {
     @apply bg-white/5 backdrop-blur-lg border border-white/10 shadow-xl rounded-2xl;
+  }
+  .notif-glass-panel {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 20px 50px rgba(0, 0, 0, 0.08),
+      0 4px 12px rgba(124, 58, 237, 0.05);
+  }
+  .dark .notif-glass-panel {
+    background: rgba(15, 23, 42, 0.72);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 20px 50px rgba(0, 0, 0, 0.35),
+      0 4px 12px rgba(124, 58, 237, 0.08);
+  }
+  .notif-glass-card {
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    transition:
+      transform 160ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+  .dark .notif-glass-card {
+    background: rgba(30, 41, 59, 0.55);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  @media (hover: hover) {
+    .notif-glass-card:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(255, 255, 255, 0.8);
+    }
+    .dark .notif-glass-card:hover {
+      background: rgba(51, 65, 85, 0.75);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+  }
+  .notif-glass-card:active {
+    transform: scale(0.99);
+    opacity: 0.95;
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .notif-glass-panel {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    .dark .notif-glass-panel {
+      background: rgba(15, 23, 42, 0.95);
+    }
+    .notif-glass-card {
+      background: rgba(255, 255, 255, 0.95);
+    }
+    .dark .notif-glass-card {
+      background: rgba(30, 41, 59, 0.95);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .notif-glass-card {
+      transition: none;
+    }
+    .notif-glass-card:hover,
+    .notif-glass-card:active {
+      transform: none;
+    }
   }
   .noise-overlay {
     position: relative;
@@ -968,15 +1044,27 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
 
   /* Three-column flex layout */
   body.chat-page [data-messenger-chat] > div[data-messenger-sidebar],
-  body:has([data-chat-page]) [data-messenger-chat] > div[data-messenger-sidebar],
+  body:has([data-chat-page]) [data-messenger-chat] > div[data-messenger-sidebar] {
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    flex-direction: column !important;
+    flex: 0 0 auto !important;
+  }
+
+  /* Profile column clips; inner [data-profile-pane-scroll] scrolls Match Insights */
   body.chat-page [data-messenger-chat] > div[data-messenger-profile],
   body:has([data-chat-page]) [data-messenger-chat] > div[data-messenger-profile] {
     height: 100% !important;
     max-height: 100% !important;
     min-height: 0 !important;
-    overflow: hidden !important; /* Changed from overflow-y: auto to overflow: hidden to let inner content scroll */
+    overflow: hidden !important;
+    display: flex !important;
     flex-direction: column !important;
-    flex: 0 0 auto !important; /* Prevent flex growth for fixed-width columns */
+    flex: 0 0 auto !important;
+    pointer-events: auto !important;
+    z-index: 10 !important;
   }
   
   /* Conversation column wrapper - prevent expansion */
@@ -1008,15 +1096,53 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
     overscroll-behavior: contain !important;
   }
   
-  /* Ensure profile pane content is scrollable */
-  body.chat-page [data-messenger-profile] > div,
-  body:has([data-chat-page]) [data-messenger-profile] > div {
+  /* Match Insights column shell */
+  body.chat-page [data-messenger-profile],
+  body:has([data-chat-page]) [data-messenger-profile] {
+    display: flex !important;
+    flex-direction: column !important;
     height: 100% !important;
     max-height: 100% !important;
     min-height: 0 !important;
     overflow: hidden !important;
+    pointer-events: auto !important;
+  }
+
+  [data-mobile-profile-sheet] {
     display: flex !important;
     flex-direction: column !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: auto !important;
+  }
+
+  /* Pane fills the column/sheet and hosts the scroll region */
+  body.chat-page [data-messenger-profile-pane],
+  body:has([data-chat-page]) [data-messenger-profile-pane],
+  [data-mobile-profile-sheet] [data-messenger-profile-pane] {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    flex: 1 1 0% !important;
+    overflow: hidden !important;
+    pointer-events: auto !important;
+  }
+
+  body.chat-page [data-profile-pane-scroll],
+  body:has([data-chat-page]) [data-profile-pane-scroll],
+  [data-mobile-profile-sheet] [data-profile-pane-scroll] {
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    pointer-events: auto !important;
+    /* manipulation keeps clicks usable; pan-y alone can interfere with button taps */
+    touch-action: manipulation !important;
   }
 
   /* Edge fade hint for horizontal scroll areas */
@@ -1197,7 +1323,7 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   padding-top: calc(1rem + env(safe-area-inset-top, 0px));
 }
 
-/* Chrome Android: optional URL-bar overlap (skipped on iOS — see useAppVisualViewportTopInset) */
+/* Chrome Android: optional URL-bar overlap (skipped on iOS -- see useAppVisualViewportTopInset) */
 @media (max-width: 1023px) {
   .app-shell-visual-viewport-pad {
     padding-top: calc(env(safe-area-inset-top, 0px) + var(--app-visual-top-inset, 0px)) !important;

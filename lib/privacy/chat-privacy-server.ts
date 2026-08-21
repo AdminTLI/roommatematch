@@ -15,13 +15,9 @@ function flagsFromRow(row: { details_revealed_by_requestor?: boolean; picture_re
 function partnerDisplayName(params: {
   firstName: string | null
   lastName: string | null
-  mutualDetails: boolean
 }): string {
   const first = params.firstName?.trim() || ''
   const last = params.lastName?.trim() || ''
-  if (!params.mutualDetails) {
-    return first ? first : 'Your match'
-  }
   if (first && last) return `${first} ${last}`
   if (first) return first
   if (last) return last
@@ -171,7 +167,6 @@ export async function getChatPrivacySnapshot(
     partner_display_name: partnerDisplayName({
       firstName: partnerProfile?.first_name ?? null,
       lastName: partnerProfile?.last_name ?? null,
-      mutualDetails: mutual_details,
     }),
     viewer_avatar_url,
   }

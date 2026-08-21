@@ -1,9 +1,8 @@
 'use client'
 
 import { useMemo, useRef } from 'react'
+import { CheckCheck, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import type { Notification } from '@/lib/notifications/types'
 import type { NotificationCounts } from '@/lib/notifications/types'
@@ -75,89 +74,73 @@ export function NotificationsList({
 
   const byType = counts?.by_type as Record<string, { total: number; unread: number }> | undefined
 
-  const handleDismiss = async (ids: string[]) => {
-    const unreadIds = ids.filter((id) => {
-      const row = notifications.find((n) => n.id === id)
-      return row && !row.is_read
-    })
-    if (unreadIds.length) await onMarkAsRead(unreadIds)
-  }
-
   const markAllDisabled = unreadTotal === 0
+  const isMobile = layout === 'modal'
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-white dark:bg-slate-900">
+    <div className="flex min-h-0 flex-1 flex-col bg-transparent">
       <header
         className={cn(
-          'flex shrink-0 flex-col gap-3 border-b border-zinc-200 px-4 pb-3 pt-3 dark:border-slate-700/80',
-          layout === 'modal' && 'pb-1'
+          'flex shrink-0 flex-col gap-2.5 border-b border-white/40 px-4 pb-3 pt-3 dark:border-white/10',
+          isMobile && 'pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]'
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="truncate text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
-            Notifications
-          </h2>
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={markAllDisabled}
-              className="h-9 px-2 text-xs font-medium text-violet-700 hover:text-violet-800 dark:text-violet-300 dark:hover:text-violet-200"
-              onClick={() => void onMarkAllAsRead()}
-            >
-              Mark all read
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-9 w-9 shrink-0 p-0 text-zinc-500 hover:text-zinc-900 dark:text-slate-400 dark:hover:text-white"
-              onClick={onClose}
-              aria-label="Close"
-            >
-              ×
-            </Button>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <h2 className="truncate text-base font-semibold tracking-tight text-zinc-900 dark:text-white">
+              Notifications
+            </h2>
+            {unreadTotal > 0 && (
+              <span className="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-800 dark:bg-violet-950/70 dark:text-violet-200">
+                {unreadTotal > 99 ? '99+' : unreadTotal}
+              </span>
+            )}
           </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-9 w-9 shrink-0 rounded-full p-0 text-zinc-500 hover:bg-white/40 hover:text-zinc-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+            onClick={onClose}
+            aria-label="Close notifications"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
 
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-zinc-100 bg-zinc-50/80 px-3 py-2 dark:border-slate-700/60 dark:bg-slate-800/50">
-          <Label htmlFor="notif-unread-only" className="text-xs font-medium text-zinc-600 dark:text-slate-300">
-            Unread only
-          </Label>
-          <Switch
-            id="notif-unread-only"
-            checked={unreadOnly}
-            onCheckedChange={(v) => onUnreadOnlyChange(Boolean(v))}
-          />
-        </div>
-
-        <div className="-mx-1 flex gap-1.5 overflow-x-auto pb-0.5 pt-1 scrollbar-thin">
+        <div
+          className="flex w-full gap-1 rounded-full bg-zinc-100/80 p-1 dark:bg-slate-800/55"
+          role="tablist"
+          aria-label="Notification categories"
+        >
           {NOTIFICATION_FILTER_CATEGORIES.map((cat) => {
             const unread =
-              cat === 'all'
-                ? (counts?.unread ?? 0)
-                : unreadCountForCategory(cat, byType)
+              cat === 'all' ? (counts?.unread ?? 0) : unreadCountForCategory(cat, byType)
             const active = category === cat
             return (
               <button
                 key={cat}
                 type="button"
+                role="tab"
+                aria-selected={active}
                 onClick={() => onCategoryChange(cat)}
                 className={cn(
-                  'shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                  'flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-1.5 text-[11px] font-semibold transition-colors sm:text-xs',
+                  isMobile ? 'min-h-[40px] py-2' : 'min-h-[34px] py-1.5',
                   active
-                    ? 'border-violet-600 bg-violet-600 text-white dark:border-violet-500 dark:bg-violet-600'
-                    : 'border-zinc-200 bg-white text-zinc-700 hover:border-violet-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-violet-500/50'
+                    ? 'bg-gradient-to-br from-violet-600 to-purple-600 text-white shadow-[0_4px_14px_rgba(124,58,237,0.35)]'
+                    : 'bg-transparent text-zinc-600 hover:bg-white/70 dark:text-slate-300 dark:hover:bg-white/10'
                 )}
               >
-                {CATEGORY_LABEL[cat]}
+                <span className="truncate">{CATEGORY_LABEL[cat]}</span>
                 {unread > 0 && (
                   <span
                     className={cn(
-                      'ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold',
-                      active ? 'bg-white/20 text-white' : 'bg-violet-100 text-violet-800 dark:bg-violet-950/80 dark:text-violet-200'
+                      'shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-semibold tabular-nums',
+                      active
+                        ? 'bg-white/20 text-white'
+                        : 'bg-violet-100 text-violet-800 dark:bg-violet-950/80 dark:text-violet-200'
                     )}
                   >
                     {unread > 99 ? '99+' : unread}
@@ -167,11 +150,50 @@ export function NotificationsList({
             )
           })}
         </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <button
+            type="button"
+            aria-pressed={unreadOnly}
+            onClick={() => onUnreadOnlyChange(!unreadOnly)}
+            className={cn(
+              'inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3.5 text-xs font-semibold transition-colors',
+              unreadOnly
+                ? 'border-violet-600 bg-violet-600 text-white shadow-sm'
+                : 'border-violet-200 bg-violet-50 text-violet-800 hover:border-violet-300 hover:bg-violet-100 dark:border-violet-500/40 dark:bg-violet-950/50 dark:text-violet-200 dark:hover:bg-violet-950/80'
+            )}
+          >
+            <span
+              className={cn(
+                'h-1.5 w-1.5 rounded-full',
+                unreadOnly ? 'bg-white' : 'bg-violet-600 dark:bg-violet-300'
+              )}
+              aria-hidden
+            />
+            Unread only
+          </button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={markAllDisabled}
+            title="Mark all as read"
+            aria-label="Mark all as read"
+            className="h-9 gap-1.5 px-2.5 text-xs font-medium text-violet-700 hover:bg-white/40 hover:text-violet-800 disabled:opacity-40 dark:text-violet-300 dark:hover:bg-white/10 dark:hover:text-violet-200"
+            onClick={() => void onMarkAllAsRead()}
+          >
+            <CheckCheck className="h-4 w-4" aria-hidden />
+            Mark all read
+          </Button>
+        </div>
       </header>
 
       <div
         ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-zinc-50/40 px-3 py-2 dark:bg-slate-950/40"
+        className={cn(
+          'min-h-0 flex-1 overflow-y-auto overscroll-contain bg-transparent px-3 py-2',
+          isMobile && 'pb-[max(1rem,env(safe-area-inset-bottom))]'
+        )}
         style={{ WebkitOverflowScrolling: 'touch' }}
         onWheel={(e) => e.stopPropagation()}
       >
@@ -179,11 +201,13 @@ export function NotificationsList({
           <p className="py-8 text-center text-xs text-zinc-500 dark:text-slate-400">Loading…</p>
         ) : entries.length === 0 ? (
           <div className="flex flex-col items-center py-10 text-center">
-            <p className="text-sm font-medium text-zinc-800 dark:text-slate-100">You&apos;re caught up</p>
+            <p className="text-sm font-medium text-zinc-800 dark:text-slate-100">
+              You&apos;re caught up
+            </p>
             <p className="mt-1 max-w-xs text-xs text-zinc-500 dark:text-slate-400">
               {unreadOnly
                 ? 'No unread notifications in this filter.'
-                : 'New matches, messages, and updates will appear here.'}
+                : 'New matches, messages, and alerts will appear here.'}
             </p>
           </div>
         ) : (
@@ -203,10 +227,9 @@ export function NotificationsList({
                       }
                       entry={entry}
                       viewById={viewById}
-                      layout={layout === 'modal' ? 'mobile' : 'desktop'}
+                      layout={isMobile ? 'mobile' : 'desktop'}
                       onOpen={onOpen}
                       onMarkAsRead={onMarkAsRead}
-                      onDismiss={handleDismiss}
                     />
                   ))}
                 </div>
@@ -219,7 +242,7 @@ export function NotificationsList({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="text-xs"
+                  className="min-h-[44px] border-white/50 bg-white/40 text-xs backdrop-blur-sm dark:border-white/10 dark:bg-white/5 sm:min-h-0"
                   disabled={isFetchingNextPage}
                   onClick={() => fetchNextPage()}
                 >

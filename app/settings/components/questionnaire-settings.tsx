@@ -18,6 +18,7 @@ import {
   Loader2
 } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { downloadBlob } from '@/lib/pdf/download-blob'
 
 interface QuestionnaireSettingsProps {
   progressData: {
@@ -128,14 +129,10 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
       }
 
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = `domu-match-responses-${new Date().toISOString().split('T')[0]}.pdf`
-      document.body.appendChild(anchor)
-      anchor.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(anchor)
+      await downloadBlob(
+        blob,
+        `domu-match-responses-${new Date().toISOString().split('T')[0]}.pdf`,
+      )
       setSuccess('Responses PDF downloaded successfully.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to download PDF')

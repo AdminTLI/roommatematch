@@ -75,17 +75,20 @@ export function unreadCountForCategory(
 }
 
 /**
- * Merge consecutive chat notifications from the same sender with the same preview
- * (list is expected newest-first).
+ * Merge consecutive chat notifications from the same sender/thread
+ * (list is expected newest-first). Different message previews still stack.
  */
 export function buildNotificationListEntries(notifications: Notification[]): NotificationListEntry[] {
   const out: NotificationListEntry[] = []
 
-  const chatKey = (n: Notification) => {
+  const chatThreadKey = (n: Notification) => {
     const meta = n.metadata || {}
-    const sender = (meta.sender_id as string | undefined) || (meta.sender_name as string | undefined) || ''
-    const preview = extractChatPreview(n.message)
-    return `${sender}::${preview}`
+    const chatId = typeof meta.chat_id === 'string' ? meta.chat_id : ''
+    const sender =
+      (typeof meta.sender_id === 'string' && meta.sender_id) ||
+      (typeof meta.sender_name === 'string' && meta.sender_name) ||
+      ''
+    return `${chatId}::${sender}`
   }
 
   for (const n of notifications) {
@@ -99,14 +102,14 @@ export function buildNotificationListEntries(notifications: Notification[]): Not
       prev &&
       prev.kind === 'group' &&
       prev.notifications[0]?.type === 'chat_message' &&
-      chatKey(prev.notifications[0]) === chatKey(n)
+      chatThreadKey(prev.notifications[0]) === chatThreadKey(n)
     ) {
       prev.notifications.push(n)
     } else if (
       prev &&
       prev.kind === 'single' &&
       prev.notification.type === 'chat_message' &&
-      chatKey(prev.notification) === chatKey(n)
+      chatThreadKey(prev.notification) === chatThreadKey(n)
     ) {
       out[out.length - 1] = {
         kind: 'group',
@@ -117,11 +120,10 @@ export function buildNotificationListEntries(notifications: Notification[]): Not
     }
   }
 
-  // Convert trailing single chat that might need to stay single — already handled
   return out
 }
 
-function extractChatPreview(message: string): string {
+export function extractChatPreview(message: string): string {
   const idx = message.indexOf(':')
   if (idx === -1) return message.trim().slice(0, 200)
   return message.slice(idx + 1).trim().slice(0, 200)

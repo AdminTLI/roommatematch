@@ -24,13 +24,18 @@ export function ThemeToggle({ className, size = 'md' }: ThemeToggleProps) {
     setTheme(theme === 'light' ? 'dark' : 'light')
   }
 
+  const buttonClassName = cn(
+    'h-10 w-10 min-w-[44px] min-h-[44px] shrink-0 px-0 sm:min-h-10 sm:min-w-10',
+    className,
+  )
+
   // Render placeholder during SSR and initial hydration to prevent hydration mismatch
   if (!mounted) {
     return (
       <Button
         variant="ghost"
         size={size}
-        className={cn("min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0", className)}
+        className={buttonClassName}
         aria-label="Toggle theme"
         disabled
       >
@@ -44,7 +49,7 @@ export function ThemeToggle({ className, size = 'md' }: ThemeToggleProps) {
       variant="ghost"
       size={size}
       onClick={toggleTheme}
-      className={cn("min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0", className)}
+      className={buttonClassName}
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
       {theme === 'light' ? (

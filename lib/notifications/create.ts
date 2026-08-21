@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/server';
+import { pickMutualMatchIcebreaker } from '@/lib/chat/conversation-prompts';
 import { CreateNotificationData, Notification, NotificationType } from './types';
 
 /**
@@ -162,10 +163,9 @@ export async function createMatchNotification(
       metadata = { match_id: matchId };
       break;
     case 'match_confirmed':
-      title = 'Match Confirmed!';
-      // match_confirmed always means both users accepted, so always show names
-      messageA = `It's official! You and ${userBName} are now matched.`;
-      messageB = `It's official! You and ${userAName} are now matched.`;
+      title = 'Mutual Match!';
+      messageA = `You & ${userBName} connected. Tap to start chatting with an icebreaker.`;
+      messageB = `You & ${userAName} connected. Tap to start chatting with an icebreaker.`;
       metadata = { match_id: matchId, chat_id: chatId };
       break;
   }
@@ -283,22 +283,50 @@ export async function createMatchNotification(
         throw error
       }
     }
+  } else if (type === 'match_confirmed') {
+    const icebreakerA = pickMutualMatchIcebreaker(userBName, `${matchId}:${userAId}`)
+    const icebreakerB = pickMutualMatchIcebreaker(userAName, `${matchId}:${userBId}`)
+
+    await createNotification({
+      user_id: userAId,
+      type,
+      title,
+      message: messageA,
+      metadata: {
+        ...metadata,
+        other_user_id: userBId,
+        other_user_name: userBName,
+        icebreaker: icebreakerA,
+      },
+    })
+
+    await createNotification({
+      user_id: userBId,
+      type,
+      title,
+      message: messageB,
+      metadata: {
+        ...metadata,
+        other_user_id: userAId,
+        other_user_name: userAName,
+        icebreaker: icebreakerB,
+      },
+    })
   } else {
-    // For other types (match_accepted, match_confirmed), create normally
+    // match_accepted: create normally then personalize B's message
     await createNotificationsForUsers(
       [userAId, userBId],
       type,
       title,
-      messageA, // We'll update this per user below
+      messageA,
       metadata
     );
 
-    // Update the second user's message and ensure metadata includes chat_id
     await supabase
       .from('notifications')
-      .update({ 
+      .update({
         message: messageB,
-        metadata: metadata // Ensure chat_id is included
+        metadata,
       })
       .eq('user_id', userBId)
       .eq('type', type)
@@ -454,4 +482,47 @@ export async function createSystemAnnouncementNotification(
     message,
     metadata
   );
+}
+
+export type ReportStatusForNotification = 'open' | 'actioned' | 'dismissed'
+
+/**
+ * Notify a reporter about moderation progress on their report (trust loop).
+ */
+export async function createReportStatusNotification(
+  reporterId: string,
+  reportId: string,
+  status: ReportStatusForNotification
+): Promise<void> {
+  let title: string
+  let message: string
+
+  switch (status) {
+    case 'open':
+      title = 'Report received'
+      message = 'Your report is under review. We will update you when moderators take action.'
+      break
+    case 'actioned':
+      title = 'Report update'
+      message =
+        'Action was taken on a report you submitted. Thank you for helping keep the community safe.'
+      break
+    case 'dismissed':
+      title = 'Report update'
+      message =
+        'Your report was reviewed. No further action was needed at this time. Thank you for looking out for others.'
+      break
+  }
+
+  await createNotification({
+    user_id: reporterId,
+    type: 'system_announcement',
+    title,
+    message,
+    metadata: {
+      report_id: reportId,
+      report_status: status,
+      link: '/safety',
+    },
+  })
 }

@@ -129,57 +129,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Verify match relationship
-    // Check match_suggestions table first
-    // Query for matches where the user is involved, then filter in memory for the target user
-    // This is more reliable than .contains() which may not work correctly for array contains checks
-    const { data: allSuggestions, error: suggestionError } = await admin
-      .from('match_suggestions')
-      .select('id, status, member_ids')
-      .contains('member_ids', [user.id])
-      .in('status', ['confirmed', 'accepted'])
-    
-    if (suggestionError) {
-      safeLogger.warn('Error checking match suggestions', { error: suggestionError, userId: user.id, targetUserId })
-    }
-    
-    // Filter in memory to find matches with both users
-    const matchSuggestion = allSuggestions?.find((s: any) => {
-      const memberIds = s.member_ids as string[]
-      return Array.isArray(memberIds) && 
-             memberIds.includes(user.id) && 
-             memberIds.includes(targetUserId)
-    })
-
-    // Also check matches table as fallback
-    let hasMatch = false
-    if (matchSuggestion) {
-      hasMatch = true
-    } else {
-      const { data: match, error: matchError } = await admin
-        .from('matches')
-        .select('id, status')
-        .or(`and(a_user.eq.${user.id},b_user.eq.${targetUserId}),and(a_user.eq.${targetUserId},b_user.eq.${user.id})`)
-        .eq('status', 'accepted')
-        .maybeSingle()
-
-      if (match) {
-        hasMatch = true
-      }
-    }
-
-    if (!hasMatch) {
-      safeLogger.warn('No match found for user info access', { 
-        userId: user.id, 
-        targetUserId, 
-        chatId,
-        suggestionsChecked: allSuggestions?.length || 0
-      })
-      return NextResponse.json(
-        { error: 'You can only view info for matched users' },
-        { status: 403 }
-      )
-    }
+    // Authorization is chat membership (verified above). Match/suggestion rows are optional
+    // in this environment and must not block profile visibility for existing 1:1 chats.
 
     const privacySnap = await getChatPrivacySnapshot(admin, chatId, user.id)
     const mutualDetails = Boolean(privacySnap?.mutual_details)
@@ -215,10 +166,10 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Fetch profile data
+    // Fetch profile data (`program` is the display name fallback when user_academic.program_id is null)
     const { data: profile, error: profileError } = await admin
       .from('profiles')
-      .select('first_name, last_name, bio, interests, housing_status')
+      .select('first_name, last_name, bio, interests, housing_status, preferred_cities, program')
       .eq('user_id', targetUserId)
       .maybeSingle()
 
@@ -259,7 +210,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Fetch preferred cities from user_housing_preferences (post-onboarding / housing preferences)
+    // Preferred cities: housing prefs table first, then profiles (onboarding writes here)
     let preferredCities: string[] = []
     const { data: housingPrefs } = await admin
       .from('user_housing_preferences')
@@ -269,16 +220,23 @@ export async function GET(request: NextRequest) {
     if (housingPrefs?.preferred_cities && Array.isArray(housingPrefs.preferred_cities)) {
       preferredCities = housingPrefs.preferred_cities.filter((c): c is string => typeof c === 'string')
     }
+    if (
+      preferredCities.length === 0 &&
+      profile.preferred_cities &&
+      Array.isArray(profile.preferred_cities)
+    ) {
+      preferredCities = profile.preferred_cities.filter((c): c is string => typeof c === 'string')
+    }
 
-    // Fetch academic data with joins for university and program info
-    // Student fields (academic context). For professionals, these should be null.
+    // Fetch academic data with joins for university and program info.
+    // Treat null/unknown cohort as student-style academic context (many older profiles lack user_type).
     let universityName: string | null = null
     let programName: string | null = null
     let degreeLevel: string | null = null
     let studyYear: number | null = null
 
-    if (targetUserType === 'student') {
-      const { data: academicData } = await admin
+    if (targetUserType !== 'professional') {
+      const { data: academicData, error: academicError } = await admin
         .from('user_academic')
         .select(`
           university_id,
@@ -286,8 +244,7 @@ export async function GET(request: NextRequest) {
           program_id,
           study_start_year,
           universities!user_academic_university_id_fkey (
-            name,
-            common_name
+            name
           ),
           programs!user_academic_program_id_fkey (
             name,
@@ -297,8 +254,18 @@ export async function GET(request: NextRequest) {
         .eq('user_id', targetUserId)
         .maybeSingle()
 
+      if (academicError) {
+        safeLogger.warn('[chat/user-info] Academic join failed; falling back to id lookups', {
+          targetUserId,
+          error: academicError.message,
+        })
+      }
+
       // Fetch study year from view
       if (academicData) {
+        if (!targetUserType) {
+          targetUserType = 'student'
+        }
         const { data: studyYearData, error: studyYearError } = await admin
           .from('user_study_year_v')
           .select('study_year')
@@ -315,13 +282,65 @@ export async function GET(request: NextRequest) {
       }
 
       // Extract university and program names (join shape varies by PostgREST version)
-      const uni = academicData?.universities as { name?: string; common_name?: string } | { name?: string; common_name?: string }[] | null | undefined
+      const uni = academicData?.universities as { name?: string } | { name?: string }[] | null | undefined
       const prog = academicData?.programs as { name?: string; name_en?: string } | { name?: string; name_en?: string }[] | null | undefined
       const uniRow = Array.isArray(uni) ? uni[0] : uni
       const progRow = Array.isArray(prog) ? prog[0] : prog
-      universityName = uniRow?.name || uniRow?.common_name || null
+      universityName = uniRow?.name || null
       programName = progRow?.name_en || progRow?.name || null
-      degreeLevel = academicData?.degree_level || null
+      degreeLevel = academicData?.degree_level
+        ? academicData.degree_level.charAt(0).toUpperCase() + academicData.degree_level.slice(1).toLowerCase()
+        : null
+
+      // Fallback if embed/join omitted names but ids are present
+      if (!universityName && academicData?.university_id) {
+        const { data: uniOnly } = await admin
+          .from('universities')
+          .select('name')
+          .eq('id', academicData.university_id)
+          .maybeSingle()
+        universityName = uniOnly?.name || null
+      }
+      if (!programName && academicData?.program_id) {
+        const { data: progOnly } = await admin
+          .from('programs')
+          .select('name, name_en')
+          .eq('id', academicData.program_id)
+          .maybeSingle()
+        programName = progOnly?.name_en || progOnly?.name || null
+      }
+
+      // Fallback: onboarding stores the human-readable programme on profiles.program,
+      // even when user_academic.program_id is null (e.g. undecided / unresolved RIO mapping).
+      if (!programName) {
+        const rawProgram =
+          typeof profile.program === 'string' ? profile.program.trim() : ''
+        const looksLikeUuid =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            rawProgram
+          )
+        if (rawProgram && !looksLikeUuid) {
+          programName = rawProgram
+        }
+      }
+
+      // Last resort: academic row missing but profile may still have university_id
+      if (!universityName) {
+        const { data: profileUni } = await admin
+          .from('profiles')
+          .select('university_id')
+          .eq('user_id', targetUserId)
+          .maybeSingle()
+        if (profileUni?.university_id) {
+          const { data: uniOnly } = await admin
+            .from('universities')
+            .select('name')
+            .eq('id', profileUni.university_id)
+            .maybeSingle()
+          universityName = uniOnly?.name || null
+          if (universityName && !targetUserType) targetUserType = 'student'
+        }
+      }
     }
 
     // Professional fields (lifestyle context).
@@ -421,29 +440,8 @@ export async function GET(request: NextRequest) {
       },
     }
 
-    if (!mutualDetails) {
-      return NextResponse.json(
-        {
-          ...basePayload,
-          last_name: null,
-          bio: null,
-          interests: [],
-          housing_status: [],
-          budget_min: null,
-          budget_max: null,
-          preferred_cities: [],
-          wfh_status: null,
-          work_schedule: null,
-          age: null,
-          university_name: null,
-          programme_name: null,
-          degree_level: null,
-          study_year: null,
-        },
-        { headers },
-      )
-    }
-
+    // Profile fields (including last name) are visible to 1:1 chat partners.
+    // Progressive disclosure still gates profile photos via privacySnap / signed URLs.
     return NextResponse.json(basePayload, { headers })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)

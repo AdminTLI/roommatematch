@@ -14,6 +14,7 @@ import { ThemeProvider } from '@/lib/theme/theme-provider'
 import Link from 'next/link'
 import { Users, AlertCircle, Mail, Shield, ArrowRight } from 'lucide-react'
 import { MessageNotificationPopup } from '@/app/(components)/notifications/message-notification-popup'
+import { BugReportWidget } from '@/components/bugs/bug-report-widget'
 import { usePathname } from 'next/navigation'
 import { useAppVisualViewportTopInset } from '@/hooks/use-app-visual-viewport-top-inset'
 import { AppFooter } from './app-footer'
@@ -221,6 +222,8 @@ export function AppShell({
 
           {/* Message Notification Popup */}
           <MessageNotificationPopup userId={user.id} />
+
+          {context === 'user' && user.id !== 'demo-user-id' && <BugReportWidget />}
 
           {/* Questionnaire modal - gated by auth + only if never filled */}
           <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>

@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { StudentMatchesInterface } from './components/student-matches-interface'
 import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
@@ -61,7 +62,9 @@ export default async function MatchesPage() {
         user={userProfile}
         showQuestionnairePrompt={true}
       >
-        <StudentMatchesInterface user={userWithName} />
+        <Suspense fallback={null}>
+          <StudentMatchesInterface user={userWithName} />
+        </Suspense>
       </AppShell>
       <DomuChatWidget />
     </>

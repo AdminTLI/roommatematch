@@ -269,6 +269,15 @@ export async function GET(request: NextRequest) {
 
       const pendingReports = (pendingReportsOpen || 0) + (pendingReportsPending || 0)
 
+      const { count: openBugReports, error: bugReportsError } = await adminClient
+        .from('bug_reports')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['open', 'triaged'])
+
+      if (bugReportsError) {
+        safeLogger.error('[Admin] Error counting open bug reports', bugReportsError)
+      }
+
       // Debug logging
       safeLogger.info('[Admin] Dashboard metrics calculated (university-specific)', {
         university_id: adminRecord.university_id,
@@ -277,6 +286,7 @@ export async function GET(request: NextRequest) {
         verifiedUsers: verifiedUsers || 0,
         activeMatches,
         pendingReports,
+        openBugReports: openBugReports || 0,
         profileDataCount: profileData?.length || 0,
         userIdsCount: userIds.length,
         universityUserIdsCount: universityUserIds.size,
@@ -288,6 +298,7 @@ export async function GET(request: NextRequest) {
         activeMatches,
         verifiedUsers: verifiedUsers || 0,
         pendingReports: pendingReports || 0,
+        openBugReports: openBugReports || 0,
         period,
         lastUpdated: new Date().toISOString()
       })
@@ -381,12 +392,22 @@ export async function GET(request: NextRequest) {
 
       const pendingReports = (pendingReportsOpen || 0) + (pendingReportsPending || 0)
 
+      const { count: openBugReports, error: bugReportsError } = await adminClient
+        .from('bug_reports')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['open', 'triaged'])
+
+      if (bugReportsError) {
+        safeLogger.error('[Admin] Error counting open bug reports (super admin)', bugReportsError)
+      }
+
       safeLogger.info('[Admin] Dashboard metrics calculated (super admin)', {
         period,
         totalUsers: totalUsers || 0,
         verifiedUsers: verifiedUsers || 0,
         activeMatches,
         pendingReports,
+        openBugReports: openBugReports || 0,
         matchesDataCount: matchesData?.length || 0
       })
 
@@ -395,6 +416,7 @@ export async function GET(request: NextRequest) {
         activeMatches,
         verifiedUsers: verifiedUsers || 0,
         pendingReports: pendingReports || 0,
+        openBugReports: openBugReports || 0,
         period,
         lastUpdated: new Date().toISOString()
       })

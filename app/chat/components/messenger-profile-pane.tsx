@@ -20,7 +20,6 @@ import { type HousingStatusKey } from '@/lib/constants/housing-status'
 import { createClient } from '@/lib/supabase/client'
 import { queryKeys } from '@/app/providers'
 import { fetchChatCompatibility, type ChatCompatibilityPayload } from '@/lib/chat/fetch-chat-compatibility'
-import { ProgressiveProfileLockHint } from './progressive-profile-lock-hint'
 import { VibeAlignmentRing } from './vibe-alignment-ring'
 import {
   V2_CHAT_MODULES,
@@ -89,6 +88,13 @@ const formatWfhStatus = (wfhStatus?: string | null) => {
 function toUnitInterval(f: number | null | undefined): number | null {
   if (f == null || Number.isNaN(f)) return null
   return f > 1 ? Math.min(1, f / 100) : Math.min(1, Math.max(0, f))
+}
+
+function formatDegreeLevel(level: string | null | undefined): string | null {
+  if (!level || typeof level !== 'string') return null
+  const trimmed = level.trim()
+  if (!trimmed) return null
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase()
 }
 
 function interestEmoji(interest: string): string {
@@ -210,7 +216,6 @@ export function MessengerProfilePane({
 
     setUserLoading(true)
     setError(null)
-    setUserInfo(null)
 
     try {
       const supabase = createClient()
@@ -241,10 +246,18 @@ export function MessengerProfilePane({
         const userInfoData = await userInfoResponse.json()
         setUserInfo(userInfoData)
       } else {
+        let message = 'Failed to load profile data'
+        try {
+          const body = await userInfoResponse.json()
+          if (typeof body?.error === 'string' && body.error.trim()) message = body.error
+        } catch {
+          // ignore parse errors
+        }
         safeLogger.warn('[MessengerProfilePane] Failed to fetch user info', {
           status: userInfoResponse.status,
-          body: await userInfoResponse.text(),
+          message,
         })
+        setError(message)
       }
     } catch (err) {
       safeLogger.error('[MessengerProfilePane] Error fetching profile:', err)
@@ -271,20 +284,53 @@ export function MessengerProfilePane({
   const compatPending = (compatLoading || compatFetching) && mainPct === null
 
   const dimRaw = compat?.dimension_scores_json
-  const dimObj =
-    dimRaw && typeof dimRaw === 'object' && !Array.isArray(dimRaw)
-      ? (dimRaw as Record<string, unknown>)
-      : null
-  const useV2Modules = isV2DimensionPayload(dimObj)
+  const dimObj = (() => {
+    if (!dimRaw) return null
+    if (typeof dimRaw === 'string') {
+      try {
+        const parsed = JSON.parse(dimRaw) as unknown
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          return parsed as Record<string, unknown>
+        }
+      } catch {
+        return null
+      }
+      return null
+    }
+    if (typeof dimRaw === 'object' && !Array.isArray(dimRaw)) {
+      return dimRaw as Record<string, unknown>
+    }
+    return null
+  })()
+
+  const toDimNumber = (v: unknown): number | null => {
+    if (typeof v === 'number' && !Number.isNaN(v)) return v
+    if (typeof v === 'string' && v.trim() !== '') {
+      const n = Number(v)
+      return Number.isFinite(n) ? n : null
+    }
+    return null
+  }
+
+  const useV2Modules = isV2DimensionPayload(
+    dimObj
+      ? Object.fromEntries(
+          Object.entries(dimObj).map(([k, v]) => {
+            const n = toDimNumber(v)
+            return [k, n == null ? v : n]
+          }),
+        )
+      : null,
+  )
 
   const hasDimensionDetails = Boolean(
     dimObj &&
-      Object.keys(dimObj).some(
-        k => k !== 'gate_conflicts' && k !== 'soft_gate_override' && typeof dimObj[k] === 'number',
-      ),
+      Object.keys(dimObj).some(k => {
+        if (k === 'gate_conflicts' || k === 'soft_gate_override') return false
+        return toDimNumber(dimObj[k]) != null
+      }),
   )
 
-  const detailsLocked = Boolean(userInfo?.progressive_disclosure && !userInfo.progressive_disclosure.mutual_details)
   const partnerFirst = partnerFirstName(userInfo?.first_name, partnerDisplayName)
 
   const insightSource =
@@ -298,7 +344,7 @@ export function MessengerProfilePane({
   return (
     <div
       data-messenger-profile-pane
-      className="flex min-h-0 min-w-0 flex-1 flex-col bg-[hsl(var(--chat-bg-primary))] text-gray-900 dark:text-slate-100"
+      className="flex h-full min-h-0 min-w-0 w-full flex-1 flex-col bg-[hsl(var(--chat-bg-primary))] text-gray-900 dark:text-slate-100"
     >
       <div className="flex shrink-0 items-center justify-between px-4 py-4">
         <div className="min-w-0 flex-1 pr-3">
@@ -321,10 +367,10 @@ export function MessengerProfilePane({
 
       <div
         data-profile-pane-scroll
-        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain scroll-smooth touch-pan-y [scrollbar-gutter:stable]"
+        className="scrollbar-hide min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-manipulation"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <div className="mx-auto w-full max-w-lg space-y-4 px-4 py-2 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
+        <div className="mx-auto w-full max-w-lg space-y-4 px-4 py-2 pb-[max(2rem,env(safe-area-inset-bottom,0px))]">
           {showSkeleton ? (
             <div className="space-y-4">
               <div className="h-48 animate-pulse rounded-2xl bg-gray-200 dark:bg-slate-800" />
@@ -372,12 +418,13 @@ export function MessengerProfilePane({
                 )}
 
                 {hasDimensionDetails && (
-                  <div className="mt-4">
+                  <div className="relative z-10 mt-4">
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="w-full justify-center gap-2 text-violet-700 hover:bg-violet-50 dark:text-violet-300 dark:hover:bg-violet-950/40"
+                      className="relative z-10 w-full touch-manipulation justify-center gap-2 text-violet-700 hover:bg-violet-50 dark:text-violet-300 dark:hover:bg-violet-950/40"
+                      aria-expanded={showDetails}
                       onClick={() => setShowDetails(v => !v)}
                     >
                       <Sparkles className="h-4 w-4" />
@@ -394,9 +441,8 @@ export function MessengerProfilePane({
                     </p>
                     {useV2Modules
                       ? V2_CHAT_MODULES.map(mod => {
-                          const score = dimObj[mod.key]
-                          if (typeof score !== 'number') return null
-                          const dimPct = pctFromFraction(score) ?? 0
+                          const dimPct = pctFromFraction(toDimNumber(dimObj[mod.key])) ?? null
+                          if (dimPct == null) return null
                           return (
                             <div
                               key={mod.key}
@@ -430,8 +476,8 @@ export function MessengerProfilePane({
                         })
                       : Object.entries(dimObj).map(([key, score]) => {
                           if (key === 'gate_conflicts' || key === 'soft_gate_override') return null
-                          if (typeof score !== 'number') return null
-                          const dimPct = pctFromFraction(score) ?? 0
+                          const dimPct = pctFromFraction(toDimNumber(score)) ?? null
+                          if (dimPct == null) return null
                           return (
                             <div
                               key={key}
@@ -476,8 +522,6 @@ export function MessengerProfilePane({
                   <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap dark:text-slate-200">
                     {userInfo.bio}
                   </p>
-                ) : detailsLocked ? (
-                  <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their bio" />
                 ) : (
                   <div className={emptyStateBoxClass}>
                     <p className="mb-2">No bio yet. A short intro helps the chat feel less awkward.</p>
@@ -518,8 +562,6 @@ export function MessengerProfilePane({
                       )
                     })}
                   </div>
-                ) : detailsLocked ? (
-                  <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their interests" />
                 ) : (
                   <div className={emptyStateBoxClass}>
                     Interests will show as tags once they add some.
@@ -530,133 +572,116 @@ export function MessengerProfilePane({
               <ProfileCard>
                 <SectionTitle>Housing</SectionTitle>
                 <div className="space-y-3 text-sm text-gray-700 dark:text-slate-300">
-                  {detailsLocked ? (
-                    <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their housing preferences" />
-                  ) : (
-                    <>
-                      <div className="flex flex-wrap gap-2">
-                        {userInfo?.housing_status && userInfo.housing_status.length > 0 ? (
-                          userInfo.housing_status.map(key => (
-                            <StatusBadge
-                              key={key}
-                              statusKey={key}
-                              variant="secondary"
-                              className="border-transparent bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
-                            />
-                          ))
-                        ) : null}
-                        {(userInfo?.budget_min != null || userInfo?.budget_max != null) && (
-                          <Badge
+                  <div className="flex flex-wrap gap-2">
+                    {userInfo?.housing_status && userInfo.housing_status.length > 0
+                      ? userInfo.housing_status.map(key => (
+                          <StatusBadge
+                            key={key}
+                            statusKey={key}
                             variant="secondary"
-                            className="rounded-full border-transparent bg-amber-50 px-3 py-1.5 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+                            className="border-transparent bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+                          />
+                        ))
+                      : null}
+                    {(userInfo?.budget_min != null || userInfo?.budget_max != null) && (
+                      <Badge
+                        variant="secondary"
+                        className="rounded-full border-transparent bg-amber-50 px-3 py-1.5 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+                      >
+                        💰{' '}
+                        {userInfo.budget_min != null && userInfo.budget_max != null
+                          ? `€${userInfo.budget_min}–€${userInfo.budget_max}`
+                          : userInfo.budget_min != null
+                            ? `€${userInfo.budget_min}+`
+                            : `up to €${userInfo.budget_max}`}
+                      </Badge>
+                    )}
+                    {userInfo?.preferred_cities?.map(city => (
+                      <Badge
+                        key={city}
+                        variant="secondary"
+                        className="rounded-full border-transparent bg-sky-50 px-3 py-1.5 text-xs text-sky-900 dark:bg-sky-950/40 dark:text-sky-200"
+                      >
+                        📍 {city}
+                      </Badge>
+                    ))}
+                  </div>
+                  {!(userInfo?.housing_status && userInfo.housing_status.length > 0) &&
+                    userInfo?.budget_min == null &&
+                    userInfo?.budget_max == null &&
+                    !(userInfo?.preferred_cities && userInfo.preferred_cities.length > 0) && (
+                      <div className={emptyStateBoxClass}>
+                        <p className="mb-2">Housing prefs are empty. A gentle nudge helps compare plans.</p>
+                        {onComposeNudge && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full border-violet-200 text-violet-700 hover:bg-violet-50 dark:border-violet-800 dark:text-violet-300"
+                            onClick={() => onComposeNudge(nudgeHousingMessage(partnerFirst))}
                           >
-                            💰{' '}
-                            {userInfo.budget_min != null && userInfo.budget_max != null
-                              ? `€${userInfo.budget_min}–€${userInfo.budget_max}`
-                              : userInfo.budget_min != null
-                                ? `€${userInfo.budget_min}+`
-                                : `up to €${userInfo.budget_max}`}
-                          </Badge>
+                            Nudge {partnerFirst} on housing
+                          </Button>
                         )}
-                        {userInfo?.preferred_cities?.map(city => (
-                          <Badge
-                            key={city}
-                            variant="secondary"
-                            className="rounded-full border-transparent bg-sky-50 px-3 py-1.5 text-xs text-sky-900 dark:bg-sky-950/40 dark:text-sky-200"
-                          >
-                            📍 {city}
-                          </Badge>
-                        ))}
                       </div>
-                      {!(userInfo?.housing_status && userInfo.housing_status.length > 0) &&
-                        userInfo?.budget_min == null &&
-                        userInfo?.budget_max == null &&
-                        !(userInfo?.preferred_cities && userInfo.preferred_cities.length > 0) && (
-                          <div className={emptyStateBoxClass}>
-                            <p className="mb-2">Housing prefs are empty. A gentle nudge helps compare plans.</p>
-                            {onComposeNudge && (
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                className="rounded-full border-violet-200 text-violet-700 hover:bg-violet-50 dark:border-violet-800 dark:text-violet-300"
-                                onClick={() => onComposeNudge(nudgeHousingMessage(partnerFirst))}
-                              >
-                                Nudge {partnerFirst} on housing
-                              </Button>
-                            )}
-                          </div>
-                        )}
-                    </>
-                  )}
+                    )}
                 </div>
               </ProfileCard>
 
               {userInfo?.user_type === 'professional' ? (
                 <ProfileCard>
                   <SectionTitle>Professional lifestyle</SectionTitle>
-                  {detailsLocked ? (
-                    <ProgressiveProfileLockHint
-                      partnerFirstName={userInfo?.first_name}
-                      what="their work and lifestyle details"
-                    />
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className="rounded-full border-transparent bg-zinc-100 px-3 py-1.5 text-xs text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100">
+                      {formatWfhStatus(userInfo?.wfh_status)}
+                    </Badge>
+                    {userInfo?.age != null && (
                       <Badge className="rounded-full border-transparent bg-zinc-100 px-3 py-1.5 text-xs text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100">
-                        {formatWfhStatus(userInfo?.wfh_status)}
+                        {userInfo.age} years old
                       </Badge>
-                      {userInfo?.age != null && (
-                        <Badge className="rounded-full border-transparent bg-zinc-100 px-3 py-1.5 text-xs text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100">
-                          {userInfo.age} years old
-                        </Badge>
-                      )}
-                      {userInfo?.work_schedule && (
-                        <Badge className="rounded-full border-transparent bg-zinc-100 px-3 py-1.5 text-xs text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100">
-                          {userInfo.work_schedule}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+                    )}
+                    {userInfo?.work_schedule && (
+                      <Badge className="rounded-full border-transparent bg-zinc-100 px-3 py-1.5 text-xs text-zinc-800 dark:bg-zinc-700 dark:text-zinc-100">
+                        {userInfo.work_schedule}
+                      </Badge>
+                    )}
+                  </div>
                 </ProfileCard>
               ) : (
                 <ProfileCard>
                   <SectionTitle>University</SectionTitle>
-                  {detailsLocked ? (
-                    <ProgressiveProfileLockHint partnerFirstName={userInfo?.first_name} what="their university details" />
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {userInfo?.university_name && (
-                        <Badge className="rounded-full border-transparent bg-indigo-50 px-3 py-1.5 text-xs text-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200">
-                          <GraduationCap className="mr-1 inline h-3.5 w-3.5" aria-hidden />
-                          {userInfo.university_name}
-                        </Badge>
+                  <div className="flex flex-wrap gap-2">
+                    {userInfo?.university_name && (
+                      <Badge className="rounded-full border-transparent bg-indigo-50 px-3 py-1.5 text-xs text-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200">
+                        <GraduationCap className="mr-1 inline h-3.5 w-3.5" aria-hidden />
+                        {userInfo.university_name}
+                      </Badge>
+                    )}
+                    {userInfo?.programme_name && (
+                      <Badge className="rounded-full border-transparent bg-violet-50 px-3 py-1.5 text-xs text-violet-900 dark:bg-violet-950/40 dark:text-violet-200">
+                        <BookOpen className="mr-1 inline h-3.5 w-3.5" aria-hidden />
+                        {userInfo.programme_name}
+                      </Badge>
+                    )}
+                    {userInfo?.degree_level && (
+                      <Badge className="rounded-full border-transparent bg-fuchsia-50 px-3 py-1.5 text-xs text-fuchsia-900 dark:bg-fuchsia-950/40 dark:text-fuchsia-200">
+                        {formatDegreeLevel(userInfo.degree_level)}
+                      </Badge>
+                    )}
+                    {userInfo?.study_year != null && (
+                      <Badge className="rounded-full border-transparent bg-sky-50 px-3 py-1.5 text-xs text-sky-900 dark:bg-sky-950/40 dark:text-sky-200">
+                        Year {userInfo.study_year}
+                      </Badge>
+                    )}
+                    {!userInfo?.university_name &&
+                      !userInfo?.programme_name &&
+                      userInfo?.study_year == null &&
+                      !userInfo?.degree_level && (
+                        <div className={emptyStateBoxClass}>
+                          University details will appear as verified badges once available.
+                        </div>
                       )}
-                      {userInfo?.programme_name && (
-                        <Badge className="rounded-full border-transparent bg-violet-50 px-3 py-1.5 text-xs text-violet-900 dark:bg-violet-950/40 dark:text-violet-200">
-                          <BookOpen className="mr-1 inline h-3.5 w-3.5" aria-hidden />
-                          {userInfo.programme_name}
-                        </Badge>
-                      )}
-                      {userInfo?.degree_level && (
-                        <Badge className="rounded-full border-transparent bg-fuchsia-50 px-3 py-1.5 text-xs text-fuchsia-900 dark:bg-fuchsia-950/40 dark:text-fuchsia-200">
-                          {userInfo.degree_level}
-                        </Badge>
-                      )}
-                      {userInfo?.study_year != null && (
-                        <Badge className="rounded-full border-transparent bg-sky-50 px-3 py-1.5 text-xs text-sky-900 dark:bg-sky-950/40 dark:text-sky-200">
-                          Year {userInfo.study_year}
-                        </Badge>
-                      )}
-                      {!userInfo?.university_name &&
-                        !userInfo?.programme_name &&
-                        userInfo?.study_year == null &&
-                        !userInfo?.degree_level && (
-                          <div className={emptyStateBoxClass}>
-                            University details will appear as verified badges once available.
-                          </div>
-                        )}
-                    </div>
-                  )}
+                  </div>
                 </ProfileCard>
               )}
             </>

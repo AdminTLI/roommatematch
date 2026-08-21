@@ -101,10 +101,13 @@ export function ModuleTracker({
             ? answeredInCurrent
             : Object.keys(sectionAnswers).length
 
-        // Completion must come from real answers — never from "earlier than current index"
-        // (that falsely marked all 5 modules done on the review page).
-        const isCompleted =
-          answeredCount >= Math.max(QUESTIONS_PER_MODULE, totalInCurrent || QUESTIONS_PER_MODULE)
+        // Completion from real answers only. For the in-progress module use totalInCurrent;
+        // for other modules (and all modules on review) use QUESTIONS_PER_MODULE.
+        const completionThreshold =
+          idx === currentModuleIndex && !reviewActive
+            ? totalInCurrent || QUESTIONS_PER_MODULE
+            : QUESTIONS_PER_MODULE
+        const isCompleted = answeredCount >= completionThreshold
         const isActive = !reviewActive && idx === currentModuleIndex
         const href = `${V2_MODULE_PATHS[idx]}${querySuffix}`
 

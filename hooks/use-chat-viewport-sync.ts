@@ -24,12 +24,11 @@ function publishViewportVars(root: HTMLElement, vv: VisualViewport) {
     root.style.setProperty('--chat-visual-vh', `${measured}px`)
   }
 
-  const vvTop = Math.max(0, Math.round(vv.offsetTop))
-  root.style.setProperty('--vv-top', `${vvTop}px`)
-
-  const innerH = window.innerHeight || 0
-  const kbInset = Math.max(0, Math.round(innerH - vv.height - vv.offsetTop))
-  root.style.setProperty('--kb-inset', `${kbInset}px`)
+  // Intentionally do not publish --vv-top / --kb-inset for chat.
+  // Translating by offsetTop or fixing the composer with keyboard inset double-counts the
+  // keyboard against an already-resized visual viewport and blanks the thread on iOS.
+  root.style.setProperty('--vv-top', '0px')
+  root.style.setProperty('--kb-inset', '0px')
 }
 
 function clearViewportVars(root: HTMLElement) {
@@ -40,7 +39,7 @@ function clearViewportVars(root: HTMLElement) {
 }
 
 /**
- * Publishes `--vv-height`, `--vv-top`, and `--kb-inset` for mobile chat layout/keyboard handling.
+ * Publishes `--vv-height` (and zeros `--vv-top` / `--kb-inset`) for mobile chat keyboard handling.
  * Also sizes the chat list column when not in an active thread (inline height on `containerRef`).
  */
 export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | null>) {

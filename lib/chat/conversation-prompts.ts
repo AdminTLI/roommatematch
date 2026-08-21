@@ -66,6 +66,22 @@ const ICEBREAKERS = [
   (name: string) => `Hey ${name}! Coffee person, tea person, or neither?`,
 ]
 
+/** Deterministic icebreaker for mutual-match notification metadata (no AI). */
+export function pickMutualMatchIcebreaker(partnerName?: string | null, seed?: string): string {
+  const name = partnerFirstName(partnerName)
+  let index = 0
+  if (seed && seed.length > 0) {
+    let hash = 0
+    for (let i = 0; i < seed.length; i++) {
+      hash = (hash * 31 + seed.charCodeAt(i)) >>> 0
+    }
+    index = hash % ICEBREAKERS.length
+  } else {
+    index = Math.floor(Math.random() * ICEBREAKERS.length)
+  }
+  return ICEBREAKERS[index]!(name)
+}
+
 export function buildPromptChips(ctx: ConversationPromptContext): PromptChip[] {
   const name = partnerFirstName(ctx.partnerName)
   const chips: PromptChip[] = []

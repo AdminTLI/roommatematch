@@ -14,7 +14,8 @@ import {
   Shield,
   BarChart3,
   Video,
-  Settings
+  Settings,
+  Bug
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -56,6 +57,7 @@ const adminNavigationItems = [
   { name: 'Matches', href: '/admin/matches', icon: BarChart3 },
   { name: 'Chats', href: '/admin/chats', icon: MessageCircle },
   { name: 'Reports', href: '/admin/reports', icon: Shield },
+  { name: 'Bug Reports', href: '/admin/bug-reports', icon: Bug },
   { name: 'Verifications', href: '/admin/verifications', icon: Shield },
   { name: 'Metrics', href: '/admin/metrics', icon: BarChart3 },
   { name: 'Logs', href: '/admin/logs', icon: FileText },

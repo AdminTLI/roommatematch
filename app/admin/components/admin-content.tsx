@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Database,
   Settings,
+  Bug,
 } from 'lucide-react'
 import {
   SystemStatusPanel,
@@ -28,6 +29,7 @@ interface DashboardMetrics {
   activeMatches: number
   verifiedUsers: number
   pendingReports: number
+  openBugReports: number
   period: string
   lastUpdated: string
 }
@@ -53,6 +55,7 @@ export function AdminContent() {
     activeMatches: 0,
     verifiedUsers: 0,
     pendingReports: 0,
+    openBugReports: 0,
     period: 'all',
     lastUpdated: ''
   })
@@ -195,7 +198,7 @@ export function AdminContent() {
       </Card>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
@@ -250,7 +253,10 @@ export function AdminContent() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer transition hover:ring-2 hover:ring-orange-300/60"
+          onClick={() => router.push('/admin/reports')}
+        >
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -262,6 +268,29 @@ export function AdminContent() {
                   <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
                   <p className="text-2xl font-bold text-gray-900 dark:text-foreground">{metrics.pendingReports.toLocaleString()}</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="cursor-pointer transition hover:ring-2 hover:ring-amber-300/60"
+          onClick={() => router.push('/admin/bug-reports')}
+        >
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Bug className="w-5 h-5 text-amber-700" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">Open Bug Reports</p>
+                {isLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900 dark:text-foreground">
+                    {(metrics.openBugReports ?? 0).toLocaleString()}
+                  </p>
                 )}
               </div>
             </div>
@@ -341,7 +370,7 @@ export function AdminContent() {
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <Button 
               variant="outline" 
               className="h-20 flex flex-col items-center justify-center gap-2"
@@ -357,6 +386,14 @@ export function AdminContent() {
             >
               <Shield className="w-6 h-6" />
               <span>Review Reports</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col items-center justify-center gap-2"
+              onClick={() => router.push('/admin/bug-reports')}
+            >
+              <Bug className="w-6 h-6" />
+              <span>Bug Reports</span>
             </Button>
             <Button 
               variant="outline" 

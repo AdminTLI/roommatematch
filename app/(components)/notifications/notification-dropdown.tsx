@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { Card, CardContent } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
@@ -19,7 +18,12 @@ import {
   attachSenderAvatars,
 } from '@/services/notificationsService'
 import type { NotificationFilterCategory } from '@/types/notification'
-import { chatHrefFromMetadata } from '@/lib/notifications/chat-navigation'
+import {
+  chatHrefFromMetadata,
+  isChatPanelNotificationType,
+  notificationBelongsToChatThread,
+  threadFromNotificationMetadata,
+} from '@/lib/notifications/chat-navigation'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -83,7 +87,7 @@ export function NotificationDropdown({
 
       const bellRect = bellButton.getBoundingClientRect()
       const bellCenterX = bellRect.left + bellRect.width / 2
-      const panelWidth = 500
+      const panelWidth = 420
       const panelLeft = bellCenterX - panelWidth / 2
       const padding = 16
       const left = Math.max(padding, Math.min(panelLeft, window.innerWidth - panelWidth - padding))
@@ -168,34 +172,81 @@ export function NotificationDropdown({
     return getChatHref((notification.metadata || {}) as Record<string, unknown>)
   }
 
+  const removeThreadFromCache = useCallback(
+    (notification: Notification) => {
+      const thread = threadFromNotificationMetadata(
+        (notification.metadata || {}) as Record<string, unknown>
+      )
+      queryClient.setQueriesData(
+        { queryKey: ['notifications', 'dropdown', userId] },
+        (old: { pages: { items: Notification[]; hasMore: boolean }[]; pageParams: unknown[] } | undefined) => {
+          if (!old) return old
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              items: page.items.filter(
+                (item) =>
+                  item.id !== notification.id &&
+                  !notificationBelongsToChatThread(item, thread)
+              ),
+            })),
+          }
+        }
+      )
+    },
+    [queryClient, userId]
+  )
+
   const handleOpen = useCallback(
     async (notification: Notification) => {
+      // Dismiss sheet/panel first so mobile focus is not trapped under the overlay
+      onClose()
+
       const { metadata } = notification
+      const meta = (metadata || {}) as Record<string, unknown>
+
+      if (isChatPanelNotificationType(notification.type)) {
+        removeThreadFromCache(notification)
+      }
 
       switch (notification.type) {
         case 'match_created':
+          if (meta.chat_id) {
+            router.push(chatHrefFromMetadata(meta))
+          } else {
+            router.push('/matches?tab=suggested')
+          }
+          break
         case 'match_accepted':
+          if (meta.chat_id) {
+            router.push(chatHrefFromMetadata(meta))
+          } else {
+            router.push('/matches?tab=pending')
+          }
+          break
         case 'match_confirmed':
-          if (metadata.chat_id) {
-            router.push(getChatHref(metadata))
-          } else if (metadata.match_id) {
-            router.push('/matches')
+          if (meta.chat_id) {
+            router.push(chatHrefFromMetadata(meta))
+          } else {
+            router.push('/matches?tab=confirmed')
           }
           break
         case 'chat_message':
         case 'chat_message_reaction':
           router.push(await resolveChatHref(notification))
+          void queryClient.invalidateQueries({ queryKey: ['notifications'] })
           break
         case 'group_invitation':
-          if (metadata.chat_id) {
-            router.push(getChatHref(metadata))
+          if (meta.chat_id) {
+            router.push(chatHrefFromMetadata(meta))
           }
           break
         case 'profile_updated':
           router.push('/settings')
           break
         case 'questionnaire_completed':
-          router.push('/matches')
+          router.push('/matches?tab=suggested')
           break
         case 'verification_status':
           router.push('/verify')
@@ -211,15 +262,19 @@ export function NotificationDropdown({
           break
         case 'system_announcement':
         case 'admin_alert':
-          router.push('/notifications')
+          if (typeof meta.link === 'string' && meta.link.startsWith('/')) {
+            router.push(meta.link)
+          } else if (meta.report_status) {
+            router.push('/safety')
+          } else {
+            router.push('/notifications')
+          }
           break
         default:
           router.push('/notifications')
       }
-
-      onClose()
     },
-    [onClose, router]
+    [onClose, queryClient, removeThreadFromCache, router]
   )
 
   const handleMarkAsReadMany = useCallback(
@@ -295,15 +350,17 @@ export function NotificationDropdown({
       />
       <div
         data-notification-dropdown
-        className="fixed z-[1001] w-[min(100vw-24px,500px)] max-w-[500px]"
-        style={dropdownPosition ? { top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` } : { display: 'none' }}
+        className="fixed z-[1001] w-[min(100vw-24px,420px)] max-w-[420px]"
+        style={
+          dropdownPosition
+            ? { top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }
+            : { display: 'none' }
+        }
         onClick={(e) => e.stopPropagation()}
       >
-        <Card className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
-          <CardContent className="min-h-0 p-0">
-            <NotificationsPanel {...listProps} />
-          </CardContent>
-        </Card>
+        <div className="notif-glass-panel overflow-hidden rounded-2xl border-white/50 bg-white/65 backdrop-blur-[24px] backdrop-saturate-[1.9] dark:border-white/10 dark:bg-slate-900/70">
+          <NotificationsPanel {...listProps} />
+        </div>
       </div>
     </>,
     document.body

@@ -57,7 +57,7 @@ export const NOTIFICATION_CONFIG = {
     priority: 'high' as const,
   },
   match_accepted: {
-    icon: 'Heart',
+    icon: 'UserCheck',
     color: 'green',
     priority: 'high' as const,
   },
@@ -82,7 +82,7 @@ export const NOTIFICATION_CONFIG = {
     priority: 'high' as const,
   },
   profile_updated: {
-    icon: 'User',
+    icon: 'UserPen',
     color: 'blue',
     priority: 'low' as const,
   },

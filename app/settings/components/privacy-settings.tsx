@@ -21,6 +21,7 @@ import {
   FileText,
   ChevronRight
 } from 'lucide-react'
+import { downloadBlob } from '@/lib/pdf/download-blob'
 
 const DEFAULT_PRIVACY = {
   profileVisible: true,
@@ -192,14 +193,10 @@ export function PrivacySettings({ user, profile, openReviewOnMount }: PrivacySet
       }
 
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `domu-match-profile-${new Date().toISOString().split('T')[0]}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      await downloadBlob(
+        blob,
+        `domu-match-profile-${new Date().toISOString().split('T')[0]}.pdf`,
+      )
 
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 5000)

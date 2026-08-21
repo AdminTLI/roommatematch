@@ -17,6 +17,10 @@ interface MessengerLayoutProps {
   initialOtherUserId?: string | null
   /** Deep-link: scroll to this message after opening the chat */
   initialMessageId?: string | null
+  /** Prefill composer (e.g. mutual-match icebreaker) */
+  initialDraft?: string | null
+  /** Attempt to focus composer after draft insert */
+  initialFocusComposer?: boolean
 }
 
 interface ChatInfo {
@@ -33,6 +37,8 @@ export function MessengerLayout({
   initialChatId,
   initialOtherUserId,
   initialMessageId,
+  initialDraft = null,
+  initialFocusComposer = false,
 }: MessengerLayoutProps) {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(initialChatId || null)
   const [pendingMessageHighlightId, setPendingMessageHighlightId] = useState<string | null>(
@@ -40,12 +46,15 @@ export function MessengerLayout({
   )
   const [rightPaneOpen, setRightPaneOpen] = useState(false)
   const [chatInfo, setChatInfo] = useState<ChatInfo | null>(null)
-  const [composerInsert, setComposerInsert] = useState<string | null>(null)
+  const [composerInsert, setComposerInsert] = useState<string | null>(
+    initialDraft && initialDraft.trim() ? initialDraft.trim() : null,
+  )
   const [partnerDisplayName, setPartnerDisplayName] = useState<string>('User')
   const [isDesktop, setIsDesktop] = useState(true)
   /** Drives bottom-sheet enter animation (translate-y) on mobile */
   const [mobileSheetEntered, setMobileSheetEntered] = useState(false)
   const mobileSheetCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const draftParamsStrippedRef = useRef(false)
   const supabase = createClient()
   const { setActiveMobileConversation } = useMobileChatChrome()
 
@@ -257,6 +266,38 @@ export function MessengerLayout({
     window.history.replaceState(window.history.state, '', next)
   }, [])
 
+  // Prefill icebreaker draft from URL; strip draft/focus so refresh does not re-inject
+  useEffect(() => {
+    if (draftParamsStrippedRef.current) return
+    if (typeof window === 'undefined') return
+    const url = new URL(window.location.href)
+    const hadDraft = url.searchParams.has('draft') || url.searchParams.has('focus')
+    if (!hadDraft && !initialDraft) return
+
+    if (initialDraft?.trim() && !composerInsert) {
+      setComposerInsert(initialDraft.trim())
+    }
+
+    if (hadDraft) {
+      url.searchParams.delete('draft')
+      url.searchParams.delete('focus')
+      const next = `${url.pathname}${url.search}${url.hash}`
+      window.history.replaceState(window.history.state, '', next)
+    }
+    draftParamsStrippedRef.current = true
+
+    if (initialFocusComposer) {
+      // Best-effort focus after chat mounts; iOS may still withhold keyboard without a tap
+      requestAnimationFrame(() => {
+        const el = document.querySelector(
+          '[data-messenger-composer] textarea, [data-messenger-composer] input'
+        ) as HTMLTextAreaElement | HTMLInputElement | null
+        el?.focus({ preventScroll: true })
+        el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      })
+    }
+  }, [composerInsert, initialDraft, initialFocusComposer])
+
   const conversationEl = selectedChatId ? (
     <MessengerConversation
       chatId={selectedChatId}
@@ -367,11 +408,16 @@ export function MessengerLayout({
         </div>
       </div>
 
-      {/* Desktop profile column */}
+      {/* Desktop profile column -- clips; MessengerProfilePane owns the scroll region */}
       {isDesktop && selectedChatId && rightPaneOpen && (
         <div
           data-messenger-profile
-          className="chat-panel-elev hidden h-full max-h-full min-h-0 w-96 flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-[hsl(var(--chat-bg-primary))] lg:flex"
+          className="chat-panel-elev relative z-10 hidden h-full max-h-full min-h-0 w-96 flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-[hsl(var(--chat-bg-primary))] lg:flex"
+          style={{
+            height: '100%',
+            maxHeight: '100%',
+            minHeight: 0,
+          }}
         >
           <MessengerProfilePane
             chatId={selectedChatId}
@@ -386,26 +432,24 @@ export function MessengerLayout({
         </div>
       )}
 
-      {/* Mobile profile: backdrop + bottom sheet (85vh max) */}
+      {/* Mobile profile: backdrop + bottom sheet -- pane owns the scroll region */}
       {!isDesktop && selectedChatId && rightPaneOpen && (
         <div className="fixed inset-0 z-[100] lg:hidden" role="presentation">
           <button
             type="button"
             aria-label="Close profile"
-            className="absolute inset-0 bg-black/60 transition-opacity duration-300 ease-out"
+            className="absolute inset-0 z-0 bg-black/60 transition-opacity duration-300 ease-out"
             onClick={handleToggleRightPane}
           />
           <div
             data-mobile-profile-sheet
             className={cn(
-              'absolute bottom-0 left-0 right-0 z-[110] flex flex-col overflow-hidden rounded-t-3xl bg-[hsl(var(--chat-bg-primary))] shadow-2xl transition-transform duration-300 ease-out',
-              // Flush to bottom; ~8% backdrop remains for tap-to-dismiss. Inner flex fills solid color (no transparent hole).
+              'absolute bottom-0 left-0 right-0 z-10 flex flex-col overflow-hidden rounded-t-3xl bg-[hsl(var(--chat-bg-primary))] shadow-2xl transition-transform duration-300 ease-out',
               'h-[92dvh] max-h-[92dvh] min-h-0',
               mobileSheetEntered ? 'translate-y-0' : 'translate-y-full',
             )}
-            onClick={e => e.stopPropagation()}
           >
-            <div className="flex shrink-0 flex-col items-center bg-[hsl(var(--chat-bg-primary))] pt-2 pb-1">
+            <div className="relative z-20 flex shrink-0 flex-col items-center bg-[hsl(var(--chat-bg-primary))] pt-2 pb-1">
               <button
                 type="button"
                 aria-label="Close profile sheet"
@@ -415,7 +459,7 @@ export function MessengerLayout({
                 <span className="mx-auto block h-1 w-10 rounded-full bg-gray-400 dark:bg-slate-500" />
               </button>
             </div>
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))]">
+            <div className="relative z-10 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))]">
               <MessengerProfilePane
                 chatId={selectedChatId}
                 isOpen={rightPaneOpen}

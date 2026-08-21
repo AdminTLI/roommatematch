@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from '@/lib/admin/audit'
-import { createNotificationsForUsers } from '@/lib/notifications/create'
+import { createNotificationsForUsers, createReportStatusNotification } from '@/lib/notifications/create'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(request: NextRequest) {
@@ -222,6 +222,16 @@ export async function PATCH(request: NextRequest) {
 
     const admin = createAdminClient()
 
+    const { data: existingReport, error: existingError } = await admin
+      .from('reports')
+      .select('id, reporter_id, status')
+      .eq('id', reportId)
+      .maybeSingle()
+
+    if (existingError || !existingReport) {
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 })
+    }
+
     // Update report status
     const { data: report, error: updateError } = await admin
       .from('reports')
@@ -250,6 +260,22 @@ export async function PATCH(request: NextRequest) {
       action_taken: actionTaken,
       role: adminRecord!.role
     })
+
+    if (
+      existingReport.reporter_id &&
+      existingReport.status !== status &&
+      (status === 'actioned' || status === 'dismissed' || status === 'open')
+    ) {
+      try {
+        await createReportStatusNotification(
+          existingReport.reporter_id,
+          reportId,
+          status as 'open' | 'actioned' | 'dismissed'
+        )
+      } catch (notifyError) {
+        safeLogger.error('[Admin] Failed to notify reporter of status change', notifyError)
+      }
+    }
 
     return NextResponse.json({
       success: true,

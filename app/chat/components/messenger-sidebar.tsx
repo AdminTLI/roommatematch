@@ -885,26 +885,27 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
         {isMounted ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-11 w-11 shrink-0 p-0 touch-manipulation">
-                <MoreVertical className="h-5 w-5" />
+              <Button variant="ghost" size="sm" className="h-11 w-11 shrink-0 touch-manipulation p-0">
+                <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                <span className="sr-only">More options</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-56 border-white/40 bg-white/80 shadow-xl backdrop-blur-[12px] dark:border-white/10 dark:bg-zinc-900/80"
+              className="w-56 rounded-xl border-white/40 bg-white/80 shadow-xl backdrop-blur-[12px] dark:border-white/10 dark:bg-zinc-900/80"
             >
               <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Views
               </DropdownMenuLabel>
               <DropdownMenuItem onClick={handleViewArchived}>
-                <Archive className="mr-2 h-4 w-4" />
+                <Archive className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                 Archived Chats
                 {archivedChats.length > 0 && (
                   <span className="ml-auto text-xs text-gray-500">({archivedChats.length})</span>
                 )}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleViewMuted}>
-                <BellOff className="mr-2 h-4 w-4" />
+                <BellOff className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                 Muted Chats
                 {mutedChats.length > 0 && (
                   <span className="ml-auto text-xs text-gray-500">({mutedChats.length})</span>
@@ -915,7 +916,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                   setShowArchived(false)
                   setShowMuted(false)
                 }}>
-                  <ArchiveRestore className="mr-2 h-4 w-4" />
+                  <ArchiveRestore className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                   Back to Active Chats
                 </DropdownMenuItem>
               )}
@@ -925,10 +926,14 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                 Actions
               </DropdownMenuLabel>
               <DropdownMenuItem onClick={handleMarkAllAsRead} disabled={isMarkingAllRead}>
-                <CheckCheck className="mr-2 h-4 w-4" />
+                <CheckCheck className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                 {isMarkingAllRead ? 'Marking...' : 'Mark All as Read'}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleClearAllReadReceipts} disabled={isClearingReadReceipts}>
+              <DropdownMenuItem
+                onClick={handleClearAllReadReceipts}
+                disabled={isClearingReadReceipts}
+                className="text-amber-700 focus:text-amber-800 dark:text-amber-400 dark:focus:text-amber-300"
+              >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 {isClearingReadReceipts ? 'Clearing...' : 'Clear All Read Receipts'}
               </DropdownMenuItem>
@@ -939,12 +944,12 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
               </DropdownMenuLabel>
               {mutedChats.length === chats.length && chats.length > 0 ? (
                 <DropdownMenuItem onClick={handleUnmuteAllNotifications}>
-                  <Bell className="mr-2 h-4 w-4" />
+                  <Bell className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                   Unmute All Chats
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem onClick={handleMuteAllNotifications}>
-                  <BellOff className="mr-2 h-4 w-4" />
+                  <BellOff className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                   Mute All Chats
                 </DropdownMenuItem>
               )}
@@ -952,7 +957,8 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
           </DropdownMenu>
         ) : (
           <Button variant="ghost" size="sm" className="h-11 w-11 shrink-0 p-0" disabled>
-            <MoreVertical className="h-5 w-5" />
+            <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <span className="sr-only">More options</span>
           </Button>
         )}
       </div>
@@ -1007,7 +1013,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Active now
             </h2>
-            <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-1">
+            <div className="scrollbar-hide -mx-1 flex gap-3 overflow-x-auto overflow-y-visible px-1 py-2">
               {storyPeople.length > 0 ? (
                 storyPeople.map(person => (
                   <button
@@ -1016,20 +1022,26 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                     onClick={() => handleOnlineUserClick(person.id)}
                     className="flex flex-shrink-0 flex-col items-center gap-1.5 touch-manipulation"
                   >
-                    <div
-                      className={cn(
-                        'rounded-full p-[2.5px]',
-                        person.presence === 'online'
-                          ? 'bg-[#10B981]'
-                          : 'chat-presence-recent bg-[#A855F7]',
-                      )}
-                    >
-                      <Avatar className="h-12 w-12 ring-2 ring-white dark:ring-slate-900">
-                        <AvatarImage src={person.avatar} />
-                        <AvatarFallback className="bg-purple-600 text-sm font-semibold text-white">
-                          {person.displayName.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                    <div className="relative flex h-[58px] w-[58px] items-center justify-center">
+                      {person.presence === 'recent' ? (
+                        <span
+                          className="chat-presence-ring pointer-events-none absolute inset-0 rounded-full"
+                          aria-hidden
+                        />
+                      ) : null}
+                      <div
+                        className={cn(
+                          'relative rounded-full p-[2.5px]',
+                          person.presence === 'online' ? 'bg-[#10B981]' : 'bg-[#A855F7]',
+                        )}
+                      >
+                        <Avatar className="h-12 w-12 ring-2 ring-white dark:ring-slate-900">
+                          <AvatarImage src={person.avatar} />
+                          <AvatarFallback className="bg-purple-600 text-sm font-semibold text-white">
+                            {person.displayName.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
                     </div>
                     <span className="max-w-[64px] truncate text-center text-xs font-medium text-gray-900 dark:text-gray-100">
                       {person.displayName}

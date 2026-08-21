@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NotificationFilters, NotificationType } from '@/lib/notifications/types';
-import { CATEGORY_TYPES, isNotificationFilterCategory } from '@/types/notification';
+import { CATEGORY_TYPES, normalizeNotificationFilterCategory } from '@/types/notification';
 import { senderAvatarForChatNotification } from '@/lib/privacy/profile-access-server';
 
 const DEFAULT_NOTIFICATION_PREFS = {
@@ -43,8 +43,9 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const categoryParam = searchParams.get('category') || undefined;
-    const category =
-      categoryParam && isNotificationFilterCategory(categoryParam) ? categoryParam : undefined;
+    const category = categoryParam
+      ? normalizeNotificationFilterCategory(categoryParam) ?? undefined
+      : undefined;
 
     const filters: NotificationFilters = {
       is_read: searchParams.get('is_read') ? searchParams.get('is_read') === 'true' : undefined,

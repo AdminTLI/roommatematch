@@ -128,6 +128,7 @@ export function MessengerConversation({
   const scrollToBottomRef = useRef<((force?: boolean) => void) | null>(null)
   const isLoadingMessagesRef = useRef(false)
   const lastLoadedChatIdRef = useRef<string | null>(null)
+  const incomingReadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   
   // Partner user ID and action states
   const [partnerUserId, setPartnerUserId] = useState<string | null>(null)
@@ -297,8 +298,8 @@ export function MessengerConversation({
       })
 
       if (response.ok) {
-        // Invalidate chat queries to refresh unread counts immediately
         queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+        queryClient.invalidateQueries({ queryKey: ['notifications'] })
       }
     } catch (error) {
       // Silently fail - we don't want to interrupt user experience
@@ -718,13 +719,28 @@ export function MessengerConversation({
         if (!userScrolledUpRef.current && scrollToBottomRef.current) {
           scrollToBottomRef.current(true)
         }
+
+        if (!isOwnMessage) {
+          if (incomingReadTimerRef.current) {
+            clearTimeout(incomingReadTimerRef.current)
+          }
+          // Wait for the message notification insert, then clear this thread only.
+          incomingReadTimerRef.current = setTimeout(() => {
+            incomingReadTimerRef.current = null
+            void markAsRead()
+          }, 500)
+        }
       },
     })
 
     return () => {
+      if (incomingReadTimerRef.current) {
+        clearTimeout(incomingReadTimerRef.current)
+        incomingReadTimerRef.current = null
+      }
       channelManager.unsubscribe(channelKey, subId)
     }
-  }, [chatId, user.id, supabase, loadMessages])
+  }, [chatId, user.id, supabase, loadMessages, markAsRead])
 
   // Update partner name and avatar: progressive disclosure snapshot for 1:1, else profile/props.
   useEffect(() => {
@@ -1298,7 +1314,7 @@ export function MessengerConversation({
                   }
                   className={cn(
                     badgeVariants({ variant: 'outline', size: 'default' }),
-                    'h-8 min-h-8 shrink-0 touch-manipulation gap-1.5 px-3 py-0 leading-none',
+                    'h-8 min-h-8 shrink-0 touch-manipulation gap-1 px-2 py-0 leading-none lg:gap-1.5 lg:px-3',
                     'border-transparent bg-[hsl(var(--chat-active-fill))] text-xs font-semibold shadow-none',
                     'hover:bg-violet-100 active:bg-violet-200/80',
                     'dark:bg-violet-950/40 dark:hover:bg-violet-950/60',
@@ -1313,11 +1329,15 @@ export function MessengerConversation({
                     <span className="text-xs font-semibold tabular-nums text-ink-400 dark:text-ink-500">…</span>
                   ) : matchPercent != null ? (
                     <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-violet-700 dark:text-violet-300">
-                      {matchPercent}% Compatibility
+                      <span className="lg:hidden">{matchPercent}%</span>
+                      <span className="hidden lg:inline">{matchPercent}% Compatibility</span>
                     </span>
                   ) : (
                     <span className="whitespace-nowrap text-xs font-semibold text-violet-700 dark:text-violet-300">
-                      Compatibility
+                      <span className="lg:hidden" aria-hidden>
+                        —
+                      </span>
+                      <span className="hidden lg:inline">Compatibility</span>
                     </span>
                   )}
                 </button>
@@ -1335,31 +1355,31 @@ export function MessengerConversation({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-56 border-white/40 bg-white/80 shadow-xl backdrop-blur-[12px] dark:border-white/10 dark:bg-zinc-900/80"
+              className="w-56 rounded-xl border-white/40 bg-white/80 shadow-xl backdrop-blur-[12px] dark:border-white/10 dark:bg-zinc-900/80"
             >
               <DropdownMenuItem onClick={handleSearch}>
-                <Search className="mr-2 h-4 w-4" />
+                <Search className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                 Search in conversation
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleMarkAsUnread} disabled={isMarkingUnread}>
-                <MessageSquare className="mr-2 h-4 w-4" />
+                <MessageSquare className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                 {isMarkingUnread ? 'Marking...' : 'Mark as unread'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleToggleMute} disabled={isMuting}>
                 {isMuted ? (
                   <>
-                    <Bell className="mr-2 h-4 w-4" />
+                    <Bell className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                     {isMuting ? 'Unmuting...' : 'Unmute notifications'}
                   </>
                 ) : (
                   <>
-                    <BellOff className="mr-2 h-4 w-4" />
+                    <BellOff className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                     {isMuting ? 'Muting...' : 'Mute notifications'}
                   </>
                 )}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleArchive} disabled={isArchiving}>
-                <Archive className="mr-2 h-4 w-4" />
+                <Archive className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                 {isArchiving ? 'Archiving...' : 'Archive conversation'}
               </DropdownMenuItem>
 
@@ -1532,7 +1552,7 @@ export function MessengerConversation({
         ref={messagesContainerRef}
         data-messenger-messages
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto min-h-0 px-4 py-4 scrollbar-visible"
+        className="scrollbar-hide flex-1 overflow-y-auto min-h-0 px-4 py-4"
       >
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
@@ -1646,7 +1666,7 @@ export function MessengerConversation({
               ? 'This user has been blocked. To send a message, unblock them.'
               : isMessagingDisabledByPrivacy
                 ? 'Messaging is disabled by privacy settings.'
-                : 'Type a message...'
+                : 'Message'
           }
           disabled={isBlocked || isMessagingDisabledByPrivacy}
         />

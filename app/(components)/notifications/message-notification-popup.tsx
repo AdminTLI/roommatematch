@@ -1,17 +1,25 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { Notification } from '@/lib/notifications/types'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
-import { MessageCircle } from 'lucide-react'
-import { chatHrefFromMetadata } from '@/lib/notifications/chat-navigation'
+import {
+  displayMessageForNotification,
+  displayTitleForNotification,
+  fallbackAvatarUrlForNotification,
+  hrefForNotification,
+} from '@/lib/notifications/live-toast'
+import {
+  LiveNotificationCard,
+  type LiveNotificationCardModel,
+} from '@/app/(components)/notifications/live-notification-card'
 
-interface PopupNotification extends Notification {
-  primaryActionLabel: string
-  secondaryActionLabel?: string
+const AUTO_DISMISS_MS = 8000
+
+interface PopupNotification extends LiveNotificationCardModel {
+  raw: Notification
 }
 
 interface MessageNotificationPopupProps {
@@ -21,77 +29,84 @@ interface MessageNotificationPopupProps {
 export function MessageNotificationPopup({ userId }: MessageNotificationPopupProps) {
   const [notifications, setNotifications] = useState<PopupNotification[]>([])
   const router = useRouter()
+  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
-  const getChatHref = (metadata: Record<string, any>) => chatHrefFromMetadata(metadata)
+  const removeNotification = useCallback((id: string) => {
+    const timer = timersRef.current.get(id)
+    if (timer) {
+      clearTimeout(timer)
+      timersRef.current.delete(id)
+    }
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+  }, [])
 
-  const resolveChatHref = async (notification: Notification) => {
+  const hydrateAvatar = useCallback(async (notificationId: string) => {
     try {
       const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
-      const response = await fetchWithCSRF('/api/notifications/open-chat', {
+      const response = await fetchWithCSRF('/api/notifications/live-avatar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notificationId: notification.id }),
+        body: JSON.stringify({ notificationId }),
       })
-      if (response.ok) {
-        const data = await response.json()
-        if (typeof data?.href === 'string' && data.href.length > 0) return data.href
-      }
+      if (!response.ok) return
+      const data = await response.json()
+      if (typeof data?.avatarUrl !== 'string' || !data.avatarUrl) return
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, avatarUrl: data.avatarUrl } : n))
+      )
     } catch (error) {
-      console.warn('Failed to resolve popup chat href:', error)
+      console.warn('Failed to hydrate live notification avatar:', error)
     }
-    return getChatHref(notification.metadata || {})
-  }
+  }, [])
 
-  const getPrimaryAction = (notification: Notification): { label: string; href: string } => {
-    const metadata = notification.metadata || {}
+  const addPopupNotification = useCallback(
+    (notification: Notification) => {
+      const meta = notification.metadata || {}
+      const metaKind = typeof meta.type === 'string' ? meta.type : null
 
-    switch (notification.type) {
-      case 'match_accepted':
-      case 'match_confirmed':
-      case 'chat_message':
-      case 'chat_message_reaction':
-      case 'group_invitation':
-        return { label: 'Open Chat', href: getChatHref(metadata) }
-      case 'match_created':
-        return { label: 'View Matches', href: '/matches' }
-      case 'profile_updated':
-        return { label: 'Open Settings', href: '/settings' }
-      case 'questionnaire_completed':
-        return { label: 'View Matches', href: '/matches' }
-      case 'verification_status':
-        return { label: 'Open Verify', href: '/verify' }
-      case 'housing_update':
-        return { label: 'Open Housing', href: '/housing' }
-      case 'agreement_update':
-        return { label: 'Open Agreements', href: '/agreements' }
-      case 'safety_alert':
-        return { label: 'Open Safety', href: '/safety' }
-      case 'system_announcement':
-      case 'admin_alert':
-      default:
-        return { label: 'View Notifications', href: '/notifications' }
-    }
-  }
-
-  const addPopupNotification = useCallback((notification: Notification) => {
-    const action = getPrimaryAction(notification)
-    const popupNotification: PopupNotification = {
-      ...notification,
-      primaryActionLabel: action.label,
-      secondaryActionLabel: 'Dismiss',
-    }
-
-    setNotifications((prev) => {
-      if (prev.some((existing) => existing.id === popupNotification.id)) {
-        return prev
+      const popupNotification: PopupNotification = {
+        id: notification.id,
+        type: notification.type,
+        title: displayTitleForNotification(notification),
+        message: displayMessageForNotification(notification),
+        avatarUrl: fallbackAvatarUrlForNotification(notification),
+        createdAtLabel: 'Just now',
+        metaKind,
+        raw: notification,
       }
-      return [...prev, popupNotification]
-    })
 
-    // Auto-dismiss after 8 seconds (longer for richer notifications)
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== popupNotification.id))
-    }, 8000)
+      setNotifications((prev) => {
+        if (prev.some((existing) => existing.id === popupNotification.id)) {
+          return prev
+        }
+        return [...prev, popupNotification].slice(-3)
+      })
+
+      if (
+        notification.type === 'chat_message' ||
+        notification.type === 'chat_message_reaction'
+      ) {
+        void hydrateAvatar(notification.id)
+      }
+
+      const existing = timersRef.current.get(popupNotification.id)
+      if (existing) clearTimeout(existing)
+
+      const timeout = setTimeout(() => {
+        removeNotification(popupNotification.id)
+      }, AUTO_DISMISS_MS)
+      timersRef.current.set(popupNotification.id, timeout)
+    },
+    [hydrateAvatar, removeNotification]
+  )
+
+  useEffect(() => {
+    return () => {
+      for (const timer of timersRef.current.values()) {
+        clearTimeout(timer)
+      }
+      timersRef.current.clear()
+    }
   }, [])
 
   const markAsRead = async (notificationId: string) => {
@@ -111,6 +126,24 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
     }
   }
 
+  const resolveChatHref = async (notification: Notification) => {
+    try {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/notifications/open-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationId: notification.id }),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        if (typeof data?.href === 'string' && data.href.length > 0) return data.href
+      }
+    } catch (error) {
+      console.warn('Failed to resolve popup chat href:', error)
+    }
+    return hrefForNotification(notification)
+  }
+
   useRealtimeInvalidation({
     table: 'notifications',
     event: 'INSERT',
@@ -125,122 +158,45 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
     },
   })
 
-  const handleDismiss = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id))
-  }
-
-  const handlePrimaryAction = async (notification: PopupNotification) => {
-    const action = getPrimaryAction(notification)
+  const handleOpen = async (notification: PopupNotification) => {
     const targetHref =
       notification.type === 'chat_message' || notification.type === 'chat_message_reaction'
-        ? await resolveChatHref(notification)
-        : action.href
+        ? await resolveChatHref(notification.raw)
+        : hrefForNotification(notification.raw)
     await markAsRead(notification.id)
     router.push(targetHref)
-    setNotifications((prev) => prev.filter((n) => n.id !== notification.id))
-  }
-
-  const truncateText = (value: string, maxChars: number): string => {
-    if (value.length <= maxChars) return value
-    return `${value.slice(0, maxChars).trimEnd()}...`
-  }
-
-  const getDisplayTitle = (notification: PopupNotification): string => {
-    const metadata = notification.metadata || {}
-    if (
-      notification.type === 'chat_message' &&
-      typeof metadata.sender_name === 'string' &&
-      metadata.sender_name.trim()
-    ) {
-      return metadata.sender_name.trim()
-    }
-    if (
-      notification.type === 'chat_message_reaction' &&
-      typeof metadata.reactor_name === 'string' &&
-      metadata.reactor_name.trim()
-    ) {
-      return metadata.reactor_name.trim()
-    }
-    return notification.title
-  }
-
-  const getDisplayMessage = (notification: PopupNotification): string => {
-    const metadata = notification.metadata || {}
-    let message = notification.message || ''
-
-    if (notification.type === 'chat_message') {
-      if (typeof metadata.sender_name === 'string' && metadata.sender_name.trim()) {
-        const escaped = metadata.sender_name.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-        message = message.replace(new RegExp(`^${escaped}:\\s*`, 'i'), '')
-      } else {
-        message = message.replace(/^[^:]{1,40}:\s*/, '')
-      }
-      return truncateText(message.trim(), 140)
-    }
-
-    if (notification.type === 'chat_message_reaction') {
-      return truncateText(message.trim(), 140)
-    }
-
-    return truncateText(message.trim(), 180)
+    removeNotification(notification.id)
   }
 
   return (
-    <div className="fixed top-20 right-6 z-50 space-y-2">
-      <AnimatePresence>
-        {notifications.map((notification) => {
-          return (
+    <div
+      className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-start justify-center px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:inset-x-auto sm:right-4 sm:top-16 sm:justify-end sm:px-0 sm:pt-0 lg:right-6"
+      aria-live="polite"
+    >
+      {/*
+        Keep this stack pointer-events-none so an empty (or tall) host never blocks
+        Match Insights / chat scrolling. Only individual toasts capture clicks.
+      */}
+      <div className="flex h-fit w-full max-w-[22rem] flex-col gap-3 self-start sm:w-[22rem]">
+        <AnimatePresence initial={false}>
+          {notifications.map((notification) => (
             <motion.div
               key={notification.id}
-              initial={{ opacity: 0, x: 50, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative max-w-sm w-80 rounded-2xl border border-black/10 bg-white/70 p-4 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_12px_28px_rgba(15,23,42,0.14),0_3px_10px_rgba(15,23,42,0.10)] ring-1 ring-black/5 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-white/60 dark:border-white/10 dark:bg-gray-900/55 dark:shadow-[0_1px_0_rgba(255,255,255,0.06)_inset,0_16px_34px_rgba(0,0,0,0.55),0_4px_12px_rgba(0,0,0,0.35)] dark:ring-white/10 dark:supports-[backdrop-filter]:bg-gray-900/45"
+              layout
+              className="pointer-events-auto"
+              initial={{ opacity: 0, y: -12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.18 } }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="flex flex-row gap-3">
-                <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/35 bg-white/35 text-base font-semibold tracking-wide text-gray-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.55),0_8px_20px_-10px_rgba(15,23,42,0.75)] backdrop-blur-xl dark:border-white/20 dark:bg-gray-800/40 dark:text-white"
-                  aria-hidden
-                >
-                  <MessageCircle className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-gray-900 dark:text-white">
-                    {getDisplayTitle(notification)}
-                  </p>
-                  <p className="mt-0.5 line-clamp-2 text-sm font-normal text-gray-700 dark:text-gray-300">
-                    {getDisplayMessage(notification)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-3 border-t border-white/30 pt-2 dark:border-white/10">
-                <div className="grid w-full grid-cols-2 gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="h-9 w-full rounded-xl border border-white/40 bg-white/40 px-3 text-xs font-medium text-gray-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.55),0_10px_26px_-16px_rgba(15,23,42,0.9)] backdrop-blur-xl transition-all hover:bg-white/55 dark:border-white/20 dark:bg-gray-800/45 dark:text-white dark:hover:bg-gray-800/65"
-                    onClick={() => handlePrimaryAction(notification)}
-                  >
-                    {notification.primaryActionLabel}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="h-9 w-full rounded-xl border border-white/30 bg-white/25 px-3 text-xs font-medium text-gray-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_10px_22px_-18px_rgba(15,23,42,0.8)] backdrop-blur-xl transition-all hover:bg-white/40 dark:border-white/15 dark:bg-gray-800/30 dark:text-gray-200 dark:hover:bg-gray-800/45"
-                    onClick={() => handleDismiss(notification.id)}
-                  >
-                    {notification.secondaryActionLabel || 'Dismiss'}
-                  </Button>
-                </div>
-              </div>
+              <LiveNotificationCard
+                notification={notification}
+                onOpen={() => void handleOpen(notification)}
+              />
             </motion.div>
-          )
-        })}
-      </AnimatePresence>
+          ))}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }

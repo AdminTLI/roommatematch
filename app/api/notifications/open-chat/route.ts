@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { chatHrefFromMetadata } from '@/lib/notifications/chat-navigation'
+import { deleteMessageNotificationsForThread } from '@/lib/notifications/clear-chat-notifications'
 
 function extractSenderName(notification: { message?: string; metadata?: Record<string, any> }) {
   const metadataName = notification.metadata?.sender_name
@@ -121,36 +122,14 @@ export async function POST(request: NextRequest) {
       chatId = await findDirectChatId(admin, user.id, senderId)
     }
 
-    // Mark this message / reaction notification family as read to keep notification panel in sync.
-    const nowIso = new Date().toISOString()
-    if (chatId) {
-      await supabase
-        .from('notifications')
-        .update({ is_read: true, updated_at: nowIso })
-        .eq('user_id', user.id)
-        .in('type', ['chat_message', 'chat_message_reaction'])
-        .eq('metadata->>chat_id', chatId)
-    }
-
-    if (notification.type === 'chat_message') {
-      if (senderId) {
-        await supabase
-          .from('notifications')
-          .update({ is_read: true, updated_at: nowIso })
-          .eq('user_id', user.id)
-          .eq('type', 'chat_message')
-          .eq('metadata->>sender_id', senderId)
-      }
-
-      if (senderName) {
-        await supabase
-          .from('notifications')
-          .update({ is_read: true, updated_at: nowIso })
-          .eq('user_id', user.id)
-          .eq('type', 'chat_message')
-          .eq('metadata->>sender_name', senderName)
-      }
-    }
+    // Remove this conversation's message notifications from the panel.
+    // Scope by chat_id when known so other unread threads are left untouched.
+    await deleteMessageNotificationsForThread({
+      userId: user.id,
+      chatId,
+      senderId: chatId ? null : senderId,
+      notificationId: notification.id,
+    })
 
     const mergedMeta: Record<string, unknown> = { ...(metadata as Record<string, unknown>) }
     if (chatId) mergedMeta.chat_id = chatId

@@ -15,6 +15,7 @@ import type { Item, SectionKey } from '@/types/questionnaire'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { showErrorToast } from '@/lib/toast'
 import { cn } from '@/lib/utils'
+import { downloadBlob } from '@/lib/pdf/download-blob'
 
 const scaleAnchors = {
   agreement: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'],
@@ -216,14 +217,10 @@ function ReviewClientContent() {
       }
 
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `domu-match-compatibility-profile-${new Date().toISOString().split('T')[0]}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      await downloadBlob(
+        blob,
+        `domu-match-compatibility-profile-${new Date().toISOString().split('T')[0]}.pdf`,
+      )
     } catch (error) {
       console.error('[Review] PDF generation failed:', error)
       showErrorToast(
@@ -325,7 +322,7 @@ function ReviewClientContent() {
             <ModuleTracker
               currentModuleIndex={5}
               answeredInCurrent={totalAnswered}
-              totalInCurrent={60}
+              totalInCurrent={12}
               reviewActive
             />
           }

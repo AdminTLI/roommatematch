@@ -9,7 +9,13 @@ import { ChatRouteChrome } from './_components/chat-route-chrome'
 import { ChatPageViewportRoot } from './_components/chat-page-viewport-root'
 
 interface ChatPageProps {
-  searchParams: Promise<{ chatId?: string; userId?: string; messageId?: string }>
+  searchParams: Promise<{
+    chatId?: string
+    userId?: string
+    messageId?: string
+    draft?: string
+    focus?: string
+  }>
 }
 
 export default async function ChatPage({ searchParams }: ChatPageProps) {
@@ -48,6 +54,8 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
   const initialChatId = params.chatId || null
   const initialOtherUserId = params.userId || null
   const initialMessageId = params.messageId || null
+  const initialDraft = params.draft || null
+  const initialFocus = params.focus === '1' || params.focus === 'true'
 
   return (
     <ChatRouteChrome>
@@ -65,6 +73,8 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
             initialChatId={initialChatId}
             initialOtherUserId={initialOtherUserId}
             initialMessageId={initialMessageId}
+            initialDraft={initialDraft}
+            initialFocusComposer={initialFocus}
           />
         </ChatPageViewportRoot>
       </AppShell>

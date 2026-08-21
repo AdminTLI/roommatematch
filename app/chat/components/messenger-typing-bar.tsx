@@ -48,9 +48,12 @@ function resizeTextarea(textarea: HTMLTextAreaElement | null, maxPx = 144) {
   textarea.style.height = `${Math.min(textarea.scrollHeight, maxPx)}px`
 }
 
+const iconButtonClass =
+  'flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-zinc-100 hover:text-violet-700 disabled:opacity-40 dark:hover:bg-zinc-800 dark:hover:text-violet-300'
+
 export function MessengerTypingBar({
   onSend,
-  placeholder = 'Type a message...',
+  placeholder = 'Message',
   disabled = false,
   className,
   onComposerFocus,
@@ -182,13 +185,11 @@ export function MessengerTypingBar({
   return (
     <div
       data-messenger-composer
-      className={cn('relative z-[60] flex-shrink-0 px-2 pb-2 pt-1', className)}
+      className={cn('relative z-[60] flex-shrink-0 px-3 pb-2 pt-1 lg:px-4', className)}
       style={{
         flexShrink: 0,
         flexGrow: 0,
         flexBasis: 'auto',
-        // Keyboard offset is handled by CSS `bottom: var(--kb-inset)` on mobile.
-        // Do not also pad by kb-inset here or the field jumps off-screen.
         paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))',
       }}
     >
@@ -227,13 +228,13 @@ export function MessengerTypingBar({
           </div>
         ) : null}
 
-        <div className="flex min-w-0 items-end gap-1.5">
+        <div className="flex min-w-0 items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
                 disabled={disabled}
-                className="flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-zinc-100 hover:text-violet-700 disabled:opacity-40 dark:hover:bg-zinc-800 dark:hover:text-violet-300"
+                className={iconButtonClass}
                 aria-label="Quick attach prompts"
               >
                 <Plus className="h-5 w-5" />
@@ -254,7 +255,7 @@ export function MessengerTypingBar({
 
           <div
             className={cn(
-              'flex min-h-[44px] min-w-0 flex-1 items-end gap-1 bg-zinc-100 px-3 py-2 transition-all dark:bg-zinc-800',
+              'flex min-h-[44px] min-w-0 flex-1 items-center bg-zinc-100 px-3 py-2 transition-all dark:bg-zinc-800',
               multiLine ? 'rounded-2xl' : 'rounded-full',
               contentValidationError && 'ring-2 ring-red-300 dark:ring-red-400',
             )}
@@ -288,41 +289,43 @@ export function MessengerTypingBar({
             />
           </div>
 
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => applyPrompt(randomIcebreaker(promptContext?.partnerName))}
-            className="flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full text-amber-600 transition-colors hover:bg-amber-50 disabled:opacity-40 dark:text-amber-400 dark:hover:bg-amber-950/40"
-            aria-label="Suggest an icebreaker"
-            title="Icebreaker"
-          >
-            <Lightbulb className="h-5 w-5" />
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => applyPrompt(randomIcebreaker(promptContext?.partnerName))}
+              className="grid h-11 w-11 shrink-0 place-items-center touch-manipulation rounded-full text-amber-600 transition-colors hover:bg-amber-50 disabled:opacity-40 dark:text-amber-400 dark:hover:bg-amber-950/40"
+              aria-label="Suggest an icebreaker"
+              title="Icebreaker"
+            >
+              <Lightbulb className="h-5 w-5" />
+            </button>
 
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center">
             <EmojiPicker
               onEmojiSelect={handleEmojiSelect}
               mode="text"
               position="top"
-              buttonClassName="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              className="shrink-0"
+              buttonClassName="grid h-11 w-11 place-items-center rounded-full text-gray-500 hover:bg-zinc-100 dark:text-gray-400 dark:hover:bg-zinc-800 dark:hover:text-gray-200"
             />
-          </div>
 
-          <button
-            onClick={handleSend}
-            disabled={disabled || !hasText}
-            className={cn(
-              'flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-full transition-all',
-              hasText
-                ? 'scale-100 bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] text-white shadow-md hover:brightness-110 active:scale-95'
-                : 'scale-95 bg-zinc-200 text-zinc-400 dark:bg-zinc-700 dark:text-zinc-500',
-              'disabled:cursor-not-allowed',
-            )}
-            aria-label="Send message"
-            type="button"
-          >
-            <Send className="h-5 w-5" />
-          </button>
+            <button
+              onClick={handleSend}
+              disabled={disabled || !hasText}
+              className={cn(
+                'grid h-11 w-11 shrink-0 place-items-center touch-manipulation rounded-full transition-colors',
+                hasText
+                  ? 'bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] text-white shadow-md hover:brightness-110'
+                  : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-700 dark:text-zinc-500',
+                'disabled:cursor-not-allowed',
+              )}
+              aria-label="Send message"
+              type="button"
+            >
+              {/* Lucide Send is optically top-left heavy; nudge to true visual center */}
+              <Send className="h-5 w-5 translate-x-px translate-y-px" strokeWidth={2} />
+            </button>
+          </div>
         </div>
 
         {contentValidationError && (

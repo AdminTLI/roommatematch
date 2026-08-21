@@ -57,6 +57,13 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
     exceptions: ['Critical safety reports may be retained longer']
   },
   {
+    dataType: 'bug_reports',
+    retentionDays: 365, // 1 year
+    description: 'Product bug reports and diagnostic snapshots (URL, device, console/network errors)',
+    legalBasis: 'Legitimate interest in diagnosing and improving platform reliability',
+    exceptions: ['May be anonymized for longer-term quality analysis']
+  },
+  {
     dataType: 'application_logs',
     retentionDays: 90, // 90 days
     description: 'Application and server logs',

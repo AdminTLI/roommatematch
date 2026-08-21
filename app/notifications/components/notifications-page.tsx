@@ -250,9 +250,11 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
   }
 
   const handleNotificationClick = async (notification: Notification) => {
-    // Mark as read if not already read
-    if (!notification.is_read) {
-      handleMarkAsRead(notification.id)
+    const isChatMessage =
+      notification.type === 'chat_message' || notification.type === 'chat_message_reaction'
+
+    if (!isChatMessage && !notification.is_read) {
+      void handleMarkAsRead(notification.id)
     }
 
     // Navigate based on notification type and metadata
@@ -271,6 +273,7 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
       case 'chat_message':
       case 'chat_message_reaction':
         router.push(await resolveChatHref(notification))
+        queryClient.invalidateQueries({ queryKey: ['notifications'] })
         break
       case 'group_invitation':
         if (metadata.chat_id) {

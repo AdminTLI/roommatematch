@@ -118,6 +118,7 @@ export async function middleware(req: NextRequest) {
     pathname === '/sitemap.xml' ||
     pathname.startsWith('/dev/email-preview') ||
     pathname.startsWith('/dev/unsubscribe-preview') ||
+    pathname.startsWith('/dev/live-notification-preview') ||
     pathname.startsWith('/unsubscribe')
 
   if (platformSettings.maintenanceMode && !maintenanceExempt) {
@@ -154,6 +155,7 @@ export async function middleware(req: NextRequest) {
     '/unsubscribe',
     '/dev/email-preview',
     '/dev/unsubscribe-preview',
+    '/dev/live-notification-preview',
   ]
   const isApiRoute = pathname.startsWith('/api')
   const method = req.method.toUpperCase()

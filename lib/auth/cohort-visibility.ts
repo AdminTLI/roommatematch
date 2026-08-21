@@ -32,8 +32,9 @@ export async function getUserType(userId: string): Promise<UserType> {
 }
 
 /**
- * Returns true only when both users have the same non-null user_type (same cohort).
- * Used to gate profile/settings visibility: only same-role users may see each other's details.
+ * Returns true when users are in the same cohort, or when either cohort is unknown.
+ * Only blocks when both have a known type and they differ (student vs professional).
+ * Used to gate profile/settings visibility across matches and chat.
  */
 export async function canViewCohortProfile(viewerUserId: string, targetUserId: string): Promise<boolean> {
   if (viewerUserId === targetUserId) return true
@@ -41,6 +42,7 @@ export async function canViewCohortProfile(viewerUserId: string, targetUserId: s
     getUserType(viewerUserId),
     getUserType(targetUserId),
   ])
-  if (viewerType == null || targetType == null) return false
+  // Legacy / incomplete profiles often lack user_type; don't block chat partners for that.
+  if (viewerType == null || targetType == null) return true
   return viewerType === targetType
 }

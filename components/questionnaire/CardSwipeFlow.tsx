@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import type { Item, SectionKey } from '@/types/questionnaire'
@@ -17,6 +17,7 @@ import { HardGateModal } from '@/components/questionnaire/HardGateModal'
 import { OnboardingChromeHeader } from '@/components/questionnaire/OnboardingChromeHeader'
 import { DealbreakerBadge } from '@/components/questionnaire/DealbreakerBadge'
 import { useAutosave } from '@/components/questionnaire/useAutosave'
+import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 
 interface CardSwipeFlowProps {
   sectionKey: SectionKey
@@ -42,12 +43,28 @@ const CARD_VARIANTS = {
 const CARD_TRANSITION = { duration: 0.22, ease: 'easeInOut' as const }
 const AUTO_ADVANCE_MS = 250
 
-function readQueryParam(key: string): string | null {
-  if (typeof window === 'undefined') return null
-  return new URLSearchParams(window.location.search).get(key)
+function initialQuestionIndex(
+  items: Item[],
+  answers: Record<string, unknown>,
+  deepLinkId: string | null
+): number {
+  if (deepLinkId) {
+    const deepIdx = items.findIndex((it) => it.id === deepLinkId)
+    if (deepIdx >= 0) return deepIdx
+  }
+  const first = items.findIndex((it) => !answers[it.id])
+  return first === -1 ? 0 : first
 }
 
-export function CardSwipeFlow({
+export function CardSwipeFlow(props: CardSwipeFlowProps) {
+  return (
+    <SuspenseWrapper>
+      <CardSwipeFlowInner {...props} />
+    </SuspenseWrapper>
+  )
+}
+
+function CardSwipeFlowInner({
   sectionKey,
   items,
   moduleIndex,
@@ -55,22 +72,35 @@ export function CardSwipeFlow({
   nextUrl,
 }: CardSwipeFlowProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
   const answers = useOnboardingStore((s) => s.sections[sectionKey]) ?? {}
   const allSections = useOnboardingStore((s) => s.sections)
 
-  const [fromReview] = useState(() => readQueryParam('from') === 'review')
-  const [returnEditMode] = useState(() => readQueryParam('mode') === 'edit')
+  const deepLinkQ = searchParams.get('q')
+  const fromReview = searchParams.get('from') === 'review'
+  const returnEditMode = searchParams.get('mode') === 'edit'
 
-  const [currentIndex, setCurrentIndex] = useState(() => {
-    const deepLinkId = readQueryParam('q')
-    if (deepLinkId) {
-      const deepIdx = items.findIndex((it) => it.id === deepLinkId)
-      if (deepIdx >= 0) return deepIdx
+  const [currentIndex, setCurrentIndex] = useState(() =>
+    initialQuestionIndex(items, answers, deepLinkQ)
+  )
+  const deepLinkAppliedRef = useRef(false)
+
+  // useSearchParams is reliable on the client; re-apply once after mount so SSR
+  // fallback (first unanswered / 0) does not stick when editing from review.
+  useEffect(() => {
+    if (deepLinkAppliedRef.current) return
+    if (!deepLinkQ) {
+      deepLinkAppliedRef.current = true
+      return
     }
-    const first = items.findIndex((it) => !answers[it.id])
-    return first === -1 ? 0 : first
-  })
+    const deepIdx = items.findIndex((it) => it.id === deepLinkQ)
+    if (deepIdx >= 0) {
+      setCurrentIndex(deepIdx)
+      deepLinkAppliedRef.current = true
+    }
+  }, [deepLinkQ, items])
+
   const [direction, setDirection] = useState(1)
   const [showCompletion, setShowCompletion] = useState(false)
   const [savedVisible, setSavedVisible] = useState(false)

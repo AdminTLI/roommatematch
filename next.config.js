@@ -2,6 +2,8 @@
 // Force Vercel rebuild - Last updated: 2025-10-21
 // Supabase: app code uses NEXT_PUBLIC_SUPABASE_URL (HTTPS API). DATABASE_URL is for direct Postgres/Supavisor (:6543) only  -  see .env.example and lib/supabase/server.ts.
 const nextConfig = {
+  // Keep Chromium/Puppeteer out of the webpack bundle (required for Vercel PDF generation).
+  serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core', 'puppeteer'],
   async redirects() {
     return [
       { source: '/features', destination: '/students', permanent: true },

@@ -75,6 +75,10 @@ export async function GET(request: NextRequest) {
         // Reports, security, privacy
         'report': { name: 'Reports', href: '/admin/reports', icon: 'Settings' },
         'reports': { name: 'Reports', href: '/admin/reports', icon: 'Settings' },
+        'bug': { name: 'Bug Reports', href: '/admin/bug-reports', icon: 'Settings' },
+        'bugs': { name: 'Bug Reports', href: '/admin/bug-reports', icon: 'Settings' },
+        'bug-reports': { name: 'Bug Reports', href: '/admin/bug-reports', icon: 'Settings' },
+        'bug report': { name: 'Bug Reports', href: '/admin/bug-reports', icon: 'Settings' },
         'security': { name: 'Security Center', href: '/admin/security', icon: 'Settings' },
         'dsar': { name: 'Privacy & DSAR', href: '/admin/dsar', icon: 'Settings' },
 
