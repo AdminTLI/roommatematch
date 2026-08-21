@@ -56,12 +56,17 @@ CREATE POLICY bug_reports_select_own
 CREATE OR REPLACE FUNCTION public.set_bug_reports_updated_at()
 RETURNS TRIGGER
 LANGUAGE plpgsql
+SET search_path = public, pg_temp
 AS $$
 BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
 $$;
+
+REVOKE ALL ON FUNCTION public.set_bug_reports_updated_at() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.set_bug_reports_updated_at() FROM anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.set_bug_reports_updated_at() TO postgres, service_role;
 
 DROP TRIGGER IF EXISTS trg_bug_reports_updated_at ON public.bug_reports;
 CREATE TRIGGER trg_bug_reports_updated_at
