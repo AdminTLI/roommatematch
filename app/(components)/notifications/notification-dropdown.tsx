@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import type { Notification } from '@/lib/notifications/types'
-import type { NotificationCounts } from '@/lib/notifications/types'
+import type { NotificationCounts, NotificationType } from '@/lib/notifications/types'
 import { NotificationsModal } from '@/components/notifications/notifications-modal'
 import { NotificationsPanel } from '@/components/notifications/notifications-panel'
 import {
@@ -298,15 +298,14 @@ export function NotificationDropdown({
       ['notifications', 'count', userId],
       (old) => {
         if (!old) return old
-        const by_type = Object.fromEntries(
-          Object.entries(old.by_type ?? {}).map(([type, stats]) => {
-            const entry =
-              typeof stats === 'object' && stats !== null && 'unread' in stats
-                ? (stats as { total: number; unread: number })
-                : { total: typeof stats === 'number' ? stats : 0, unread: 0 }
-            return [type, { ...entry, unread: 0 }]
-          })
-        ) as NotificationCounts['by_type']
+        const by_type: NotificationCounts['by_type'] = {}
+        for (const [type, stats] of Object.entries(old.by_type ?? {})) {
+          const entry =
+            typeof stats === 'object' && stats !== null && 'unread' in stats
+              ? stats
+              : { total: 0, unread: 0 }
+          by_type[type as NotificationType] = { ...entry, unread: 0 }
+        }
         return { ...old, unread: 0, by_type }
       }
     )

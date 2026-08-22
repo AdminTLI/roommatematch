@@ -43,10 +43,15 @@ export interface NotificationFilters {
   offset?: number;
 }
 
+export interface NotificationTypeCounts {
+  total: number;
+  unread: number;
+}
+
 export interface NotificationCounts {
   total: number;
   unread: number;
-  by_type: Record<NotificationType, number>;
+  by_type: Partial<Record<NotificationType, NotificationTypeCounts>>;
 }
 
 // Notification type configurations

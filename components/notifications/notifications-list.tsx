@@ -72,7 +72,7 @@ export function NotificationsList({
   const entries = useMemo(() => buildNotificationListEntries(notifications), [notifications])
   const grouped = useMemo(() => groupEntriesByTime(entries), [entries])
 
-  const byType = counts?.by_type as Record<string, { total: number; unread: number }> | undefined
+  const byType = counts?.by_type
 
   const hasUnreadInList = notifications.some((n) => !n.is_read)
   const markAllDisabled = unreadTotal === 0 && !hasUnreadInList
