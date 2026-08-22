@@ -365,7 +365,7 @@ export function NotificationItem({
               >
                 {usePhoto && url ? (
                   // eslint-disable-next-line @next/next/no-img-element -- remote Supabase URLs
-                  <img src={url} alt="" className="h-full w-full object-cover" />
+                  <img src={url} alt="" className="h-full w-full object-cover object-center" />
                 ) : usePhoto ? (
                   <span className="text-[11px] font-semibold text-violet-700 dark:text-violet-300">
                     {fallbackName.slice(0, 2).toUpperCase()}

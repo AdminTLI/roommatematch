@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,40 +10,49 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Loader2, ImageIcon, Sparkles } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
-
-const PRESET_SEEDS = [
-  'river',
-  'nova',
-  'mesa',
-  'iris',
-  'orbit',
-  'pixel',
-  'ember',
-  'mist',
-  'cedar',
-  'lotus',
-  'falcon',
-  'harbor',
-  'maple',
-  'solstice',
-  'quartz',
-  'willow',
-] as const
+import { PRESET_SEEDS } from '@/lib/avatars/preset-seeds'
 
 interface AvatarAndPhotoSettingsProps {
   profile: { avatar_id?: string | null; profile_picture_url?: string | null }
+  profilePicturePreviewUrl?: string | null
 }
 
-export function AvatarAndPhotoSettings({ profile }: AvatarAndPhotoSettingsProps) {
+export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: AvatarAndPhotoSettingsProps) {
+  const router = useRouter()
   const initial = (profile?.avatar_id && String(profile.avatar_id).trim()) || PRESET_SEEDS[0]
   const [selectedSeed, setSelectedSeed] = useState<string>(initial)
   const [savingAvatar, setSavingAvatar] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [afterRevealPreview, setAfterRevealPreview] = useState<string | null>(null)
+  const [afterRevealPreview, setAfterRevealPreview] = useState<string | null>(
+    profilePicturePreviewUrl ?? null
+  )
 
   const matchSeesUrl = programmaticAvatarUrl(selectedSeed)
+
+  useEffect(() => {
+    if (profilePicturePreviewUrl) {
+      setAfterRevealPreview(profilePicturePreviewUrl)
+    }
+  }, [profilePicturePreviewUrl])
+
+  useEffect(() => {
+    let cancelled = false
+    void fetch('/api/settings/profile/picture')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return
+        if (typeof data.preview_signed_url === 'string' && data.preview_signed_url) {
+          setAfterRevealPreview(data.preview_signed_url)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleSaveAvatar = async () => {
     setSavingAvatar(true)
@@ -59,6 +69,7 @@ export function AvatarAndPhotoSettings({ profile }: AvatarAndPhotoSettingsProps)
         throw new Error(j.error || 'Failed to save avatar')
       }
       setSuccess('Avatar updated')
+      router.refresh()
       setTimeout(() => setSuccess(null), 2500)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save')
@@ -86,6 +97,7 @@ export function AvatarAndPhotoSettings({ profile }: AvatarAndPhotoSettingsProps)
       const data = await res.json()
       setAfterRevealPreview(typeof data.preview_signed_url === 'string' ? data.preview_signed_url : null)
       setSuccess('Profile picture saved securely')
+      router.refresh()
       setTimeout(() => setSuccess(null), 3000)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Upload failed')
@@ -143,14 +155,19 @@ export function AvatarAndPhotoSettings({ profile }: AvatarAndPhotoSettingsProps)
                 )}
               </Avatar>
               <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                Upload a photo below. It is only shown to a match when you both enable profile details and profile picture sharing in chat.
+                Upload a photo below. In each chat, open the ⋯ menu → Photo sharing preferences when you are ready for your match to see it (both of you must opt in).
               </p>
             </div>
           </div>
         </div>
 
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-100">Choose your avatar seed</Label>
+          <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-100">Choose your avatar</Label>
+          {!PRESET_SEEDS.includes(selectedSeed) && (
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              Your saved avatar uses a legacy seed. Pick any option below to update it.
+            </p>
+          )}
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-8">
             {PRESET_SEEDS.map((seed) => {
               const active = seed === selectedSeed
@@ -170,7 +187,7 @@ export function AvatarAndPhotoSettings({ profile }: AvatarAndPhotoSettingsProps)
                   <img
                     src={programmaticAvatarUrl(seed)}
                     alt=""
-                    className="aspect-square w-full bg-zinc-100 dark:bg-zinc-800"
+                    className="aspect-square w-full bg-zinc-100 object-contain dark:bg-zinc-800"
                     loading="lazy"
                   />
                 </button>

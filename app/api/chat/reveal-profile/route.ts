@@ -25,8 +25,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'chat_id is required' }, { status: 400 })
   }
 
-  const revealDetails = Boolean(body.reveal_details)
-  const revealPicture = Boolean(body.reveal_picture) && revealDetails
+  const hasRevealDetails = typeof body.reveal_details === 'boolean'
+  const hasRevealPicture = typeof body.reveal_picture === 'boolean'
+
+  if (!hasRevealDetails && !hasRevealPicture) {
+    return NextResponse.json({ error: 'reveal_details or reveal_picture is required' }, { status: 400 })
+  }
 
   const { data: member } = await supabase.from('chat_members').select('chat_id').eq('chat_id', chatId).eq('user_id', user.id).maybeSingle()
 
@@ -37,18 +41,43 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient()
   await ensureProfileAccessRows(admin, chatId)
 
-  const { error: updateError } = await admin
+  const updatePayload: {
+    updated_at: string
+    details_revealed_by_requestor?: boolean
+    picture_revealed_by_requestor?: boolean
+  } = { updated_at: new Date().toISOString() }
+
+  if (hasRevealDetails) {
+    updatePayload.details_revealed_by_requestor = body.reveal_details!
+  }
+  if (hasRevealPicture) {
+    updatePayload.picture_revealed_by_requestor = body.reveal_picture!
+  }
+
+  // Prefer the authenticated client (RLS allows updating your own row).
+  const { data: updatedRows, error: userUpdateError } = await supabase
     .from('profile_access_control')
-    .update({
-      details_revealed_by_requestor: revealDetails,
-      picture_revealed_by_requestor: revealPicture,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updatePayload)
     .eq('chat_id', chatId)
     .eq('requesting_user_id', user.id)
+    .select('chat_id')
 
-  if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 })
+  if (userUpdateError) {
+    return NextResponse.json({ error: userUpdateError.message }, { status: 500 })
+  }
+
+  if (!updatedRows || updatedRows.length === 0) {
+    await ensureProfileAccessRows(admin, chatId)
+
+    const { error: adminUpdateError } = await admin
+      .from('profile_access_control')
+      .update(updatePayload)
+      .eq('chat_id', chatId)
+      .eq('requesting_user_id', user.id)
+
+    if (adminUpdateError) {
+      return NextResponse.json({ error: adminUpdateError.message }, { status: 500 })
+    }
   }
 
   return NextResponse.json({ ok: true })

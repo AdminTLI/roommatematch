@@ -17,6 +17,7 @@ import {
   MessageSquare,
   RotateCcw,
   Sparkles,
+  ImageIcon,
 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { badgeVariants } from '@/components/ui/badge'
@@ -47,8 +48,8 @@ import { ReportUserDialog } from './report-user-dialog'
 import { cn } from '@/lib/utils'
 import { queryClient, queryKeys } from '@/app/providers'
 import type { ChatPrivacySnapshot } from '@/lib/privacy/profile-access-types'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { fetchChatCompatibility } from '@/lib/chat/fetch-chat-compatibility'
 
 interface Message {
@@ -156,10 +157,9 @@ export function MessengerConversation({
   const [isMarkingUnread, setIsMarkingUnread] = useState(false)
   const [otherMembersCount, setOtherMembersCount] = useState(1)
   const [replyDraft, setReplyDraft] = useState<MessageReplyRef | null>(null)
-  const [revealDialogOpen, setRevealDialogOpen] = useState(false)
-  const [revealDetailsChoice, setRevealDetailsChoice] = useState(true)
-  const [revealPictureChoice, setRevealPictureChoice] = useState(false)
-  const [revealSubmitting, setRevealSubmitting] = useState(false)
+  const [photoSharingDialogOpen, setPhotoSharingDialogOpen] = useState(false)
+  const [sharePictureChoice, setSharePictureChoice] = useState(false)
+  const [photoSharingSubmitting, setPhotoSharingSubmitting] = useState(false)
 
   const { data: privacySnap } = useQuery<ChatPrivacySnapshot | null>({
     queryKey: queryKeys.chatPrivacy(chatId, user.id),
@@ -710,6 +710,53 @@ export function MessengerConversation({
     [chatId, user.id, supabase, markAsRead],
   )
 
+  // Reload reactions for a single message (after local toggle or realtime event)
+  const handleReactionChange = useCallback(
+    async (messageId: string) => {
+      try {
+        const { data: reactionsData, error } = await supabase
+          .from('message_reactions')
+          .select('message_id, emoji, user_id')
+          .eq('message_id', messageId)
+
+        if (error) {
+          console.warn('Failed to reload reactions:', error)
+          return
+        }
+
+        const grouped = new Map<string, string[]>()
+        for (const r of reactionsData ?? []) {
+          if (!grouped.has(r.emoji)) {
+            grouped.set(r.emoji, [])
+          }
+          grouped.get(r.emoji)!.push(r.user_id)
+        }
+
+        const reactions: MessageReaction[] = []
+        grouped.forEach((userIds, emoji) => {
+          reactions.push({
+            emoji,
+            count: userIds.length,
+            userReactions: userIds,
+          })
+        })
+
+        setMessageReactions(prev => {
+          const updated = new Map(prev)
+          if (reactions.length > 0) {
+            updated.set(messageId, reactions)
+          } else {
+            updated.delete(messageId)
+          }
+          return updated
+        })
+      } catch (err) {
+        console.warn('Failed to reload reactions:', err)
+      }
+    },
+    [supabase],
+  )
+
   // Setup real-time subscription
   useEffect(() => {
     if (!chatId) return
@@ -751,14 +798,32 @@ export function MessengerConversation({
       },
     })
 
+    const reactionSubscription: ChannelSubscription = {
+      table: 'message_reactions',
+      event: '*',
+      schema: 'public',
+    }
+    const reactionChannelKey = channelManager.getChannelKey(reactionSubscription)
+    const reactionSubId = channelManager.subscribe(reactionSubscription, {
+      onEvent: (payload) => {
+        const messageId =
+          (payload.new as { message_id?: string } | undefined)?.message_id ??
+          (payload.old as { message_id?: string } | undefined)?.message_id
+        if (!messageId) return
+        if (!messagesRef.current.some(m => m.id === messageId)) return
+        void handleReactionChange(messageId)
+      },
+    })
+
     return () => {
       if (incomingReadTimerRef.current) {
         clearTimeout(incomingReadTimerRef.current)
         incomingReadTimerRef.current = null
       }
       channelManager.unsubscribe(channelKey, subId)
+      channelManager.unsubscribe(reactionChannelKey, reactionSubId)
     }
-  }, [chatId, user.id, supabase, loadMessages, handleIncomingMessage])
+  }, [chatId, user.id, supabase, loadMessages, handleIncomingMessage, handleReactionChange])
 
   // Poll for new messages as a fallback when realtime delivery is delayed.
   useEffect(() => {
@@ -939,34 +1004,40 @@ export function MessengerConversation({
     }
   }
 
-  const handleConfirmReveal = async () => {
-    if (!revealDetailsChoice && revealPictureChoice) {
-      showErrorToast('Choose details first', 'Profile picture can only be shared together with profile details.')
-      return
-    }
-    setRevealSubmitting(true)
+  const openPhotoSharingDialog = useCallback(() => {
+    setSharePictureChoice(Boolean(privacySnap?.viewer.picture_revealed_by_requestor))
+    setPhotoSharingDialogOpen(true)
+  }, [privacySnap?.viewer.picture_revealed_by_requestor])
+
+  const handleSavePhotoSharing = async () => {
+    setPhotoSharingSubmitting(true)
     try {
       const res = await fetchWithCSRF('/api/chat/reveal-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: chatId,
-          reveal_details: revealDetailsChoice,
-          reveal_picture: revealDetailsChoice && revealPictureChoice,
+          reveal_picture: sharePictureChoice,
         }),
       })
+      if (res.status === 429) {
+        throw new Error('Too many requests. Wait a minute, then try again.')
+      }
+      if (res.status === 401) {
+        throw new Error('Your session expired. Refresh the page and sign in again.')
+      }
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err.error || 'Failed to save')
       }
-      setRevealDialogOpen(false)
+      setPhotoSharingDialogOpen(false)
       void queryClient.invalidateQueries({ queryKey: queryKeys.chatPrivacy(chatId, user.id) })
       void queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
-      showSuccessToast('Preferences saved', 'Your sharing choices are updated for this chat.')
+      showSuccessToast('Photo sharing updated', 'Your choice applies to this chat only.')
     } catch (e) {
       showErrorToast('Could not save', e instanceof Error ? e.message : 'Something went wrong')
     } finally {
-      setRevealSubmitting(false)
+      setPhotoSharingSubmitting(false)
     }
   }
 
@@ -979,47 +1050,6 @@ export function MessengerConversation({
     },
     [isGroupChat, privacySnap, partnerUserId],
   )
-
-  // Handle reaction change
-  const handleReactionChange = async (messageId: string) => {
-    try {
-      const { data: reactionsData } = await supabase
-        .from('message_reactions')
-        .select('message_id, emoji, user_id')
-        .eq('message_id', messageId)
-
-      if (reactionsData) {
-        const grouped = new Map<string, string[]>()
-        reactionsData.forEach((r: any) => {
-          if (!grouped.has(r.emoji)) {
-            grouped.set(r.emoji, [])
-          }
-          grouped.get(r.emoji)!.push(r.user_id)
-        })
-
-        const reactions: MessageReaction[] = []
-        grouped.forEach((userIds, emoji) => {
-          reactions.push({
-            emoji,
-            count: userIds.length,
-            userReactions: userIds
-          })
-        })
-
-        setMessageReactions(prev => {
-          const updated = new Map(prev)
-          if (reactions.length > 0) {
-            updated.set(messageId, reactions)
-          } else {
-            updated.delete(messageId)
-          }
-          return updated
-        })
-      }
-    } catch (err) {
-      console.warn('Failed to reload reactions:', err)
-    }
-  }
 
   // Group messages by date
   const shouldShowDateSeparator = (index: number, messageList: Message[] = messages) => {
@@ -1426,6 +1456,12 @@ export function MessengerConversation({
                   </>
                 )}
               </DropdownMenuItem>
+              {partnerUserId && !isGroupChat && (
+                <DropdownMenuItem onClick={openPhotoSharingDialog}>
+                  <ImageIcon className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  Photo sharing preferences
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleArchive} disabled={isArchiving}>
                 <Archive className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                 {isArchiving ? 'Archiving...' : 'Archive conversation'}
@@ -1473,6 +1509,28 @@ export function MessengerConversation({
           </DropdownMenu>
         </div>
       </div>
+
+      {!isGroupChat && privacySnap && !privacySnap.mutual_picture && (
+        <div
+          role="status"
+          className="flex shrink-0 items-center justify-between gap-3 border-b border-violet-200/80 bg-violet-50/90 px-3 py-2 text-sm text-violet-950 dark:border-violet-800/60 dark:bg-violet-950/30 dark:text-violet-100 lg:px-4"
+        >
+          <p className="min-w-0 text-xs leading-snug sm:text-sm">
+            {privacySnap.viewer.picture_revealed_by_requestor && !privacySnap.partner.picture_revealed_by_requestor
+              ? `Waiting for ${displayPartnerName} to opt in before photos appear.`
+              : 'Photos stay private until you both choose to share them in this chat.'}
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-8 shrink-0 border-violet-300 bg-white/80 text-violet-800 hover:bg-white dark:border-violet-700 dark:bg-violet-950/50 dark:text-violet-100 dark:hover:bg-violet-950"
+            onClick={openPhotoSharingDialog}
+          >
+            Manage
+          </Button>
+        </div>
+      )}
 
       {partnerUserId && (
         <ReportUserDialog
@@ -1545,51 +1603,70 @@ export function MessengerConversation({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={revealDialogOpen} onOpenChange={setRevealDialogOpen}>
+      <Dialog open={photoSharingDialogOpen} onOpenChange={setPhotoSharingDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Reveal profile</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <ImageIcon className="h-5 w-5 text-violet-600" aria-hidden />
+              Photo sharing
+            </DialogTitle>
             <DialogDescription>
-              Choose what you are comfortable sharing with this match. You can share details without sharing your profile picture.
+              Profile details stay visible in this chat. Photos are optional and only appear when both of you choose to share.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="reveal-details"
-                checked={revealDetailsChoice}
-                onCheckedChange={(v) => setRevealDetailsChoice(v === true)}
-              />
-              <div className="grid gap-1.5 leading-none">
-                <Label htmlFor="reveal-details" className="text-sm font-medium">
-                  Reveal my profile details
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50/80 p-3 text-sm dark:border-white/10 dark:bg-zinc-900/40">
+              <p className="font-medium text-zinc-900 dark:text-zinc-100">Status in this chat</p>
+              <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
+                <li>
+                  You:{' '}
+                  {privacySnap?.viewer.picture_revealed_by_requestor
+                    ? 'sharing your photo'
+                    : 'not sharing your photo'}
+                  {!privacySnap?.viewer_has_uploaded_picture && ' (upload one in Settings to share)'}
+                </li>
+                <li>
+                  {displayPartnerName}:{' '}
+                  {privacySnap?.partner.picture_revealed_by_requestor
+                    ? 'sharing their photo'
+                    : 'not sharing their photo yet'}
+                  {privacySnap?.partner_has_uploaded_picture === false && ' (no photo uploaded yet)'}
+                </li>
+              </ul>
+            </div>
+            <div className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-3 dark:border-white/10">
+              <div className="space-y-1">
+                <Label htmlFor="share-picture" className="text-sm font-medium">
+                  Share my profile picture
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Includes richer profile context shown in match insights (for example age and programme where available).
+                  Replaces your anonymous avatar for {displayPartnerName} once you both opt in.
                 </p>
               </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="reveal-picture"
-                checked={revealPictureChoice}
-                disabled={!revealDetailsChoice}
-                onCheckedChange={(v) => setRevealPictureChoice(v === true)}
+              <Switch
+                id="share-picture"
+                checked={sharePictureChoice}
+                onCheckedChange={setSharePictureChoice}
+                disabled={!privacySnap?.viewer_has_uploaded_picture}
               />
-              <div className="grid gap-1.5 leading-none">
-                <Label htmlFor="reveal-picture" className="text-sm font-medium">
-                  Also reveal my profile picture
-                </Label>
-                <p className="text-xs text-muted-foreground">Only applies if you have uploaded a photo in Settings.</p>
-              </div>
             </div>
+            {!privacySnap?.viewer_has_uploaded_picture && (
+              <p className="text-xs text-muted-foreground">
+                Upload a photo in Settings → Match identity &amp; photo before you can share it here.
+              </p>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" type="button" onClick={() => setRevealDialogOpen(false)} disabled={revealSubmitting}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setPhotoSharingDialogOpen(false)}
+              disabled={photoSharingSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="button" onClick={() => void handleConfirmReveal()} disabled={revealSubmitting}>
-              {revealSubmitting ? 'Saving…' : 'Confirm'}
+            <Button type="button" onClick={() => void handleSavePhotoSharing()} disabled={photoSharingSubmitting}>
+              {photoSharingSubmitting ? 'Saving…' : 'Save'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1615,25 +1692,6 @@ export function MessengerConversation({
           </div>
         ) : (
           <div className="space-y-4">
-            {privacySnap?.show_reveal_prompt && !isGroupChat && (
-              <div
-                role="status"
-                className="rounded-xl border border-violet-200 bg-violet-50/90 px-4 py-3 text-sm text-violet-950 shadow-sm dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-100"
-              >
-                <p className="font-medium">You have built enough back-and-forth to share more safely.</p>
-                <p className="mt-1 text-xs opacity-90">
-                  When you are ready, choose whether to reveal profile details and/or your profile picture. Both people choose independently; details unlock when you have both agreed to share details.
-                </p>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="mt-3 bg-violet-600 text-white hover:bg-violet-700"
-                  onClick={() => setRevealDialogOpen(true)}
-                >
-                  Reveal profile details
-                </Button>
-              </div>
-            )}
             {visibleMessages.map((message, index) => (
               <div key={message.id} id={message.id} className="scroll-mt-28">
                 {shouldShowDateSeparator(index, visibleMessages) && (

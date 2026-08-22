@@ -3,8 +3,6 @@ import { createServiceClient } from '@/lib/supabase/service'
 import type { ChatPrivacySnapshot, ProfileAccessFlags } from '@/lib/privacy/profile-access-types'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 
-const REVEAL_MESSAGE_THRESHOLD = 10
-
 function flagsFromRow(row: { details_revealed_by_requestor?: boolean; picture_revealed_by_requestor?: boolean } | null): ProfileAccessFlags {
   return {
     details_revealed_by_requestor: Boolean(row?.details_revealed_by_requestor),
@@ -129,19 +127,27 @@ export async function getChatPrivacySnapshot(
   const mutual_details =
     viewer.details_revealed_by_requestor && peerRevealFlags.details_revealed_by_requestor
   const mutual_picture =
-    mutual_details &&
-    viewer.picture_revealed_by_requestor &&
-    peerRevealFlags.picture_revealed_by_requestor
+    viewer.picture_revealed_by_requestor && peerRevealFlags.picture_revealed_by_requestor
 
   const partnerProfileResult = await admin
     .from('profiles')
-    .select('first_name, last_name, avatar_id')
+    .select('first_name, last_name, avatar_id, profile_picture_url')
     .eq('user_id', partnerUserId)
     .maybeSingle()
   const partnerProfile = partnerProfileResult.data
 
-  const { data: viewerProfile } = await admin.from('profiles').select('avatar_id').eq('user_id', viewerUserId).maybeSingle()
+  const { data: viewerProfile } = await admin
+    .from('profiles')
+    .select('avatar_id, profile_picture_url')
+    .eq('user_id', viewerUserId)
+    .maybeSingle()
   const viewer_avatar_url = programmaticAvatarUrl(viewerProfile?.avatar_id, viewerUserId)
+  const viewer_has_uploaded_picture = Boolean(
+    viewerProfile?.profile_picture_url && String(viewerProfile.profile_picture_url).trim()
+  )
+  const partner_has_uploaded_picture = Boolean(
+    partnerProfile?.profile_picture_url && String(partnerProfile.profile_picture_url).trim()
+  )
 
   let partner_picture_signed_url: string | null = null
   if (mutual_picture) {
@@ -151,17 +157,18 @@ export async function getChatPrivacySnapshot(
     partner_picture_signed_url ?? programmaticAvatarUrl(partnerProfile?.avatar_id, partnerUserId)
 
   const cnt = Number(chat.messages_exchanged_count ?? 0)
-  const show_reveal_prompt = cnt >= REVEAL_MESSAGE_THRESHOLD && !mutual_details
 
   return {
     chat_id: chatId,
     partner_user_id: partnerUserId,
     messages_exchanged_count: cnt,
-    show_reveal_prompt,
+    show_reveal_prompt: false,
     viewer,
     partner: peerRevealFlags,
     mutual_details,
     mutual_picture,
+    viewer_has_uploaded_picture,
+    partner_has_uploaded_picture,
     partner_avatar_url,
     partner_picture_signed_url,
     partner_display_name: partnerDisplayName({

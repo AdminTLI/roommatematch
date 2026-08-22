@@ -657,6 +657,25 @@ export default async function SettingsPage() {
     redirect('/auth/sign-in')
   }
 
+  const { signedProfilePictureUrl } = await import('@/lib/avatars/resolve-user-avatar')
+  const profilePicturePath =
+    (typeof profile?.profile_picture_url === 'string' && profile.profile_picture_url.trim()) ||
+    null
+  let profilePicturePreviewUrl: string | null = null
+  if (profilePicturePath) {
+    profilePicturePreviewUrl = await signedProfilePictureUrl(profilePicturePath)
+  } else {
+    const { data: profileMedia } = await serviceSupabase
+      .from('profiles')
+      .select('profile_picture_url')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    const fallbackPath = profileMedia?.profile_picture_url?.trim()
+    if (fallbackPath) {
+      profilePicturePreviewUrl = await signedProfilePictureUrl(fallbackPath)
+    }
+  }
+
   // Ensure joined data is properly structured for display
   let academicWithStudyYear = academic
   
@@ -788,6 +807,7 @@ export default async function SettingsPage() {
             progressData={progressData}
             userType={userType}
             professionalContext={professionalContext}
+            profilePicturePreviewUrl={profilePicturePreviewUrl}
           />
         </Suspense>
       </AppShell>

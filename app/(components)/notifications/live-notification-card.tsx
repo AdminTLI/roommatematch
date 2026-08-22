@@ -199,7 +199,7 @@ export function LiveNotificationCard({
         >
           {usePhoto && notification.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- remote / programmatic avatars
-            <img src={notification.avatarUrl} alt="" className="h-full w-full object-cover" />
+            <img src={notification.avatarUrl} alt="" className="h-full w-full object-cover object-center" />
           ) : (
             <TypeIcon type={notification.type} metaKind={notification.metaKind} />
           )}

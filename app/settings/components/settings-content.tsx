@@ -38,9 +38,10 @@ interface SettingsContentProps {
   }
   /** 'student' | 'professional' | null - used to show correct questionnaire routes and completion */
   userType?: 'student' | 'professional' | null
+  profilePicturePreviewUrl?: string | null
 }
 
-export function SettingsContent({ user, profile, academic, professionalContext, progressData, userType }: SettingsContentProps) {
+export function SettingsContent({ user, profile, academic, professionalContext, progressData, userType, profilePicturePreviewUrl }: SettingsContentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const openReviewOnMount = searchParams.get('review') === '1'
@@ -188,7 +189,10 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                       <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Update your personal information and preferences.</p>
                     </div>
                     <div className="mb-10">
-                      <AvatarAndPhotoSettings profile={profile || {}} />
+                      <AvatarAndPhotoSettings
+                        profile={profile || {}}
+                        profilePicturePreviewUrl={profilePicturePreviewUrl}
+                      />
                     </div>
                     <ProfileSettings
                       user={user}

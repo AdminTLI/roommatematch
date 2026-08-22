@@ -1,3 +1,4 @@
+import { resolveUserDisplayAvatarUrl } from '@/lib/avatars/resolve-user-avatar'
 import { createClient } from '@/lib/supabase/server'
 
 export interface UserProfile {
@@ -57,7 +58,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   // Get profile data
   const { data: profile } = await supabase
     .from('profiles')
-    .select('first_name, last_name')
+    .select('first_name, last_name, avatar_id, profile_picture_url')
     .eq('user_id', userId)
     .maybeSingle()
 
@@ -80,11 +81,13 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     }
   }
 
+  const avatar = await resolveUserDisplayAvatarUrl(profile, userId)
+
   return {
     id: user.id,
     email: user.email || '',
     name: displayName,
-    avatar: user.user_metadata?.avatar_url,
+    avatar,
     email_confirmed_at: user.email_confirmed_at
   }
 }

@@ -1,3 +1,6 @@
+/** Bump when avatar renderer or preset styling changes (cache-busts stored SVG URLs). */
+export const AVATAR_STYLE_VERSION = '4'
+
 /**
  * URL for the DiceBear-backed programmatic avatar (served as SVG from our API).
  * Keep seeds alphanumeric so query strings stay simple.
@@ -5,5 +8,5 @@
 export function programmaticAvatarUrl(avatarId: string | null | undefined, fallbackUserId?: string): string {
   const seedSource = (avatarId && String(avatarId).trim()) || fallbackUserId || 'anonymous'
   const seed = encodeURIComponent(seedSource.slice(0, 128))
-  return `/api/avatar/programmatic?seed=${seed}`
+  return `/api/avatar/programmatic?seed=${seed}&v=${AVATAR_STYLE_VERSION}`
 }

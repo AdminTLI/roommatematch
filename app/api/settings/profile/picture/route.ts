@@ -1,8 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { signedProfilePictureUrl } from '@/lib/avatars/resolve-user-avatar'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 
 const ALLOWED = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const MAX_BYTES = 5 * 1024 * 1024
+
+export async function GET() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const admin = createAdminClient()
+  const { data: profile, error: profileError } = await admin
+    .from('profiles')
+    .select('profile_picture_url')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (profileError) {
+    return NextResponse.json({ error: profileError.message }, { status: 500 })
+  }
+
+  const path = profile?.profile_picture_url?.trim()
+  if (!path) {
+    return NextResponse.json({ preview_signed_url: null, path: null })
+  }
+
+  const previewSignedUrl = await signedProfilePictureUrl(path)
+  return NextResponse.json({
+    preview_signed_url: previewSignedUrl,
+    path,
+  })
+}
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -63,11 +98,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: profileError.message }, { status: 500 })
   }
 
-  const { data: signed } = await admin.storage.from('secure_profile_pics').createSignedUrl(objectPath, 3600)
+  const previewSignedUrl = await signedProfilePictureUrl(objectPath)
 
   return NextResponse.json({
     ok: true,
     path: objectPath,
-    preview_signed_url: signed?.signedUrl ?? null,
+    preview_signed_url: previewSignedUrl,
   })
 }
