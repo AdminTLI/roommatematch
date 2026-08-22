@@ -711,24 +711,27 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
     }
   }, [user.id])
 
+  const chatsQueryKeys = useMemo(() => queryKeys.chats(user.id), [user.id])
+
   const { data: chats = [], isLoading } = useQuery({
-    queryKey: queryKeys.chats(user.id),
+    queryKey: chatsQueryKeys,
     queryFn: fetchChats,
-    staleTime: 10_000
+    staleTime: 10_000,
+    refetchInterval: 15_000,
   })
 
   // Keep sidebar chat list fresh when new messages arrive.
   useRealtimeInvalidation({
     table: 'messages',
     event: 'INSERT',
-    queryKeys: queryKeys.chats(user.id),
+    queryKeys: chatsQueryKeys,
     enabled: !!user.id,
   })
 
   useRealtimeInvalidation({
     table: 'message_reactions',
     event: '*',
-    queryKeys: queryKeys.chats(user.id),
+    queryKeys: chatsQueryKeys,
     enabled: !!user.id,
   })
 
@@ -764,8 +767,9 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
         activeTodayCount?: number
       }>
     },
-    staleTime: 30_000,
-    refetchInterval: 30_000,
+    staleTime: 15_000,
+    refetchInterval: 15_000,
+    refetchIntervalInBackground: true,
     enabled: !showArchived && !showMuted
   })
 

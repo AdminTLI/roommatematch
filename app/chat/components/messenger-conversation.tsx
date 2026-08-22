@@ -129,6 +129,7 @@ export function MessengerConversation({
   const isLoadingMessagesRef = useRef(false)
   const lastLoadedChatIdRef = useRef<string | null>(null)
   const incomingReadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const messagesRef = useRef<Message[]>([])
   
   // Partner user ID and action states
   const [partnerUserId, setPartnerUserId] = useState<string | null>(null)
@@ -600,6 +601,115 @@ export function MessengerConversation({
     }
   }, [chatId, markAsRead])
 
+  useEffect(() => {
+    messagesRef.current = messages
+  }, [messages])
+
+  const handleIncomingMessage = useCallback(
+    (newMsg: {
+      id: string
+      content: string
+      user_id: string
+      created_at: string
+      reply_to_id?: string | null
+    }) => {
+      let senderName = 'User'
+      const profile = profilesMapRef.current.get(newMsg.user_id)
+
+      if (profile) {
+        senderName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+      }
+
+      const isSystemGreeting = newMsg.content === "You're matched! Start your conversation 👋"
+      const isOwnMessage = newMsg.user_id === user.id
+      const readBy = isOwnMessage ? [user.id] : []
+
+      setMessages(prev => {
+        if (prev.some(msg => msg.id === newMsg.id)) {
+          return prev
+        }
+
+        let reply_to: Message['reply_to'] = undefined
+        if (newMsg.reply_to_id) {
+          const hit = prev.find(m => m.id === newMsg.reply_to_id)
+          if (hit) {
+            reply_to = {
+              id: hit.id,
+              content: hit.content,
+              sender_id: hit.sender_id,
+              sender_name: hit.sender_name,
+            }
+          }
+        }
+
+        const newMessage: Message = {
+          id: newMsg.id,
+          content: newMsg.content,
+          sender_id: newMsg.user_id,
+          sender_name: senderName,
+          sender_avatar: profile?.avatar_url || undefined,
+          created_at: newMsg.created_at,
+          read_by: readBy,
+          is_own: isOwnMessage,
+          is_system_message: isSystemGreeting,
+          reply_to,
+        }
+
+        const next = [...prev, newMessage]
+
+        if (newMsg.reply_to_id && !reply_to) {
+          void supabase
+            .from('messages')
+            .select('id, content, user_id')
+            .eq('id', newMsg.reply_to_id)
+            .maybeSingle()
+            .then(({ data: p }) => {
+              if (!p) return
+              const pr = profilesMapRef.current.get(p.user_id)
+              const sn = pr
+                ? [pr.first_name?.trim(), pr.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+                : 'User'
+              setMessages(curr =>
+                curr.map(m =>
+                  m.id === newMsg.id
+                    ? {
+                        ...m,
+                        reply_to: {
+                          id: p.id,
+                          content: p.content,
+                          sender_id: p.user_id,
+                          sender_name: sn,
+                        },
+                      }
+                    : m,
+                ),
+              )
+            })
+        }
+
+        return next
+      })
+
+      void queryClient.invalidateQueries({ queryKey: queryKeys.chatPrivacy(chatId, user.id) })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+
+      if (!userScrolledUpRef.current && scrollToBottomRef.current) {
+        scrollToBottomRef.current(true)
+      }
+
+      if (!isOwnMessage) {
+        if (incomingReadTimerRef.current) {
+          clearTimeout(incomingReadTimerRef.current)
+        }
+        incomingReadTimerRef.current = setTimeout(() => {
+          incomingReadTimerRef.current = null
+          void markAsRead()
+        }, 500)
+      }
+    },
+    [chatId, user.id, supabase, markAsRead],
+  )
+
   // Setup real-time subscription
   useEffect(() => {
     if (!chatId) return
@@ -629,107 +739,15 @@ export function MessengerConversation({
 
     const subId = channelManager.subscribe(subscription, {
       onEvent: (payload) => {
-        const newMsg = payload.new as {
-          id: string
-          content: string
-          user_id: string
-          created_at: string
-          reply_to_id?: string | null
-        }
-
-        let senderName = 'User'
-        const profile = profilesMapRef.current.get(newMsg.user_id)
-
-        if (profile) {
-          senderName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-        }
-
-        const isSystemGreeting = newMsg.content === "You're matched! Start your conversation 👋"
-        const isOwnMessage = newMsg.user_id === user.id
-        const readBy = isOwnMessage ? [user.id] : []
-
-        setMessages(prev => {
-          if (prev.some(msg => msg.id === newMsg.id)) {
-            return prev
-          }
-
-          let reply_to: Message['reply_to'] = undefined
-          if (newMsg.reply_to_id) {
-            const hit = prev.find(m => m.id === newMsg.reply_to_id)
-            if (hit) {
-              reply_to = {
-                id: hit.id,
-                content: hit.content,
-                sender_id: hit.sender_id,
-                sender_name: hit.sender_name,
-              }
-            }
-          }
-
-          const newMessage: Message = {
-            id: newMsg.id,
-            content: newMsg.content,
-            sender_id: newMsg.user_id,
-            sender_name: senderName,
-            sender_avatar: profile?.avatar_url || undefined,
-            created_at: newMsg.created_at,
-            read_by: readBy,
-            is_own: isOwnMessage,
-            is_system_message: isSystemGreeting,
-            reply_to,
-          }
-
-          const next = [...prev, newMessage]
-
-          if (newMsg.reply_to_id && !reply_to) {
-            void supabase
-              .from('messages')
-              .select('id, content, user_id')
-              .eq('id', newMsg.reply_to_id)
-              .maybeSingle()
-              .then(({ data: p }) => {
-                if (!p) return
-                const pr = profilesMapRef.current.get(p.user_id)
-                const sn = pr
-                  ? [pr.first_name?.trim(), pr.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-                  : 'User'
-                setMessages(curr =>
-                  curr.map(m =>
-                    m.id === newMsg.id
-                      ? {
-                          ...m,
-                          reply_to: {
-                            id: p.id,
-                            content: p.content,
-                            sender_id: p.user_id,
-                            sender_name: sn,
-                          },
-                        }
-                      : m,
-                  ),
-                )
-              })
-          }
-
-          return next
-        })
-
-        void queryClient.invalidateQueries({ queryKey: queryKeys.chatPrivacy(chatId, user.id) })
-
-        if (!userScrolledUpRef.current && scrollToBottomRef.current) {
-          scrollToBottomRef.current(true)
-        }
-
-        if (!isOwnMessage) {
-          if (incomingReadTimerRef.current) {
-            clearTimeout(incomingReadTimerRef.current)
-          }
-          // Wait for the message notification insert, then clear this thread only.
-          incomingReadTimerRef.current = setTimeout(() => {
-            incomingReadTimerRef.current = null
-            void markAsRead()
-          }, 500)
-        }
+        handleIncomingMessage(
+          payload.new as {
+            id: string
+            content: string
+            user_id: string
+            created_at: string
+            reply_to_id?: string | null
+          },
+        )
       },
     })
 
@@ -740,7 +758,37 @@ export function MessengerConversation({
       }
       channelManager.unsubscribe(channelKey, subId)
     }
-  }, [chatId, user.id, supabase, loadMessages, markAsRead])
+  }, [chatId, user.id, supabase, loadMessages, handleIncomingMessage])
+
+  // Poll for new messages as a fallback when realtime delivery is delayed.
+  useEffect(() => {
+    if (!chatId) return
+
+    const pollNewMessages = async () => {
+      const current = messagesRef.current
+      const lastAt = current.length > 0 ? current[current.length - 1]?.created_at : null
+      if (!lastAt) return
+
+      const { data: rows, error } = await supabase
+        .from('messages')
+        .select('id, content, user_id, created_at, reply_to_id')
+        .eq('chat_id', chatId)
+        .gt('created_at', lastAt)
+        .order('created_at', { ascending: true })
+
+      if (error || !rows?.length) return
+
+      for (const row of rows) {
+        handleIncomingMessage(row)
+      }
+    }
+
+    const interval = setInterval(() => {
+      void pollNewMessages()
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [chatId, supabase, handleIncomingMessage])
 
   // Update partner name and avatar: progressive disclosure snapshot for 1:1, else profile/props.
   useEffect(() => {

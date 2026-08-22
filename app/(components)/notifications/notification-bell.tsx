@@ -95,7 +95,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       })
 
       if (response.ok) {
-        refetchCounts()
+        await refetchCounts()
       }
     } catch (error) {
       logger.error('Failed to mark notification as read:', error)
@@ -107,7 +107,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       logger.log('[NotificationBell] Marking all notifications as read...')
       const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
       const response = await fetchWithCSRF('/api/notifications/mark-all-read', {
-        method: 'POST'
+        method: 'POST',
       })
 
       if (!response.ok) {
@@ -118,9 +118,8 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
       const result = await response.json().catch(() => ({}))
       logger.log('[NotificationBell] Mark all read success:', result)
-      
-      // Invalidate query to refetch
-      refetchCounts()
+
+      await refetchCounts()
     } catch (error) {
       logger.error('[NotificationBell] Failed to mark all notifications as read:', error)
       throw error // Re-throw so dropdown can handle it

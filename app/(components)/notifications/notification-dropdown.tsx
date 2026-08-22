@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { logger } from '@/lib/utils/logger'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
@@ -277,30 +277,98 @@ export function NotificationDropdown({
     [onClose, queryClient, removeThreadFromCache, router]
   )
 
+  type DropdownPage = { items: Notification[]; hasMore: boolean }
+
+  const applyMarkAllReadToCache = useCallback(() => {
+    queryClient.setQueriesData<InfiniteData<DropdownPage>>(
+      { queryKey: ['notifications', 'dropdown', userId] },
+      (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            items: page.items.map((item) => ({ ...item, is_read: true })),
+          })),
+        }
+      }
+    )
+
+    queryClient.setQueryData<NotificationCounts>(
+      ['notifications', 'count', userId],
+      (old) => {
+        if (!old) return old
+        const by_type = Object.fromEntries(
+          Object.entries(old.by_type ?? {}).map(([type, stats]) => {
+            const entry =
+              typeof stats === 'object' && stats !== null && 'unread' in stats
+                ? (stats as { total: number; unread: number })
+                : { total: typeof stats === 'number' ? stats : 0, unread: 0 }
+            return [type, { ...entry, unread: 0 }]
+          })
+        ) as NotificationCounts['by_type']
+        return { ...old, unread: 0, by_type }
+      }
+    )
+  }, [queryClient, userId])
+
   const handleMarkAsReadMany = useCallback(
     async (ids: string[]) => {
       if (ids.length === 0) return
       await onMarkAsRead(ids)
+      queryClient.setQueriesData<InfiniteData<DropdownPage>>(
+        { queryKey: ['notifications', 'dropdown', userId] },
+        (old) => {
+          if (!old) return old
+          const idSet = new Set(ids)
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              items: page.items.map((item) =>
+                idSet.has(item.id) ? { ...item, is_read: true } : item
+              ),
+            })),
+          }
+        }
+      )
       await refreshCounts()
       await queryClient.invalidateQueries({ queryKey: ['notifications', 'dropdown', userId] })
+      await refetch()
     },
-    [onMarkAsRead, queryClient, refreshCounts, userId]
+    [onMarkAsRead, queryClient, refreshCounts, refetch, userId]
   )
+
+  const hasUnreadInList = notifications.some((n) => !n.is_read)
 
   const handleMarkAllClick = useCallback(async () => {
     const unreadTotal = counts?.unread ?? 0
-    if (unreadTotal === 0) return
+    if (unreadTotal === 0 && !hasUnreadInList) return
+
+    applyMarkAllReadToCache()
+
     try {
       await onMarkAllAsRead()
-      await refreshCounts()
-      await queryClient.invalidateQueries({ queryKey: ['notifications', 'dropdown', userId] })
+      await Promise.all([
+        refreshCounts(),
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'dropdown', userId] }),
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'count', userId] }),
+      ])
       await refetch()
     } catch (error) {
       logger.error('[NotificationDropdown] Failed to mark all as read:', error)
-      await refetch()
-      await refreshCounts()
+      await Promise.all([refetch(), refreshCounts()])
     }
-  }, [counts?.unread, onMarkAllAsRead, queryClient, refetch, refreshCounts, userId])
+  }, [
+    applyMarkAllReadToCache,
+    counts?.unread,
+    hasUnreadInList,
+    onMarkAllAsRead,
+    queryClient,
+    refetch,
+    refreshCounts,
+    userId,
+  ])
 
   const unreadTotal = counts?.unread ?? 0
 

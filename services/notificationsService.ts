@@ -43,7 +43,7 @@ export async function fetchMyNotifications(
     search.set('type', params.type)
   }
 
-  const response = await fetch(`/api/notifications/my?${search}`)
+  const response = await fetch(`/api/notifications/my?${search}`, { cache: 'no-store' })
   if (!response.ok) {
     throw new Error('Failed to fetch notifications')
   }
@@ -54,7 +54,7 @@ export async function fetchMyNotifications(
 }
 
 export async function fetchNotificationCounts(): Promise<NotificationCounts> {
-  const response = await fetch('/api/notifications/count')
+  const response = await fetch('/api/notifications/count', { cache: 'no-store' })
   if (!response.ok) {
     throw new Error('Failed to fetch notification counts')
   }

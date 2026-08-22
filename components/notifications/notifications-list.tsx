@@ -74,7 +74,8 @@ export function NotificationsList({
 
   const byType = counts?.by_type as Record<string, { total: number; unread: number }> | undefined
 
-  const markAllDisabled = unreadTotal === 0
+  const hasUnreadInList = notifications.some((n) => !n.is_read)
+  const markAllDisabled = unreadTotal === 0 && !hasUnreadInList
   const isMobile = layout === 'modal'
 
   return (
@@ -110,7 +111,7 @@ export function NotificationsList({
         </div>
 
         <div
-          className="flex w-full gap-1 rounded-full bg-zinc-100/80 p-1 dark:bg-slate-800/55"
+          className="flex w-full gap-1 overflow-x-auto rounded-full bg-zinc-100/80 p-1 [-ms-overflow-style:none] [scrollbar-width:none] dark:bg-slate-800/55 [&::-webkit-scrollbar]:hidden"
           role="tablist"
           aria-label="Notification categories"
         >
@@ -126,14 +127,14 @@ export function NotificationsList({
                 aria-selected={active}
                 onClick={() => onCategoryChange(cat)}
                 className={cn(
-                  'flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full px-1.5 text-[11px] font-semibold transition-colors sm:text-xs',
+                  'flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2.5 text-[11px] font-semibold transition-colors sm:px-3 sm:text-xs',
                   isMobile ? 'min-h-[40px] py-2' : 'min-h-[34px] py-1.5',
                   active
                     ? 'bg-gradient-to-br from-violet-600 to-purple-600 text-white shadow-[0_4px_14px_rgba(124,58,237,0.35)]'
                     : 'bg-transparent text-zinc-600 hover:bg-white/70 dark:text-slate-300 dark:hover:bg-white/10'
                 )}
               >
-                <span className="truncate">{CATEGORY_LABEL[cat]}</span>
+                <span>{CATEGORY_LABEL[cat]}</span>
                 {unread > 0 && (
                   <span
                     className={cn(

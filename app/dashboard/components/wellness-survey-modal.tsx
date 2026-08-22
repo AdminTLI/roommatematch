@@ -1,19 +1,26 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from '@/components/ui/dialog'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { HeartPulse, Loader2, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-onboarding',
+  display: 'swap',
+})
 
 type TriggerType = 'day_14' | 'day_30' | null
 
@@ -69,6 +76,18 @@ function markSurveyCompletedLocally(trigger: TriggerType) {
     // Ignore storage errors (e.g., private mode)
   }
 }
+
+const radioItemClass =
+  'size-[18px] border-slate-300 text-[#4F46E5] focus-visible:ring-[#4F46E5]/30 dark:border-slate-500 dark:text-indigo-400 dark:focus-visible:ring-indigo-400/30'
+
+const questionBlockClass =
+  'space-y-3 rounded-2xl bg-slate-50 px-3.5 py-3.5 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/80'
+
+const questionLabelClass =
+  'text-xs font-semibold leading-snug text-[#334155] dark:text-slate-300'
+
+const optionLabelClass =
+  'cursor-pointer text-sm font-medium text-slate-600 dark:text-slate-300'
 
 export function WellnessSurveyModal() {
   const [isOpen, setIsOpen] = useState(false)
@@ -151,8 +170,6 @@ export function WellnessSurveyModal() {
         }),
       })
 
-      // If the backend reports this survey was already submitted, treat it as completed
-      // so the modal does not keep reappearing.
       if (!res.ok && res.status === 409) {
         skipSnoozeOnNextClose.current = true
         markSurveyCompletedLocally(trigger)
@@ -190,138 +207,165 @@ export function WellnessSurveyModal() {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="max-w-lg sm:max-w-xl p-6 sm:p-7 md:p-8 rounded-3xl gap-0"
+        className={cn(
+          plusJakarta.variable,
+          'font-[family-name:var(--font-onboarding)] antialiased',
+          'max-w-md gap-0 overflow-hidden rounded-2xl border-0 bg-white p-0',
+          'shadow-[0_10px_40px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-200/80',
+          'dark:bg-slate-800 dark:shadow-black/50 dark:ring-slate-700',
+          '[&>button]:hidden',
+        )}
         aria-describedby="wellness-description"
       >
-        <DialogHeader className="space-y-2 text-left pb-6">
-          <DialogTitle className="text-xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">
-            Quick wellness check
-          </DialogTitle>
-          <DialogDescription
-            id="wellness-description"
-            className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed"
-          >
-            Help us understand how Domu Match is working for you. This takes a few seconds.
-          </DialogDescription>
-        </DialogHeader>
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+          <div className="absolute -left-16 -top-16 h-36 w-36 rounded-full bg-indigo-200/30 blur-3xl dark:bg-indigo-500/15" />
+          <div className="absolute -bottom-14 -right-12 h-32 w-32 rounded-full bg-indigo-100/40 blur-3xl dark:bg-indigo-400/10" />
+        </div>
 
-        <div className="space-y-6 sm:space-y-7">
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 space-y-4">
-            <Label
-              htmlFor="housing-q"
-              className="text-base font-medium text-zinc-900 dark:text-zinc-100 leading-snug block"
-            >
-              Have you found housing yet?
-            </Label>
-            <RadioGroup
-              id="housing-q"
-              value={foundHousing ?? ''}
-              onValueChange={(v) => {
-                setFoundHousing(v as 'yes' | 'no')
-                if (v === 'no') setFoundWithMatch(undefined)
-              }}
-              className="flex flex-wrap gap-3 sm:gap-6"
-            >
-              <div className="flex items-center gap-3">
-                <RadioGroupItem value="yes" id="housing-yes" />
-                <Label htmlFor="housing-yes" className="text-sm text-zinc-600 dark:text-zinc-300 font-normal cursor-pointer leading-tight">
-                  Yes
-                </Label>
+        <div className="relative z-10">
+          <DialogHeader className="border-b border-slate-100 px-5 py-4 text-left dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#4F46E5] ring-1 ring-indigo-200/80 dark:bg-indigo-950 dark:text-indigo-300 dark:ring-indigo-800/80">
+                <HeartPulse className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  Quick check-in
+                </p>
+                <DialogTitle className="text-base font-extrabold leading-tight tracking-tight text-[#0F172A] dark:text-slate-50">
+                  Quick wellness check
+                </DialogTitle>
               </div>
-              <div className="flex items-center gap-3">
-                <RadioGroupItem value="no" id="housing-no" />
-                <Label htmlFor="housing-no" className="text-sm text-zinc-600 dark:text-zinc-300 font-normal cursor-pointer leading-tight">
-                  No
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          {foundHousing === 'yes' && (
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 space-y-4">
-              <Label
-                htmlFor="match-q"
-                className="text-base font-medium text-zinc-900 dark:text-zinc-100 leading-snug block"
+              <DialogClose
+                type="button"
+                aria-label="Close wellness check"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-[#0F172A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50 dark:focus-visible:ring-indigo-400/30"
               >
-                Did you find housing with someone you matched with on Domu Match?
+                <X className="h-4 w-4" strokeWidth={2.25} />
+              </DialogClose>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 px-5 py-4">
+            <DialogDescription
+              id="wellness-description"
+              className="text-left text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300"
+            >
+              Help us understand how Domu Match is working for you. This takes a few seconds.
+            </DialogDescription>
+
+            <div className={questionBlockClass}>
+              <Label htmlFor="housing-q" className={cn(questionLabelClass, 'block')}>
+                Have you found housing yet?
               </Label>
               <RadioGroup
-                id="match-q"
-                value={foundWithMatch ?? ''}
-                onValueChange={(v) => setFoundWithMatch(v as 'yes' | 'no')}
-                className="flex flex-wrap gap-3 sm:gap-6"
+                id="housing-q"
+                value={foundHousing ?? ''}
+                onValueChange={(v) => {
+                  setFoundHousing(v as 'yes' | 'no')
+                  if (v === 'no') setFoundWithMatch(undefined)
+                }}
+                className="flex flex-wrap gap-4"
               >
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="yes" id="match-yes" />
-                  <Label htmlFor="match-yes" className="text-sm text-zinc-600 dark:text-zinc-300 font-normal cursor-pointer leading-tight">
+                <div className="flex items-center gap-2.5">
+                  <RadioGroupItem value="yes" id="housing-yes" className={radioItemClass} />
+                  <Label htmlFor="housing-yes" className={optionLabelClass}>
                     Yes
                   </Label>
                 </div>
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="no" id="match-no" />
-                  <Label htmlFor="match-no" className="text-sm text-zinc-600 dark:text-zinc-300 font-normal cursor-pointer leading-tight">
+                <div className="flex items-center gap-2.5">
+                  <RadioGroupItem value="no" id="housing-no" className={radioItemClass} />
+                  <Label htmlFor="housing-no" className={optionLabelClass}>
                     No
                   </Label>
                 </div>
               </RadioGroup>
             </div>
-          )}
 
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 space-y-4">
-            <Label
-              htmlFor="stress-q"
-              className="text-base font-medium text-zinc-900 dark:text-zinc-100 leading-snug block"
-            >
-              Did using Domu Match help reduce your stress during the housing search process?
-            </Label>
-            <RadioGroup
-              id="stress-q"
-              value={reducedStress ?? ''}
-              onValueChange={(v) => setReducedStress(v as 'yes' | 'no')}
-              className="flex gap-6"
-            >
-              <div className="flex items-center gap-3">
-                <RadioGroupItem value="yes" id="stress-yes" />
-                <Label htmlFor="stress-yes" className="text-sm text-zinc-600 dark:text-zinc-300 font-normal cursor-pointer leading-tight">
-                  Yes
+            {foundHousing === 'yes' && (
+              <div className={questionBlockClass}>
+                <Label htmlFor="match-q" className={cn(questionLabelClass, 'block')}>
+                  Did you find housing with someone you matched with on Domu Match?
                 </Label>
+                <RadioGroup
+                  id="match-q"
+                  value={foundWithMatch ?? ''}
+                  onValueChange={(v) => setFoundWithMatch(v as 'yes' | 'no')}
+                  className="flex flex-wrap gap-4"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <RadioGroupItem value="yes" id="match-yes" className={radioItemClass} />
+                    <Label htmlFor="match-yes" className={optionLabelClass}>
+                      Yes
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <RadioGroupItem value="no" id="match-no" className={radioItemClass} />
+                    <Label htmlFor="match-no" className={optionLabelClass}>
+                      No
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
-              <div className="flex items-center gap-3">
-                <RadioGroupItem value="no" id="stress-no" />
-                <Label htmlFor="stress-no" className="text-sm text-zinc-600 dark:text-zinc-300 font-normal cursor-pointer leading-tight">
-                  No
-                </Label>
-              </div>
-            </RadioGroup>
+            )}
+
+            <div className={questionBlockClass}>
+              <Label htmlFor="stress-q" className={cn(questionLabelClass, 'block')}>
+                Did using Domu Match help reduce your stress during the housing search process?
+              </Label>
+              <RadioGroup
+                id="stress-q"
+                value={reducedStress ?? ''}
+                onValueChange={(v) => setReducedStress(v as 'yes' | 'no')}
+                className="flex flex-wrap gap-4"
+              >
+                <div className="flex items-center gap-2.5">
+                  <RadioGroupItem value="yes" id="stress-yes" className={radioItemClass} />
+                  <Label htmlFor="stress-yes" className={optionLabelClass}>
+                    Yes
+                  </Label>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <RadioGroupItem value="no" id="stress-no" className={radioItemClass} />
+                  <Label htmlFor="stress-no" className={optionLabelClass}>
+                    No
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 border-t border-slate-100 px-5 py-4 dark:border-slate-700">
+            <button
+              type="button"
+              onClick={() => handleOpenChange(false)}
+              disabled={submitting}
+              className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700"
+            >
+              Skip
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!canSubmit || submitting}
+              className={cn(
+                'inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
+                canSubmit && !submitting
+                  ? 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                  : 'cursor-not-allowed bg-[#4F46E5]/40 dark:bg-indigo-500/40',
+              )}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  Submitting…
+                </>
+              ) : (
+                'Submit'
+              )}
+            </button>
           </div>
         </div>
-
-        <DialogFooter className="flex items-center justify-end gap-3 pt-8 mt-2">
-          <Button
-            variant="outline"
-            type="button"
-            onClick={() => handleOpenChange(false)}
-            disabled={submitting}
-            className="rounded-xl"
-          >
-            Skip
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!canSubmit || submitting}
-            className="rounded-xl"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting…
-              </>
-            ) : (
-              'Submit'
-            )}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

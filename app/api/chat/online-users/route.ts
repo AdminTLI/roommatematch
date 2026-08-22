@@ -110,26 +110,27 @@ export async function GET(request: NextRequest) {
     startOfToday.setHours(0, 0, 0, 0)
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000)
 
-    const { data: recentMessages, error: messagesError } = await admin
-      .from('messages')
-      .select('user_id, created_at')
-      .in('user_id', allowedPartnerIds)
-      .gte('created_at', startOfToday.toISOString())
-      .neq('content', "You're matched! Start your conversation 👋")
+    const { data: activityRows, error: activityError } = await admin
+      .from('users')
+      .select('id, last_activity_at')
+      .in('id', allowedPartnerIds)
+      .gte('last_activity_at', threeHoursAgo.toISOString())
 
-    if (messagesError) {
-      safeLogger.error('Failed to fetch recent messages', messagesError)
+    if (activityError) {
+      safeLogger.error('Failed to fetch user activity', activityError)
       return NextResponse.json({ users: [], activeTodayCount: 0 })
     }
 
     const latestByUser = new Map<string, Date>()
-    for (const row of recentMessages || []) {
-      const ts = new Date(row.created_at)
-      const prev = latestByUser.get(row.user_id)
-      if (!prev || ts > prev) latestByUser.set(row.user_id, ts)
+    let activeTodayCount = 0
+    for (const row of activityRows || []) {
+      if (!row.last_activity_at) continue
+      const at = new Date(row.last_activity_at)
+      latestByUser.set(row.id, at)
+      if (at >= startOfToday) {
+        activeTodayCount++
+      }
     }
-
-    const activeTodayCount = latestByUser.size
 
     const presenceRows: { id: string; tier: PresenceTier; at: Date }[] = []
     for (const [id, at] of latestByUser) {
