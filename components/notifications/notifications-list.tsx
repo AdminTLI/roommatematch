@@ -111,7 +111,7 @@ export function NotificationsList({
         </div>
 
         <div
-          className="flex w-full gap-1 overflow-x-auto rounded-full bg-zinc-100/80 p-1 [-ms-overflow-style:none] [scrollbar-width:none] dark:bg-slate-800/55 [&::-webkit-scrollbar]:hidden"
+          className="flex w-full gap-0.5 rounded-full bg-zinc-100/80 p-1 dark:bg-slate-800/55"
           role="tablist"
           aria-label="Notification categories"
         >
@@ -127,7 +127,7 @@ export function NotificationsList({
                 aria-selected={active}
                 onClick={() => onCategoryChange(cat)}
                 className={cn(
-                  'flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2.5 text-[11px] font-semibold transition-colors sm:px-3 sm:text-xs',
+                  'flex min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2 text-[11px] font-semibold transition-colors sm:px-2.5 sm:text-xs',
                   isMobile ? 'min-h-[40px] py-2' : 'min-h-[34px] py-1.5',
                   active
                     ? 'bg-gradient-to-br from-violet-600 to-purple-600 text-white shadow-[0_4px_14px_rgba(124,58,237,0.35)]'

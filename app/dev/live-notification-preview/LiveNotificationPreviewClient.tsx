@@ -26,6 +26,14 @@ const SAMPLES: LiveNotificationCardModel[] = [
     avatarUrl: '/api/avatar/programmatic?seed=alex-rivera',
   },
   {
+    id: 'match-accepted-1',
+    type: 'match_accepted',
+    title: 'Match Accepted!',
+    message: 'Alex accepted your match request.',
+    eyebrow: 'Match Accepted',
+    createdAtLabel: 'Just now',
+  },
+  {
     id: 'match-1',
     type: 'match_confirmed',
     title: 'You & Sam connected!',

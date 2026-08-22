@@ -10,6 +10,7 @@ import { logger } from '@/lib/utils/logger'
 import { cn } from '@/lib/utils'
 import { queryKeys } from '@/app/query-keys'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
+import { shouldSuppressNotificationInvalidate } from '@/lib/notifications/invalidate-suppress'
 import { Bell } from 'lucide-react'
 
 interface NotificationBellProps {
@@ -47,6 +48,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     filter: `user_id=eq.${userId}`,
     queryKeys: ['notifications', 'count', userId],
     enabled: !!userId,
+    shouldInvalidate: () => !shouldSuppressNotificationInvalidate(),
   })
 
   useEffect(() => {
@@ -112,7 +114,11 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        logger.error('[NotificationBell] Mark all read failed:', response.status, errorData)
+        logger.error(
+          '[NotificationBell] Mark all read failed',
+          new Error(`HTTP ${response.status}`),
+          { errorData }
+        )
         throw new Error(`Failed to mark all as read: ${response.status}`)
       }
 

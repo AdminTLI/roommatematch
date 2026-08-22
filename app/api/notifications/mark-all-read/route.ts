@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { safeLogger } from '@/lib/utils/logger';
 
 export async function POST(request: NextRequest) {
@@ -11,18 +11,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Mark all user's notifications as read (admin client avoids RLS gaps on bulk UPDATE)
     safeLogger.debug('[mark-all-read] Marking all notifications as read for user:', user.id);
-    const admin = createAdminClient();
     const now = new Date().toISOString();
-    const { data, error } = await admin
+    const { data, error } = await supabase
       .from('notifications')
       .update({
         is_read: true,
         updated_at: now,
       })
       .eq('user_id', user.id)
-      .or('is_read.eq.false,is_read.is.null')
+      .eq('is_read', false)
       .select('id');
 
     if (error) {

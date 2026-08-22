@@ -9,6 +9,7 @@ import { AppContext } from '@/app/app-context'
 import { queryClient } from '@/app/query-client'
 import { en } from '@/app/(i18n)/en'
 import { CookieConsentBanner } from '@/components/privacy/cookie-consent-banner'
+import { AppToaster } from '@/components/app/app-toaster'
 
 interface CoreProvidersProps {
   children: React.ReactNode
@@ -84,6 +85,7 @@ export function CoreProviders({ children }: CoreProvidersProps) {
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <AppContext.Provider value={value}>{children}</AppContext.Provider>
         <CookieConsentBanner />
+        <AppToaster />
       </ThemeProvider>
     </QueryClientProvider>
   )

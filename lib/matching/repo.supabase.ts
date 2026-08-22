@@ -782,7 +782,39 @@ export class SupabaseMatchRepo implements MatchRepo {
     }))
   }
 
+  /** Cron/refresh suggestions may reference run_ids that were never inserted into match_runs. */
+  private async ensureMatchRunExists(
+    runId: string,
+    options: { mode: 'pairs' | 'groups'; matchCount: number },
+  ): Promise<void> {
+    const existing = await this.getMatchRun(runId)
+    if (existing) return
+
+    const supabase = await this.getSupabase()
+    const { error } = await supabase.from('match_runs').insert({
+      run_id: runId,
+      mode: options.mode,
+      cohort_filter: { source: 'auto_ensure_on_confirm' },
+      match_count: options.matchCount,
+    })
+
+    if (error) {
+      // Another request may have inserted the same run_id concurrently.
+      if (error.code === '23505') return
+      throw new Error(`Failed to ensure match run: ${error.message}`)
+    }
+  }
+
   async saveMatches(matches: MatchRecord[]): Promise<void> {
+    if (matches.length === 0) return
+
+    const runIds = [...new Set(matches.map((match) => match.runId))]
+    for (const runId of runIds) {
+      const runMatches = matches.filter((match) => match.runId === runId)
+      const mode = runMatches.some((match) => match.kind === 'group') ? 'groups' : 'pairs'
+      await this.ensureMatchRunExists(runId, { mode, matchCount: runMatches.length })
+    }
+
     const records = matches.map(match => ({
       run_id: match.runId,
       kind: match.kind,

@@ -24,6 +24,11 @@ import {
   notificationBelongsToChatThread,
   threadFromNotificationMetadata,
 } from '@/lib/notifications/chat-navigation'
+import {
+  bumpNotificationInvalidateSuppress,
+  clearNotificationInvalidateSuppress,
+  shouldSuppressNotificationInvalidate,
+} from '@/lib/notifications/invalidate-suppress'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -66,6 +71,11 @@ export function NotificationDropdown({
   const listScrollRef = useRef<HTMLDivElement>(null)
   const [category, setCategory] = useState<NotificationFilterCategory>('all')
   const [unreadOnly, setUnreadOnly] = useState(false)
+
+  const shouldInvalidateDropdown = useCallback(
+    () => !shouldSuppressNotificationInvalidate(),
+    []
+  )
 
   useEffect(() => {
     setMounted(true)
@@ -128,7 +138,7 @@ export function NotificationDropdown({
     [supabase, category, unreadOnly]
   )
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = useInfiniteQuery({
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['notifications', 'dropdown', userId, category, unreadOnly],
     queryFn: fetchPage,
     initialPageParam: 0,
@@ -145,6 +155,7 @@ export function NotificationDropdown({
     filter: `user_id=eq.${userId}`,
     queryKeys: ['notifications', 'dropdown', userId],
     enabled: isOpen && !!userId,
+    shouldInvalidate: shouldInvalidateDropdown,
     onInvalidate: () => {
       void refreshCounts()
     },
@@ -314,7 +325,10 @@ export function NotificationDropdown({
   const handleMarkAsReadMany = useCallback(
     async (ids: string[]) => {
       if (ids.length === 0) return
-      await onMarkAsRead(ids)
+
+      bumpNotificationInvalidateSuppress(3_000)
+      await queryClient.cancelQueries({ queryKey: ['notifications', 'dropdown', userId] })
+
       queryClient.setQueriesData<InfiniteData<DropdownPage>>(
         { queryKey: ['notifications', 'dropdown', userId] },
         (old) => {
@@ -331,11 +345,23 @@ export function NotificationDropdown({
           }
         }
       )
-      await refreshCounts()
-      await queryClient.invalidateQueries({ queryKey: ['notifications', 'dropdown', userId] })
-      await refetch()
+
+      try {
+        await onMarkAsRead(ids)
+        await refreshCounts()
+      } catch (error) {
+        logger.error('[NotificationDropdown] Failed to mark notifications as read:', error)
+        clearNotificationInvalidateSuppress()
+        await queryClient.invalidateQueries({ queryKey: ['notifications', 'dropdown', userId] })
+        await refreshCounts()
+      }
     },
-    [onMarkAsRead, queryClient, refreshCounts, refetch, userId]
+    [
+      onMarkAsRead,
+      queryClient,
+      refreshCounts,
+      userId,
+    ]
   )
 
   const hasUnreadInList = notifications.some((n) => !n.is_read)
@@ -344,19 +370,26 @@ export function NotificationDropdown({
     const unreadTotal = counts?.unread ?? 0
     if (unreadTotal === 0 && !hasUnreadInList) return
 
+    bumpNotificationInvalidateSuppress(10_000)
+    await queryClient.cancelQueries({ queryKey: ['notifications', 'dropdown', userId] })
     applyMarkAllReadToCache()
 
     try {
       await onMarkAllAsRead()
-      await Promise.all([
-        refreshCounts(),
-        queryClient.invalidateQueries({ queryKey: ['notifications', 'dropdown', userId] }),
-        queryClient.invalidateQueries({ queryKey: ['notifications', 'count', userId] }),
-      ])
-      await refetch()
+      applyMarkAllReadToCache()
+      await queryClient.refetchQueries({
+        queryKey: ['notifications', 'dropdown', userId],
+        type: 'active',
+      })
+      // Guard against stale in-flight fetches overwriting the optimistic read state.
+      applyMarkAllReadToCache()
+      await refreshCounts()
+      bumpNotificationInvalidateSuppress(5_000)
     } catch (error) {
       logger.error('[NotificationDropdown] Failed to mark all as read:', error)
-      await Promise.all([refetch(), refreshCounts()])
+      clearNotificationInvalidateSuppress()
+      await queryClient.invalidateQueries({ queryKey: ['notifications', 'dropdown', userId] })
+      await refreshCounts()
     }
   }, [
     applyMarkAllReadToCache,
@@ -364,7 +397,6 @@ export function NotificationDropdown({
     hasUnreadInList,
     onMarkAllAsRead,
     queryClient,
-    refetch,
     refreshCounts,
     userId,
   ])

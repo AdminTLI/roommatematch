@@ -49,6 +49,7 @@ export type LiveNotificationTone =
   | 'message'
   | 'reaction'
   | 'match'
+  | 'accepted'
   | 'mutual'
   | 'system'
   | 'alert'
@@ -81,9 +82,10 @@ function toneForType(type: Notification['type']): LiveNotificationTone {
     case 'match_confirmed':
       return 'mutual'
     case 'match_created':
-    case 'match_accepted':
     case 'group_invitation':
       return 'match'
+    case 'match_accepted':
+      return 'accepted'
     case 'safety_alert':
     case 'admin_alert':
       return 'alert'
@@ -92,25 +94,61 @@ function toneForType(type: Notification['type']): LiveNotificationTone {
   }
 }
 
-function avatarClasses(tone: LiveNotificationTone, metaKind?: string | null): string {
+function avatarClasses(
+  tone: LiveNotificationTone,
+  type: Notification['type'],
+  metaKind?: string | null
+): string {
   if (metaKind === 'user_report') {
-    return 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200'
+    return 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-200'
   }
   if (metaKind === 'user_blocked') {
-    return 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300'
+    return 'bg-red-100 text-red-700 dark:bg-red-950/70 dark:text-red-300'
+  }
+  if (type === 'match_accepted') {
+    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300'
+  }
+  if (type === 'match_created') {
+    return 'bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300'
   }
   switch (tone) {
     case 'mutual':
-      return 'bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300'
+      return 'bg-violet-100 text-violet-700 dark:bg-violet-950/70 dark:text-violet-300'
     case 'match':
-      return 'bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300'
+      return 'bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300'
+    case 'accepted':
+      return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300'
     case 'alert':
-      return 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200'
+      return 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-200'
     case 'reaction':
     case 'message':
-      return 'bg-zinc-100/90 text-violet-600 dark:bg-slate-800/80 dark:text-violet-400'
+      return 'bg-zinc-100/90 text-violet-600 dark:bg-slate-800 dark:text-violet-300'
     default:
-      return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
+      return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300'
+  }
+}
+
+function eyebrowClasses(tone: LiveNotificationTone, type: Notification['type']): string {
+  if (type === 'match_accepted') {
+    return 'text-emerald-700 dark:text-emerald-300'
+  }
+  if (type === 'match_created') {
+    return 'text-sky-700 dark:text-sky-300'
+  }
+  switch (tone) {
+    case 'mutual':
+      return 'text-violet-700 dark:text-violet-300'
+    case 'match':
+      return 'text-sky-700 dark:text-sky-300'
+    case 'accepted':
+      return 'text-emerald-700 dark:text-emerald-300'
+    case 'alert':
+      return 'text-amber-700 dark:text-amber-300'
+    case 'reaction':
+    case 'message':
+      return 'text-violet-700 dark:text-violet-300'
+    default:
+      return 'text-indigo-700 dark:text-indigo-300'
   }
 }
 
@@ -185,7 +223,7 @@ export function LiveNotificationCard({
       }}
       className={cn(
         plusJakarta.className,
-        'relative w-full cursor-pointer rounded-2xl border border-zinc-200/80 bg-white/95 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.28)] outline-none backdrop-blur-xl transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-violet-500/40 dark:border-white/10 dark:bg-slate-900/92 dark:shadow-[0_12px_36px_-10px_rgba(0,0,0,0.55)] dark:hover:bg-slate-900',
+        'live-notif-toast relative w-full cursor-pointer rounded-2xl outline-none backdrop-blur-xl focus-visible:ring-2 focus-visible:ring-violet-500/40',
         className
       )}
     >
@@ -193,7 +231,7 @@ export function LiveNotificationCard({
         <div
           className={cn(
             'flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full',
-            avatarClasses(tone, notification.metaKind)
+            avatarClasses(tone, notification.type, notification.metaKind)
           )}
           aria-hidden
         >
@@ -207,21 +245,26 @@ export function LiveNotificationCard({
 
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="flex min-w-0 items-center gap-2">
-            <p className="truncate text-[11px] font-semibold leading-normal text-violet-600 dark:text-violet-300">
+            <p
+              className={cn(
+                'truncate text-[11px] font-semibold leading-normal',
+                eyebrowClasses(tone, notification.type)
+              )}
+            >
               {eyebrow}
             </p>
             {notification.createdAtLabel ? (
-              <span className="shrink-0 text-[10px] font-medium tabular-nums leading-normal text-zinc-400 dark:text-slate-500">
+              <span className="shrink-0 text-[10px] font-medium tabular-nums leading-normal text-zinc-500 dark:text-slate-400">
                 {notification.createdAtLabel}
               </span>
             ) : null}
           </div>
 
-          <p className="truncate text-[13px] font-semibold leading-normal text-zinc-900 dark:text-white">
+          <p className="truncate text-[13px] font-semibold leading-normal text-zinc-900 dark:text-slate-50">
             {notification.title}
           </p>
           {notification.message ? (
-            <p className="line-clamp-2 text-[12px] leading-normal text-zinc-600 dark:text-slate-300">
+            <p className="line-clamp-2 text-[12px] leading-normal text-zinc-600 dark:text-slate-200">
               {notification.message}
             </p>
           ) : null}

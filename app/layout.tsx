@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import { Toaster } from 'sonner'
 import { ErrorBoundaryWrapper } from '@/components/ErrorBoundaryWrapper'
 import { RouteProviders } from '@/app/route-providers'
 import { ConditionalAnalytics } from '@/components/privacy/conditional-analytics'
@@ -63,7 +62,6 @@ export default function RootLayout({
             {children}
           </RouteProviders>
         </ErrorBoundaryWrapper>
-        <Toaster position="top-right" richColors />
         <ConditionalAnalytics />
         <GlobalRealtimeCleanupHandler />
       </body>

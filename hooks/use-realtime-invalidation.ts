@@ -22,6 +22,8 @@ export interface RealtimeInvalidationOptions {
   channelName?: string
   /** Callback function to call before invalidating cache */
   onInvalidate?: () => void
+  /** When false, skip React Query invalidation (e.g. during optimistic mark-all-read) */
+  shouldInvalidate?: () => boolean
   /** Optional raw payload handler (e.g. in-app notification popups) */
   onPayload?: (payload: { eventType?: string; new?: Record<string, unknown>; old?: Record<string, unknown> }) => void
   /** When false, skip React Query invalidation (use with onPayload only) */
@@ -53,6 +55,7 @@ export function useRealtimeInvalidation({
   channelName,
   onInvalidate,
   onPayload,
+  shouldInvalidate,
   invalidateQueries = true,
   onError,
 }: RealtimeInvalidationOptions) {
@@ -219,6 +222,12 @@ export function useRealtimeInvalidation({
 
           onPayload?.(payload)
 
+          const skipInvalidation = !(shouldInvalidate?.() ?? true)
+
+          if (skipInvalidation) {
+            return
+          }
+
           // Call optional callback before invalidation
           onInvalidate?.()
 
@@ -323,6 +332,6 @@ export function useRealtimeInvalidation({
       }
       retryAttemptsRef.current = 0
     }
-  }, [table, event, filter, enabled, channelName, onInvalidate, onPayload, invalidateQueries, onError, supabase, isDevelopment, queryKeys])
+  }, [table, event, filter, enabled, channelName, onInvalidate, onPayload, shouldInvalidate, invalidateQueries, onError, supabase, isDevelopment, queryKeys])
 }
 

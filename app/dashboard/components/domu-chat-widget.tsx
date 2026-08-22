@@ -25,17 +25,41 @@ export function DomuChatWidget() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesScrollRef = useRef<HTMLDivElement>(null)
+  const lastUserMessageRef = useRef<HTMLDivElement>(null)
+  const pendingScrollToUserRef = useRef(false)
 
   useEffect(() => {
-    if (!isOpen || activeMobileConversation) return
-    const run = () => {
-      const el = messagesScrollRef.current
-      if (!el) return
-      el.scrollTop = el.scrollHeight
+    if (!isOpen || activeMobileConversation || !pendingScrollToUserRef.current) return
+
+    const scrollLastUserMessageToTop = () => {
+      const container = messagesScrollRef.current
+      const userEl = lastUserMessageRef.current
+      if (!container || !userEl) return false
+
+      const targetScrollTop =
+        userEl.getBoundingClientRect().top -
+        container.getBoundingClientRect().top +
+        container.scrollTop
+
+      container.scrollTo({ top: Math.max(0, targetScrollTop), behavior: 'smooth' })
+      pendingScrollToUserRef.current = false
+      return true
     }
-    run()
-    const id = requestAnimationFrame(run)
-    return () => cancelAnimationFrame(id)
+
+    let retryTimer: ReturnType<typeof setTimeout> | undefined
+    const attemptScroll = () => {
+      if (!scrollLastUserMessageToTop() && pendingScrollToUserRef.current) {
+        retryTimer = setTimeout(scrollLastUserMessageToTop, 50)
+      }
+    }
+
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(attemptScroll)
+    })
+    return () => {
+      cancelAnimationFrame(id)
+      if (retryTimer) clearTimeout(retryTimer)
+    }
   }, [messages, isOpen, isLoading, activeMobileConversation])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -64,11 +88,13 @@ export function DomuChatWidget() {
       }
 
       setMessages(prev => [...prev, { role: 'assistant', text: data.reply || 'No response.' }])
+      pendingScrollToUserRef.current = true
     } catch (err) {
       setMessages(prev => [
         ...prev,
         { role: 'assistant', text: err instanceof Error ? err.message : 'Request failed.', isError: true }
       ])
+      pendingScrollToUserRef.current = true
     } finally {
       setIsLoading(false)
     }
@@ -125,9 +151,14 @@ export function DomuChatWidget() {
             {/* Messages */}
             <div ref={messagesScrollRef} className="flex-1 overflow-y-auto p-3">
               <div className="space-y-3">
-                {messages.map((msg, i) => (
+                {messages.map((msg, i) => {
+                  const isLastUserMessage =
+                    msg.role === 'user' && !messages.slice(i + 1).some((m) => m.role === 'user')
+
+                  return (
                   <motion.div
                     key={i}
+                    ref={isLastUserMessage ? lastUserMessageRef : undefined}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -183,7 +214,8 @@ export function DomuChatWidget() {
                       )}
                     </div>
                   </motion.div>
-                ))}
+                  )
+                })}
                 {isLoading && (
                   <div className="flex items-center gap-2 text-slate-500">
                     <Loader2 className="h-4 w-4 animate-spin" />
