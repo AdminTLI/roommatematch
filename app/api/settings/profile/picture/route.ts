@@ -106,3 +106,45 @@ export async function POST(request: NextRequest) {
     preview_signed_url: previewSignedUrl,
   })
 }
+
+export async function DELETE() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const admin = createAdminClient()
+  const { data: profile, error: profileError } = await admin
+    .from('profiles')
+    .select('profile_picture_url')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (profileError) {
+    return NextResponse.json({ error: profileError.message }, { status: 500 })
+  }
+
+  const path = profile?.profile_picture_url?.trim()
+  if (path) {
+    const { error: removeError } = await admin.storage.from('secure_profile_pics').remove([path])
+    if (removeError) {
+      console.warn('[profile/picture DELETE] storage remove failed:', removeError.message)
+    }
+  }
+
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ profile_picture_url: null, updated_at: new Date().toISOString() })
+    .eq('user_id', user.id)
+
+  if (updateError) {
+    return NextResponse.json({ error: updateError.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true })
+}

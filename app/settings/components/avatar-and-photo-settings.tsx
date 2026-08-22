@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Loader2, ImageIcon, Sparkles } from 'lucide-react'
+import { Loader2, ImageIcon, Sparkles, Trash2 } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 import { PRESET_SEEDS } from '@/lib/avatars/preset-seeds'
@@ -23,6 +23,7 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
   const [selectedSeed, setSelectedSeed] = useState<string>(initial)
   const [savingAvatar, setSavingAvatar] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [removingPicture, setRemovingPicture] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [afterRevealPreview, setAfterRevealPreview] = useState<string | null>(
@@ -32,9 +33,7 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
   const matchSeesUrl = programmaticAvatarUrl(selectedSeed)
 
   useEffect(() => {
-    if (profilePicturePreviewUrl) {
-      setAfterRevealPreview(profilePicturePreviewUrl)
-    }
+    setAfterRevealPreview(profilePicturePreviewUrl ?? null)
   }, [profilePicturePreviewUrl])
 
   useEffect(() => {
@@ -103,6 +102,32 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
       setError(e instanceof Error ? e.message : 'Upload failed')
     } finally {
       setUploading(false)
+    }
+  }
+
+  const hasProfilePicture =
+    Boolean(afterRevealPreview) || Boolean(profile?.profile_picture_url?.trim())
+
+  const handleRemovePicture = async () => {
+    setRemovingPicture(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      const res = await fetchWithCSRF('/api/settings/profile/picture', {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}))
+        throw new Error(j.error || 'Failed to remove profile picture')
+      }
+      setAfterRevealPreview(null)
+      setSuccess('Profile picture removed')
+      router.refresh()
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to remove profile picture')
+    } finally {
+      setRemovingPicture(false)
     }
   }
 
@@ -232,6 +257,27 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
               <Loader2 className="h-4 w-4 animate-spin" />
               Uploading…
             </p>
+          )}
+          {hasProfilePicture && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleRemovePicture()}
+              disabled={uploading || removingPicture}
+              className="rounded-xl border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300"
+            >
+              {removingPicture ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Removing…
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Remove profile picture
+                </>
+              )}
+            </Button>
           )}
         </div>
       </CardContent>
