@@ -160,6 +160,7 @@ export function MessengerConversation({
   const [photoSharingDialogOpen, setPhotoSharingDialogOpen] = useState(false)
   const [sharePictureChoice, setSharePictureChoice] = useState(false)
   const [photoSharingSubmitting, setPhotoSharingSubmitting] = useState(false)
+  const [partnerProfileDialogOpen, setPartnerProfileDialogOpen] = useState(false)
 
   const { data: privacySnap } = useQuery<ChatPrivacySnapshot | null>({
     queryKey: queryKeys.chatPrivacy(chatId, user.id),
@@ -1368,12 +1369,28 @@ export function MessengerConversation({
                 <ChevronLeft className="h-6 w-6" strokeWidth={2.25} aria-hidden />
               </Button>
             )}
-            <Avatar className="h-10 w-10 shrink-0">
-              <AvatarImage src={displayPartnerAvatar} />
-              <AvatarFallback className="bg-purple-600 text-white">
-                {displayPartnerName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            {!isGroupChat && partnerUserId ? (
+              <button
+                type="button"
+                onClick={() => setPartnerProfileDialogOpen(true)}
+                aria-label={`View ${displayPartnerName}'s profile picture`}
+                className="shrink-0 touch-manipulation rounded-full transition-opacity hover:opacity-90 active:scale-[0.98]"
+              >
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={displayPartnerAvatar} />
+                  <AvatarFallback className="bg-purple-600 text-white">
+                    {displayPartnerName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            ) : (
+              <Avatar className="h-10 w-10 shrink-0">
+                <AvatarImage src={displayPartnerAvatar} />
+                <AvatarFallback className="bg-purple-600 text-white">
+                  {displayPartnerName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            )}
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -1600,6 +1617,31 @@ export function MessengerConversation({
               {isClearing ? 'Clearing...' : 'Clear History'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={partnerProfileDialogOpen} onOpenChange={setPartnerProfileDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{displayPartnerName}</DialogTitle>
+            <DialogDescription className="sr-only">
+              Profile picture for {displayPartnerName}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-white/10 dark:bg-zinc-900/40">
+            {displayPartnerAvatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={displayPartnerAvatar}
+                alt={`${displayPartnerName}'s profile picture`}
+                className="aspect-square w-full object-cover object-center"
+              />
+            ) : (
+              <div className="flex aspect-square w-full items-center justify-center bg-purple-600 text-5xl font-semibold text-white">
+                {displayPartnerName.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/admin'
+import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(
@@ -82,7 +83,6 @@ export async function GET(
       })
     }
 
-    // Enrich messages with user info
     const enrichedMessages = messages?.map((msg: any) => {
       const profile = profilesMap.get(msg.user_id)
       const user = usersMap.get(msg.user_id)
@@ -101,6 +101,12 @@ export async function GET(
         timestamp: new Date(msg.created_at).toISOString()
       }
     }) || []
+
+    if (adminCheck.user) {
+      await logAdminAction(adminCheck.user.id, 'view_chat_messages', 'chat', chatId, {
+        message_count: enrichedMessages.length,
+      })
+    }
 
     return NextResponse.json({
       messages: enrichedMessages

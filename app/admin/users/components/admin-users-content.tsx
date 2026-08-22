@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { RefreshCw, Users, ShieldCheck, Activity } from 'lucide-react'
+import { RefreshCw, Users, ShieldCheck, Activity, Download } from 'lucide-react'
 import { useIsSuperAdmin } from '@/lib/auth/roles-client'
 import { UserDetailDialog } from './user-detail-dialog'
 import { UserActionsDropdown } from './user-actions-dropdown'
@@ -202,7 +202,13 @@ export function AdminUsersContent() {
 
   const { isSuperAdmin, isLoading: isRoleLoading } = useIsSuperAdmin()
   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'workflow'>('users')
+  const [tabsMounted, setTabsMounted] = useState(false)
   const tabsScrollRef = useRef<HTMLDivElement>(null)
+
+  // Defer Radix Tabs until after mount to avoid hydration mismatch from server/client ID differences.
+  useEffect(() => {
+    setTabsMounted(true)
+  }, [])
 
   useEffect(() => {
     const scrollEl = tabsScrollRef.current
@@ -234,94 +240,126 @@ export function AdminUsersContent() {
           </p>
         </div>
         {activeTab === 'users' && (
-          <Button
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open('/api/admin/users/export', '_blank')}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+            <Button
             onClick={handleRefresh}
             disabled={isLoading || isRefreshing}
             variant="outline"
             size="sm"
             aria-label="Refresh users"
-            className="shrink-0 h-10 w-10 p-0 sm:h-10 sm:w-auto sm:px-5 flex items-center justify-center gap-2"
+            className="h-10 w-10 p-0 sm:h-10 sm:w-auto sm:px-5 flex items-center justify-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
+          </div>
         )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-6">
-        <div
-          ref={tabsScrollRef}
-          className="-mx-6 overflow-x-auto overscroll-x-contain px-6 touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:overflow-visible sm:px-0"
-        >
-          <TabsList className="h-auto w-max justify-start gap-1 rounded-full border border-border-subtle/60 bg-bg-surface-alt/80 p-1 sm:w-auto">
-            <TabsTrigger
-              value="users"
-              className={segmentedTriggerClassName}
-            >
-              <Users className="h-4 w-4" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger
-              value="roles"
-              className={segmentedTriggerClassName}
-              disabled={isRoleLoading || !isSuperAdmin}
-            >
-              <ShieldCheck className="h-4 w-4" />
-              Role Management
-            </TabsTrigger>
-            <TabsTrigger
-              value="workflow"
-              className={segmentedTriggerClassName}
-            >
-              <Activity className="h-4 w-4" />
-              Registration Workflow
-            </TabsTrigger>
-          </TabsList>
+      {!tabsMounted ? (
+        <div className="space-y-6">
+          <div className="h-auto w-max rounded-full border border-border-subtle/60 bg-bg-surface-alt/80 p-1">
+            <div className="flex gap-1">
+              <div className={`${segmentedTriggerClassName} bg-violet-600 text-white`}>
+                <Users className="h-4 w-4" />
+                Users
+              </div>
+              <div className={`${segmentedTriggerClassName} opacity-50`}>
+                <ShieldCheck className="h-4 w-4" />
+                Role Management
+              </div>
+              <div className={`${segmentedTriggerClassName} opacity-50`}>
+                <Activity className="h-4 w-4" />
+                Registration Workflow
+              </div>
+            </div>
+          </div>
+          <div className="p-6 text-sm text-gray-600 dark:text-gray-400">Loading users...</div>
         </div>
+      ) : (
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-6">
+          <div
+            ref={tabsScrollRef}
+            className="-mx-6 overflow-x-auto overscroll-x-contain px-6 touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:overflow-visible sm:px-0"
+          >
+            <TabsList className="h-auto w-max justify-start gap-1 rounded-full border border-border-subtle/60 bg-bg-surface-alt/80 p-1 sm:w-auto">
+              <TabsTrigger
+                value="users"
+                className={segmentedTriggerClassName}
+              >
+                <Users className="h-4 w-4" />
+                Users
+              </TabsTrigger>
+              <TabsTrigger
+                value="roles"
+                className={segmentedTriggerClassName}
+                disabled={isRoleLoading || !isSuperAdmin}
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Role Management
+              </TabsTrigger>
+              <TabsTrigger
+                value="workflow"
+                className={segmentedTriggerClassName}
+              >
+                <Activity className="h-4 w-4" />
+                Registration Workflow
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-        <TabsContent value="users" className="space-y-6">
-          {isLoading ? (
-            <div className="p-6 text-sm text-gray-600 dark:text-gray-400">Loading users...</div>
-          ) : (
-            <>
-              {filters && (
-                <UserFilters
-                  filters={filters}
-                  selectedFilters={selectedFilters}
-                  onFiltersChange={setSelectedFilters}
-                />
-              )}
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Users</CardTitle>
-                  <CardDescription>
-                    Every account on the platform. Roles aren&apos;t shown here because almost
-                    every user is a Student or Young Professional - manage elevated roles in the
-                    Role Management tab.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <DataTable
-                    columns={columns}
-                    data={users}
-                    searchKey="email"
-                    searchPlaceholder="Search by email or name..."
+          <TabsContent value="users" className="space-y-6">
+            {isLoading ? (
+              <div className="p-6 text-sm text-gray-600 dark:text-gray-400">Loading users...</div>
+            ) : (
+              <>
+                {filters && (
+                  <UserFilters
+                    filters={filters}
+                    selectedFilters={selectedFilters}
+                    onFiltersChange={setSelectedFilters}
                   />
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </TabsContent>
+                )}
 
-        <TabsContent value="roles" className="space-y-6">
-          <RoleManagementPanel />
-        </TabsContent>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Users</CardTitle>
+                    <CardDescription>
+                      Every account on the platform. Roles aren&apos;t shown here because almost
+                      every user is a Student or Young Professional - manage elevated roles in the
+                      Role Management tab.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <DataTable
+                      columns={columns}
+                      data={users}
+                      searchKey="email"
+                      searchPlaceholder="Search by email or name..."
+                    />
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </TabsContent>
 
-        <TabsContent value="workflow" className="space-y-6">
-          <RegistrationWorkflowPanel />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="roles" className="space-y-6">
+            <RoleManagementPanel />
+          </TabsContent>
+
+          <TabsContent value="workflow" className="space-y-6">
+            <RegistrationWorkflowPanel />
+          </TabsContent>
+        </Tabs>
+      )}
 
       {selectedUserId && (
         <UserDetailDialog

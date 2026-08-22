@@ -16,6 +16,8 @@ import type { StudentProfile } from '@/lib/matching/answer-map'
 import { canViewCohortProfile } from '@/lib/auth/cohort-visibility'
 import { isUuidString, viewerMayRequestCompatibilityScore } from '@/lib/auth/compatibility-pair-access'
 import { filterCompatibilityPeerIds } from '@/lib/matching/compatibility-peer-access'
+import { isV2QuestionnaireComplete, type OnboardingSectionRow } from '@/lib/matching/v2-eligibility'
+import { V2_SECTION_KEYS } from '@/types/questionnaire'
 
 /** Hobby / Free tier friendly ceiling (Gemini + RPC + DB). */
 export const maxDuration = 10
@@ -190,39 +192,46 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Check if both users have vectors (required for compatibility calculation)
-    const { data: userAVector, error: errorA } = await admin
-      .from('user_vectors')
-      .select('user_id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    
-    const { data: userBVector, error: errorB } = await admin
-      .from('user_vectors')
-      .select('user_id')
-      .eq('user_id', targetUserId)
-      .maybeSingle()
+    // v2 scores read from onboarding_sections via compute_compatibility_score (not user_vectors).
+    const { data: v2SectionRows, error: v2SectionsError } = await admin
+      .from('onboarding_sections')
+      .select('user_id, section, answers')
+      .in('user_id', [user.id, targetUserId])
+      .in('section', [...V2_SECTION_KEYS])
 
-    // Debug logging
-    console.error('[Compatibility API] Vector check:', {
-      userA: { id: user.id, hasVector: !!userAVector, vectorData: userAVector, error: errorA },
-      userB: { id: targetUserId, hasVector: !!userBVector, vectorData: userBVector, error: errorB },
-      chatId
-    })
+    if (v2SectionsError) {
+      safeLogger.error('Failed to fetch v2 onboarding sections for compatibility', {
+        error: v2SectionsError,
+        userId: user.id,
+        targetUserId,
+      })
+      return NextResponse.json({ error: 'Failed to fetch questionnaire data' }, { status: 500 })
+    }
 
-    if (!userAVector || !userBVector) {
-      safeLogger.warn('Users missing vectors for compatibility calculation', {
-        user_a_has_vector: !!userAVector,
-        user_b_has_vector: !!userBVector,
+    const sectionsByUser = new Map<string, OnboardingSectionRow[]>()
+    for (const row of v2SectionRows || []) {
+      const list = sectionsByUser.get(row.user_id) || []
+      list.push({ section: row.section, answers: row.answers })
+      sectionsByUser.set(row.user_id, list)
+    }
+
+    const viewerSections = sectionsByUser.get(user.id) || []
+    const targetSections = sectionsByUser.get(targetUserId) || []
+    const viewerV2Ready = isV2QuestionnaireComplete(viewerSections)
+    const targetV2Ready = isV2QuestionnaireComplete(targetSections)
+
+    if (!viewerV2Ready || !targetV2Ready) {
+      safeLogger.warn('Users missing v2 questionnaire for compatibility calculation', {
+        viewer_v2_ready: viewerV2Ready,
+        target_v2_ready: targetV2Ready,
         user_a_id: user.id,
         user_b_id: targetUserId,
-        error_a: errorA,
-        error_b: errorB
       })
       return NextResponse.json(
-        { 
+        {
           error: 'Compatibility data not available',
-          details: 'One or both users have not completed their questionnaire. Please ensure both users have completed their profiles.'
+          details:
+            'One or both users have not completed the v2 questionnaire. Both people need all five modules saved before match insights appear.',
         },
         { status: 404 }
       )

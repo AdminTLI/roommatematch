@@ -1,5 +1,5 @@
-import { AdminContent } from './components/admin-content'
+import { AdminCommandCenter } from './components/admin-command-center'
 
-export default async function AdminPage() {
-  return <AdminContent />
+export default function AdminPage() {
+  return <AdminCommandCenter />
 }

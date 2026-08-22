@@ -88,15 +88,34 @@ function isV2Answers(answers: Record<string, any>): boolean {
   return Object.keys(answers).some((k) => /^M[1-5]_Q\d+$/.test(k))
 }
 
+function hasAnswerValue(value: unknown): boolean {
+  return (
+    value !== undefined &&
+    value !== null &&
+    value !== '' &&
+    !(Array.isArray(value) && value.length === 0)
+  )
+}
+
 /**
  * Check if a user has answered all required questions for matching (v2 only).
+ * Accepts flat maps keyed by M1_Q1 … M5_Q12 (from onboarding_sections).
  */
 export function hasCompleteResponses(answers: Record<string, any>): boolean {
-  return REQUIRED_QUESTION_KEYS_V2.every((key) => {
-    const value = answers[key]
-    return value !== undefined && value !== null && value !== '' &&
-           (Array.isArray(value) ? value.length > 0 : true)
-  })
+  return REQUIRED_QUESTION_KEYS_V2.every((key) => hasAnswerValue(answers[key]))
+}
+
+/**
+ * v2 users often store answers only in onboarding_sections (itemId keys),
+ * while legacy submit paths map to question_key names in `responses`.
+ */
+export function isEligibleForMatching(answers: Record<string, any>): boolean {
+  const hasV2ItemKeys = Object.keys(answers).some((k) => /^M[1-5]_Q\d+$/.test(k))
+  if (hasV2ItemKeys) {
+    return hasCompleteResponses(answers)
+  }
+  // Legacy flat responses cannot satisfy v2-only matching anymore.
+  return false
 }
 
 /**
@@ -128,13 +147,6 @@ export function getCompletionPercentage(answers: Record<string, any>): number {
   const total = REQUIRED_QUESTION_KEYS_V2.length
   const missing = getMissingFieldsCount(answers)
   return Math.round(((total - missing) / total) * 100)
-}
-
-/**
- * Check if user is eligible for matching (has complete responses)
- */
-export function isEligibleForMatching(answers: Record<string, any>): boolean {
-  return hasCompleteResponses(answers)
 }
 
 // Export for debugging and external use

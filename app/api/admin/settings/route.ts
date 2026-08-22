@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/auth/admin'
+import { requireAdmin, requireSuperAdmin } from '@/lib/auth/admin'
 import {
   DEFAULT_PLATFORM_SETTINGS,
   getPlatformSettings,
@@ -7,6 +7,7 @@ import {
   type PlatformSettings,
 } from '@/lib/platform-settings'
 import { logOpsEvent } from '@/lib/monitoring/ops-log'
+import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(request: NextRequest) {
@@ -31,10 +32,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const adminCheck = await requireAdmin(request, false)
+  const adminCheck = await requireSuperAdmin(request, false)
   if (!adminCheck.ok || !adminCheck.user) {
     return NextResponse.json(
-      { error: adminCheck.error || 'Admin access required' },
+      { error: adminCheck.error || 'Super admin access required' },
       { status: adminCheck.status }
     )
   }
@@ -65,6 +66,10 @@ export async function PUT(request: NextRequest) {
           maintenanceMode: saved.maintenanceMode,
           registrationEnabled: saved.registrationEnabled,
         },
+      })
+
+      await logAdminAction(adminCheck.user.id, 'update_platform_settings', 'platform_settings', null, {
+        changedKeys,
       })
     }
 

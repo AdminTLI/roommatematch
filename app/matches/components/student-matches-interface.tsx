@@ -19,6 +19,7 @@ import {
   fetchLiveCompatibilityBatch,
   type LiveCompatibilitySnapshot,
 } from '@/lib/matching/live-compatibility'
+import { generateDiscussionNotes } from '@/lib/matching/discussion-notes'
 
 /** Shown per page in the UI (desktop grid + mobile pager). API fetches in multiples of this. */
 const MATCHES_CARDS_PER_PAGE = 12
@@ -94,7 +95,7 @@ function DiscoveryCardWrapper({
     }
 
     if (compatibilityData.context_score >= 0.7) {
-      highlights.push('Similar academic background and goals')
+      highlights.push('Strong alignment on logistics and academic context')
     }
     
     // Ensure we have at least 3 highlights
@@ -135,8 +136,16 @@ function DiscoveryCardWrapper({
           harmonyScore: harmonyScore,
           contextScore: contextScore,
           compatibilityHighlights: generateHighlights(),
+          discussionNotes: generateDiscussionNotes({
+            dimensionScores: compatibilityData.dimension_scores_json,
+            gateConflicts: compatibilityData.gate_conflicts,
+            softGateOverride: compatibilityData.soft_gate_override,
+            contextScore: compatibilityData.context_score,
+          }),
           dimensionScores: compatibilityData.dimension_scores_json,
           otherUserHasIncompleteAcademic: false,
+          gateConflicts: compatibilityData.gate_conflicts,
+          softGateOverride: compatibilityData.soft_gate_override,
         }}
         onSkip={onSkip}
         onConnect={onConnect}

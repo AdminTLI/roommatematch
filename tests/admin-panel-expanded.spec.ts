@@ -5,13 +5,20 @@ test.describe('Admin Panel - Expanded Tests', () => {
     test('should require admin authentication for all admin routes', async ({ page }) => {
       const adminRoutes = [
         '/admin',
+        '/admin/people',
+        '/admin/safety',
+        '/admin/platform',
+        '/admin/insights',
+        '/admin/system',
         '/admin/users',
         '/admin/matches',
         '/admin/chats',
         '/admin/reports',
         '/admin/verifications',
         '/admin/metrics',
-        '/admin/logs'
+        '/admin/logs',
+        '/admin/audit',
+        '/admin/dsar',
       ]
 
       for (const route of adminRoutes) {

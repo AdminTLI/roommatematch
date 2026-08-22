@@ -27,6 +27,7 @@ import { isFeatureEnabled } from '@/lib/feature-flags'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useIsAdmin } from '@/lib/auth/roles-client'
+import { ADMIN_HUBS, ADMIN_HUB_ROUTE_MAP, resolveAdminHub } from '@/lib/admin/navigation'
 
 interface SidebarProps {
   user: {
@@ -51,17 +52,6 @@ const allNavigationItems = [
   { name: 'Admin', href: '/admin', icon: BarChart3, featureFlag: null },
 ]
 
-const adminNavigationItems = [
-  { name: 'Dashboard', href: '/admin', icon: BarChart3 },
-  { name: 'Users', href: '/admin/users', icon: Users },
-  { name: 'Matches', href: '/admin/matches', icon: BarChart3 },
-  { name: 'Chats', href: '/admin/chats', icon: MessageCircle },
-  { name: 'Reports', href: '/admin/reports', icon: Shield },
-  { name: 'Bug Reports', href: '/admin/bug-reports', icon: Bug },
-  { name: 'Verifications', href: '/admin/verifications', icon: Shield },
-  { name: 'Metrics', href: '/admin/metrics', icon: BarChart3 },
-  { name: 'Logs', href: '/admin/logs', icon: FileText },
-]
 
 // MVP hidden features - kept in code but hidden from UI
 const MVP_HIDDEN_ITEMS = ['Agreements', 'Reputation', 'Video Intros']
@@ -211,24 +201,31 @@ export function Sidebar({ user, onClose }: SidebarProps) {
               </Link>
             </div>
             <div className="space-y-2">
-              {adminNavigationItems.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-                const Icon = item.icon
+              {ADMIN_HUBS.map((hub) => {
+                const isActive =
+                  resolveAdminHub(pathname) === hub.id ||
+                  ADMIN_HUB_ROUTE_MAP[hub.id].some(
+                    (route) =>
+                      pathname === route.split('?')[0] ||
+                      (route.split('?')[0] !== '/admin' &&
+                        pathname?.startsWith(`${route.split('?')[0]}/`))
+                  )
+                const Icon = hub.icon
                 const showHealthDot =
-                  opsHealthWarning && (item.href === '/admin' || item.href === '/admin/logs')
+                  opsHealthWarning && (hub.id === 'overview' || hub.id === 'system')
                 return (
-                  <Link key={item.name} href={item.href} onClick={onClose}>
+                  <Link key={hub.id} href={hub.href} onClick={onClose}>
                     <Button
                       variant="ghost"
                       className={cn(
-                        "w-full justify-start gap-3 h-11 px-3 transition-colors",
-                        isActive 
-                          ? "bg-semantic-accent-soft text-semantic-accent dark:bg-semantic-accent-soft dark:text-semantic-accent border-l-4 border-semantic-accent rounded-l-none hover:bg-semantic-accent-soft/80 hover:text-semantic-accent" 
-                          : "text-text-secondary hover:bg-bg-surface-alt hover:text-text-primary"
+                        'w-full justify-start gap-3 h-11 px-3 transition-colors',
+                        isActive
+                          ? 'bg-semantic-accent-soft text-semantic-accent dark:bg-semantic-accent-soft dark:text-semantic-accent border-l-4 border-semantic-accent rounded-l-none hover:bg-semantic-accent-soft/80 hover:text-semantic-accent'
+                          : 'text-text-secondary hover:bg-bg-surface-alt hover:text-text-primary'
                       )}
                     >
                       <Icon className="w-5 h-5" />
-                      <span className="font-medium flex-1 text-left">{item.name}</span>
+                      <span className="font-medium flex-1 text-left">{hub.label}</span>
                       {showHealthDot && (
                         <span
                           className="w-2 h-2 rounded-full bg-amber-500 shrink-0"

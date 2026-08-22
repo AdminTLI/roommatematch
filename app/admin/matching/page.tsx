@@ -14,6 +14,7 @@ import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Users, Target, Lock, CheckCircle } from 'lucide-react'
 import type { MatchRecord } from '@/lib/matching/repo'
+import { AdminPageWrapper } from '../components/admin-page-wrapper'
 
 interface CohortFilter {
   campusCity?: string
@@ -135,12 +136,13 @@ export default function AdminMatchingPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <AdminPageWrapper
+      hub="platform"
+      title="Matching Controls"
+      description="Run matching algorithm and lock cohort results (super admin only)."
+    >
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Matching Algorithm</h1>
-          <p className="text-muted-foreground">Run matching algorithm and manage matches</p>
-        </div>
         <Badge variant="outline" className="text-sm">
           <Users className="w-4 h-4 mr-1" />
           {matches.length} matches
@@ -422,5 +424,6 @@ export default function AdminMatchingPage() {
         </Card>
       )}
     </div>
+    </AdminPageWrapper>
   )
 }

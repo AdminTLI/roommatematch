@@ -1,7 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import { getUserRole } from '@/lib/auth/roles'
-import { AnswerDistributionClient } from './AnswerDistributionClient'
 
 export default async function AdminAnswerDistributionPage() {
   const supabase = await createClient()
@@ -12,7 +11,9 @@ export default async function AdminAnswerDistributionPage() {
   if (!user) redirect('/auth/sign-in')
 
   const role = await getUserRole(user.id)
-  if (role !== 'admin') redirect('/dashboard')
+  if (role !== 'admin' && role !== 'super_admin' && role !== 'moderator' && role !== 'university_admin') {
+    redirect('/dashboard')
+  }
 
-  return <AnswerDistributionClient />
+  redirect('/admin/metrics?tab=questionnaire')
 }

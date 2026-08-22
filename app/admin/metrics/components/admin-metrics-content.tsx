@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -58,6 +59,18 @@ import {
   buildAdminAnalyticsQuery,
   type AdminAnalyticsFilters,
 } from '@/lib/admin/analytics-query'
+import {
+  parseMetricsTab,
+  getAnalyticsEndpointsForTab,
+  tabIncludesExecutive,
+  tabIncludesEngagement,
+  tabIncludesMarketplace,
+  tabIncludesFootprint,
+  tabIncludesRetention,
+  tabIsQuestionnaire,
+  type MetricsTabId,
+} from '@/lib/admin/metrics-tabs'
+import { AnswerDistributionClient } from '@/app/admin/analytics/AnswerDistributionClient'
 
 interface Metrics {
   totalUsers: number
@@ -272,6 +285,8 @@ export function AdminMetricsContent({
   initialUniversityId,
   initialUniversityName = null,
 }: AdminMetricsContentProps) {
+  const searchParams = useSearchParams()
+  const activeTab = parseMetricsTab(searchParams.get('tab'))
   const [selectedUniversityId, setSelectedUniversityId] = useState<string | null>(
     isPlatformSuper ? null : initialUniversityId
   )
@@ -317,6 +332,10 @@ export function AdminMetricsContent({
   }, [tenantUniversityId, universityOptions, initialUniversityName])
 
   const loadMetrics = useCallback(async (isRefresh = false) => {
+    if (tabIsQuestionnaire(activeTab)) {
+      setIsLoading(false)
+      return
+    }
     if (!tenantUniversityId) return
     if (isRefresh) {
       setIsRefreshing(true)
@@ -326,46 +345,20 @@ export function AdminMetricsContent({
     setExecutiveSummaryLoading(true)
     try {
       const q = analyticsQuery
-      const [
-        metricsResponse,
-        conversionFunnelResponse,
-        userLifecycleResponse,
-        securityResponse,
-        coverageResponse,
-        cohortRetentionResponse,
-        realtimeResponse,
-        trafficSourcesResponse,
-        userFlowsResponse,
-        geographicResponse,
-        wellnessResponse,
-        executiveSummaryResponse,
-        atRiskResponse,
-        mediationIndexResponse,
-        housingFrictionResponse,
-      ] = await Promise.all([
-        fetch(`/api/admin/analytics${q}`),
-        fetch(`/api/admin/analytics/conversion-funnel${q}`),
-        fetch(`/api/admin/analytics/user-lifecycle${q}`),
-        fetch(`/api/admin/analytics/security${q}`),
-        fetch(`/api/admin/analytics/coverage${q}`),
-        fetch(`/api/admin/analytics/cohort-retention${q}`),
-        fetch(`/api/admin/analytics/realtime${q}`),
-        fetch(`/api/admin/analytics/traffic-sources${q}`),
-        fetch(`/api/admin/analytics/user-flows${q}`),
-        fetch(`/api/admin/analytics/geographic${q}`),
-        fetch(`/api/admin/analytics/wellness${q}`),
-        fetch(`/api/admin/analytics/executive-summary${q}`),
-        fetch(`/api/admin/analytics/at-risk${q}`),
-        fetch(`/api/admin/analytics/mediation-index${q}`),
-        fetch(`/api/admin/analytics/housing-friction${q}`),
-      ])
+      const endpoints = getAnalyticsEndpointsForTab(activeTab)
+      const fetchJson = async (suffix: string) => {
+        const res = await fetch(`/api/admin/analytics${suffix}${q}`)
+        if (!res.ok) return null
+        return res.json()
+      }
 
-      if (metricsResponse.ok) {
-        const data = await metricsResponse.json()
-        setMetrics(data)
-      } else {
-        const errorData = await metricsResponse.json().catch(() => ({}))
-        showErrorToast(errorData.error || 'Failed to load metrics')
+      const results = await Promise.all(endpoints.map((suffix) => fetchJson(suffix)))
+      const bySuffix = Object.fromEntries(endpoints.map((suffix, i) => [suffix || 'base', results[i]]))
+
+      if (bySuffix.base) {
+        setMetrics(bySuffix.base)
+      } else if (endpoints.includes('')) {
+        showErrorToast('Failed to load metrics')
         setMetrics({
           totalUsers: 0,
           verifiedUsers: 0,
@@ -379,80 +372,24 @@ export function AdminMetricsContent({
         })
       }
 
-      if (conversionFunnelResponse.ok) {
-        const data = await conversionFunnelResponse.json()
-        setConversionFunnel(data)
-      }
-
-      if (userLifecycleResponse.ok) {
-        const data = await userLifecycleResponse.json()
-        setUserLifecycle(data)
-      }
-
-      if (securityResponse.ok) {
-        const data = await securityResponse.json()
-        setSecurity(data)
-      }
-
-      if (coverageResponse.ok) {
-        const data = await coverageResponse.json()
-        setCoverage(data)
-      }
-
-      if (cohortRetentionResponse.ok) {
-        const data = await cohortRetentionResponse.json()
-        setCohortRetention(data)
-      }
-
-      if (realtimeResponse.ok) {
-        const data = await realtimeResponse.json()
-        setRealtime(data)
-      }
-
-      if (trafficSourcesResponse.ok) {
-        const data = await trafficSourcesResponse.json()
-        setTrafficSources(data)
-      }
-
-      if (userFlowsResponse.ok) {
-        const data = await userFlowsResponse.json()
-        setUserFlows(data)
-      }
-
-      if (geographicResponse.ok) {
-        const data = await geographicResponse.json()
-        setGeographic(data)
-      }
-
-      if (wellnessResponse.ok) {
-        const data = await wellnessResponse.json()
-        setWellness(data)
-      }
-
-      if (executiveSummaryResponse.ok) {
-        const data = (await executiveSummaryResponse.json()) as ExecutiveSummaryData
-        setExecutiveSummary(data)
-      } else {
+      if (bySuffix['/conversion-funnel']) setConversionFunnel(bySuffix['/conversion-funnel'])
+      if (bySuffix['/user-lifecycle']) setUserLifecycle(bySuffix['/user-lifecycle'])
+      if (bySuffix['/security']) setSecurity(bySuffix['/security'])
+      if (bySuffix['/coverage']) setCoverage(bySuffix['/coverage'])
+      if (bySuffix['/cohort-retention']) setCohortRetention(bySuffix['/cohort-retention'])
+      if (bySuffix['/realtime']) setRealtime(bySuffix['/realtime'])
+      if (bySuffix['/traffic-sources']) setTrafficSources(bySuffix['/traffic-sources'])
+      if (bySuffix['/user-flows']) setUserFlows(bySuffix['/user-flows'])
+      if (bySuffix['/geographic']) setGeographic(bySuffix['/geographic'])
+      if (bySuffix['/wellness']) setWellness(bySuffix['/wellness'])
+      if (bySuffix['/executive-summary']) {
+        setExecutiveSummary(bySuffix['/executive-summary'] as ExecutiveSummaryData)
+      } else if (activeTab === 'executive') {
         setExecutiveSummary(null)
       }
-
-      if (atRiskResponse.ok) {
-        setAtRiskMetrics((await atRiskResponse.json()) as AtRiskMetricsData)
-      } else {
-        setAtRiskMetrics(null)
-      }
-
-      if (mediationIndexResponse.ok) {
-        setMediationIndex((await mediationIndexResponse.json()) as MediationIndexData)
-      } else {
-        setMediationIndex(null)
-      }
-
-      if (housingFrictionResponse.ok) {
-        setHousingFriction((await housingFrictionResponse.json()) as HousingFrictionData)
-      } else {
-        setHousingFriction(null)
-      }
+      if (bySuffix['/at-risk']) setAtRiskMetrics(bySuffix['/at-risk'] as AtRiskMetricsData)
+      if (bySuffix['/mediation-index']) setMediationIndex(bySuffix['/mediation-index'] as MediationIndexData)
+      if (bySuffix['/housing-friction']) setHousingFriction(bySuffix['/housing-friction'] as HousingFrictionData)
     } catch (error) {
       console.error('Failed to load metrics:', error)
       showErrorToast('Failed to load metrics')
@@ -476,7 +413,7 @@ export function AdminMetricsContent({
       setIsRefreshing(false)
       setExecutiveSummaryLoading(false)
     }
-  }, [analyticsQuery, tenantUniversityId])
+  }, [analyticsQuery, tenantUniversityId, activeTab])
 
   useEffect(() => {
     if (isPlatformSuper && !tenantUniversityId) {
@@ -501,16 +438,20 @@ export function AdminMetricsContent({
   }, [isPlatformSuper])
 
   useEffect(() => {
+    if (tabIsQuestionnaire(activeTab)) {
+      setIsLoading(false)
+      return
+    }
     if (!tenantUniversityId) {
       setIsLoading(false)
       return
     }
     void loadMetrics()
-  }, [tenantUniversityId, analyticsQuery, loadMetrics])
+  }, [tenantUniversityId, analyticsQuery, loadMetrics, activeTab])
 
-  // Auto-refresh realtime data every 30 seconds
+  // Auto-refresh realtime data every 30 seconds (engagement tab only)
   useEffect(() => {
-    if (!tenantUniversityId) return
+    if (!tenantUniversityId || !tabIncludesEngagement(activeTab)) return
     const interval = setInterval(() => {
       fetch(`/api/admin/analytics/realtime${analyticsQuery}`)
         .then((res) => res.json())
@@ -519,9 +460,13 @@ export function AdminMetricsContent({
     }, 30000)
 
     return () => clearInterval(interval)
-  }, [analyticsQuery, tenantUniversityId])
+  }, [analyticsQuery, tenantUniversityId, activeTab])
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d']
+
+  if (tabIsQuestionnaire(activeTab)) {
+    return <AnswerDistributionClient />
+  }
 
   if (tenantUniversityId && isLoading) {
     return (
@@ -627,6 +572,8 @@ export function AdminMetricsContent({
       >
         <MetricsFilterBar filters={filters} onChange={setFilters} />
 
+        {tabIncludesExecutive(activeTab) && (
+          <>
         <ExecutiveSummaryCards data={executiveSummary ?? undefined} isPending={executiveSummaryLoading} />
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
@@ -634,8 +581,11 @@ export function AdminMetricsContent({
           <MediationIndexCard data={mediationIndex} isPending={isLoading || isRefreshing} />
           <InternationalIntegrationPulseCard data={housingFriction} isPending={isLoading || isRefreshing} />
         </div>
+          </>
+        )}
       </MetricsDashboardSection>
 
+      {tabIncludesEngagement(activeTab) && (
       <MetricsDashboardSection
         variant="engagement"
         title="Live Usage, Journeys, And Technical Signals"
@@ -730,8 +680,12 @@ export function AdminMetricsContent({
         <WellbeingIndexCard analyticsQuery={analyticsQuery} />
       </div>
 
+      {tabIncludesMarketplace(activeTab) && (
+      <>
       <MarketplaceDynamicsCards analyticsQuery={analyticsQuery} />
       <Separator className="my-8" />
+      </>
+      )}
 
       {/* Verification & Safety Trust Stack */}
       <Card>
@@ -854,12 +808,16 @@ export function AdminMetricsContent({
         </CardContent>
       </Card>
 
+      {tabIncludesMarketplace(activeTab) && (
+      <>
       {/* System Trust & Algorithm Health */}
       <TrustAlgorithmCards analyticsQuery={analyticsQuery} />
 
       {/* Placement Success & NPS Micro-Survey */}
       <SuccessNpsCard analyticsQuery={analyticsQuery} />
       <IntegrationMetricsCard analyticsQuery={analyticsQuery} />
+      </>
+      )}
 
       {/* Wellness & Impact Outcomes */}
       {wellness && wellness.overall.totalResponses > 0 && (
@@ -1243,6 +1201,8 @@ export function AdminMetricsContent({
         </Card>
       )}
 
+      {tabIncludesFootprint(activeTab) && (
+      <>
       {/* Programme & University Footprint */}
       {(metrics.universityStats || metrics.programStats || metrics.studyYearDistribution) && (
         <Card>
@@ -1387,6 +1347,11 @@ export function AdminMetricsContent({
         </Card>
       )}
 
+      </>
+      )}
+
+      {tabIncludesMarketplace(activeTab) && (
+      <>
       {/* Match Activity & Growth */}
       {conversionFunnel && (
         <Card>
@@ -1523,6 +1488,9 @@ export function AdminMetricsContent({
             </div>
           </CardContent>
         </Card>
+      )}
+
+      </>
       )}
 
       {/* User Lifecycle & Engagement */}
@@ -1763,6 +1731,8 @@ export function AdminMetricsContent({
         </Card>
       )}
 
+      {tabIncludesRetention(activeTab) && (
+      <>
       {/* Programme Coverage Snapshot */}
       {coverage && (
         <Card>
@@ -2075,7 +2045,10 @@ export function AdminMetricsContent({
           </CardContent>
         </Card>
       )}
+      </>
+      )}
       </MetricsDashboardSection>
+      )}
     </div>
   )
 }

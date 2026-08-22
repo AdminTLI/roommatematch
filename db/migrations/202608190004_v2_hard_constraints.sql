@@ -31,7 +31,7 @@ BEGIN
   b_smoke := (get_v2_answer(p_b, 'M5_Q17', s_lc) ->> 'value');
   IF (a_smoke = 'true' AND b_smoke = 'false')
   OR (a_smoke = 'false' AND b_smoke = 'true') THEN
-    conflicts := conflicts || 'M5_Q17';
+    conflicts := array_append(conflicts, 'M5_Q17');
   END IF;
 
   -- ── M8_Q14: Pet gate ──────────────────────────────────────────────────────
@@ -40,7 +40,7 @@ BEGIN
   b_pet := (get_v2_answer(p_b, 'M8_Q14', s_lc) ->> 'value');
   IF (a_pet = 'pet_bringing' AND b_pet = 'pet_cannot')
   OR (a_pet = 'pet_cannot'   AND b_pet = 'pet_bringing') THEN
-    conflicts := conflicts || 'M8_Q14';
+    conflicts := array_append(conflicts, 'M8_Q14');
   END IF;
 
   -- ── M8_Q19: BRP gate ──────────────────────────────────────────────────────
@@ -60,8 +60,8 @@ BEGIN
   -- Conflict: one requires no subletting/Airbnb, the other is okay with it.
   a_airbnb := ((get_v2_answer(p_a, 'M8_Q11', s_lc)) ->> 'value')::BOOLEAN;
   b_airbnb := ((get_v2_answer(p_b, 'M8_Q11', s_lc)) ->> 'value')::BOOLEAN;
-  IF a_airbnb != b_airbnb THEN
-    conflicts := conflicts || 'M8_Q11';
+  IF a_airbnb IS NOT NULL AND b_airbnb IS NOT NULL AND a_airbnb IS DISTINCT FROM b_airbnb THEN
+    conflicts := array_append(conflicts, 'M8_Q11');
   END IF;
 
   result.gate_conflicts := conflicts;

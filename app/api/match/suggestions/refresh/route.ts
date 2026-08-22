@@ -154,24 +154,27 @@ export async function POST(request: NextRequest) {
           .from('responses')
           .select('question_key, value')
           .eq('user_id', user.id)
+
+        const { data: v2Sections } = await adminClient
+          .from('onboarding_sections')
+          .select('section, answers')
+          .eq('user_id', user.id)
+
+        const { extractV2ItemAnswers, hasAllV2Sections } = await import('@/lib/matching/v2-eligibility')
+        const sectionRows = v2Sections || []
         
-        // Build answers object from responses
+        // Build answers object from responses + v2 item IDs
         let answers: Record<string, any> = (responses || []).reduce((acc: Record<string, any>, r: any) => {
           acc[r.question_key] = r.value
           return acc
         }, {})
+        answers = { ...answers, ...extractV2ItemAnswers(sectionRows) }
         
-        // If responses are missing, try reading from onboarding_sections and transforming
+        // If responses are missing, also map legacy keys from onboarding_sections
         if (!responses || responses.length === 0) {
-          const { data: sections } = await adminClient
-            .from('onboarding_sections')
-            .select('section, answers')
-            .eq('user_id', user.id)
-          
-          if (sections && sections.length > 0) {
-            // Transform answers from onboarding_sections format to responses format
+          if (sectionRows.length > 0) {
             const { transformAnswer } = await import('@/lib/question-key-mapping')
-            for (const section of sections) {
+            for (const section of sectionRows) {
               if (section.answers && Array.isArray(section.answers)) {
                 for (const answer of section.answers) {
                   const transformed = transformAnswer(answer)
@@ -200,8 +203,10 @@ export async function POST(request: NextRequest) {
         }
         
         // Get missing fields
-        const { getMissingFields } = await import('@/lib/matching/completeness')
+        const { getMissingFields, isEligibleForMatching } = await import('@/lib/matching/completeness')
         const missingFields = getMissingFields(answers)
+        const v2SectionsComplete = hasAllV2Sections(sectionRows)
+        const questionnaireComplete = isEligibleForMatching(answers) || v2SectionsComplete
         
         let errorMessage = 'Your profile is not set up for matching.'
         let details = ''
@@ -213,20 +218,24 @@ export async function POST(request: NextRequest) {
           errorMessage = 'Academic information missing. Please complete your academic details.'
           details = 'You need to provide your university, degree level, and program information.'
         } else if (!submission) {
-          errorMessage = 'Questionnaire not completed. Please finish the onboarding questionnaire.'
-          details = 'You need to complete all required questions in the questionnaire to get matches.'
-        } else if (missingFields.length > 0) {
-          errorMessage = 'Questionnaire incomplete. Please complete all required questions.'
-          details = `Missing required fields: ${missingFields.slice(0, 5).join(', ')}${missingFields.length > 5 ? ` and ${missingFields.length - 5} more` : ''}. Please complete your onboarding.`
+          errorMessage = 'Questionnaire not completed. Please finish and submit the onboarding questionnaire.'
+          details = 'You need to submit the questionnaire after completing all five modules to get matches.'
+        } else if (!questionnaireComplete) {
+          errorMessage = 'Questionnaire incomplete. Please complete all five v2 modules.'
+          details = v2SectionsComplete
+            ? 'Some required questions are still missing. Open Settings → Questionnaire and finish any incomplete modules.'
+            : `Missing modules or answers${missingFields.length > 0 ? `: ${missingFields.slice(0, 5).join(', ')}${missingFields.length > 5 ? ` and ${missingFields.length - 5} more` : ''}` : ''}.`
           safeLogger.warn('[Matching] User not eligible - missing fields', {
             userId: user.id,
             missingFields,
             missingCount: missingFields.length,
-            totalResponses: responses?.length || 0
+            totalResponses: responses?.length || 0,
+            v2SectionsComplete,
           })
         } else {
-          errorMessage = 'Questionnaire incomplete. Please complete all required questions.'
-          details = 'Some required questions in your questionnaire are missing. Please complete your onboarding.'
+          errorMessage = 'Your profile is not eligible for matching yet.'
+          details =
+            'Your questionnaire looks complete, but matching data is still syncing. Try again in a few minutes or contact support if this persists.'
         }
         
         safeLogger.warn('[Matching] User not eligible for matching', {

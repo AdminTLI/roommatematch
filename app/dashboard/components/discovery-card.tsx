@@ -3,9 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { X, UserPlus, Heart, Users, MessageCircle, LucideIcon, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles, GraduationCap } from 'lucide-react'
+import { X, UserPlus, Heart, Users, MessageCircle, LucideIcon, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles, GraduationCap, ClipboardList, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ScoreInfoPopover, scoreInfoIconTriggerBaseClass } from '@/components/compatibility/score-info-popover'
+import { GATE_LABELS } from '@/lib/matching/item-weights.v2'
+import { isV2DimensionPayload } from '@/lib/chat/vibe-alignment'
 import {
   discoveryMatchTierLabel,
   discoveryScoreBarClass,
@@ -21,9 +24,15 @@ interface DiscoveryCardProps {
         harmonyScore?: number
         contextScore?: number
         compatibilityHighlights?: string[]
+        /** Soft notes on areas worth comparing before connecting */
+        discussionNotes?: string[]
         dimensionScores?: { [key: string]: number } | null
         /** True when the other user has incomplete university info (missing university, programme, start year, or selected "I haven't selected a programme yet") - explains why context score may be lower */
         otherUserHasIncompleteAcademic?: boolean
+        /** v2: hard-gate item IDs that conflicted */
+        gateConflicts?: string[]
+        /** v2: one gate conflict overridden because overall score is strong */
+        softGateOverride?: boolean
     }
     onSkip?: (id: string) => void
     onConnect?: (id: string) => void
@@ -31,48 +40,113 @@ interface DiscoveryCardProps {
     connectButtonIcon?: LucideIcon
 }
 
-// Dimension labels, descriptions, and icons
-const dimensionConfig: { [key: string]: { label: string; description: string; icon: any } } = {
+const HARMONY_SCORE_DESCRIPTION =
+  'Measures day-to-day living alignment across environment, cleanliness, communication, and social life.'
+
+const CONTEXT_SCORE_DESCRIPTION =
+  'Measures how well your practical and academic context align — university, programme, study year, and logistics like move-in timing and stay length.'
+
+// v2 questionnaire modules (display order)
+const V2_DIMENSION_CONFIG: {
+  [key: string]: { label: string; description: string; icon: typeof Moon; order: number }
+} = {
+  environment: {
+    label: 'Environment',
+    description: 'Sleep schedules, noise sensitivity, lighting and temperature preferences.',
+    icon: Moon,
+    order: 1,
+  },
+  cleanliness: {
+    label: 'Cleanliness',
+    description: 'Kitchen habits, chore routines, and shared-space upkeep standards.',
+    icon: Sparkles,
+    order: 2,
+  },
+  communication: {
+    label: 'Communication',
+    description: 'How you give feedback, handle conflict, and coordinate day-to-day.',
+    icon: MessageCircle,
+    order: 3,
+  },
+  social: {
+    label: 'Social Life',
+    description: 'Guest frequency, overnight visitors, shared-space use, and social energy at home.',
+    icon: Users,
+    order: 4,
+  },
+  logistics_context: {
+    label: 'Logistics',
+    description: 'Practical fit: stay length, move-in timing, financial norms, and house rules style.',
+    icon: ClipboardList,
+    order: 5,
+  },
+}
+
+// Legacy v1 dimension labels (backward compat for stale payloads)
+const V1_DIMENSION_CONFIG: { [key: string]: { label: string; description: string; icon: typeof Moon } } = {
   cleanliness: {
     label: 'Cleanliness',
     description: 'Measures how well your cleanliness standards align across shared spaces like kitchen, bathroom, and living areas.',
-    icon: Droplets
+    icon: Droplets,
   },
   noise: {
     label: 'Noise Tolerance',
     description: 'Assesses compatibility around noise sensitivity, including preferences for parties, music volume, and quiet hours.',
-    icon: Volume2
+    icon: Volume2,
   },
   guests: {
     label: 'Guest Frequency',
     description: 'Evaluates alignment on how often friends, partners, or visitors stay overnight and use shared spaces.',
-    icon: Users
+    icon: Users,
   },
   sleep: {
     label: 'Sleep Schedule',
     description: 'Compares sleep schedule compatibility, including wake-up times and bedtimes (early bird vs night owl preferences).',
-    icon: Moon
+    icon: Moon,
   },
   shared_spaces: {
     label: 'Shared Spaces',
     description: 'Measures preferences for using common areas versus private spaces and how you like to utilize shared living areas.',
-    icon: Home
+    icon: Home,
   },
   substances: {
     label: 'Substances',
     description: 'Assesses comfort levels and boundaries around alcohol consumption or other substances within the home environment.',
-    icon: Coffee
+    icon: Coffee,
   },
   study_social: {
     label: 'Study/Social Balance',
     description: 'Evaluates the balance between study time and social activities, and how these priorities align in daily life.',
-    icon: BookOpen
+    icon: BookOpen,
   },
   home_vibe: {
     label: 'Home Vibe',
     description: 'Compares home atmosphere preferences, whether you prefer a quiet retreat for focus or a social hub for interaction.',
-    icon: Heart
-  }
+    icon: Heart,
+  },
+}
+
+function GateConflictBanner({
+  gateConflicts,
+  softGateOverride,
+}: {
+  gateConflicts?: string[]
+  softGateOverride?: boolean
+}) {
+  if (!softGateOverride || !gateConflicts?.length) return null
+
+  const gateLabel =
+    GATE_LABELS[gateConflicts[0] as keyof typeof GATE_LABELS] ?? gateConflicts[0]
+
+  return (
+    <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-950/30">
+      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+      <AlertDescription className="text-xs leading-relaxed text-amber-900 dark:text-amber-200">
+        Strong match overall — you have different answers on{' '}
+        <span className="font-semibold">{gateLabel}</span>. Discuss this before connecting.
+      </AlertDescription>
+    </Alert>
+  )
 }
 
 function getDimensionScore(
@@ -90,9 +164,17 @@ function DimensionScoresList({
   dimensionScores?: { [key: string]: number } | null
   compact?: boolean
 }) {
+  const useV2 = isV2DimensionPayload(dimensionScores as Record<string, unknown> | null | undefined)
+
+  const entries = useV2
+    ? Object.entries(V2_DIMENSION_CONFIG)
+        .filter(([key]) => dimensionScores?.[key] != null)
+        .sort(([, a], [, b]) => a.order - b.order)
+    : Object.entries(V1_DIMENSION_CONFIG)
+
   return (
     <div className={compact ? 'space-y-2' : 'space-y-2.5'}>
-      {Object.entries(dimensionConfig).map(([dimensionKey, config]) => {
+      {entries.map(([dimensionKey, config]) => {
         const Icon = config.icon
         const scorePercent = Math.round(getDimensionScore(dimensionScores, dimensionKey) * 100)
 
@@ -158,6 +240,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
         'Compatible schedules',
         'Shared interests'
     ]
+    const discussionNotes = profile.discussionNotes ?? []
     
     const ConnectIcon = connectButtonIcon
 
@@ -215,11 +298,11 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             >
               <div
                 className={cn(
-                  'group relative flex h-auto max-h-full w-full flex-col justify-start overflow-y-auto overscroll-y-contain rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
+                  'group relative flex h-auto max-h-full w-full flex-col justify-start overflow-y-auto overscroll-y-contain scrollbar-hide rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
                 )}
               >
             {/* Hero Match Score Section */}
-            <div className="relative shrink-0 bg-gradient-to-b from-violet-100/95 via-indigo-50/80 to-white px-6 pb-4 pt-6 text-center dark:from-violet-600/20 dark:via-transparent dark:to-transparent">
+            <div className="relative shrink-0 bg-gradient-to-b from-violet-100/95 via-indigo-50/80 to-white px-6 pb-4 pt-8 text-center dark:from-violet-600/20 dark:via-transparent dark:to-transparent">
                 <div className="relative">
                     <span className={`text-6xl font-black tracking-tight ${discoveryScoreTextClass(matchScore)}`}>
                         {matchScore}%
@@ -240,7 +323,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                         <div className="flex min-w-0 flex-1 items-center gap-1">
                             <ScoreInfoPopover
                               title="Harmony score"
-                              description="Measures how well your day-to-day living preferences align  -  cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                              description={HARMONY_SCORE_DESCRIPTION}
                             >
                               <button
                                 type="button"
@@ -275,7 +358,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                         <div className="flex min-w-0 flex-1 items-center gap-1">
                             <ScoreInfoPopover
                               title="Context score"
-                              description="Measures how similar your academic context is  -  university, programme, and study year."
+                              description={CONTEXT_SCORE_DESCRIPTION}
                             >
                               <button
                                 type="button"
@@ -285,7 +368,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                                 )}
                                 aria-label="What is the Context score? Opens explanation."
                               >
-                                <Users className="h-3.5 w-3.5" aria-hidden />
+                                <ClipboardList className="h-3.5 w-3.5" aria-hidden />
                               </button>
                             </ScoreInfoPopover>
                             <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Context</span>
@@ -303,8 +386,12 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                         />
                     </div>
                 </div>
+                <GateConflictBanner
+                  gateConflicts={profile.gateConflicts}
+                  softGateOverride={profile.softGateOverride}
+                />
                 <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-500">
-                  Tap the heart or people icons for an explanation of each score. Tap outside the popup to close it.
+                  Tap the heart or clipboard icons for an explanation of each score. Tap outside the popup to close it.
                 </p>
             </div>
 
@@ -325,17 +412,35 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                 </h4>
                 <ul className="space-y-2">
                     {highlights.slice(0, 3).map((highlight, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                            <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">✓</span>
+                        <li key={index} className="grid grid-cols-[auto_1fr] gap-x-2">
+                            <span className="text-sm leading-tight text-emerald-600 dark:text-emerald-400" aria-hidden>✓</span>
                             <span className="text-sm leading-tight text-slate-700 dark:text-slate-300">{highlight}</span>
                         </li>
                     ))}
                 </ul>
+
+                {discussionNotes.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Worth discussing
+                    </h4>
+                    <ul className="space-y-2">
+                      {discussionNotes.map((note, index) => (
+                        <li key={index} className="grid grid-cols-[auto_1fr] gap-x-2">
+                          <span className="text-sm leading-tight text-slate-400 dark:text-slate-500" aria-hidden>
+                            •
+                          </span>
+                          <span className="text-sm leading-tight text-slate-600 dark:text-slate-400">{note}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
             </div>
 
             {/* Actions - only show if at least one action handler is provided */}
             {(onSkip || onConnect) && (
-                <div className="flex shrink-0 items-center gap-3 border-t border-slate-200 p-4 dark:border-slate-700">
+                <div className="flex shrink-0 items-center gap-3 p-4">
                     {onSkip && (
                         <Button
                             variant="ghost"
@@ -388,7 +493,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                 </div>
 
                 {/* Everything below the title scrolls together */}
-                <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-4 pt-4 sm:px-6">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain scrollbar-hide px-5 pb-4 pt-4 sm:px-6">
                   {/* Incomplete Academic Info Notice - explains lower context score */}
                   {profile.otherUserHasIncompleteAcademic && (
                     <div className="mb-5 border-b border-slate-200/90 pb-5 dark:border-slate-700/50">
@@ -400,6 +505,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                           </p>
                           <p className="text-xs leading-relaxed text-amber-800/90 dark:text-amber-300/90">
                             This score may be lower because they haven&apos;t completed key university details yet.
+                            Academic context is part of your overall context score alongside logistics preferences.
                             It can improve once they finish their profile.
                           </p>
                         </div>
@@ -407,13 +513,18 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                     </div>
                   )}
 
+                  <GateConflictBanner
+                    gateConflicts={profile.gateConflicts}
+                    softGateOverride={profile.softGateOverride}
+                  />
+
                   <div className="mb-3 grid grid-cols-2 gap-4 border-b border-slate-200/90 pb-5 dark:border-slate-700/50">
                     <div className="min-w-0 space-y-2">
                       <div className="flex min-w-0 items-center justify-between gap-1.5">
                         <div className="flex min-w-0 flex-1 items-center gap-1">
                           <ScoreInfoPopover
                             title="Harmony score"
-                            description="Measures how well your day-to-day living preferences align  -  cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe."
+                            description={HARMONY_SCORE_DESCRIPTION}
                           >
                             <button
                               type="button"
@@ -445,7 +556,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                         <div className="flex min-w-0 flex-1 items-center gap-1">
                           <ScoreInfoPopover
                             title="Context score"
-                            description="Measures how similar your academic context is  -  university, programme, and study year."
+                            description={CONTEXT_SCORE_DESCRIPTION}
                           >
                             <button
                               type="button"
@@ -455,7 +566,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                               )}
                               aria-label="What is the Context score? Opens explanation."
                             >
-                              <Users className="h-3.5 w-3.5" aria-hidden />
+                              <ClipboardList className="h-3.5 w-3.5" aria-hidden />
                             </button>
                           </ScoreInfoPopover>
                           <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Context</span>

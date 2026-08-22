@@ -8,7 +8,7 @@ import { requireAdminResponse } from '@/lib/auth/admin'
  * Get all DSAR requests (admin only)
  */
 export async function GET(req: NextRequest) {
-  const authError = await requireAdminResponse(req, true)
+  const authError = await requireAdminResponse(req, false)
   if (authError) {
     return authError
   }

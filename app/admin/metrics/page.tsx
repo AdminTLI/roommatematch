@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getUserRole } from '@/lib/auth/roles'
 import { AdminMetricsContent } from './components/admin-metrics-content'
+import { AdminPageWrapper } from '../components/admin-page-wrapper'
 
 export default async function AdminMetricsPage() {
   const supabase = await createClient()
@@ -46,10 +47,12 @@ export default async function AdminMetricsPage() {
   }
 
   return (
-    <AdminMetricsContent
-      isPlatformSuper={isPlatformSuper}
-      initialUniversityId={initialUniversityId}
-      initialUniversityName={initialUniversityName}
-    />
+    <AdminPageWrapper hub="insights" title="Institutional Metrics" description="Retention, wellbeing, and operational signals by institution.">
+      <AdminMetricsContent
+        isPlatformSuper={isPlatformSuper}
+        initialUniversityId={initialUniversityId}
+        initialUniversityName={initialUniversityName}
+      />
+    </AdminPageWrapper>
   )
 }

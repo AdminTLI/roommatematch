@@ -24,8 +24,10 @@ import {
   type PlatformSettings,
 } from '@/lib/platform-settings-shared'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { useIsSuperAdmin } from '@/lib/auth/roles-client'
 
 export function AdminSettingsContent() {
+  const { isSuperAdmin, isLoading: roleLoading } = useIsSuperAdmin()
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -102,16 +104,14 @@ export function AdminSettingsContent() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-foreground">
-            Platform Settings
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-muted-foreground mt-1">
-            Configure platform-wide settings. Changes are saved to the database and take effect within about a minute on live traffic.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+      {!roleLoading && !isSuperAdmin && (
+        <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/30">
+          <CardContent className="pt-6 text-sm text-amber-900 dark:text-amber-100">
+            Platform settings are read-only for your role. Only super admins can save changes.
+          </CardContent>
+        </Card>
+      )}
+      <div className="flex justify-end items-center gap-2">
           {saveStatus === 'success' && (
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
@@ -124,7 +124,7 @@ export function AdminSettingsContent() {
               Error
             </Badge>
           )}
-          <Button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2">
+          <Button onClick={handleSave} disabled={isSaving || !isSuperAdmin || roleLoading} className="flex items-center gap-2">
             {isSaving ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -138,7 +138,6 @@ export function AdminSettingsContent() {
             )}
           </Button>
         </div>
-      </div>
 
       {loadError && (
         <Card className="border-amber-200 bg-amber-50">

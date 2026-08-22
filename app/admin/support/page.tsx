@@ -1,18 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SupportDashboard } from './components/support-dashboard'
+import { AdminPageWrapper } from '../components/admin-page-wrapper'
 
 export default async function AdminSupportPage() {
   const supabase = await createClient()
   
-  // Force refresh the user session to get latest data
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
     redirect('/auth/sign-in')
   }
 
-  // Check if user is admin
   const { data: adminData, error: adminError } = await supabase
     .from('admins')
     .select('id, role, university_id, permissions')
@@ -24,7 +23,9 @@ export default async function AdminSupportPage() {
   }
 
   return (
-    <SupportDashboard admin={adminData} />
+    <AdminPageWrapper hub="system" title="Support Tickets" description="User support queue and ticket management.">
+      <SupportDashboard admin={adminData} />
+    </AdminPageWrapper>
   )
 }
 

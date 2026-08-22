@@ -9,7 +9,7 @@ import { getDSARStatistics } from '@/lib/privacy/dsar-automation'
  * Get DSAR statistics (admin only)
  */
 export async function GET(req: NextRequest) {
-  const authError = await requireAdminResponse(req, true)
+  const authError = await requireAdminResponse(req, false)
   if (authError) {
     return authError
   }

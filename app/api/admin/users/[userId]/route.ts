@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/admin'
+import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(
@@ -97,6 +98,12 @@ export async function GET(
       .from('chat_members')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
+
+    if (adminCheck.user) {
+      await logAdminAction(adminCheck.user.id, 'view_user_detail', 'user', userId, {
+        purpose: 'platform_support',
+      })
+    }
 
     return NextResponse.json({
       user: {

@@ -17,6 +17,11 @@ import { createAdminClient } from '@/lib/supabase/server'
 import type { MatchRepo, CohortFilter, MatchRecord, Candidate, MatchRun } from './repo'
 import type { MatchSuggestion } from './types'
 import { isEligibleForMatching } from './completeness'
+import {
+  extractV2ItemAnswers,
+  isV2QuestionnaireComplete,
+  type OnboardingSectionRow,
+} from './v2-eligibility'
 import { safeLogger } from '@/lib/utils/logger'
 
 export class SupabaseMatchRepo implements MatchRepo {
@@ -76,25 +81,30 @@ export class SupabaseMatchRepo implements MatchRepo {
       return acc
     }, {}) || {}
 
+    // Always merge v2 item answers from onboarding_sections (authoritative for v2 scoring).
+    const { data: v2Sections } = await supabase
+      .from('onboarding_sections')
+      .select('section, answers')
+      .eq('user_id', userId)
+
+    const sectionRows = (v2Sections || []) as OnboardingSectionRow[]
+    const v2Answers = extractV2ItemAnswers(sectionRows)
+    answers = { ...answers, ...v2Answers }
+
     // If responses are missing or incomplete, also check onboarding_sections as fallback
     // This handles cases where users have saved but not yet submitted, or where submission
     // didn't properly write to responses table
     if (!data.responses || data.responses.length === 0) {
       safeLogger.debug('[getCandidateByUserId] No responses found, checking onboarding_sections', { userId })
-      const { data: sections } = await supabase
-        .from('onboarding_sections')
-        .select('section, answers')
-        .eq('user_id', userId)
-
-      if (sections && sections.length > 0) {
+      if (sectionRows.length > 0) {
         safeLogger.debug('[getCandidateByUserId] Found onboarding_sections', {
-          sectionCount: sections.length,
-          sections: sections.map(s => s.section)
+          sectionCount: sectionRows.length,
+          sections: sectionRows.map(s => s.section)
         })
         // Transform answers from onboarding_sections format to responses format
         const { transformAnswer } = await import('@/lib/question-key-mapping')
         let transformedCount = 0
-        for (const section of sections) {
+        for (const section of sectionRows) {
           if (section.answers && Array.isArray(section.answers)) {
             for (const answer of section.answers) {
               const transformed = transformAnswer(answer)
@@ -165,7 +175,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     })
 
     const eligible = await isEligibleForMatching(answers)
-    if (!eligible) {
+    if (!eligible && !isV2QuestionnaireComplete(sectionRows)) {
       const { getMissingFields } = await import('./completeness')
       const missing = getMissingFields(answers)
       safeLogger.debug('[DEBUG] User not eligible - missing fields', {
@@ -505,17 +515,48 @@ export class SupabaseMatchRepo implements MatchRepo {
       transformedCount: transformedCandidates.length
     })
 
+    // Batch-load v2 onboarding sections for eligibility (responses table uses legacy keys).
+    const candidateIds = transformedCandidates.map((c) => c.id)
+    const v2SectionsByUser = new Map<string, OnboardingSectionRow[]>()
+    if (candidateIds.length > 0) {
+      const { data: allV2Sections, error: v2SectionsError } = await supabase
+        .from('onboarding_sections')
+        .select('user_id, section, answers')
+        .in('user_id', candidateIds)
+
+      if (v2SectionsError) {
+        safeLogger.warn('[DEBUG] loadCandidates - Failed to batch-fetch onboarding_sections', {
+          error: v2SectionsError.message,
+        })
+      } else {
+        for (const row of allV2Sections || []) {
+          const list = v2SectionsByUser.get(row.user_id) || []
+          list.push({ section: row.section, answers: row.answers })
+          v2SectionsByUser.set(row.user_id, list)
+        }
+      }
+    }
+
+    // Merge v2 item answers and filter by eligibility
+    for (const candidate of transformedCandidates) {
+      const sectionRows = v2SectionsByUser.get(candidate.id) || []
+      const v2Answers = extractV2ItemAnswers(sectionRows)
+      candidate.answers = { ...candidate.answers, ...v2Answers }
+    }
+
     // First pass: filter by eligibility
     const eligibleCandidates = transformedCandidates.filter(candidate => {
-      // Filter out users without complete responses
-      const eligible = isEligibleForMatching(candidate.answers)
+      const sectionRows = v2SectionsByUser.get(candidate.id) || []
+      const eligible =
+        isEligibleForMatching(candidate.answers) || isV2QuestionnaireComplete(sectionRows)
       if (!eligible) {
         const { getMissingFields } = require('./completeness')
         const missing = getMissingFields(candidate.answers)
         safeLogger.debug('[DEBUG] loadCandidates - Candidate not eligible', {
           missingFieldsCount: missing.length,
           missingFields: missing,
-          hasVector: !!candidate.vector
+          hasVector: !!candidate.vector,
+          hasAllV2Sections: isV2QuestionnaireComplete(sectionRows),
         })
         return false
       }
@@ -568,8 +609,12 @@ export class SupabaseMatchRepo implements MatchRepo {
       }
     }
 
-    // Filter: only return candidates with vectors
+    // Filter: v2-complete users do not require legacy user_vectors (scores come from SQL v2 RPC).
     const candidatesWithVectors = eligibleCandidates.filter(candidate => {
+      const sectionRows = v2SectionsByUser.get(candidate.id) || []
+      if (isV2QuestionnaireComplete(sectionRows)) {
+        return true
+      }
       if (!candidate.vector) {
         safeLogger.debug('[DEBUG] loadCandidates - Candidate still missing vector after generation')
         return false

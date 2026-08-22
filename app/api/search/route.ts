@@ -85,7 +85,19 @@ export async function GET(request: NextRequest) {
         // Settings
         'setting': { name: 'Platform Settings', href: '/admin/settings', icon: 'Settings' },
         'settings': { name: 'Platform Settings', href: '/admin/settings', icon: 'Settings' },
-        'configuration': { name: 'Platform Settings', href: '/admin/settings', icon: 'Settings' }
+        'configuration': { name: 'Platform Settings', href: '/admin/settings', icon: 'Settings' },
+
+        // Hub sections
+        'people': { name: 'People Hub', href: '/admin/people', icon: 'Users' },
+        'safety': { name: 'Safety Hub', href: '/admin/safety', icon: 'Shield' },
+        'platform': { name: 'Platform Hub', href: '/admin/platform', icon: 'Layers' },
+        'insights': { name: 'Insights Hub', href: '/admin/insights', icon: 'LayoutDashboard' },
+        'system': { name: 'System Hub', href: '/admin/system', icon: 'Settings' },
+        'logs': { name: 'Operations Log', href: '/admin/logs', icon: 'FileText' },
+        'ops': { name: 'Operations Log', href: '/admin/logs', icon: 'FileText' },
+        'audit': { name: 'Audit Log', href: '/admin/audit', icon: 'Shield' },
+        'retention': { name: 'Retention Policies', href: '/admin/retention', icon: 'FileText' },
+        'privacy': { name: 'Privacy & DSAR', href: '/admin/dsar', icon: 'Settings' },
       }
 
       const matchedPages = new Map<string, { name: string; href: string; icon: string }>()
