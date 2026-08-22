@@ -1,5 +1,3 @@
-import { GATE_LABELS, type HardGateId } from '@/lib/matching/item-weights.v2'
-
 const LOW_SCORE_THRESHOLD = 0.55
 const MAX_NOTES = 2
 
@@ -14,13 +12,6 @@ const V2_DIMENSION_NOTES: Record<string, string> = {
     'Your preferences around guests and socializing at home differ — house rules are worth aligning on.',
   logistics_context:
     'Your move-in timing or stay-length preferences differ — worth confirming expectations early.',
-}
-
-const GATE_DISCUSSION_NOTES: Record<HardGateId, string> = {
-  M5_Q17: 'You have different preferences on smoking indoors — worth confirming before connecting.',
-  M8_Q14: 'Your pet preferences differ — a quick chat helps before moving forward.',
-  M8_Q19: 'You answered differently on BRP registration — worth checking expectations early.',
-  M8_Q11: 'You have different views on Airbnb guests — house rules are worth aligning on.',
 }
 
 const V2_DIMENSION_KEYS = [
@@ -42,11 +33,9 @@ export function generateDiscussionNotes(input: {
   const dims = input.dimensionScores ?? {}
 
   if (input.softGateOverride && input.gateConflicts?.length) {
-    const gateId = input.gateConflicts[0] as HardGateId
-    const gateNote =
-      GATE_DISCUSSION_NOTES[gateId] ??
-      `You answered differently on ${GATE_LABELS[gateId]?.toLowerCase() ?? gateId} — worth a quick conversation before connecting.`
-    notes.push(gateNote)
+    notes.push(
+      'One dealbreaker answer differs - worth a quick chat once you are connected.',
+    )
   }
 
   const lowDims = V2_DIMENSION_KEYS.filter(

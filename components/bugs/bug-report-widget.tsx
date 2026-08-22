@@ -35,19 +35,19 @@ const MAX_DESCRIPTION = 4000
 const selectTriggerClass = (hasValue: boolean) =>
   cn(
     'h-12 w-full rounded-xl border border-slate-200 bg-white pl-3.5 pr-3 text-sm shadow-none',
-    'focus:ring-2 focus:ring-[#4F46E5]/30 data-[placeholder]:text-slate-500',
+    'focus:ring-2 focus:ring-[#4F46E5]/30',
     '[&_svg]:h-5 [&_svg]:w-5 [&_svg]:opacity-70 [&_svg]:text-slate-500',
-    'dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:data-[placeholder]:text-slate-400',
-    'dark:focus:ring-indigo-400/30 dark:[&_svg]:text-slate-400',
-    hasValue
-      ? 'font-medium text-[#0F172A] dark:text-slate-50'
-      : 'font-normal text-slate-500 dark:text-slate-400',
+    'dark:border-slate-500 dark:bg-slate-700/80 dark:focus:ring-indigo-400/30 dark:[&_svg]:text-slate-300',
+    // Override SelectTrigger base styles that hardcode light-mode span colours
+    '[&>span]:text-slate-900 [&>span[data-placeholder]]:text-slate-500',
+    'dark:[&>span]:text-slate-100 dark:[&>span[data-placeholder]]:text-slate-400',
+    hasValue ? 'font-medium' : 'font-normal',
   )
 
 const selectContentClass = cn(
   'z-[200] rounded-2xl border border-slate-200 bg-white text-[#0F172A]',
   'shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12)]',
-  'dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-black/40',
+  'dark:border-slate-500 dark:bg-slate-800 dark:text-slate-100 dark:shadow-black/40',
 )
 
 export function BugReportWidget() {
@@ -169,20 +169,20 @@ export function BugReportWidget() {
         </div>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 py-4">
-          <div className="flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2.5 ring-1 ring-amber-200/80 dark:bg-amber-950/50 dark:ring-amber-800/70">
+          <div className="flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2.5 ring-1 ring-amber-200/80 dark:bg-indigo-950/50 dark:ring-indigo-500/25">
             <Lightbulb
-              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-300"
+              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-400"
               strokeWidth={2.25}
               aria-hidden
             />
-            <p className="text-left text-xs font-medium leading-relaxed text-amber-950 dark:text-amber-100">
+            <p className="text-left text-xs font-medium leading-relaxed text-amber-950 dark:text-slate-200">
               Include what you were doing, what you expected, and what happened instead. Steps to
               reproduce help us fix it faster.
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-[#334155] dark:text-slate-300">Issue type</p>
+            <p className="text-xs font-semibold text-[#334155] dark:text-slate-200">Issue type</p>
             <Select
               value={category || undefined}
               onValueChange={(v) => setCategory(v as BugReportCategory)}
@@ -195,7 +195,7 @@ export function BugReportWidget() {
                   <SelectItem
                     key={opt.value}
                     value={opt.value}
-                    className="focus:bg-slate-50 focus:text-[#0F172A] dark:focus:bg-slate-700 dark:focus:text-slate-50"
+                    className="text-[#0F172A] focus:bg-slate-50 focus:text-[#0F172A] dark:text-slate-100 dark:focus:bg-slate-700 dark:focus:text-slate-50"
                   >
                     {opt.label}
                   </SelectItem>
@@ -205,7 +205,7 @@ export function BugReportWidget() {
           </div>
 
           <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-[#334155] dark:text-slate-300">Description</p>
+            <p className="text-xs font-semibold text-[#334155] dark:text-slate-200">Description</p>
             <Textarea
               id="bug-description"
               value={description}
@@ -215,7 +215,7 @@ export function BugReportWidget() {
               className={cn(
                 'min-h-[88px] resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-[#0F172A]',
                 'shadow-none placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30',
-                'dark:border-slate-600 dark:bg-slate-900/40 dark:text-slate-50 dark:placeholder:text-slate-400',
+                'dark:border-slate-500 dark:bg-slate-700/80 dark:text-slate-100 dark:placeholder:!text-slate-400',
                 'dark:focus-visible:ring-indigo-400/30',
               )}
             />
@@ -226,36 +226,36 @@ export function BugReportWidget() {
 
           <div
             className={cn(
-              'flex gap-3 rounded-2xl bg-slate-50 px-3.5 py-3 ring-1',
+              'flex gap-3 rounded-2xl px-3.5 py-3 ring-1',
               consent
-                ? 'ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/80'
-                : 'ring-amber-200/80 dark:bg-amber-950/30 dark:ring-amber-800/60',
+                ? 'bg-slate-50 ring-slate-200/70 dark:bg-slate-700/50 dark:ring-slate-500/50'
+                : 'bg-slate-50 ring-amber-200/80 dark:bg-slate-700/40 dark:ring-indigo-500/30',
             )}
           >
             <Checkbox
               id="bug-consent"
               checked={consent}
               onCheckedChange={(v) => setConsent(v === true)}
-              className="mt-0.5 shrink-0 rounded border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5] dark:border-slate-500"
+              className="mt-0.5 shrink-0 rounded border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5] dark:border-slate-400 dark:data-[state=checked]:border-indigo-400 dark:data-[state=checked]:bg-indigo-500"
             />
             <label
               htmlFor="bug-consent"
               className="cursor-pointer text-xs font-medium leading-relaxed text-slate-600 dark:text-slate-300"
             >
               I understand Domu Match will collect this report along with{' '}
-              <span className="font-semibold text-[#0F172A] dark:text-slate-50">page URL</span>,{' '}
-              <span className="font-semibold text-[#0F172A] dark:text-slate-50">
+              <span className="font-semibold text-[#0F172A] dark:text-slate-100">page URL</span>,{' '}
+              <span className="font-semibold text-[#0F172A] dark:text-slate-100">
                 device/browser info
               </span>
               ,{' '}
-              <span className="font-semibold text-[#0F172A] dark:text-slate-50">viewport size</span>,
+              <span className="font-semibold text-[#0F172A] dark:text-slate-100">viewport size</span>,
               my{' '}
-              <span className="font-semibold text-[#0F172A] dark:text-slate-50">account id</span>,{' '}
-              <span className="font-semibold text-[#0F172A] dark:text-slate-50">
+              <span className="font-semibold text-[#0F172A] dark:text-slate-100">account id</span>,{' '}
+              <span className="font-semibold text-[#0F172A] dark:text-slate-100">
                 recent console and network errors
               </span>
               , and a{' '}
-              <span className="font-semibold text-[#0F172A] dark:text-slate-50">timestamp</span> to
+              <span className="font-semibold text-[#0F172A] dark:text-slate-100">timestamp</span> to
               diagnose the issue. No screenshot image is taken.
             </label>
           </div>
@@ -265,7 +265,7 @@ export function BugReportWidget() {
           <button
             type="button"
             onClick={handleClose}
-            className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700"
+            className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-500 dark:bg-slate-700/80 dark:text-slate-100 dark:hover:border-slate-400 dark:hover:bg-slate-600"
           >
             Cancel
           </button>
@@ -274,10 +274,10 @@ export function BugReportWidget() {
             onClick={handleSubmit}
             disabled={!canSubmit}
             className={cn(
-              'inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
+              'inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold transition-all',
               canSubmit
-                ? 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
-                : 'cursor-not-allowed bg-[#4F46E5]/40 dark:bg-indigo-500/40',
+                ? 'bg-[#4F46E5] text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:text-white dark:hover:bg-indigo-400'
+                : 'cursor-not-allowed bg-[#4F46E5]/40 text-white/70 dark:bg-indigo-500/35 dark:text-slate-300',
             )}
           >
             <Send className="h-4 w-4" strokeWidth={2.25} aria-hidden />
@@ -357,8 +357,8 @@ export function BugReportWidget() {
           'pointer-events-auto fixed right-4 top-1/2 z-[55] flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full md:right-6',
           'bg-[#4F46E5] text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.45)]',
           'transition hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.55)]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/40 focus-visible:ring-offset-2',
-          'dark:bg-indigo-500 dark:hover:bg-indigo-400',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/40 focus-visible:ring-offset-2 dark:focus-visible:ring-indigo-400/50 dark:focus-visible:ring-offset-slate-900',
+          'dark:bg-indigo-500 dark:text-white dark:hover:bg-indigo-400',
           open && 'max-md:pointer-events-none max-md:invisible',
         )}
         aria-label={open ? 'Close bug report form' : 'Report a bug'}

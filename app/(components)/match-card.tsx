@@ -595,11 +595,7 @@ export function MatchCard({
               <Alert className="border border-yellow-600/40 bg-yellow-950/30 mb-4">
                 <AlertTriangle className="h-4 w-4 text-yellow-400" />
                 <AlertDescription className="text-xs text-yellow-200">
-                  Strong match overall - you have different answers on:{' '}
-                  <span className="font-semibold">
-                    {V2_GATE_LABELS[gateConflicts[0]] ?? gateConflicts[0]}
-                  </span>
-                  . Discuss this before connecting.
+                  Strong match overall - one dealbreaker answer differs, but your compatibility is still high.
                 </AlertDescription>
               </Alert>
             )}

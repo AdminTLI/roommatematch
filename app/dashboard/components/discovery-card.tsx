@@ -7,7 +7,6 @@ import { X, UserPlus, Heart, Users, MessageCircle, LucideIcon, Droplets, Volume2
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ScoreInfoPopover, scoreInfoIconTriggerBaseClass } from '@/components/compatibility/score-info-popover'
-import { GATE_LABELS } from '@/lib/matching/item-weights.v2'
 import { isV2DimensionPayload } from '@/lib/chat/vibe-alignment'
 import {
   discoveryMatchTierLabel,
@@ -135,15 +134,11 @@ function GateConflictBanner({
 }) {
   if (!softGateOverride || !gateConflicts?.length) return null
 
-  const gateLabel =
-    GATE_LABELS[gateConflicts[0] as keyof typeof GATE_LABELS] ?? gateConflicts[0]
-
   return (
     <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-950/30">
       <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
       <AlertDescription className="text-xs leading-relaxed text-amber-900 dark:text-amber-200">
-        Strong match overall — you have different answers on{' '}
-        <span className="font-semibold">{gateLabel}</span>. Discuss this before connecting.
+        Strong match overall - one dealbreaker answer differs, but your compatibility is still high.
       </AlertDescription>
     </Alert>
   )

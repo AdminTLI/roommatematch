@@ -199,6 +199,11 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   /** Hybrid mobile: browse one card at a time within the current page. */
   const [mobileCardIndex, setMobileCardIndex] = useState(0)
   const [mobileShowAllOnPage, setMobileShowAllOnPage] = useState(false)
+  const activeTabRef = useRef(activeTab)
+
+  useEffect(() => {
+    activeTabRef.current = activeTab
+  }, [activeTab])
 
   // Track locally processed suggestions to filter them out even if API returns stale data
   // Use localStorage to persist across page navigations
@@ -310,25 +315,41 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         const staleEntries: string[] = []
         allSuggestions.forEach(s => {
           const cachedStatus = processedSuggestions.get(s.id)
-          if (cachedStatus) {
-            // If DB shows pending but localStorage says processed, localStorage is stale
-            if (s.status === 'pending' && (cachedStatus === 'declined' || cachedStatus === 'accepted' || cachedStatus === 'confirmed')) {
-              console.log('[Filter] Detected stale localStorage entry - DB is pending but localStorage says processed:', {
-                id: s.id,
-                cachedStatus,
-                dbStatus: s.status
-              })
-              staleEntries.push(s.id)
-            }
-            // If DB shows confirmed but localStorage says declined/accepted, clear it (confirmed is the truth)
-            if (s.status === 'confirmed' && (cachedStatus === 'declined' || cachedStatus === 'accepted')) {
-              console.log('[Filter] Detected stale localStorage entry - DB is confirmed but localStorage says otherwise:', {
-                id: s.id,
-                cachedStatus,
-                dbStatus: s.status
-              })
-              staleEntries.push(s.id)
-            }
+          if (!cachedStatus) return
+
+          // Keep accepted cache while DB is still pending (accept may not have propagated yet)
+          if (s.status === 'pending' && cachedStatus === 'declined') {
+            console.log('[Filter] Detected stale localStorage entry - DB is pending but localStorage says declined:', {
+              id: s.id,
+              cachedStatus,
+              dbStatus: s.status,
+            })
+            staleEntries.push(s.id)
+          }
+          if (s.status === 'pending' && cachedStatus === 'confirmed') {
+            console.log('[Filter] Detected stale localStorage entry - DB is pending but localStorage says confirmed:', {
+              id: s.id,
+              cachedStatus,
+              dbStatus: s.status,
+            })
+            staleEntries.push(s.id)
+          }
+          // If DB shows confirmed but localStorage says declined/accepted, clear it (confirmed is the truth)
+          if (s.status === 'confirmed' && (cachedStatus === 'declined' || cachedStatus === 'accepted')) {
+            console.log('[Filter] Detected stale localStorage entry - DB is confirmed but localStorage says otherwise:', {
+              id: s.id,
+              cachedStatus,
+              dbStatus: s.status,
+            })
+            staleEntries.push(s.id)
+          }
+          if (s.status === 'accepted' && cachedStatus === 'declined') {
+            console.log('[Filter] Detected stale localStorage entry - DB is accepted but localStorage says declined:', {
+              id: s.id,
+              cachedStatus,
+              dbStatus: s.status,
+            })
+            staleEntries.push(s.id)
           }
         })
 
@@ -544,7 +565,15 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
 
   // React Query mutation for responding to match suggestions with optimistic updates
   const respondMutation = useMutation({
-    mutationFn: async ({ suggestionId, action }: { suggestionId: string; action: 'accept' | 'decline' }) => {
+    mutationFn: async ({
+      suggestionId,
+      action,
+      suggestion,
+    }: {
+      suggestionId: string
+      action: 'accept' | 'decline'
+      suggestion?: MatchWithStatus
+    }) => {
       const response = await fetchWithCSRF('/api/match/suggestions/respond', {
         method: 'POST',
         headers: {
@@ -586,77 +615,118 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
 
       const result = await response.json()
       console.log('[Match Respond] Success:', { suggestionId, action, result })
-      return { suggestionId, action, result }
+      return { suggestionId, action, suggestion, result }
     },
-    onMutate: async ({ suggestionId, action }) => {
+    onMutate: async ({ suggestionId, action, suggestion }) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: queryKeys.matches.all(user.id) })
 
       // Track this suggestion as processed locally
-      const processedStatus = action === 'decline' ? 'declined' : action === 'accept' ? 'accepted' : 'confirmed'
+      const processedStatus = action === 'decline' ? 'declined' : 'accepted'
       setProcessedSuggestions(prev => {
         const next = new Map(prev)
         next.set(suggestionId, processedStatus)
         return next
       })
 
-      // Optimistically update UI - remove from all lists immediately
       setSuggestions(prev => {
         const filtered = prev.filter(s => s.id !== suggestionId)
         console.log('[Match Respond] Optimistic update - removed from suggestions:', {
           suggestionId,
           beforeCount: prev.length,
-          afterCount: filtered.length
+          afterCount: filtered.length,
         })
         return filtered
       })
-      setPendingSuggestions(prev => prev.filter(s => s.id !== suggestionId))
-      setConfirmedMatches(prev => prev.filter(s => s.id !== suggestionId))
-      // For declined/accepted matches, we'll add them to appropriate tabs after the API confirms
 
-      // Return context for rollback
-      return { suggestionId, action }
-    },
-    onSuccess: ({ suggestionId, action }) => {
-      console.log('[Match Respond] onSuccess:', { suggestionId, action, activeTab })
-
-      // Don't immediately refetch - the optimistic update already removed it from UI
-      // Only refetch if we're on a tab that needs to show the updated match (history/confirmed)
-      // This reduces API calls and prevents rate limiting issues
-      if (activeTab === 'history' || activeTab === 'confirmed' || activeTab === 'pending') {
-        // Invalidate matches queries but don't refetch immediately
-        queryClient.invalidateQueries({ queryKey: queryKeys.matches.all(user.id) })
-
-        // Wait longer before refetching to ensure database update has propagated
-        // For declined/accepted matches, we need to ensure they're properly filtered out
-        const delay = action === 'decline' ? 2000 : 1500
-
-        setTimeout(() => {
-          console.log('[Match Respond] Refetching after delay:', { suggestionId, action, activeTab })
-          // Only refetch if still on a tab that needs the data
-          if (activeTab === 'history' || activeTab === 'confirmed' || activeTab === 'pending') {
-            fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
-          }
-        }, delay)
-      } else {
-        // For suggested tab, we don't need to refetch - the match is already removed optimistically
-        // and the localStorage cache will prevent it from showing if API returns stale data
-        console.log('[Match Respond] Skipping refetch for suggested tab - using optimistic update and localStorage cache')
+      if (action === 'accept' && suggestion) {
+        const updated: MatchWithStatus = {
+          ...suggestion,
+          status: 'accepted',
+          acceptedBy: Array.from(new Set([...(suggestion.acceptedBy || []), user.id])),
+        }
+        setPendingSuggestions(prev => {
+          const without = prev.filter(s => s.id !== suggestionId)
+          return [updated, ...without]
+        })
+      } else if (action === 'decline' && suggestion) {
+        const updated: MatchWithStatus = {
+          ...suggestion,
+          status: 'declined',
+        }
+        setHistoryMatches(prev => {
+          const without = prev.filter(s => s.id !== suggestionId)
+          return [updated, ...without]
+        })
       }
+
+      return { suggestionId, action, suggestion }
+    },
+    onSuccess: ({ suggestionId, action, result }) => {
+      console.log('[Match Respond] onSuccess:', { suggestionId, action, activeTab: activeTabRef.current })
+
+      const updatedSuggestion = result?.suggestion as MatchWithStatus | undefined
+
+      if (updatedSuggestion?.status === 'confirmed') {
+        setPendingSuggestions(prev => prev.filter(s => s.id !== suggestionId))
+        setConfirmedMatches(prev => {
+          const without = prev.filter(s => s.id !== suggestionId)
+          return [updatedSuggestion, ...without]
+        })
+        setProcessedSuggestions(prev => {
+          const next = new Map(prev)
+          next.set(suggestionId, 'confirmed')
+          return next
+        })
+      } else if (action === 'accept' && updatedSuggestion) {
+        setPendingSuggestions(prev => {
+          const without = prev.filter(s => s.id !== suggestionId)
+          return [updatedSuggestion, ...without]
+        })
+      } else if (action === 'decline' && updatedSuggestion) {
+        setHistoryMatches(prev => {
+          const without = prev.filter(s => s.id !== suggestionId)
+          return [updatedSuggestion, ...without]
+        })
+      }
+
+      queryClient.invalidateQueries({ queryKey: queryKeys.matches.all(user.id) })
+
+      const delay = action === 'decline' ? 2000 : 1500
+      setTimeout(() => {
+        const tab = activeTabRef.current
+        // Skip refetch on suggested tab - optimistic updates are enough and a full refetch
+        // would overwrite pending/history before the API has propagated.
+        if (tab === 'history' || tab === 'confirmed' || tab === 'pending') {
+          console.log('[Match Respond] Refetching after delay:', { suggestionId, action, tab })
+          fetchSuggestions(tab === 'history' || tab === 'confirmed')
+        }
+      }, delay)
     },
     onError: (error, { suggestionId }, context) => {
       console.error('[Match Respond] Error:', { error, suggestionId, context })
-      // Rollback optimistic update - refetch to restore state
-      fetchSuggestions(activeTab === 'history' || activeTab === 'confirmed')
+      if (suggestionId) {
+        setProcessedSuggestions(prev => {
+          const next = new Map(prev)
+          next.delete(suggestionId)
+          return next
+        })
+      }
+      const tab = activeTabRef.current
+      fetchSuggestions(tab === 'history' || tab === 'confirmed')
       const errorMessage = error instanceof Error ? error.message : `Failed to ${context?.action || 'respond to'} suggestion`
       toast.error(errorMessage)
     },
   })
 
   // Handle suggestion response
-  const handleRespond = async (suggestionId: string, action: 'accept' | 'decline') => {
+  const handleRespond = async (
+    suggestionId: string,
+    action: 'accept' | 'decline',
+    suggestion?: MatchWithStatus,
+  ) => {
     try {
-      await respondMutation.mutateAsync({ suggestionId, action })
+      await respondMutation.mutateAsync({ suggestionId, action, suggestion })
     } catch (error) {
       // Error handling is done in onError
     }
@@ -946,8 +1016,8 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     let onConnect: (() => void) | undefined
 
     if (activeTab === 'suggested') {
-      onSkip = () => handleRespond(suggestion.id, 'decline')
-      onConnect = () => handleRespond(suggestion.id, 'accept')
+      onSkip = () => handleRespond(suggestion.id, 'decline', suggestion)
+      onConnect = () => handleRespond(suggestion.id, 'accept', suggestion)
     } else if (activeTab === 'pending') {
       onSkip = undefined
       onConnect = undefined
