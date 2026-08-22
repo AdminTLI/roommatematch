@@ -254,13 +254,17 @@
     overflow: visible !important;
   }
 
-  /* Responsive media defaults */
+  /* Responsive media defaults — do not force svg height:auto (breaks icon buttons). */
   img,
   video,
-  canvas,
-  svg {
+  canvas {
     max-width: 100%;
     height: auto;
+    display: block;
+  }
+
+  svg {
+    max-width: 100%;
     display: block;
   }
 

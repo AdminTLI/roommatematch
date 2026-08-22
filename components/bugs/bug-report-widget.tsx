@@ -312,9 +312,9 @@ export function BugReportWidget() {
             />
 
             {/*
-              Desktop: full-height rail beside the FAB, flex-centered so the panel
-              midpoint lines up with the floating bug button. Framer Motion must NOT
-              own translateY on the same node as CSS centering.
+              Desktop: content-height card beside the FAB (never stretch to viewport).
+              Mobile: near-full sheet. Framer Motion must NOT own translateY on the
+              same node as CSS centering.
             */}
             <div
               className={cn(
@@ -322,7 +322,7 @@ export function BugReportWidget() {
                 // Mobile: fill the sheet frame
                 'inset-x-3 top-[max(0.75rem,env(safe-area-inset-top))] bottom-[max(0.75rem,env(safe-area-inset-bottom))]',
                 // Desktop: vertical strip left of FAB (right-6 + 56px + gap)
-                'md:inset-y-0 md:left-auto md:right-[calc(1.5rem+3.5rem+0.75rem)] md:flex md:w-[min(380px,calc(100vw-7rem))] md:items-center',
+                'md:inset-y-0 md:left-auto md:right-[calc(1.5rem+3.5rem+0.75rem)] md:flex md:w-[min(380px,calc(100vw-7rem))] md:items-center md:justify-center',
               )}
             >
               <motion.div
@@ -335,11 +335,12 @@ export function BugReportWidget() {
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
                 className={cn(
-                  'pointer-events-auto flex h-full max-h-full w-full flex-col overflow-hidden rounded-2xl bg-white text-[#0F172A]',
+                  'pointer-events-auto flex min-h-0 w-full flex-col overflow-hidden rounded-2xl bg-white text-[#0F172A]',
                   'shadow-[0_10px_40px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-200/80',
                   'dark:bg-slate-800 dark:text-slate-50 dark:shadow-black/50 dark:ring-slate-700',
-                  // Desktop: height from content, capped to viewport so center stays on FAB
-                  'md:h-auto md:max-h-[calc(100dvh-2rem)]',
+                  // Mobile: fill the inset frame. Desktop: content-sized; body scrolls before footer clips.
+                  'max-md:h-full max-md:max-h-full',
+                  'md:h-auto md:max-h-[min(40rem,calc(100dvh-2rem))]',
                 )}
               >
                 {panelInner}

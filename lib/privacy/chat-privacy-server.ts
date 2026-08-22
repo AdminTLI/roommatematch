@@ -3,6 +3,9 @@ import { createServiceClient } from '@/lib/supabase/service'
 import type { ChatPrivacySnapshot, ProfileAccessFlags } from '@/lib/privacy/profile-access-types'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 
+/** In-process cache so warm instances reuse signed photo URLs across chat refetches. */
+const signedPhotoCache = new Map<string, { url: string; expiresAt: number }>()
+
 function flagsFromRow(row: { details_revealed_by_requestor?: boolean; picture_revealed_by_requestor?: boolean } | null): ProfileAccessFlags {
   return {
     details_revealed_by_requestor: Boolean(row?.details_revealed_by_requestor),
@@ -86,8 +89,21 @@ async function signedPartnerPhotoUrl(partnerUserId: string): Promise<string | nu
   const path = profile?.profile_picture_url
   if (!path || typeof path !== 'string') return null
 
-  const { data, error } = await service.storage.from('secure_profile_pics').createSignedUrl(path, 60 * 30)
+  const cached = signedPhotoCache.get(path)
+  const now = Date.now()
+  // Reuse while ≥2 minutes of TTL remain so chat list refetches don't mint new tokens.
+  if (cached && cached.expiresAt - now > 120_000) {
+    return cached.url
+  }
+
+  const ttlSeconds = 60 * 30
+  const { data, error } = await service.storage.from('secure_profile_pics').createSignedUrl(path, ttlSeconds)
   if (error || !data?.signedUrl) return null
+
+  signedPhotoCache.set(path, {
+    url: data.signedUrl,
+    expiresAt: now + ttlSeconds * 1000,
+  })
   return data.signedUrl
 }
 

@@ -6,6 +6,7 @@ import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context'
+import { cn } from '@/lib/utils'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -108,6 +109,7 @@ export function DomuChatWidget() {
     <>
       {/* Floating button */}
       <motion.button
+        type="button"
         onClick={() => setIsOpen(true)}
         initial={false}
         animate={{
@@ -115,10 +117,20 @@ export function DomuChatWidget() {
           opacity: isOpen ? 0 : 1,
           transition: { duration: 0.2 }
         }}
-        className="fixed right-4 z-[55] flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white shadow-lg transition-shadow hover:shadow-xl md:bottom-6 md:right-6 bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))]"
+        className={cn(
+          'fixed right-4 z-[55] flex h-14 w-14 items-center justify-center overflow-hidden rounded-full',
+          'border-0 bg-[var(--brand-primary)] text-white shadow-lg outline-none ring-0 ring-offset-0',
+          'transition-shadow hover:shadow-xl',
+          'focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-lg',
+          'md:bottom-6 md:right-6 bottom-[calc(6.25rem+env(safe-area-inset-bottom,0px))]',
+          // Keep Lucide sizing stable against global svg { height: auto } rules
+          '[&_svg]:!h-6 [&_svg]:!w-6 [&_svg]:max-h-6 [&_svg]:max-w-6 [&_svg]:shrink-0',
+        )}
         aria-label="Open Domu AI chat"
+        tabIndex={isOpen ? -1 : 0}
+        aria-hidden={isOpen}
       >
-        <MessageCircle className="h-6 w-6" />
+        <MessageCircle className="h-6 w-6" strokeWidth={2} aria-hidden />
       </motion.button>
 
       {/* Chat panel */}

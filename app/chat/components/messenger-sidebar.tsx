@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { User } from '@supabase/supabase-js'
@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
+import { preferStableAvatarUrl } from '@/lib/avatars/stable-url'
 
 interface ChatRoom {
   id: string
@@ -95,6 +96,16 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
   const [mutedChats, setMutedChats] = useState<string[]>([])
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
   const [isClearingReadReceipts, setIsClearingReadReceipts] = useState(false)
+  /** Keep prior avatar URLs across refetches so signed tokens don't flash initials. */
+  const stableAvatarByUserIdRef = useRef<Map<string, string>>(new Map())
+
+  const stabilizeAvatar = useCallback((userId: string, next?: string) => {
+    const prev = stableAvatarByUserIdRef.current.get(userId)
+    const chosen = preferStableAvatarUrl(prev, next)
+    if (chosen) stableAvatarByUserIdRef.current.set(userId, chosen)
+    else stableAvatarByUserIdRef.current.delete(userId)
+    return chosen
+  }, [])
 
   // Ensure component only renders DropdownMenu after hydration to avoid ID mismatch
   useEffect(() => {
@@ -694,10 +705,18 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
       }
 
       // Drop broken 1:1 chats that only contain the current user (would render as "yourself")
-      return chatsWithPartners.filter((chat) => {
-        if (chat.type !== 'individual') return true
-        return chat.participants.some((p) => p.id !== user.id)
-      })
+      return chatsWithPartners
+        .filter((chat) => {
+          if (chat.type !== 'individual') return true
+          return chat.participants.some((p) => p.id !== user.id)
+        })
+        .map((chat) => ({
+          ...chat,
+          participants: chat.participants.map((p) => ({
+            ...p,
+            avatar: stabilizeAvatar(p.id, p.avatar),
+          })),
+        }))
     } catch (error) {
       // Safely log error - handle case where console methods might not be available
       try {
@@ -709,7 +728,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
       }
       return []
     }
-  }, [user.id])
+  }, [user.id, stabilizeAvatar])
 
   const chatsQueryKeys = useMemo(() => queryKeys.chats(user.id), [user.id])
 
@@ -776,15 +795,29 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
   const onlineUsersList = onlineUsersData.users || []
   const activeTodayCount = onlineUsersData.activeTodayCount ?? 0
 
+  /** Prefer chat-list avatars (may include revealed photos) over online-users programmatic URLs. */
+  const avatarByUserId = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const chat of chats) {
+      for (const p of chat.participants) {
+        if (p.id === user.id || !p.avatar) continue
+        const prev = map.get(p.id)
+        map.set(p.id, preferStableAvatarUrl(prev, p.avatar) ?? p.avatar)
+      }
+    }
+    return map
+  }, [chats, user.id])
+
   /** Deduped “stories” row with presence tiers */
   const storyPeople = useMemo(() => {
     const map = new Map<string, { id: string; displayName: string; avatar?: string; presence: 'online' | 'recent' }>()
     for (const u of onlineUsersList) {
       if (u?.id && u.id !== user.id) {
+        const fromChat = avatarByUserId.get(u.id)
         map.set(u.id, {
           id: u.id,
           displayName: (u.firstName || 'User').trim() || 'User',
-          avatar: u.avatar,
+          avatar: preferStableAvatarUrl(fromChat, u.avatar) ?? fromChat ?? u.avatar,
           presence: u.presence === 'recent' ? 'recent' : 'online',
         })
       }
@@ -792,16 +825,17 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
     for (const u of onlineUsers) {
       if (u.id === user.id) continue
       if (!map.has(u.id)) {
+        const fromChat = avatarByUserId.get(u.id)
         map.set(u.id, {
           id: u.id,
           displayName: (u.name || 'User').trim() || 'User',
-          avatar: u.avatar,
+          avatar: preferStableAvatarUrl(fromChat, u.avatar) ?? fromChat ?? u.avatar,
           presence: 'online',
         })
       }
     }
     return Array.from(map.values())
-  }, [onlineUsersList, onlineUsers, user.id])
+  }, [onlineUsersList, onlineUsers, avatarByUserId, user.id])
 
   const onlineIdSet = useMemo(
     () => new Set(storyPeople.filter(p => p.presence === 'online').map(p => p.id)),
@@ -1092,8 +1126,11 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                   >
                     <div className="rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-indigo-500 p-[2px]">
                       <Avatar className="h-14 w-14 rounded-2xl">
-                        <AvatarImage src={otherParticipant.avatar} className="rounded-2xl" />
-                        <AvatarFallback className="rounded-2xl bg-purple-600 text-white">
+                        <AvatarImage src={otherParticipant.avatar} className="rounded-2xl" alt="" />
+                        <AvatarFallback
+                          delayMs={otherParticipant.avatar ? 400 : 0}
+                          className="rounded-2xl bg-purple-600 text-white"
+                        >
                           {firstName.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
@@ -1173,8 +1210,11 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                     >
                       <div className="relative shrink-0">
                         <Avatar className="h-11 w-11">
-                          <AvatarImage src={otherParticipant?.avatar} />
-                          <AvatarFallback className="bg-purple-600 text-white">
+                          <AvatarImage src={otherParticipant?.avatar} alt="" />
+                          <AvatarFallback
+                            delayMs={otherParticipant?.avatar ? 400 : 0}
+                            className="bg-purple-600 text-white"
+                          >
                             {rowName.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
