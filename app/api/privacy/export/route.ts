@@ -89,7 +89,8 @@ export async function GET(req: NextRequest) {
         notifications: {},
         preferences: {},
         activity: {},
-        consents: {}
+        consents: {},
+        bug_reports: {}
       }
 
       // 1. Account information (from auth.users)
@@ -403,6 +404,39 @@ export async function GET(req: NextRequest) {
             user_message: entry.user_message,
             assistant_reply: entry.assistant_reply,
             created_at: entry.created_at,
+          }))
+        }
+      }
+
+      // 17. Bug reports (GDPR Art. 15 — user-authored description and diagnostics are personal data)
+      const adminForBugReports = createAdminClient()
+      const { data: bugReports } = await adminForBugReports
+        .from('bug_reports')
+        .select('id, category, description, diagnostics, consent_at, status, created_at, updated_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(500)
+
+      if (bugReports) {
+        exportData.bug_reports = {
+          reports: bugReports.map((r: {
+            id: string
+            category: string
+            description: string
+            diagnostics: Record<string, unknown>
+            consent_at: string
+            status: string
+            created_at: string
+            updated_at: string
+          }) => ({
+            id: r.id,
+            category: r.category,
+            description: r.description,
+            diagnostics: r.diagnostics,
+            consent_at: r.consent_at,
+            status: r.status,
+            created_at: r.created_at,
+            updated_at: r.updated_at,
           }))
         }
       }
