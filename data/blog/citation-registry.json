@@ -1,0 +1,80 @@
+{
+  "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
+  "entries": [
+    {
+      "slug": "housemate-support-living-away-from-home",
+      "date": "2026-08-26",
+      "primarySourceUrls": [
+        "https://www.nationaleonderwijsgids.nl/hbo/uitwonende-studenten-hebben-meer-last-van-eenzaamheid-stress-en-depressieve-klachten/",
+        "https://www.rivm.nl/nieuws/blijvende-zorgen-over-mentale-gezondheid-jongvolwassenen-ondanks-lichte-verbetering",
+        "https://www.scp.nl/publicaties-scp/2025/10/toekomst-die-jongeren-toekomt"
+      ],
+      "statsUsed": [
+        "Inholland 6500+ students living-away wellbeing gap",
+        "RIVM GMJV 2024 51% good mental health",
+        "RIVM GMJV 2024 >2/5 often stressed",
+        "Trimbos 62% loneliness / 24% strongly lonely (via Inholland coverage)",
+        "Trimbos ~35% students with complaints receive no support"
+      ]
+    },
+    {
+      "slug": "graduate-holdover-student-housing-netherlands",
+      "date": "2026-08-12",
+      "primarySourceUrls": [
+        "https://nos.nl/artikel/2581086-steeds-meer-studenten-geven-de-hoop-om-een-kamer-te-vinden-op",
+        "https://www.cbs.nl/en-gb/news/2026/17/fewer-young-people-entering-the-housing-market"
+      ],
+      "statsUsed": ["57% graduate holdover", "Kences lived vs wanted shares"]
+    },
+    {
+      "slug": "private-landlords-student-housing-netherlands",
+      "date": "2026-08-05",
+      "primarySourceUrls": [
+        "https://nos.nl/artikel/2589051-particulieren-verkopen-steeds-vaker-hun-studentenwoningen",
+        "https://nos.nl/artikel/2581086-steeds-meer-studenten-geven-de-hoop-om-een-kamer-te-vinden-op"
+      ],
+      "statsUsed": ["Amsterdam 2000 / Rotterdam 1025 / Utrecht 810 / Eindhoven 695"]
+    },
+    {
+      "slug": "thuiswonend-studenten-nederland-cbs-data",
+      "date": "2026-07-22",
+      "primarySourceUrls": [
+        "https://www.cbs.nl/nl-nl/nieuws/2026/06/steeds-meer-studenten-wonen-hun-hele-studie-thuis",
+        "https://nos.nl/artikel/2601121-meer-studenten-bleven-na-invoering-leenstelsel-gehele-studententijd-thuis-wonen"
+      ],
+      "statsUsed": ["43% thuiswonend 2023 cohort"]
+    },
+    {
+      "slug": "student-housing-loneliness-netherlands",
+      "date": "2026-07-15",
+      "primarySourceUrls": [
+        "https://nos.nl/artikel/2581086-steeds-meer-studenten-geven-de-hoop-om-een-kamer-te-vinden-op",
+        "https://nos.nl/artikel/2601121-meer-studenten-bleven-na-invoering-leenstelsel-gehele-studententijd-thuis-wonen"
+      ],
+      "statsUsed": ["Kences wish/reality gap", "37% Nuffic housing leave"]
+    },
+    {
+      "slug": "international-student-housing-rights-netherlands",
+      "date": "2026-07-08",
+      "primarySourceUrls": [],
+      "statsUsed": ["263 LSVb cases"]
+    },
+    {
+      "slug": "student-housing-co-living-rules-netherlands",
+      "date": "2026-07-01",
+      "primarySourceUrls": [
+        "https://nos.nl/artikel/2607352-woningdelen-de-wil-is-er-maar-niet-overal-komt-het-van-de-grond"
+      ],
+      "statsUsed": []
+    },
+    {
+      "slug": "roommate-conflict-resolution-tips-netherlands",
+      "date": "2026-06-10",
+      "primarySourceUrls": [
+        "https://advalvas.vu.nl/en/student-society/your-roommate-cant-read-your-mind/",
+        "https://www.rivm.nl/nieuws/blijvende-zorgen-over-mentale-gezondheid-jongvolwassenen-ondanks-lichte-verbetering"
+      ],
+      "statsUsed": ["GMJV 2024 mental health share"]
+    }
+  ]
+}
