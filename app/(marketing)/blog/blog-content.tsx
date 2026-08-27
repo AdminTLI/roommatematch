@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'housemate-support-living-away-from-home',
+        title: 'Housemate Support When Living Away From Home',
+        excerpt:
+          'Inholland and national wellbeing data show students living away from home face more loneliness and stress. The overlooked variable is how housemates negotiate everyday emotional support.',
+        readTime: '8 min read',
+        date: '2026-08-26',
+        category: 'Wellbeing',
+        icon: Shield,
+      },
+      {
         slug: 'graduate-holdover-student-housing-netherlands',
         title:
           'Graduate Holdover: The Hidden Student Housing Bottleneck',
@@ -262,6 +272,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'housemate-support-living-away-from-home',
+        title: 'Steun van huisgenoten als je uit huis woont',
+        excerpt:
+          'Inholland en landelijke welzijnscijfers laten zien dat uitwonende studenten vaker eenzaamheid en stress ervaren. De onderschatte factor is hoe huisgenoten alledaagse emotionele steun afspreken.',
+        readTime: '8 min lezen',
+        date: '2026-08-26',
+        category: 'Welzijn',
+        icon: Shield,
+      },
       {
         slug: 'graduate-holdover-student-housing-netherlands',
         title:
