@@ -926,9 +926,13 @@ export function MessengerConversation({
       if (!response.ok) {
         let errorMessage = 'Failed to send message'
         let errorData: any = null
+        let retryAfterSec: number | null = null
         try {
           errorData = await response.json()
           errorMessage = errorData.error || errorMessage
+          if (typeof errorData.retryAfter === 'number') {
+            retryAfterSec = errorData.retryAfter
+          }
         } catch {
           // If response isn't JSON, try to get text
           try {
@@ -939,18 +943,41 @@ export function MessengerConversation({
           }
         }
 
+        if (!retryAfterSec) {
+          const retryHeader = response.headers.get('Retry-After')
+          if (retryHeader) {
+            const parsed = Number.parseInt(retryHeader, 10)
+            if (!Number.isNaN(parsed)) retryAfterSec = parsed
+          }
+        }
+
         if (response.status === 403 && errorData?.reason === 'privacy_disabled_messaging') {
           setIsMessagingDisabledByPrivacy(true)
           showErrorToast('Messaging disabled', errorMessage)
           return
         }
 
-        console.error('[MessengerConversation] Failed to send message:', {
-          status: response.status,
-          statusText: response.statusText,
-          errorMessage
-        })
-        throw new Error(errorMessage)
+        if (response.status === 429) {
+          const waitSec = retryAfterSec && retryAfterSec > 0 ? retryAfterSec : 60
+          const waitLabel =
+            waitSec >= 60
+              ? `${Math.ceil(waitSec / 60)} minute${Math.ceil(waitSec / 60) === 1 ? '' : 's'}`
+              : `${waitSec} second${waitSec === 1 ? '' : 's'}`
+          showErrorToast(
+            'Sending too quickly',
+            `Please wait about ${waitLabel}, then try again.`
+          )
+          console.warn(
+            `[MessengerConversation] Rate limited sending message (HTTP ${response.status}, retryAfter=${waitSec}s)`
+          )
+          return
+        }
+
+        console.warn(
+          `[MessengerConversation] Failed to send message: HTTP ${response.status} ${response.statusText} — ${errorMessage}`
+        )
+        showErrorToast('Failed to send', errorMessage)
+        return
       }
 
       const responseData = await response.json()
@@ -1001,7 +1028,9 @@ export function MessengerConversation({
       void queryClient.invalidateQueries({ queryKey: queryKeys.chatPrivacy(chatId, user.id) })
       void queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
     } catch (error) {
-      console.error('Failed to send message:', error)
+      const message = error instanceof Error ? error.message : 'Please try again.'
+      console.warn('[MessengerConversation] Failed to send message:', message)
+      showErrorToast('Failed to send', message)
     }
   }
 

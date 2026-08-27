@@ -12,8 +12,12 @@ import { checkCustomRateLimit, getClientIp, getIPRateLimitKey } from '@/lib/rate
 import { hasUpstashRedisRestEnv } from '@/lib/upstash-env'
 import { safeLogger } from '@/lib/utils/logger'
 
-/** All /api/* traffic: per IP */
-export const GLOBAL_API_LIMIT = 100
+/** All /api/* traffic: per IP.
+ * Chat shell polls unread/online-users/csrf frequently; 100/min was too tight in local
+ * multi-tab (chat + admin) and shared-NAT campus use. Route handlers still enforce
+ * stricter per-action limits (messages, reactions, auth, etc.).
+ */
+export const GLOBAL_API_LIMIT = 300
 export const GLOBAL_API_WINDOW_SECONDS = 60
 
 /** /api/auth/*: per IP */
@@ -29,6 +33,16 @@ export const AI_API_LIMIT = 10
 export const AI_API_WINDOW_SECONDS = 60
 
 const AI_RATE_LIMIT_PATHS = new Set(['/api/domu/chat', '/api/chat/compatibility'])
+
+/** High-frequency authenticated shell reads — counted by route-level limits where needed.
+ * Excluding them from the global IP bucket prevents chat/admin polling from blocking sends.
+ */
+const GLOBAL_RATE_LIMIT_EXEMPT_PATHS = new Set([
+  '/api/csrf-token',
+  '/api/chat/unread',
+  '/api/chat/online-users',
+  '/api/notifications/count',
+])
 
 let cachedRedis: Redis | null | undefined
 let globalRatelimit: Ratelimit | null | undefined
@@ -236,21 +250,23 @@ async function getUserIdFromMiddlewareCookies(req: NextRequest): Promise<string 
   if (!url || !anon) {
     return null
   }
-  const res = NextResponse.next()
+
   const supabase = createServerClient(url, anon, {
     cookies: {
       getAll() {
         return req.cookies.getAll()
       },
-      setAll(cookies) {
-        cookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
+      setAll() {
+        // Read-only: do not refresh sessions during rate-limit checks.
       },
     },
   })
+
+  // Read session from cookies only — do not refresh here (middleware handles refresh on page routes).
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  return user?.id ?? null
+    data: { session },
+  } = await supabase.auth.getSession()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -258,26 +274,29 @@ async function getUserIdFromMiddlewareCookies(req: NextRequest): Promise<string 
  */
 export async function enforceMiddlewareApiRateLimits(req: NextRequest): Promise<NextResponse | null> {
   const pathname = req.nextUrl.pathname
+  const normalizedPath = pathname.replace(/\/$/, '') || '/'
   const clientIp = getClientIp(req)
   const { global, auth, ai } = getUpstashLimiters()
 
-  const globalKey = getIPRateLimitKey('mw_global', clientIp)
-  const globalResult = await enforceUpstashOrMemory({
-    ratelimit: global,
-    identifier: globalKey,
-    memoryKey: globalKey,
-    memoryLimit: GLOBAL_API_LIMIT,
-    memoryWindowSec: GLOBAL_API_WINDOW_SECONDS,
-  })
-  if (!globalResult.ok) {
-    if (globalResult.source === 'error') {
-      return json503RateLimitUnavailable(GLOBAL_API_WINDOW_SECONDS)
+  if (!GLOBAL_RATE_LIMIT_EXEMPT_PATHS.has(normalizedPath)) {
+    const globalKey = getIPRateLimitKey('mw_global', clientIp)
+    const globalResult = await enforceUpstashOrMemory({
+      ratelimit: global,
+      identifier: globalKey,
+      memoryKey: globalKey,
+      memoryLimit: GLOBAL_API_LIMIT,
+      memoryWindowSec: GLOBAL_API_WINDOW_SECONDS,
+    })
+    if (!globalResult.ok) {
+      if (globalResult.source === 'error') {
+        return json503RateLimitUnavailable(GLOBAL_API_WINDOW_SECONDS)
+      }
+      return json429(
+        'Too many requests. You have exceeded the global API rate limit for this network.',
+        globalResult.limit,
+        globalResult.resetMs
+      )
     }
-    return json429(
-      'Too many requests. You have exceeded the global API rate limit for this network.',
-      globalResult.limit,
-      globalResult.resetMs
-    )
   }
 
   if (isAuthApiPath(pathname)) {

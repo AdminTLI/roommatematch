@@ -16,10 +16,17 @@ export function isPlaceholderSkdbApiKey(key: string | undefined): boolean {
   return PLACEHOLDER_KEY_PATTERNS.some((p) => p.test(key))
 }
 
+/** Strip portal prefix so JWT shape checks apply to the token body. */
+function skdbJwtBody(key: string): string {
+  return key.startsWith('secret-token:') ? key.slice('secret-token:'.length) : key
+}
+
 /** SKDB portal tokens are JWTs: header.payload.signature (three dot-separated parts). */
 export function isTruncatedSkdbApiKey(key: string | undefined): boolean {
-  if (!key || !key.startsWith('eyJ')) return false
-  const parts = key.split('.')
+  if (!key) return false
+  const body = skdbJwtBody(key)
+  if (!body.startsWith('eyJ')) return false
+  const parts = body.split('.')
   if (parts.length !== 3) return true
   if (parts.some((p) => !p || p.length < 10)) return true
   return false

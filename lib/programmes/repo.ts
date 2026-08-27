@@ -621,23 +621,26 @@ export async function getUnenrichedProgrammes(
 }
 
 /**
- * Find programme by croho code
- * 
- * @param crohoCode - CROHO code to search for
- * @param useServerClient - Whether to use server-side client (default: true)
- * @returns Programme or null if not found
+ * Find programme by croho code (optionally scoped to an institution).
+ * Without institutionSlug, returns the first match — prefer passing the slug.
  */
 export async function getProgrammeByCrohoCode(
   crohoCode: string,
-  useServerClient: boolean = true
+  useServerClient: boolean = true,
+  institutionSlug?: string
 ): Promise<Programme | null> {
   const supabase = useServerClient ? createAdminClient() : createClient()
   
-  const { data, error } = await supabase
+  let query = supabase
     .from('programmes')
     .select('*')
     .eq('croho_code', crohoCode)
-    .maybeSingle()
+
+  if (institutionSlug) {
+    query = query.eq('institution_slug', institutionSlug)
+  }
+
+  const { data, error } = await query.limit(1).maybeSingle()
   
   if (error) {
     console.error(`Error fetching programme by CROHO code ${crohoCode}:`, error)

@@ -497,62 +497,37 @@ export async function upsertProfileAndAcademic(
   let undecidedProgram = data.undecided_program ?? false
   
   if (data.program_id && typeof data.program_id === 'string' && data.program_id.trim() !== '') {
-    // Check if it's a valid UUID
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.program_id)
-    
-    if (isUUID) {
-      // Verify the program exists in the programs table (user_academic.program_id references programs)
-      try {
-        const { data: programExists, error: programCheckError } = await supabase
-          .from('programs')
-          .select('id')
-          .eq('id', data.program_id)
-          .maybeSingle()
-        
-        if (programCheckError) {
-          console.warn('[upsertProfileAndAcademic] Error checking program existence:', programCheckError)
-          programIdForDb = null
-          undecidedProgram = true
-        } else if (programExists) {
-          // Program exists in programs table, use it
-          programIdForDb = data.program_id
-          undecidedProgram = false
-        } else {
-          // UUID not in programs - may be from programmes table (questionnaire sends programmes.id when rio_code is null)
-          const { data: programmeById } = await supabase
-            .from('programmes')
-            .select('id, croho_code, name, level')
-            .eq('id', data.program_id)
-            .maybeSingle()
-          
-          if (programmeById?.croho_code) {
-            const { data: programByCroho } = await supabase
-              .from('programs')
-              .select('id')
-              .eq('croho_code', programmeById.croho_code)
-              .maybeSingle()
-            if (programByCroho) {
-              programIdForDb = programByCroho.id
-              undecidedProgram = false
-              console.log('[upsertProfileAndAcademic] Resolved programmes.id to programs.id via CROHO:', programByCroho.id)
-            } else {
-              programIdForDb = null
-              undecidedProgram = true
-            }
-          } else {
-            console.warn('[upsertProfileAndAcademic] Program ID does not exist in programs table and not found in programmes:', data.program_id)
-            programIdForDb = null
-            undecidedProgram = true
-          }
-        }
-      } catch (checkError) {
-        console.error('[upsertProfileAndAcademic] Failed to verify program existence:', checkError)
+    try {
+      const { resolveProgramIdForUniversity } = await import('@/lib/programmes/resolve-program')
+
+      let institutionSlug: string | null = null
+      const { data: uniRow } = await supabase
+        .from('universities')
+        .select('slug')
+        .eq('id', data.university_id)
+        .maybeSingle()
+      institutionSlug = (uniRow?.slug as string) || null
+
+      const resolved = await resolveProgramIdForUniversity(supabase, {
+        programRef: data.program_id,
+        universityId: data.university_id,
+        institutionSlug,
+      })
+
+      if (resolved) {
+        programIdForDb = resolved
+        undecidedProgram = false
+      } else {
+        console.warn(
+          '[upsertProfileAndAcademic] Could not resolve program_id for university:',
+          data.program_id,
+          data.university_id
+        )
         programIdForDb = null
         undecidedProgram = true
       }
-    } else {
-      // Not a UUID, can't be a valid program_id
-      console.warn('[upsertProfileAndAcademic] program_id is not a valid UUID:', data.program_id)
+    } catch (checkError) {
+      console.error('[upsertProfileAndAcademic] Failed to resolve program:', checkError)
       programIdForDb = null
       undecidedProgram = true
     }

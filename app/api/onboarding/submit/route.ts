@@ -196,8 +196,10 @@ export async function POST(request: Request) {
         
         // Look up university_id from institution_slug if university_id is empty
         // Use service role client to bypass RLS to avoid infinite recursion in admins policy
+        const institutionSlugAnswer = introSection?.answers?.find(
+          (a: any) => a.itemId === 'institution_slug'
+        )
         if (!submissionData.university_id || submissionData.university_id === '') {
-          const institutionSlugAnswer = introSection.answers.find((a: any) => a.itemId === 'institution_slug')
           if (institutionSlugAnswer?.value && institutionSlugAnswer.value !== 'other') {
             safeLogger.debug('[Submit] Looking up university for slug:', institutionSlugAnswer.value)
             
@@ -242,145 +244,30 @@ export async function POST(request: Request) {
           }
         }
         
-        // Look up program UUID if program_id exists
-        // program_id could be:
-        // 1. A UUID (already correct)
-        // 2. A RIO code (from programmes table) - need to look up in programmes table first, then find in programs table
-        // 3. A CROHO code (from programs table) - look up directly in programs table
-        if (submissionData.program_id) {
-          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(submissionData.program_id)
-          
-          let programIdResolved = false
-          
-          if (isUUID) {
-            // Already a UUID, verify it exists in programs table
-            safeLogger.debug('[Submit] program_id is already a UUID, verifying it exists:', submissionData.program_id)
-            const { data: program } = await serviceSupabase
-              .from('programs')
-              .select('id')
-              .eq('id', submissionData.program_id)
-              .maybeSingle()
-            
-            if (program) {
-              // UUID exists and is valid (from programs table)
-              submissionData.undecided_program = false
-              programIdResolved = true
-              safeLogger.debug('[Submit] Program UUID verified:', submissionData.program_id)
-            } else {
-              // UUID not in programs - likely from programmes table (questionnaire sends programmes.id when rio_code is null)
-              const { data: programmeById } = await serviceSupabase
-                .from('programmes')
-                .select('id, rio_code, croho_code, name, level, institution_slug')
-                .eq('id', submissionData.program_id)
-                .maybeSingle()
-              
-              if (programmeById && programmeById.croho_code) {
-                const { data: programByCroho } = await serviceSupabase
-                  .from('programs')
-                  .select('id')
-                  .eq('croho_code', programmeById.croho_code)
-                  .maybeSingle()
-                if (programByCroho) {
-                  submissionData.program_id = programByCroho.id
-                  submissionData.undecided_program = false
-                  programIdResolved = true
-                  safeLogger.debug('[Submit] Resolved programmes.id to programs.id via CROHO:', programByCroho.id)
-                }
-              }
-              if (!programIdResolved) {
-                console.warn('[Submit] Program UUID not found in programs table, will try RIO/CROHO lookup')
-              }
-            }
-          }
-          
-          // If not a UUID, or UUID was provided but doesn't exist, try RIO code lookup in programmes table
-          if (!programIdResolved) {
-            safeLogger.debug('[Submit] Looking up program - trying RIO code first:', submissionData.program_id)
-            
-            // First, try to find in programmes table by RIO code
-            const { data: programme, error: programmeError } = await serviceSupabase
-              .from('programmes')
-              .select('id, rio_code, croho_code, name, level, institution_slug')
-              .eq('rio_code', submissionData.program_id)
-              .maybeSingle()
-            
-            if (programme && programme.croho_code) {
-              // Found in programmes table, now look up in programs table by CROHO code
-              safeLogger.debug('[Submit] Found programme by RIO code, looking up in programs table by CROHO:', programme.croho_code)
-              const { data: program, error: programError } = await serviceSupabase
-                .from('programs')
-                .select('id')
-                .eq('croho_code', programme.croho_code)
-                .maybeSingle()
-              
-              if (program) {
-                submissionData.program_id = program.id
-                submissionData.undecided_program = false
-                safeLogger.debug('[Submit] Found program UUID via programmes->programs lookup:', program.id)
-              } else {
-                console.warn('[Submit] Programme found but no matching program in programs table by CROHO code')
-                // Try to find by name, university, and level as fallback
-                if (submissionData.university_id && programme.level) {
-                  const { data: programByName } = await serviceSupabase
-                    .from('programs')
-                    .select('id')
-                    .eq('university_id', submissionData.university_id)
-                    .eq('degree_level', programme.level)
-                    .ilike('name', programme.name)
-                    .maybeSingle()
-                  
-                  if (programByName) {
-                    submissionData.program_id = programByName.id
-                    submissionData.undecided_program = false
-                    safeLogger.debug('[Submit] Found program UUID via name/university/level match:', programByName.id)
-                  } else {
-                    console.warn('[Submit] Could not find matching program, setting to undecided')
-                    submissionData.program_id = undefined
-                    submissionData.undecided_program = true
-                  }
-                } else {
-                  submissionData.program_id = undefined
-                  submissionData.undecided_program = true
-                }
-              }
-            } else {
-              // Not found in programmes table, try direct CROHO code lookup in programs table
-              safeLogger.debug('[Submit] Not found in programmes table, trying CROHO code lookup in programs table')
-              const { data: program, error: programError } = await serviceSupabase
-                .from('programs')
-                .select('id')
-                .eq('croho_code', submissionData.program_id)
-                .maybeSingle()
-              
-              if (program) {
-                submissionData.program_id = program.id
-                submissionData.undecided_program = false
-                safeLogger.debug('[Submit] Found program UUID by CROHO code:', program.id)
-              } else {
-                console.warn('[Submit] Program not found by RIO or CROHO code, setting to undecided')
-                submissionData.program_id = undefined
-                submissionData.undecided_program = true
-              }
-            }
-          }
-          
-          // CRITICAL: Final validation - ensure program_id exists in programs table before proceeding
-          // This prevents foreign key constraint violations
-          if (submissionData.program_id && !submissionData.undecided_program) {
-            const { data: finalValidation } = await serviceSupabase
-              .from('programs')
-              .select('id')
-              .eq('id', submissionData.program_id)
-              .maybeSingle()
-            
-            if (!finalValidation) {
-              console.error('[Submit] CRITICAL: program_id validation failed after all conversion attempts:', submissionData.program_id)
-              console.error('[Submit] This program_id does not exist in programs table - setting to undecided to prevent FK violation')
-              submissionData.program_id = undefined
-              submissionData.undecided_program = true
-            } else {
-              safeLogger.debug('[Submit] ✓ Final validation passed: program_id', submissionData.program_id, 'exists in programs table')
-            }
+        // Resolve catalogue programme ref → programs.id (CROHO scoped by university)
+        if (submissionData.program_id && submissionData.university_id) {
+          const { resolveProgramIdForUniversity } = await import(
+            '@/lib/programmes/resolve-program'
+          )
+          const institutionSlug =
+            typeof institutionSlugAnswer?.value === 'string'
+              ? institutionSlugAnswer.value
+              : null
+
+          const resolved = await resolveProgramIdForUniversity(serviceSupabase, {
+            programRef: submissionData.program_id,
+            universityId: submissionData.university_id,
+            institutionSlug,
+          })
+
+          if (resolved) {
+            submissionData.program_id = resolved
+            submissionData.undecided_program = false
+            safeLogger.debug('[Submit] Resolved program UUID:', resolved)
+          } else {
+            console.warn('[Submit] Could not resolve program, setting to undecided')
+            submissionData.program_id = undefined
+            submissionData.undecided_program = true
           }
         }
       }

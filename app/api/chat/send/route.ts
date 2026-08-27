@@ -60,10 +60,11 @@ export async function POST(request: NextRequest) {
     const rateLimitResult = await checkRateLimit('messages', rateLimitKey)
     
     if (!rateLimitResult.allowed) {
+      const retryAfter = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
       return NextResponse.json(
         { 
-          error: 'Too many requests',
-          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+          error: 'You\'re sending messages too quickly. Please slow down.',
+          retryAfter
         },
         { 
           status: 429,
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
             'X-RateLimit-Limit': '30',
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+            'Retry-After': retryAfter.toString()
           }
         }
       )

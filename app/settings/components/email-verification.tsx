@@ -32,10 +32,19 @@ export function EmailVerification({ user }: EmailVerificationProps) {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await fetch('/api/auth/verification-status')
+        const response = await fetch('/api/auth/verification-status', {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+          },
+        })
         if (response.ok) {
           const data = await response.json()
-          setVerificationStatus(data)
+          if (!data?.userId || data.userId === user.id) {
+            setVerificationStatus(data)
+          }
         }
       } catch (error) {
         console.error('Failed to fetch verification status:', error)
@@ -44,7 +53,7 @@ export function EmailVerification({ user }: EmailVerificationProps) {
       }
     }
     fetchStatus()
-  }, [])
+  }, [user.id])
 
   // More explicit check - only verified if we have a valid ISO timestamp
   const isEmailVerified = Boolean(

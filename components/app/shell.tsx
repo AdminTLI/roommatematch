@@ -68,10 +68,25 @@ export function AppShell({
       }
 
       try {
-        const response = await fetch('/api/auth/verification-status')
+        const response = await fetch('/api/auth/verification-status', {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+          },
+        })
         if (response.ok) {
           const data = await response.json()
-          setVerificationStatus(data)
+          // Ignore CDN/shared stale payloads that belong to another user
+          if (data?.userId && data.userId !== user.id) {
+            console.warn('[AppShell] Ignoring mismatched verification-status payload', {
+              expected: user.id,
+              received: data.userId,
+            })
+          } else {
+            setVerificationStatus(data)
+          }
         }
       } catch (error) {
         console.error('Failed to fetch verification status:', error)

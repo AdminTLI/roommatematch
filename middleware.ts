@@ -1,7 +1,10 @@
 import { NextResponse, NextRequest } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
 import { createCSRFTokenCookie, validateCSRFToken } from '@/lib/csrf'
-import { checkRateLimit, getIPRateLimitKey, getClientIp, buildRateLimitHeaders } from '@/lib/rate-limit'
+import {
+  createMiddlewareSupabaseClient,
+  getMiddlewareAuthUser,
+  redirectWithSupabaseSession,
+} from '@/lib/supabase/middleware-client'
 import { enforceMiddlewareApiRateLimits } from '@/lib/middleware-rate-limit'
 import { isFeatureEnabled } from '@/lib/feature-flags'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
@@ -162,7 +165,8 @@ export async function middleware(req: NextRequest) {
 
   // Handle API routes with CSRF and rate limiting
   if (isApiRoute) {
-    const clientIp = getClientIp(req)
+    // Global / auth / AI tiered limits (see lib/middleware-rate-limit.ts).
+    // Route handlers keep their own action-specific limits (e.g. messages 30/5min).
     const tieredLimitResponse = await enforceMiddlewareApiRateLimits(req)
     if (tieredLimitResponse) {
       return tieredLimitResponse
@@ -170,39 +174,9 @@ export async function middleware(req: NextRequest) {
 
     // Skip CSRF for GET, HEAD, OPTIONS
     if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-      const routeScopedRateLimitedPaths = new Set([
-        '/api/onboarding/save',
-        '/api/onboarding/submit',
-        '/api/pdf/generate-onboarding-preview',
-      ])
-
       // Explicit skip for hide-profile (avoids any CSRF path-matching quirks; auth still required in route)
       if (pathname === '/api/settings/hide-profile') {
         return NextResponse.next()
-      }
-
-      // Rate limiting for POST/PUT/DELETE API routes
-      if (!routeScopedRateLimitedPaths.has(pathname)) {
-        const rateLimitKey = getIPRateLimitKey('api', clientIp)
-        const rateLimitResult = await checkRateLimit('api', rateLimitKey)
-
-        if (!rateLimitResult.allowed) {
-          return NextResponse.json(
-            {
-              error: 'Too many requests',
-              retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
-            },
-            {
-              status: 429,
-              headers: {
-                'X-RateLimit-Limit': '100',
-                'X-RateLimit-Remaining': '0',
-                'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-                'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
-              }
-            }
-          )
-        }
       }
 
       // CSRF validation for state-changing requests
@@ -224,6 +198,7 @@ export async function middleware(req: NextRequest) {
         '/api/domu/chat', // Domu AI chat (dashboard widget; protected by auth + same-origin)
         '/api/settings/hide-profile', // Internal settings action; low-risk to skip CSRF
         '/api/account/activity', // Session heartbeat; auth required in route
+        '/api/account/presence', // Online presence ping; auth required in route (no CSRF header)
         '/api/unsubscribe', // Token-authenticated; users arrive from email without session/CSRF
       ]
       // Normalize pathname (remove trailing slash) for consistent matching
@@ -302,31 +277,16 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // Create a response we can modify cookies on
-  const res = NextResponse.next()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return req.cookies.getAll()
-        },
-        setAll(cookies) {
-          cookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
-        },
-      },
-    }
-  )
+  const { supabase, getResponse } = createMiddlewareSupabaseClient(req)
+  let res = getResponse()
+  const redirect = (url: URL) => redirectWithSupabaseSession(url, res)
 
   const cacheKey = getCacheKey(req)
   const now = Date.now()
 
-  // Always validate with Supabase (no user cache) so revoked sessions are detected on the next request.
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
+  // Refresh via getClaims() first (official SSR pattern), then load user from refreshed session.
+  const { user, error: authError } = await getMiddlewareAuthUser(supabase)
+  res = getResponse()
 
   if (authError && requestHasSupabaseAuthCookies(req)) {
     safeLogger.warn('[Middleware] Session invalid or refresh failed', {
@@ -336,11 +296,7 @@ export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone()
     url.pathname = '/auth/sign-in'
     url.searchParams.set('error', SESSION_TERMINATED_ERROR_PARAM)
-    const redirectRes = NextResponse.redirect(url)
-    res.cookies.getAll().forEach((c) => {
-      redirectRes.cookies.set(c)
-    })
-    return redirectRes
+    return redirect(url)
   }
 
   // Block access during GDPR deletion grace period (hard delete runs via maintenance cron)
@@ -355,11 +311,7 @@ export async function middleware(req: NextRequest) {
     url.pathname = '/auth/sign-in'
     url.searchParams.set('reason', 'account_deletion_scheduled')
     url.searchParams.set('deletion_at', deletionScheduledAt)
-    const redirectRes = NextResponse.redirect(url)
-    res.cookies.getAll().forEach((c) => {
-      redirectRes.cookies.set(c)
-    })
-    return redirectRes
+    return redirect(url)
   }
 
   // Set CSRF token cookie for authenticated users (only if missing or expired)
@@ -443,7 +395,7 @@ export async function middleware(req: NextRequest) {
       if (pathname !== '/verify') {
         url.searchParams.set('redirect', pathname)
       }
-      return NextResponse.redirect(url)
+      return redirect(url)
     }
   }
 
@@ -497,7 +449,7 @@ export async function middleware(req: NextRequest) {
     if (isInstitutionOnlyAdmin) {
       const url = req.nextUrl.clone()
       url.pathname = '/institution/dashboard'
-      return NextResponse.redirect(url)
+      return redirect(url)
     }
 
     if (!isAdminOrSuperAdmin && !isAdminFromAdminsTable && !isMetadataAdmin) {
@@ -515,7 +467,7 @@ export async function middleware(req: NextRequest) {
         userRoleError: userRoleError?.message,
         adminError: adminError?.message
       })
-      return NextResponse.redirect(url)
+      return redirect(url)
     }
   }
 
@@ -553,14 +505,14 @@ export async function middleware(req: NextRequest) {
     if (role === 'super_admin') {
       const url = req.nextUrl.clone()
       url.pathname = '/admin'
-      return NextResponse.redirect(url)
+      return redirect(url)
     }
 
     if (!institutionScoped || !institutionId) {
       const url = req.nextUrl.clone()
       url.pathname = '/dashboard'
       url.searchParams.set('reason', 'institution_access_denied')
-      return NextResponse.redirect(url)
+      return redirect(url)
     }
 
     const isOnboarding = pathname.startsWith('/institution/onboarding')
@@ -574,7 +526,7 @@ export async function middleware(req: NextRequest) {
       if (!adminProfile?.onboarding_completed_at) {
         const url = req.nextUrl.clone()
         url.pathname = '/institution/onboarding'
-        return NextResponse.redirect(url)
+        return redirect(url)
       }
     }
   }
@@ -604,7 +556,7 @@ export async function middleware(req: NextRequest) {
       if (adminRow?.university_id) {
         const url = req.nextUrl.clone()
         url.pathname = '/institution/dashboard'
-        return NextResponse.redirect(url)
+        return redirect(url)
       }
     }
   }
@@ -623,7 +575,7 @@ export async function middleware(req: NextRequest) {
     ) {
       const url = req.nextUrl.clone()
       url.pathname = '/auth/inactive-account'
-      return NextResponse.redirect(url)
+      return redirect(url)
     }
   }
 
@@ -654,7 +606,7 @@ export async function middleware(req: NextRequest) {
           : 'verification_required')
       }
       
-      return NextResponse.redirect(url)
+      return redirect(url)
     }
   }
 
@@ -673,7 +625,7 @@ export async function middleware(req: NextRequest) {
       }
       url.searchParams.set('auto', '1')
       url.searchParams.set('reason', 'email_verification_required')
-      return NextResponse.redirect(url)
+      return redirect(url)
     }
 
     if (!verificationStatus.needsPersonaVerification) {
@@ -684,7 +636,7 @@ export async function middleware(req: NextRequest) {
           ? intended
           : '/onboarding/welcome'
       url.search = ''
-      return NextResponse.redirect(url)
+      return redirect(url)
     }
 
     // Double-check email_confirmed_at directly as well (defense in depth)
@@ -702,7 +654,7 @@ export async function middleware(req: NextRequest) {
         url.searchParams.set('email', user.email)
       }
       url.searchParams.set('auto', '1')
-      return NextResponse.redirect(url)
+      return redirect(url)
     }
   }
 
@@ -741,7 +693,7 @@ export async function middleware(req: NextRequest) {
       if (!isAdmin) {
         const url = req.nextUrl.clone()
         url.pathname = '/dashboard'
-        return NextResponse.redirect(url)
+        return redirect(url)
       }
     }
   }

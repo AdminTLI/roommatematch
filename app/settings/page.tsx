@@ -273,99 +273,35 @@ export default async function SettingsPage() {
           const { createServiceClient } = await import('@/lib/supabase/service')
           const serviceSupabase = createServiceClient()
           
-          // Look up program UUID if program_id exists
-          // program_id could be:
-          // 1. A UUID (already correct)
-          // 2. A RIO code (from programmes table) - need to look up in programmes table first, then find in programs table
-          // 3. A CROHO code (from programs table) - look up directly in programs table
+          // Resolve catalogue programme ref → programs.id (CROHO scoped by university)
           let programUUID: string | undefined = undefined
           if (program_id && typeof program_id === 'string' && program_id.trim() !== '') {
-            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(program_id)
-            
-            if (isUUID) {
-              // Already a UUID, verify it exists
-              console.log('[Settings] program_id is already a UUID, verifying:', program_id)
-              const { data: programData } = await serviceSupabase
-                .from('programs')
-                .select('id')
-                .eq('id', program_id)
-                .maybeSingle()
-              
-              if (programData?.id) {
-                programUUID = program_id
-                console.log('[Settings] Program UUID verified:', programUUID)
-              } else {
-                console.warn('[Settings] Program UUID not found, will try RIO/CROHO lookup')
-                // Fall through to RIO/CROHO lookup
-              }
-            }
-            
-            // If not a UUID or UUID not found, try RIO code lookup in programmes table
-            if (!isUUID || !programUUID) {
-              console.log('[Settings] Looking up program - trying RIO code first:', program_id)
-              
-              // First, try to find in programmes table by RIO code
-              const { data: programme } = await serviceSupabase
-                .from('programmes')
-                .select('id, rio_code, croho_code, name, level, institution_slug')
-                .eq('rio_code', program_id)
-                .maybeSingle()
-              
-              if (programme && programme.croho_code) {
-                // Found in programmes table, now look up in programs table by CROHO code
-                console.log('[Settings] Found programme by RIO code, looking up in programs table by CROHO:', programme.croho_code)
-                const { data: programData } = await serviceSupabase
-                  .from('programs')
-                  .select('id')
-                  .eq('croho_code', programme.croho_code)
-                  .maybeSingle()
-                
-                if (programData?.id) {
-                  programUUID = programData.id
-                  console.log('[Settings] Found program UUID via programmes->programs lookup:', programUUID)
-                } else {
-                  console.warn('[Settings] Programme found but no matching program in programs table by CROHO code')
-                  // Try to find by name, university, and level as fallback
-                  if (university_id && programme.level) {
-                    const { data: programByName } = await serviceSupabase
-                      .from('programs')
-                      .select('id')
-                      .eq('university_id', university_id)
-                      .eq('degree_level', programme.level)
-                      .ilike('name', programme.name)
-                      .maybeSingle()
-                    
-                    if (programByName) {
-                      programUUID = programByName.id
-                      console.log('[Settings] Found program UUID via name/university/level match:', programUUID)
-                    } else {
-                      console.warn('[Settings] Could not find matching program, setting to undecided')
-                      undecided_program = true
-                      programUUID = undefined
-                    }
-                  } else {
-                    undecided_program = true
-                    programUUID = undefined
-                  }
-                }
-              } else {
-                // Not found in programmes table, try direct CROHO code lookup in programs table
-                console.log('[Settings] Not found in programmes table, trying CROHO code lookup in programs table')
-                const { data: programData } = await serviceSupabase
-                  .from('programs')
-                  .select('id')
-                  .eq('croho_code', program_id)
-                  .maybeSingle()
-                
-                if (programData?.id) {
-                  programUUID = programData.id
-                  console.log('[Settings] Found program UUID by CROHO code:', programUUID)
-                } else {
-                  console.warn('[Settings] Program not found by RIO or CROHO code, setting to undecided')
-                  undecided_program = true
-                  programUUID = undefined
-                }
-              }
+            const { resolveProgramIdForUniversity } = await import(
+              '@/lib/programmes/resolve-program'
+            )
+
+            let institutionSlug: string | null = null
+            const { data: uniRow } = await serviceSupabase
+              .from('universities')
+              .select('slug')
+              .eq('id', university_id)
+              .maybeSingle()
+            institutionSlug = (uniRow?.slug as string) || null
+
+            const resolved = await resolveProgramIdForUniversity(serviceSupabase, {
+              programRef: program_id,
+              universityId: university_id,
+              institutionSlug,
+            })
+
+            if (resolved) {
+              programUUID = resolved
+              undecided_program = false
+              console.log('[Settings] Resolved program UUID:', programUUID)
+            } else {
+              console.warn('[Settings] Could not resolve program, setting to undecided')
+              undecided_program = true
+              programUUID = undefined
             }
           }
           

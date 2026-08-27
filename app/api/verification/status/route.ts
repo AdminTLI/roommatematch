@@ -2,13 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+const NO_STORE_HEADERS = {
+  'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
+  Vary: 'Cookie',
+} as const
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: NO_STORE_HEADERS })
     }
 
     // Use admin client to bypass RLS and ensure we can read the verification record
@@ -80,23 +90,28 @@ export async function GET(request: NextRequest) {
       verificationStatus = profile.verification_status as 'unverified' | 'pending' | 'verified' | 'failed'
     }
 
-    return NextResponse.json({
-      status: verificationStatus,
-      verification: verification ? {
-        id: verification.id,
-        provider: verification.provider,
-        status: verification.status,
-        reviewReason: verification.review_reason,
-        createdAt: verification.created_at,
-        updatedAt: verification.updated_at
-      } : null,
-      canRetry: verification?.status === 'rejected' || verification?.status === 'expired'
-    })
+    return NextResponse.json(
+      {
+        status: verificationStatus,
+        verification: verification
+          ? {
+              id: verification.id,
+              provider: verification.provider,
+              status: verification.status,
+              reviewReason: verification.review_reason,
+              createdAt: verification.created_at,
+              updatedAt: verification.updated_at,
+            }
+          : null,
+        canRetry: verification?.status === 'rejected' || verification?.status === 'expired',
+      },
+      { headers: NO_STORE_HEADERS }
+    )
   } catch (error) {
     safeLogger.error('[Verification] Status check error', error)
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: NO_STORE_HEADERS }
     )
   }
 }

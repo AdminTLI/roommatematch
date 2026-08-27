@@ -112,7 +112,7 @@ CREATE TABLE programmes (
   isat_code VARCHAR(50),
   
   -- SKDB enrichment fields
-  croho_code VARCHAR(50),                   -- CROHO code from SKDB
+  croho_code VARCHAR(50),                   -- CROHO from SKDB (unique per institution_slug, not globally)
   language_codes TEXT[] DEFAULT '{}',       -- Instruction languages
   faculty TEXT,                             -- Faculty/department
   active BOOLEAN DEFAULT true,

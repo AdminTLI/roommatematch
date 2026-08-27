@@ -626,6 +626,64 @@ async function parseProgrammesFromXLSX(): Promise<SkdbProgram[]> {
 }
 
 /**
+ * Mirror a programmes offering into legacy programs (user_academic FK target).
+ * CROHO uniqueness is per university.
+ */
+const universityIdBySlug = new Map<string, string>()
+
+async function getUniversityIdForSlug(slug: string): Promise<string | null> {
+  if (universityIdBySlug.has(slug)) return universityIdBySlug.get(slug)!
+  const { data } = await supabase
+    .from('universities')
+    .select('id')
+    .eq('slug', slug)
+    .maybeSingle()
+  if (data?.id) {
+    universityIdBySlug.set(slug, data.id)
+    return data.id
+  }
+  return null
+}
+
+async function mirrorProgrammeToPrograms(
+  institutionSlug: string,
+  programme: {
+    croho_code: string | null
+    name: string
+    name_en: string | null
+    level: string
+    language_codes: string[]
+    faculty: string | null
+    active: boolean
+  }
+): Promise<void> {
+  try {
+    const universityId = await getUniversityIdForSlug(institutionSlug)
+    if (!universityId) return
+
+    const { ensureProgramsRowForUniversity } = await import(
+      '@/lib/programmes/resolve-program'
+    )
+    await ensureProgramsRowForUniversity(supabase, universityId, {
+      id: '',
+      croho_code: programme.croho_code,
+      name: programme.name,
+      name_en: programme.name_en,
+      level: programme.level,
+      language_codes: programme.language_codes,
+      faculty: programme.faculty,
+      active: programme.active,
+      institution_slug: institutionSlug,
+    })
+  } catch (err) {
+    console.warn(
+      `⚠️  Failed to mirror programme to programs (${institutionSlug} / ${programme.name}):`,
+      err
+    )
+  }
+}
+
+/**
  * Find existing SKDB programme by CROHO code or name
  */
 async function findExistingSkdbProgramme(
@@ -807,6 +865,19 @@ async function upsertSkdbProgramme(
           if (report.summary.enriched % 50 === 0) {
             console.log(`✅ Updated ${report.summary.enriched} programmes so far...`);
           }
+          await mirrorProgrammeToPrograms(institutionSlug, {
+            croho_code: skdbProgram.crohoCode || existing.croho_code || null,
+            name: skdbProgram.name,
+            name_en: skdbProgram.nameEn || existing.name_en || null,
+            level: skdbProgram.degreeLevel,
+            language_codes:
+              skdbProgram.languageCodes.length > 0
+                ? skdbProgram.languageCodes
+                : existing.language_codes || [],
+            faculty: skdbProgram.faculty || existing.faculty || null,
+            active:
+              skdbProgram.active !== undefined ? skdbProgram.active : existing.active !== false,
+          });
           return; // Successfully updated, exit early
         }
       }
@@ -848,88 +919,172 @@ async function upsertSkdbProgramme(
       .insert(insertData);
     
     if (error) {
-      // If conflict, try to update by croho_code or composite key
-      if (error.code === '23505') { // Unique violation
-        const conflictData = { ...insertData };
-        delete conflictData.rio_code; // Remove rio_code for update
-        // Ensure DUO fields are cleared
-        conflictData.modes = [];
-        conflictData.discipline = null;
-        conflictData.sub_discipline = null;
-        conflictData.is_variant = false;
-        
-        const { error: updateError } = await supabase
-          .from('programmes')
-          .update(conflictData)
-          .eq('institution_slug', institutionSlug)
-          .eq('name', skdbProgram.name)
-          .eq('level', skdbProgram.degreeLevel);
-        
-        if (updateError) {
-          console.error(`❌ Failed to upsert SKDB programme ${skdbProgram.name}:`, updateError);
-          report.summary.failed++;
-          if (report.byInstitution[institutionSlug]) {
-            report.byInstitution[institutionSlug].failed++;
-          }
-        } else {
-          // Verify the update actually affected rows
-          const { data: verifyData } = await supabase
+      // Unique violation on (institution_slug, croho_code) or (institution_slug, rio_code)
+      if (error.code === '23505') {
+        let updated = false
+
+        if (skdbProgram.crohoCode) {
+          const { data: byCroho, error: updateByCrohoError } = await supabase
             .from('programmes')
+            .update({
+              ...insertData,
+              rio_code: skdbProgram.rioCode || null,
+            })
+            .eq('institution_slug', institutionSlug)
+            .eq('croho_code', skdbProgram.crohoCode)
             .select('id')
+            .maybeSingle()
+
+          if (!updateByCrohoError && byCroho?.id) {
+            updated = true
+            report.summary.enriched++
+            if (report.byInstitution[institutionSlug]) {
+              report.byInstitution[institutionSlug].enriched++
+            }
+            await mirrorProgrammeToPrograms(institutionSlug, {
+              croho_code: skdbProgram.crohoCode,
+              name: skdbProgram.name,
+              name_en: skdbProgram.nameEn || null,
+              level: skdbProgram.degreeLevel,
+              language_codes: skdbProgram.languageCodes,
+              faculty: skdbProgram.faculty || null,
+              active: skdbProgram.active,
+            })
+          }
+        }
+
+        if (!updated && skdbProgram.rioCode) {
+          const { data: byRio, error: updateByRioError } = await supabase
+            .from('programmes')
+            .update({
+              ...insertData,
+            })
+            .eq('institution_slug', institutionSlug)
+            .eq('rio_code', skdbProgram.rioCode)
+            .select('id')
+            .maybeSingle()
+
+          if (!updateByRioError && byRio?.id) {
+            updated = true
+            report.summary.enriched++
+            if (report.byInstitution[institutionSlug]) {
+              report.byInstitution[institutionSlug].enriched++
+            }
+            await mirrorProgrammeToPrograms(institutionSlug, {
+              croho_code: skdbProgram.crohoCode || null,
+              name: skdbProgram.name,
+              name_en: skdbProgram.nameEn || null,
+              level: skdbProgram.degreeLevel,
+              language_codes: skdbProgram.languageCodes,
+              faculty: skdbProgram.faculty || null,
+              active: skdbProgram.active,
+            })
+          }
+        }
+
+        if (!updated) {
+          const conflictData = { ...insertData }
+          delete conflictData.rio_code
+          conflictData.modes = []
+          conflictData.discipline = null
+          conflictData.sub_discipline = null
+          conflictData.is_variant = false
+
+          const { data: byName, error: updateError } = await supabase
+            .from('programmes')
+            .update(conflictData)
             .eq('institution_slug', institutionSlug)
             .eq('name', skdbProgram.name)
             .eq('level', skdbProgram.degreeLevel)
-            .maybeSingle();
-          
-          if (verifyData) {
-            report.summary.skdbOnly++;
+            .select('id')
+            .maybeSingle()
+
+          if (updateError || !byName?.id) {
+            console.error(`❌ Failed to upsert SKDB programme ${skdbProgram.name}:`, updateError || error)
+            report.summary.failed++
             if (report.byInstitution[institutionSlug]) {
-              report.byInstitution[institutionSlug].skdbOnly++;
-            }
-            // Only log every 50th creation to reduce noise
-            if (report.summary.skdbOnly % 50 === 0) {
-              console.log(`✅ Created ${report.summary.skdbOnly} new programmes so far...`);
+              report.byInstitution[institutionSlug].failed++
             }
           } else {
-            console.error(`❌ Upsert succeeded but programme not found: ${skdbProgram.name}`);
-            report.summary.failed++;
+            report.summary.enriched++
             if (report.byInstitution[institutionSlug]) {
-              report.byInstitution[institutionSlug].failed++;
+              report.byInstitution[institutionSlug].enriched++
             }
+            await mirrorProgrammeToPrograms(institutionSlug, {
+              croho_code: skdbProgram.crohoCode || null,
+              name: skdbProgram.name,
+              name_en: skdbProgram.nameEn || null,
+              level: skdbProgram.degreeLevel,
+              language_codes: skdbProgram.languageCodes,
+              faculty: skdbProgram.faculty || null,
+              active: skdbProgram.active,
+            })
           }
         }
       } else {
-        console.error(`❌ Failed to create SKDB programme ${skdbProgram.name}:`, error);
-        report.summary.failed++;
+        console.error(`❌ Failed to create SKDB programme ${skdbProgram.name}:`, error)
+        report.summary.failed++
         if (report.byInstitution[institutionSlug]) {
-          report.byInstitution[institutionSlug].failed++;
+          report.byInstitution[institutionSlug].failed++
         }
       }
     } else {
-      // Insert succeeded - verify it was actually created
-      const { data: verifyData } = await supabase
-        .from('programmes')
-        .select('id')
-        .eq('institution_slug', institutionSlug)
-        .eq('name', skdbProgram.name)
-        .eq('level', skdbProgram.degreeLevel)
-        .maybeSingle();
+      // Insert succeeded — verify by croho (preferred) or name within institution
+      let verifyData: { id: string } | null = null
+      if (skdbProgram.crohoCode) {
+        const { data } = await supabase
+          .from('programmes')
+          .select('id')
+          .eq('institution_slug', institutionSlug)
+          .eq('croho_code', skdbProgram.crohoCode)
+          .limit(1)
+          .maybeSingle()
+        verifyData = data
+      }
+      if (!verifyData) {
+        const { data } = await supabase
+          .from('programmes')
+          .select('id')
+          .eq('institution_slug', institutionSlug)
+          .eq('name', skdbProgram.name)
+          .eq('level', skdbProgram.degreeLevel)
+          .limit(1)
+          .maybeSingle()
+        verifyData = data
+      }
       
       if (verifyData) {
-        report.summary.skdbOnly++;
+        report.summary.skdbOnly++
         if (report.byInstitution[institutionSlug]) {
-          report.byInstitution[institutionSlug].skdbOnly++;
+          report.byInstitution[institutionSlug].skdbOnly++
         }
-        // Only log every 50th creation to reduce noise
         if (report.summary.skdbOnly % 50 === 0) {
-          console.log(`✅ Created ${report.summary.skdbOnly} new programmes so far...`);
+          console.log(`✅ Created ${report.summary.skdbOnly} new programmes so far...`)
         }
+        await mirrorProgrammeToPrograms(institutionSlug, {
+          croho_code: skdbProgram.crohoCode || null,
+          name: skdbProgram.name,
+          name_en: skdbProgram.nameEn || null,
+          level: skdbProgram.degreeLevel,
+          language_codes: skdbProgram.languageCodes,
+          faculty: skdbProgram.faculty || null,
+          active: skdbProgram.active,
+        })
       } else {
-        console.error(`❌ Insert succeeded but programme not found: ${skdbProgram.name}`);
-        report.summary.failed++;
+        // Insert reported success; treat as created even if verify raced
+        report.summary.skdbOnly++
         if (report.byInstitution[institutionSlug]) {
-          report.byInstitution[institutionSlug].failed++;
+          report.byInstitution[institutionSlug].skdbOnly++
         }
+        await mirrorProgrammeToPrograms(institutionSlug, {
+          croho_code: skdbProgram.crohoCode || null,
+          name: skdbProgram.name,
+          name_en: skdbProgram.nameEn || null,
+          level: skdbProgram.degreeLevel,
+          language_codes: skdbProgram.languageCodes,
+          faculty: skdbProgram.faculty || null,
+          active: skdbProgram.active,
+        })
       }
     }
   }

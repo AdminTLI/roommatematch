@@ -815,24 +815,53 @@ export class SupabaseMatchRepo implements MatchRepo {
       await this.ensureMatchRunExists(runId, { mode, matchCount: runMatches.length })
     }
 
-    const records = matches.map(match => ({
-      run_id: match.runId,
-      kind: match.kind,
-      user_ids: match.kind === 'pair' ? [match.aId, match.bId] : match.memberIds,
-      fit_score: match.kind === 'pair' ? match.fit : match.avgFit,
-      fit_index: match.fitIndex,
-      section_scores: match.kind === 'pair' ? match.sectionScores : null,
-      reasons: match.kind === 'pair' ? match.reasons : [],
-      locked: match.locked
-    }))
-
     const supabase = await this.getSupabase()
-    const { error } = await supabase
-      .from('match_records')
-      .insert(records)
 
-    if (error) {
-      throw new Error(`Failed to save matches: ${error.message}`)
+    for (const match of matches) {
+      const userIds = match.kind === 'pair' ? [match.aId, match.bId] : match.memberIds
+
+      const { data: existingRows, error: existingError } = await supabase
+        .from('match_records')
+        .select('id, user_ids')
+        .contains('user_ids', userIds)
+        .limit(20)
+
+      if (existingError) {
+        throw new Error(`Failed to check existing matches: ${existingError.message}`)
+      }
+
+      const alreadySaved = (existingRows || []).some((row) => {
+        const ids = row.user_ids || []
+        return ids.length === userIds.length && userIds.every((id) => ids.includes(id))
+      })
+
+      if (alreadySaved) {
+        if (match.locked) {
+          const { error: lockError } = await supabase
+            .from('match_records')
+            .update({ locked: true })
+            .contains('user_ids', userIds)
+          if (lockError) {
+            throw new Error(`Failed to lock existing match: ${lockError.message}`)
+          }
+        }
+        continue
+      }
+
+      const { error } = await supabase.from('match_records').insert({
+        run_id: match.runId,
+        kind: match.kind,
+        user_ids: userIds,
+        fit_score: match.kind === 'pair' ? match.fit : match.avgFit,
+        fit_index: match.fitIndex,
+        section_scores: match.kind === 'pair' ? match.sectionScores : null,
+        reasons: match.kind === 'pair' ? match.reasons : [],
+        locked: match.locked,
+      })
+
+      if (error) {
+        throw new Error(`Failed to save matches: ${error.message}`)
+      }
     }
   }
 
@@ -887,10 +916,11 @@ export class SupabaseMatchRepo implements MatchRepo {
 
   async lockMatch(ids: string[], runId: string): Promise<void> {
     const supabase = await this.getSupabase()
+    // user_ids is uuid[]; .in() compares scalar IN-list and breaks. Use contains.
     const { error } = await supabase
       .from('match_records')
       .update({ locked: true })
-      .in('user_ids', ids)
+      .contains('user_ids', ids)
       .eq('run_id', runId)
 
     if (error) {
@@ -1325,13 +1355,15 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     const supabase = await this.getSupabase()
+    const [userLowId, userHighId] = userAId < userBId ? [userAId, userBId] : [userBId, userAId]
 
-    // Fetch all pair suggestions, then filter in JavaScript to find pairs with both users
-    // This is more reliable than complex Supabase array queries
+    // Prefer indexed pair columns when present; fall back to member_ids contains.
     let query = supabase
       .from('match_suggestions')
       .select('*')
       .eq('kind', 'pair')
+      .eq('user_low_id', userLowId)
+      .eq('user_high_id', userHighId)
       .order('created_at', { ascending: false })
 
     if (!includeExpired) {
@@ -1339,32 +1371,62 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     const { data, error } = await query
-    if (error) throw new Error(`Failed to get suggestions for pair: ${error.message}`)
+    if (error) {
+      // Older DBs may lack user_low_id/user_high_id — fall back to member_ids filter
+      safeLogger.warn('[getSuggestionsForPair] Indexed pair query failed, falling back', {
+        error: error.message,
+      })
 
-    // Filter to only suggestions that contain BOTH users
-    const filtered = (data || []).filter((record: any) => {
-      const memberIds = record.member_ids as string[]
-      return memberIds &&
-        Array.isArray(memberIds) &&
-        memberIds.includes(userAId) &&
-        memberIds.includes(userBId)
-    })
+      let fallback = supabase
+        .from('match_suggestions')
+        .select('*')
+        .eq('kind', 'pair')
+        .contains('member_ids', [userAId, userBId])
+        .order('created_at', { ascending: false })
 
-    safeLogger.debug(`[DEBUG] getSuggestionsForPair - Found ${filtered.length} suggestions for pair out of ${data?.length || 0} total pair suggestions`, {
-      includeExpired,
-      totalPairSuggestions: data?.length || 0,
-      filteredCount: filtered.length,
-      filteredSuggestions: filtered.map(s => ({
-        id: s.id,
-        status: s.status,
-        acceptedByCount: (s.accepted_by || []).length,
-        memberCount: (s.member_ids || []).length,
-        createdAt: s.created_at,
-        runId: s.run_id
+      if (!includeExpired) {
+        fallback = fallback.neq('status', 'expired')
+      }
+
+      const { data: fallbackData, error: fallbackError } = await fallback
+      if (fallbackError) throw new Error(`Failed to get suggestions for pair: ${fallbackError.message}`)
+
+      const filtered = (fallbackData || []).filter((record: any) => {
+        const memberIds = record.member_ids as string[]
+        return (
+          memberIds &&
+          Array.isArray(memberIds) &&
+          memberIds.length === 2 &&
+          memberIds.includes(userAId) &&
+          memberIds.includes(userBId)
+        )
+      })
+
+      return filtered.map((record: any) => ({
+        id: record.id,
+        runId: record.run_id,
+        kind: record.kind,
+        memberIds: record.member_ids,
+        fitIndex: record.fit_index,
+        sectionScores: record.section_scores,
+        reasons: record.reasons,
+        personalizedExplanation: record.personalized_explanation,
+        expiresAt: record.expires_at,
+        status: record.status,
+        acceptedBy: record.accepted_by || [],
+        createdAt: record.created_at,
       }))
-    })
+    }
 
-    return filtered.map((record: any) => ({
+    safeLogger.debug(
+      `[DEBUG] getSuggestionsForPair - Found ${(data || []).length} suggestions for pair`,
+      {
+        includeExpired,
+        filteredCount: (data || []).length,
+      }
+    )
+
+    return (data || []).map((record: any) => ({
       id: record.id,
       runId: record.run_id,
       kind: record.kind,
@@ -1376,7 +1438,7 @@ export class SupabaseMatchRepo implements MatchRepo {
       expiresAt: record.expires_at,
       status: record.status,
       acceptedBy: record.accepted_by || [],
-      createdAt: record.created_at
+      createdAt: record.created_at,
     }))
   }
 

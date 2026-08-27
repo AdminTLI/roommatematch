@@ -317,6 +317,48 @@ export async function POST(request: NextRequest) {
       }
     }
     
+    // Idempotent retry: if already confirmed, ensure match_record exists and succeed
+    if (action === 'accept' && suggestion.status === 'confirmed') {
+      const [userA, userB] = suggestion.memberIds
+      if (userA && userB && userA !== userB) {
+        const match: MatchRecord = suggestion.kind === 'pair'
+          ? {
+              kind: 'pair',
+              aId: suggestion.memberIds[0],
+              bId: suggestion.memberIds[1],
+              fit: suggestion.fitIndex / 100,
+              fitIndex: suggestion.fitIndex,
+              sectionScores: suggestion.sectionScores || {},
+              reasons: suggestion.reasons || [],
+              runId: suggestion.runId,
+              locked: true,
+              createdAt: new Date().toISOString(),
+            }
+          : {
+              kind: 'group',
+              memberIds: suggestion.memberIds,
+              avgFit: suggestion.fitIndex / 100,
+              fitIndex: suggestion.fitIndex,
+              runId: suggestion.runId,
+              locked: true,
+              createdAt: new Date().toISOString(),
+            }
+
+        try {
+          await repo.saveMatches([match])
+          await repo.lockMatch(suggestion.memberIds, suggestion.runId)
+        } catch (repairError) {
+          safeLogger.error('[Match Respond] Failed to repair confirmed match record', {
+            error: repairError,
+            suggestionId: suggestion.id,
+          })
+          throw repairError
+        }
+      }
+
+      return NextResponse.json({ ok: true, suggestion, repaired: true })
+    }
+
     // Accept action with pair-wide merge
     const otherIds = suggestion.memberIds.filter(id => id !== user.id)
     const otherId = otherIds[0]
@@ -371,6 +413,36 @@ export async function POST(request: NextRequest) {
         })
         // This should not happen if triggers are working, but log it for monitoring
       }
+
+      // Create + persist MatchRecord BEFORE flipping suggestion status so a FK
+      // failure cannot leave the suggestion stuck as confirmed without a record.
+      const now = new Date().toISOString()
+      const match: MatchRecord = suggestion.kind === 'pair'
+        ? {
+            kind: 'pair',
+            aId: suggestion.memberIds[0],
+            bId: suggestion.memberIds[1],
+            fit: suggestion.fitIndex / 100,
+            fitIndex: suggestion.fitIndex,
+            sectionScores: suggestion.sectionScores || {},
+            reasons: suggestion.reasons || [],
+            runId: suggestion.runId,
+            locked: true,
+            createdAt: now
+          }
+        : {
+            kind: 'group',
+            memberIds: suggestion.memberIds,
+            avgFit: suggestion.fitIndex / 100,
+            fitIndex: suggestion.fitIndex,
+            runId: suggestion.runId,
+            locked: true,
+            createdAt: now
+          }
+
+      await repo.saveMatches([match])
+      await repo.lockMatch(suggestion.memberIds, suggestion.runId)
+      await repo.markUsersMatched(suggestion.memberIds, suggestion.runId)
       
       for (const s of pairSugs) {
         const merged = new Set<string>(s.acceptedBy || [])
@@ -409,36 +481,6 @@ export async function POST(request: NextRequest) {
       }
       
       await repo.updateSuggestion(suggestion)
-      
-      // Create final MatchRecord
-      const now = new Date().toISOString()
-      const match: MatchRecord = suggestion.kind === 'pair'
-        ? {
-            kind: 'pair',
-            aId: suggestion.memberIds[0],
-            bId: suggestion.memberIds[1],
-            fit: suggestion.fitIndex / 100,
-            fitIndex: suggestion.fitIndex,
-            sectionScores: suggestion.sectionScores || {},
-            reasons: suggestion.reasons || [],
-            runId: suggestion.runId,
-            locked: true,
-            createdAt: now
-          }
-        : {
-            kind: 'group',
-            memberIds: suggestion.memberIds,
-            avgFit: suggestion.fitIndex / 100,
-            fitIndex: suggestion.fitIndex,
-            runId: suggestion.runId,
-            locked: true,
-            createdAt: now
-          }
-      
-      // Save the confirmed match
-      await repo.saveMatches([match])
-      await repo.lockMatch(suggestion.memberIds, suggestion.runId)
-      await repo.markUsersMatched(suggestion.memberIds, suggestion.runId)
       
       // Create chat on confirmation (idempotent) - CRITICAL: Always create chat for confirmed matches
       let chatId: string | undefined
@@ -667,14 +709,7 @@ export async function POST(request: NextRequest) {
         // Both users have now accepted - confirm the match
         safeLogger.debug(`[DEBUG] Re-check confirmed match - both users have accepted after update`)
         
-        // Update all pair suggestions to confirmed
-        for (const s of updatedPairSugs) {
-          const merged = new Set<string>(s.acceptedBy || [])
-          recheckUnionAccepted.forEach(a => merged.add(a))
-          await repo.updateSuggestionAcceptedByAndStatus(s.id, Array.from(merged), 'confirmed')
-        }
-        
-        // Create match record
+        // Persist match record first so a failure cannot leave status=confirmed with no record
         const now = new Date().toISOString()
         const match: MatchRecord = {
           kind: 'pair',
@@ -692,6 +727,13 @@ export async function POST(request: NextRequest) {
         await repo.saveMatches([match])
         await repo.lockMatch(suggestion.memberIds, suggestion.runId)
         await repo.markUsersMatched(suggestion.memberIds, suggestion.runId)
+
+        // Update all pair suggestions to confirmed
+        for (const s of updatedPairSugs) {
+          const merged = new Set<string>(s.acceptedBy || [])
+          recheckUnionAccepted.forEach(a => merged.add(a))
+          await repo.updateSuggestionAcceptedByAndStatus(s.id, Array.from(merged), 'confirmed')
+        }
         
         // Create chat on re-check confirmation (idempotent) - CRITICAL: Always create chat for confirmed matches
         let chatId: string | undefined

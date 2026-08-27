@@ -62,6 +62,7 @@ import {
 } from '@/lib/matching/live-compatibility'
 import { WellnessSurveyModal } from './wellness-survey-modal'
 import { SuccessNpsWidget } from '@/app/(components)/success-nps-widget'
+import { isDashboardActivityNotification } from '@/lib/notifications/dashboard-activity'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -952,13 +953,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
     return monitorQuery('fetchRecentActivity', async () => {
       try {
-
-        // Fetch notifications
-        const response = await fetch('/api/notifications/my?limit=10')
+        // Fetch a larger page so we still have enough items after filtering out
+        // admin moderation noise (reports, blocks, flagged messages).
+        const response = await fetch('/api/notifications/my?limit=40')
         const notificationsData = response.ok ? await response.json() : { notifications: [] }
-        const notifications = notificationsData.notifications || []
+        const notifications = (notificationsData.notifications || []).filter(
+          (notif: any) => isDashboardActivityNotification(notif)
+        )
 
-        // Fetch recent chat messages
+        // Supplement with recent chat messages that may not have a notification row yet.
         const { data: chatMembers } = await supabase
           .from('chat_members')
           .select('chat_id')
@@ -968,73 +971,56 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         if (chatMembers && chatMembers.length > 0) {
           const chatIds = chatMembers.map(cm => cm.chat_id)
 
-          // Get last_read_at for each chat
-          const { data: memberships } = await supabase
-            .from('chat_members')
-            .select('chat_id, last_read_at')
-            .eq('user_id', user.id)
-            .in('chat_id', chatIds)
-
-          if (memberships) {
-            // Get recent messages from user's chats
-            // Note: Fetch messages first, then get profile names separately to avoid foreign key issues
-            const { data: messages } = await supabase
-              .from('messages')
-              .select(`
+          const { data: messages } = await supabase
+            .from('messages')
+            .select(`
               id,
               content,
               user_id,
               chat_id,
               created_at
             `)
-              .in('chat_id', chatIds)
-              .neq('user_id', user.id)
-              .order('created_at', { ascending: false })
-              .limit(10)
+            .in('chat_id', chatIds)
+            .neq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(10)
 
-            if (messages) {
-              // Get profile names for messages
-              const userIds = new Set(messages.map(m => m.user_id))
-              const { data: profiles } = await supabase
-                .from('profiles')
-                .select('user_id, first_name')
-                .in('user_id', Array.from(userIds))
+          if (messages && messages.length > 0) {
+            const userIds = new Set(messages.map(m => m.user_id))
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('user_id, first_name')
+              .in('user_id', Array.from(userIds))
 
-              const profilesMap = new Map(profiles?.map(p => [p.user_id, p]) || [])
+            const profilesMap = new Map(profiles?.map(p => [p.user_id, p]) || [])
 
-              chatMessages = messages.map((msg: any) => {
-                const profile = profilesMap.get(msg.user_id)
-                const senderName = profile?.first_name || 'User'
-                const timeAgo = formatTimeAgo(msg.created_at)
-                return {
-                  id: `message-${msg.id}`,
-                  type: 'chat_message',
-                  title: `${senderName} has sent you a message`,
-                  message: '', // Don't show content
-                  timeAgo,
-                  isRead: false, // We'll check this based on last_read_at
-                  metadata: { chat_id: msg.chat_id, message_id: msg.id }
-                }
-              })
-            }
+            chatMessages = messages.map((msg: any) => {
+              const profile = profilesMap.get(msg.user_id)
+              const senderName = profile?.first_name || 'User'
+              return {
+                id: `message-${msg.id}`,
+                type: 'chat_message',
+                title: `${senderName} has sent you a message`,
+                message: '',
+                timeAgo: formatTimeAgo(msg.created_at),
+                createdAt: msg.created_at,
+                isRead: false,
+                metadata: { chat_id: msg.chat_id, message_id: msg.id }
+              }
+            })
           }
         }
 
-        // Combine notifications and chat messages, sort by time
-        // For match_created and match_accepted notifications, verify both users accepted before showing names
+        // For match_created / match_accepted, verify both users accepted before showing names
         const processedNotifications = await Promise.all(notifications.map(async (notif: any) => {
           const timeAgo = formatTimeAgo(notif.created_at)
 
-          // Safety check: For match_created and match_accepted notifications, verify both users accepted
           if (notif.type === 'match_created' || notif.type === 'match_accepted') {
             let bothUsersAccepted = false
-
-            // First, check if message contains a name that needs sanitization
             let hasName = false
             let genericMessage = ''
 
             if (notif.type === 'match_created' && notif.message && notif.message.includes('match with')) {
-              // Check if message contains a name - if it has text between "with" and "!" that's not generic, it's a name
               const matchWithPattern = /match with ([^!]+)!/i
               const match = notif.message.match(matchWithPattern)
               if (match) {
@@ -1046,17 +1032,14 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               }
               genericMessage = 'You have matched with someone! Check out your matches to see who.'
             } else if (notif.type === 'match_accepted' && notif.message && notif.message.includes('accepted your match request')) {
-              // Check if message contains a name (not just "Someone")
               hasName = !notif.message.includes('Someone') &&
                 !notif.message.includes('someone') &&
                 !notif.message.includes('Someone accepted your match request')
               genericMessage = 'Someone accepted your match request!'
             }
 
-            // Only verify if we detected a name (optimization)
             if (hasName && notif.metadata?.match_id) {
               try {
-                // First try match_suggestions table (new system)
                 const { data: suggestion } = await supabase
                   .from('match_suggestions')
                   .select('status, accepted_by, member_ids')
@@ -1069,7 +1052,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                   bothUsersAccepted = suggestion.status === 'confirmed' ||
                     (memberIds.length === 2 && memberIds.every((id: string) => acceptedBy.includes(id)))
                 } else {
-                  // If not found in match_suggestions, try old matches table
                   const { data: match } = await supabase
                     .from('matches')
                     .select('status, a_user, b_user')
@@ -1077,18 +1059,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     .single()
 
                   if (match) {
-                    // In old matches table, status 'confirmed' means both accepted
                     bothUsersAccepted = match.status === 'confirmed'
                   }
                 }
               } catch (error: any) {
-                // If we can't verify, assume not both accepted (safer for privacy)
                 logger.warn('Failed to verify match acceptance status, assuming not both accepted', error)
                 bothUsersAccepted = false
               }
             }
 
-            // If name detected AND (both users haven't accepted OR we couldn't verify), sanitize
             if (hasName && !bothUsersAccepted) {
               notif.message = genericMessage
             }
@@ -1100,20 +1079,30 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             title: notif.title,
             message: notif.message,
             timeAgo,
+            createdAt: notif.created_at,
             isRead: notif.is_read,
             metadata: notif.metadata || {}
           }
         }))
 
-        const allActivity = [...processedNotifications, ...chatMessages]
+        // Prefer notification rows for chat messages; only add raw messages that aren't already represented.
+        const seenMessageIds = new Set<string>()
+        for (const item of processedNotifications) {
+          const messageId = item.metadata?.message_id
+          if (typeof messageId === 'string' && messageId) {
+            seenMessageIds.add(messageId)
+          }
+        }
 
-        // Sort by created_at (newest first) - approximate sort by timeAgo
-        allActivity.sort((a, b) => {
-          // Simple sort - items with "Just now" come first, then minutes, hours, days
-          if (a.timeAgo === 'Just now') return -1
-          if (b.timeAgo === 'Just now') return 1
-          return 0
+        const supplementalMessages = chatMessages.filter((msg) => {
+          const messageId = msg.metadata?.message_id
+          return !(typeof messageId === 'string' && seenMessageIds.has(messageId))
         })
+
+        const allActivity = [...processedNotifications, ...supplementalMessages]
+        allActivity.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
 
         return allActivity.slice(0, 10)
       } catch (error) {
