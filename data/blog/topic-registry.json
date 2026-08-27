@@ -1,0 +1,69 @@
+{
+  "description": "Tracks published blog topics to reduce week-to-week repetition. Append one entry per new post.",
+  "entries": [
+    {
+      "slug": "housemate-support-living-away-from-home",
+      "date": "2026-08-26",
+      "category": "Wellbeing",
+      "primaryKeyword": "housemate support living away from home",
+      "pillar": "Student wellbeing",
+      "angle": "Emotional support boundaries between housemates for students living away from parents; Inholland/RIVM/SCP, not shortage-led"
+    },
+    {
+      "slug": "graduate-holdover-student-housing-netherlands",
+      "date": "2026-08-12",
+      "category": "Housing",
+      "primaryKeyword": "graduate holdover student housing",
+      "pillar": "Housing policy (data)",
+      "angle": "Graduate holdover blocking room turnover"
+    },
+    {
+      "slug": "private-landlords-student-housing-netherlands",
+      "date": "2026-08-05",
+      "category": "Housing",
+      "primaryKeyword": "private landlords student housing Netherlands",
+      "pillar": "Housing policy (data)",
+      "angle": "Private landlord divestment and supply shock"
+    },
+    {
+      "slug": "thuiswonend-studenten-nederland-cbs-data",
+      "date": "2026-07-22",
+      "category": "Retention",
+      "primaryKeyword": "thuiswonend studenten CBS",
+      "pillar": "Housing policy (data)",
+      "angle": "CBS/NIDI students living at home trends"
+    },
+    {
+      "slug": "student-housing-loneliness-netherlands",
+      "date": "2026-07-15",
+      "category": "Wellbeing",
+      "primaryKeyword": "student housing loneliness Netherlands",
+      "pillar": "Housing policy (data)",
+      "angle": "Loneliness as housing infrastructure indicator"
+    },
+    {
+      "slug": "international-student-housing-rights-netherlands",
+      "date": "2026-07-08",
+      "category": "Safety",
+      "primaryKeyword": "international student housing rights Netherlands",
+      "pillar": "International student life",
+      "angle": "Tenant rights after move-in under shortage pressure"
+    },
+    {
+      "slug": "student-housing-co-living-rules-netherlands",
+      "date": "2026-07-01",
+      "category": "Housing",
+      "primaryKeyword": "student co-living rules Netherlands",
+      "pillar": "Housing policy (data)",
+      "angle": "Municipal rules blocking room-sharing supply"
+    },
+    {
+      "slug": "roommate-conflict-resolution-tips-netherlands",
+      "date": "2026-06-10",
+      "category": "Wellbeing",
+      "primaryKeyword": "roommate conflict resolution tips Netherlands",
+      "pillar": "Student wellbeing",
+      "angle": "De-escalating cleanliness and noise disputes"
+    }
+  ]
+}

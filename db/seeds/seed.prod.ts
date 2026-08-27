@@ -126,7 +126,14 @@ async function seedProduction() {
     // ============================================
     console.log('\n📝 Seeding questionnaire items...')
     
-    const questionItems = [
+    const questionItems: Array<{
+      key: string
+      section: string
+      type: string
+      options: string | null
+      weight: number
+      is_hard: boolean
+    }> = [
       // Basics section
       { key: 'degree_level', section: 'basics', type: 'single', options: '["bachelor", "master", "phd", "exchange", "other"]', weight: 1.0, is_hard: true },
       { key: 'program', section: 'basics', type: 'text', options: null, weight: 1.0, is_hard: false },
