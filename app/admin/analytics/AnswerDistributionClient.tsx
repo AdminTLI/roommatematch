@@ -281,14 +281,14 @@ export function AnswerDistributionClient() {
           <div className="flex flex-wrap gap-2">
             <Button
               size="sm"
-              variant={sortMode === 'concentration' ? 'default' : 'outline'}
+              variant={sortMode === 'concentration' ? 'primary' : 'outline'}
               onClick={() => setSortMode('concentration')}
             >
               Sort by similarity
             </Button>
             <Button
               size="sm"
-              variant={sortMode === 'module' ? 'default' : 'outline'}
+              variant={sortMode === 'module' ? 'primary' : 'outline'}
               onClick={() => setSortMode('module')}
             >
               Group by module
