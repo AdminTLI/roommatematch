@@ -15,7 +15,7 @@ const content = {
       'Notes from early conversations we’ve had with a BUas student, a community manager from Breda Internationals, and senior international leadership at BUas.',
     summaryTitle: 'From real conversations',
     summaryNote:
-      'These are paraphrased quotes from people we’ve spoken with while building Roommate Match. No ratings, no fake reviews.',
+      'These are paraphrased quotes from people we’ve spoken with while building Domu Match. No ratings, no fake reviews.',
     reviews: [
       {
         title: 'So much time lost to searching',
@@ -43,7 +43,7 @@ const content = {
       'Notities uit vroege gesprekken die we hebben gehad met een BUas-student, een community manager van Breda Internationals, en senior internationale leiding binnen BUas.',
     summaryTitle: 'Uit echte gesprekken',
     summaryNote:
-      'Dit zijn geparafraseerde quotes van mensen met wie we hebben gesproken terwijl we Roommate Match bouwen. Geen ratings, geen neppe reviews.',
+      'Dit zijn geparafraseerde quotes van mensen met wie we hebben gesproken terwijl we Domu Match bouwen. Geen ratings, geen neppe reviews.',
     reviews: [
       {
         title: 'Zóveel tijd kwijt aan zoeken',

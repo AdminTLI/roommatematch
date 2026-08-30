@@ -17,6 +17,11 @@ const PlatformPreview = dynamic(
   { loading: () => <SectionPlaceholder minHeight="32rem" /> }
 )
 
+const Partners = dynamic(
+  () => import('@/components/site/partners').then((m) => ({ default: m.Partners })),
+  { loading: () => <SectionPlaceholder minHeight="12rem" /> }
+)
+
 const SocialProof = dynamic(
   () => import('@/components/site/social-proof').then((m) => ({ default: m.SocialProof })),
   { loading: () => <SectionPlaceholder minHeight="20rem" /> }
@@ -47,6 +52,7 @@ export function HomepageBelowFold() {
       <StatusQuoSection />
       <LifestyleFeatures />
       <PlatformPreview />
+      <Partners />
       <SocialProof />
       <SocialFinalCTA />
       <Footer />

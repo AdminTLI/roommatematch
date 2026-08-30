@@ -31,7 +31,7 @@ const content = {
     featuresSubtitle: 'Built on science, backed by universities, designed for safety',
     ctaTitle: 'Ready to find your perfect match?',
     ctaSubtitle:
-      'Set up your profile in about 10 minutes. No commitment - just better matches.',
+      'Set up your profile in about 5–8 minutes. No commitment - just better matches.',
     ctaButton: 'Get started for free',
     steps: [
       {
@@ -58,7 +58,7 @@ const content = {
         details: [
           '40+ factors: study/work schedule, cleanliness, social style',
           'Quiet hours, guests, and lifestyle preferences',
-          'Takes about 15 minutes',
+          'Takes about 5–8 minutes',
         ],
         gradient: 'from-emerald-500/20 to-emerald-600/10 border-emerald-400/30',
         iconBg: 'bg-emerald-500/20 border-emerald-400/30',
@@ -139,7 +139,7 @@ const content = {
     featuresSubtitle: 'Gebouwd op wetenschap, ondersteund door universiteiten, ontworpen voor veiligheid',
     ctaTitle: 'Klaar om je perfecte match te vinden?',
     ctaSubtitle:
-      'Zet je profiel in ongeveer 10 minuten op. Geen verplichting - alleen betere matches.',
+      'Zet je profiel in ongeveer 5–8 minuten op. Geen verplichting - alleen betere matches.',
     ctaButton: 'Begin gratis',
     steps: [
       {
@@ -166,7 +166,7 @@ const content = {
         details: [
           '40+ factoren: studie/werkschema, netheid, sociale stijl',
           'Stilte-uren, gasten en levensstijlvoorkeuren',
-          'Duurt ongeveer 15 minuten',
+          'Duurt ongeveer 5–8 minuten',
         ],
         gradient: 'from-emerald-500/20 to-emerald-600/10 border-emerald-400/30',
         iconBg: 'bg-emerald-500/20 border-emerald-400/30',

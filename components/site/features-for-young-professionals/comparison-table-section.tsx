@@ -131,8 +131,8 @@ export function ComparisonTableSection() {
           viewport={{ once: true }}
         >
           {locale === 'nl'
-            ? 'Vergelijking gebaseerd op publieke informatie (2025).'
-            : 'Comparison based on public information (2025).'}
+            ? 'Overzicht op hoofdlijnen, gebaseerd op publiek beschikbare informatie (2025). Functies, prijzen en voorwaarden van andere platforms kunnen wijzigen - controleer altijd hun eigen site voor de actuele details. Domu Match richt zich op compatibiliteitsmatching; andere platforms kunnen een ander doel of model hebben.'
+            : 'High-level overview based on publicly available information (2025). Features, pricing, and terms on other platforms can change - always check each provider’s own site for current details. Domu Match focuses on compatibility matching; other platforms may serve a different purpose or use a different model.'}
         </motion.p>
       </Container>
     </Section>

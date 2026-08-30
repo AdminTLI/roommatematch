@@ -465,6 +465,17 @@ export function AdminMetricsContent({
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d']
 
   if (tabIsQuestionnaire(activeTab)) {
+    if (!isPlatformSuper) {
+      return (
+        <div className="max-w-lg mx-auto p-8 text-center space-y-3">
+          <Lock className="h-8 w-8 mx-auto text-muted-foreground" />
+          <h2 className="text-lg font-semibold">Super admin only</h2>
+          <p className="text-sm text-muted-foreground">
+            Questionnaire answer distributions are restricted to platform super admins.
+          </p>
+        </div>
+      )
+    }
     return <AnswerDistributionClient />
   }
 

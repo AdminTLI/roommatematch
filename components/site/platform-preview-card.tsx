@@ -2,19 +2,17 @@
  
 import { useMemo, useState, type ElementType } from 'react'
 import Link from 'next/link'
- import {
-   Heart,
-   Info,
-   Sparkles,
-   Users,
+import {
+  Heart,
+  Info,
+  Sparkles,
+  Users,
   Zap,
-   Droplets,
-   Volume2,
-   Moon,
-   Coffee,
-   BookOpen,
-   Home,
- } from 'lucide-react'
+  Droplets,
+  Moon,
+  MessageCircle,
+  MapPin,
+} from 'lucide-react'
  import { Button } from '@/components/ui/button'
  import {
    Tooltip,
@@ -28,19 +26,16 @@ const APP_SURFACE =
   'bg-white/92 backdrop-blur-2xl border border-white/80 shadow-[0_18px_70px_rgba(15,23,42,0.10)] rounded-[28px]'
  
 const HARMONY_TOOLTIP =
-  'Measures how well your day-to-day living preferences align - cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe.'
+  'Measures how well your day-to-day living preferences align across five lifestyle dimensions - environment, cleanliness, communication, social life, and logistics.'
 const CONTEXT_TOOLTIP =
   'Measures how similar your academic context is - university, programme, and study year.'
 
  type DimensionKey =
+   | 'environment'
    | 'cleanliness'
-   | 'noise'
-   | 'guests'
-   | 'sleep'
-   | 'shared_spaces'
-   | 'substances'
-   | 'study_social'
-   | 'home_vibe'
+   | 'communication'
+   | 'social'
+   | 'logistics_context'
  
  const dimensionConfig: Record<
    DimensionKey,
@@ -50,69 +45,45 @@ const CONTEXT_TOOLTIP =
      icon: ElementType
    }
  > = {
+   environment: {
+     label: { en: 'Environment', nl: 'Omgeving' },
+     description: {
+      en: 'Sleep schedules, quiet hours, and shared-space rhythm.',
+      nl: 'Slaappatronen, stilte-uren en ritme in gedeelde ruimtes.',
+     },
+     icon: Moon,
+   },
    cleanliness: {
      label: { en: 'Cleanliness', nl: 'Netheid' },
      description: {
-      en: 'Measures how well your cleanliness standards align across shared spaces like kitchen, bathroom, and living areas.',
-      nl: 'Measures how well your cleanliness standards align across shared spaces like kitchen, bathroom, and living areas.',
+      en: 'Chores, kitchen habits, and shared-space upkeep standards.',
+      nl: 'Chores, keukengewoonten en netheid in gedeelde ruimtes.',
      },
      icon: Droplets,
    },
-   noise: {
-     label: { en: 'Noise', nl: 'Geluid' },
-    description: {
-      en: 'Assesses compatibility around noise sensitivity, including preferences for parties, music volume, and quiet hours.',
-      nl: 'Assesses compatibility around noise sensitivity, including preferences for parties, music volume, and quiet hours.',
-    },
-     icon: Volume2,
+   communication: {
+     label: { en: 'Communication', nl: 'Communicatie' },
+     description: {
+      en: 'How you give feedback, handle friction, and coordinate day-to-day.',
+      nl: 'Hoe je feedback geeft, frictie oplost en dagelijks afstemt.',
+     },
+     icon: MessageCircle,
    },
-   guests: {
-     label: { en: 'Guests', nl: 'Gasten' },
-    description: {
-      en: 'Evaluates alignment on how often friends, partners, or visitors stay overnight and use shared spaces.',
-      nl: 'Evaluates alignment on how often friends, partners, or visitors stay overnight and use shared spaces.',
-    },
+   social: {
+     label: { en: 'Social Life', nl: 'Sociaal leven' },
+     description: {
+      en: 'Guests, gatherings, and how social you like home to feel.',
+      nl: 'Gasten, bijeenkomsten en hoe sociaal je huis mag voelen.',
+     },
      icon: Users,
    },
-   sleep: {
-     label: { en: 'Sleep', nl: 'Slaap' },
-    description: {
-      en: 'Compares sleep schedule compatibility, including wake-up times and bedtimes (early bird vs night owl preferences).',
-      nl: 'Compares sleep schedule compatibility, including wake-up times and bedtimes (early bird vs night owl preferences).',
-    },
-     icon: Moon,
-   },
-   shared_spaces: {
-     label: { en: 'Shared spaces', nl: 'Gedeelde ruimtes' },
-    description: {
-      en: 'Measures preferences for using common areas versus private spaces and how you like to utilize shared living areas.',
-      nl: 'Measures preferences for using common areas versus private spaces and how you like to utilize shared living areas.',
-    },
-     icon: Home,
-   },
-   substances: {
-     label: { en: 'Substances', nl: 'Middelen' },
-    description: {
-      en: 'Assesses comfort levels and boundaries around alcohol consumption or other substances within the home environment.',
-      nl: 'Assesses comfort levels and boundaries around alcohol consumption or other substances within the home environment.',
-    },
-     icon: Coffee,
-   },
-   study_social: {
-     label: { en: 'Study/Social', nl: 'Studie/Sociaal' },
-    description: {
-      en: 'Evaluates the balance between study time and social activities, and how these priorities align in daily life.',
-      nl: 'Evaluates the balance between study time and social activities, and how these priorities align in daily life.',
-    },
-     icon: BookOpen,
-   },
-   home_vibe: {
-     label: { en: 'Home vibe', nl: 'Huisvibe' },
-    description: {
-      en: 'Compares home atmosphere preferences, whether you prefer a quiet retreat for focus or a social hub for interaction.',
-      nl: 'Compares home atmosphere preferences, whether you prefer a quiet retreat for focus or a social hub for interaction.',
-    },
-     icon: Heart,
+   logistics_context: {
+     label: { en: 'Logistics', nl: 'Logistiek' },
+     description: {
+      en: 'Budget, move-in timing, and practical house norms.',
+      nl: 'Budget, verhuis-timing en praktische huisnormen.',
+     },
+     icon: MapPin,
    },
  }
  
@@ -179,14 +150,11 @@ const CONTEXT_TOOLTIP =
  
    const orderedDimensions = useMemo(() => {
      const keys: DimensionKey[] = [
+       'environment',
        'cleanliness',
-       'noise',
-       'guests',
-       'sleep',
-       'shared_spaces',
-       'substances',
-       'study_social',
-       'home_vibe',
+       'communication',
+       'social',
+       'logistics_context',
      ]
      return keys.map((k) => ({ key: k, score: data.dimensions[k] }))
    }, [data.dimensions])

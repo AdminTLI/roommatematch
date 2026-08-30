@@ -12,7 +12,7 @@ type Answer = string | number | boolean
 
 const content = {
   en: {
-    title: 'Compatibility Questionnaire',
+    title: 'Compatibility Quiz',
     description: 'Answer a few quick questions to improve your matches. You can update answers later in your profile.',
     continue: 'Continue',
     questions: [
@@ -25,7 +25,7 @@ const content = {
     ],
   },
   nl: {
-    title: 'Compatibiliteitsvragenlijst',
+    title: 'Compatibiliteitsquiz',
     description: 'Beantwoord een paar snelle vragen om je matches te verbeteren. Je kunt je antwoorden later altijd aanpassen.',
     continue: 'Doorgaan',
     questions: [

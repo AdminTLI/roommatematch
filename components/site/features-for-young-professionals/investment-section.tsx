@@ -56,12 +56,12 @@ export function InvestmentSection() {
           >
             {locale === 'en' ? (
               <>
-                15 Minutes for{' '}
+                5–8 Minutes for{' '}
                 <span className={headlineGradientClass}>a Year of Peace</span>.
               </>
             ) : (
               <>
-                15 minuten voor{' '}
+                5–8 minuten voor{' '}
                 <span className={headlineGradientClass}>een jaar vrede</span>.
               </>
             )}

@@ -208,7 +208,7 @@ const content: Record<
         id: 'matching',
         title: '6. The Matching Algorithm',
         bullets: [
-          'Inputs: questionnaire answers, Harmony and Context scores, location/budget filters, recency, safety signals.',
+          'Inputs: compatibility quiz answers, Harmony and Context scores, location/budget filters, recency, safety signals.',
           'Harmony (Lifestyle) and Context (academic/practical) scores are used to find compatibility. These scores may change during the beta.',
           'Scores and recommendations are guidance only. Human judgment remains essential.',
           'Active choice: you always decide who to contact, meet, or live with. No automated system binds you to a contract.',
@@ -388,7 +388,7 @@ const content: Record<
         id: 'matching',
         title: '5. Matchingparameters & geen garantie',
         bullets: [
-          'Input: vragenlijsten, voorkeuren, Harmony-/Context-scores, activiteit-recency, locatie/budgetfilters en veiligheidsignalen (bijv. herhaalde meldingen).',
+          'Input: compatibiliteitsquiz-antwoorden, voorkeuren, Harmony-/Context-scores, activiteit-recency, locatie/budgetfilters en veiligheidsignalen (bijv. herhaalde meldingen).',
           'Weging: Harmony (lifestyle) weegt ongeveer 75% en Context (studie/praktische context) ongeveer 25% in de matchinglogica, met mogelijke aanpassingen naarmate de dienst verbetert.',
           'Gebruikerscontrole: waar beschikbaar kun je voorkeuren/filters aanpassen; de interface legt de invloed op aanbevelingen uit.',
           'Geen perfecte match: scores/aanbevelingen zijn hulpmiddel. Eigen beoordeling blijft essentieel.',

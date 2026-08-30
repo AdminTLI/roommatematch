@@ -11,8 +11,8 @@ export default async function AdminAnswerDistributionPage() {
   if (!user) redirect('/auth/sign-in')
 
   const role = await getUserRole(user.id)
-  if (role !== 'admin' && role !== 'super_admin' && role !== 'moderator' && role !== 'university_admin') {
-    redirect('/dashboard')
+  if (role !== 'super_admin') {
+    redirect('/admin/metrics')
   }
 
   redirect('/admin/metrics?tab=questionnaire')

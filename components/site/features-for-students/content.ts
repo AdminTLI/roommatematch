@@ -121,10 +121,10 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
     solution: {
       title: 'The Compatibility Blueprint',
       subtitle: 'Science-backed matching that actually works',
-      blueprintLabel: 'Our 200-question survey',
+      blueprintLabel: 'Our 5–8 minute compatibility quiz',
       features: [
         {
-          title: 'The 8-Block Deep Dive',
+          title: 'The 5-dimension deep dive',
           description:
             "We ask the questions you're too awkward to ask. From guest policies to thermostat preferences.",
         },
@@ -148,8 +148,8 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
       verifiedLabel: 'Verified User',
     },
     investment: {
-      heading: '15 Minutes for 12 Months of Peace.',
-      copy: "Yes, our quiz is detailed. But wouldn't you trade 15 minutes now to avoid 9 months of arguments later?",
+      heading: '5–8 Minutes for 12 Months of Peace.',
+      copy: "Yes, our quiz goes deep. But wouldn't you trade 5–8 minutes now to avoid 9 months of arguments later?",
     },
     faq: {
       title: 'Frequently Asked Questions',
@@ -236,10 +236,10 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
     solution: {
       title: 'Het Compatibiliteitsplan',
       subtitle: 'Wetenschappelijk onderbouwde matching die echt werkt',
-      blueprintLabel: 'Onze enquête van 200 vragen',
+      blueprintLabel: 'Onze compatibiliteitsquiz van 5–8 minuten',
       features: [
         {
-          title: 'De 8-Blok Diepe Duik',
+          title: 'De 5-dimensie deep dive',
           description:
             "We stellen de vragen die je te ongemakkelijk vindt om te vragen. Van gastenbeleid tot thermostaatvoorkeuren.",
         },
@@ -263,8 +263,8 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
       verifiedLabel: 'Geverifieerde Gebruiker',
     },
     investment: {
-      heading: '15 Minuten voor 12 Maanden Vrede.',
-      copy: "Ja, onze quiz is uitgebreid. Maar zou je 15 minuten nu niet ruilen om 9 maanden ruzie later te voorkomen?",
+      heading: '5–8 Minuten voor 12 Maanden Vrede.',
+      copy: "Ja, onze quiz gaat diep. Maar zou je 5–8 minuten nu niet ruilen om 9 maanden ruzie later te voorkomen?",
     },
     faq: {
       title: 'Veelgestelde Vragen',

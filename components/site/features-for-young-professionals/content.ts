@@ -106,7 +106,7 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
     solution: {
       title: 'The Compatibility Blueprint',
       subtitle: 'Science-backed matching that works',
-      blueprintLabel: 'Our compatibility survey',
+      blueprintLabel: 'Our 5–8 minute compatibility quiz',
       features: [
         { title: 'Lifestyle Deep Dive', description: "We ask the questions you're too awkward to ask. From guests to noise to cleanliness." },
         { title: "The 'Harmony' Score", description: "See how compatible you are with a % score before you say hello." },
@@ -121,7 +121,7 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
         'Persona is trusted by leading companies (e.g. OpenAI, Coursera, and Brex) for identity verification - so you’re matching with real people, not fake profiles.',
     },
     investment: {
-      copy: "Our quiz is detailed. Trade 15 minutes now to avoid months of conflict with the wrong flatmate.",
+      copy: "Our quiz goes deep. Trade 5–8 minutes now to avoid months of conflict with the wrong flatmate.",
     },
     faq: {
       title: 'Frequently Asked Questions',
@@ -202,7 +202,7 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
     solution: {
       title: 'Het compatibiliteitsplan',
       subtitle: 'Wetenschappelijk onderbouwde matching die werkt',
-      blueprintLabel: 'Onze compatibiliteitsenquête',
+      blueprintLabel: 'Onze compatibiliteitsquiz van 5–8 minuten',
       features: [
         { title: 'Levensstijl deep dive', description: "We stellen de vragen die je te ongemakkelijk vindt om te vragen. Van gasten tot geluid tot schoonmaken." },
         { title: "De 'Harmony' score", description: "Zie hoe compatibel je bent met een %-score voordat je hallo zegt." },
@@ -217,7 +217,7 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
         'Persona wordt gebruikt door toonaangevende bedrijven (bijv. OpenAI, Coursera en Brex) voor identiteitsverificatie - zodat jij met echte mensen matcht, niet met nep-profielen.',
     },
     investment: {
-      copy: "Onze quiz is uitgebreid. Ruil 15 minuten nu in om maanden conflict met de verkeerde huisgenoot te voorkomen.",
+      copy: "Onze quiz gaat diep. Ruil 5–8 minuten nu in om maanden conflict met de verkeerde huisgenoot te voorkomen.",
     },
     faq: {
       title: 'Veelgestelde vragen',

@@ -66,7 +66,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="studyLateNight"
-            alt="Student studying late at a desk at home — thuiswonend students and delayed move-out in the Netherlands"
+            alt="Student studying late at a desk at home - thuiswonend students and delayed move-out in the Netherlands"
           />
           <figcaption>
             When leaving home slips from year one to year three, campus social life and commute patterns
@@ -182,7 +182,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="housingCityscape"
-            alt="Residential housing in a Dutch city — student room shortage and thuiswonend students"
+            alt="Residential housing in a Dutch city - student room shortage and thuiswonend students"
           />
           <figcaption>
             Policy responses now include satellite student cities such as Almere and Assen, but national
@@ -394,7 +394,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="studyLateNight"
-            alt="Student die laat thuis studeert — thuiswonende studenten en uitstel van uit huis gaan"
+            alt="Student die laat thuis studeert - thuiswonende studenten en uitstel van uit huis gaan"
           />
           <figcaption>
             Als uit huis gaan verschuift van jaar één naar jaar drie, verandert ook het sociale leven op
@@ -508,7 +508,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="housingCityscape"
-            alt="Woningen in een Nederlandse stad — kamertekort en thuiswonende studenten"
+            alt="Woningen in een Nederlandse stad - kamertekort en thuiswonende studenten"
           />
           <figcaption>
             Beleidsantwoorden omvatten satelliet-studentensteden zoals Almere en Assen, maar landelijke

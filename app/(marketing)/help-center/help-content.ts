@@ -49,7 +49,7 @@ export const helpContent: HelpContent = {
 
 **Students:** Use your university email for verification. **Young professionals:** Sign up with your email; we'll verify your account through our young-professional verification flow.
 
-Once your email is verified, you'll be redirected to complete the onboarding questionnaire, which helps us find the best roommate matches for you.`,
+Once your email is verified, you'll be redirected to complete the compatibility quiz, which helps us find the best roommate matches for you.`,
           section: 'getting-started',
           tags: ['sign up', 'account', 'registration'],
           keywords: ['create account', 'register', 'sign up', 'new user'],
@@ -85,31 +85,27 @@ Contact support at domumatch@gmail.com with the email you used to sign up, and w
         },
         {
           id: 'onboarding',
-          title: 'Completing the Onboarding Questionnaire',
-          content: `The onboarding questionnaire is essential for finding compatible roommates. Here's what to expect:
+          title: 'Completing the Compatibility Quiz',
+          content: `The compatibility quiz is essential for finding compatible roommates. Here's what to expect:
 
-**Questionnaire Sections:**
-1. **Basics** - Personal information (name, date of birth, nationality)
-2. **Academic** - (If you're a student) University, program, study year, campus
-3. **Logistics** - Housing preferences, budget, move-in dates
-4. **Lifestyle** - Sleep schedule, cleanliness preferences, daily routines
-5. **Social** - Guest preferences, noise tolerance, social activities
-6. **Personality** - Communication style, conflict resolution
-7. **Communication** - Language preferences, communication methods
-8. **Languages** - Languages you speak (optional)
-9. **Dealbreakers** - Things you absolutely can't compromise on
+**Quiz modules (5 lifestyle dimensions):**
+1. **Logistics** - Budget, move-in timing, and house logistics
+2. **Environment** - Sleep, quiet hours, and shared-space rhythm
+3. **Cleanliness** - Chores, kitchen habits, and upkeep
+4. **Communication** - Feedback style and resolving friction
+5. **Social Life** - Guests, gatherings, and shared areas
 
 **Tips for Best Results:**
 - Be honest - accurate answers lead to better matches
 - Take your time - there's no rush, you can save and continue later
 - Think about your ideal living situation - what matters most to you?
-- Complete all required sections - incomplete profiles get fewer matches
+- Complete all modules - incomplete profiles get fewer matches
 
 **Saving Progress:**
 Your answers are automatically saved as you progress. You can leave and return anytime to continue where you left off.`,
           section: 'getting-started',
-          tags: ['onboarding', 'questionnaire', 'profile'],
-          keywords: ['questionnaire', 'quiz', 'survey', 'onboarding questions'],
+          tags: ['onboarding', 'quiz', 'profile'],
+          keywords: ['questionnaire', 'quiz', 'compatibility quiz', 'onboarding questions'],
           relatedArticles: ['improving-matches', 'understanding-scores'],
           type: 'article',
         },
@@ -152,7 +148,7 @@ Remember: You're not obligated to accept any match. Take your time to review and
 - **Students:** A university email from a partner or supported institution. **Young professionals:** Your personal or work email.
 - To be at least 17 years old
 - A valid government ID for verification (required after signup)
-- About 15-20 minutes to complete the onboarding questionnaire
+- About 5–8 minutes to complete the compatibility quiz
 
 Students and young professionals are matched in separate pools. Both groups use the platform for free.`,
           section: 'getting-started',
@@ -187,12 +183,12 @@ If you don't have a university email (students) or have trouble with verificatio
         {
           id: 'faq-onboarding-time',
           title: 'How long does onboarding take?',
-          content: `Most users complete the onboarding questionnaire in 15-20 minutes. However, you can:
+          content: `Most users complete the compatibility quiz in 5–8 minutes. However, you can:
 - Save your progress and return later
 - Take breaks between sections
 - Review and edit your answers anytime
 
-The questionnaire is designed to be thorough but not overwhelming. Take your time to give honest, thoughtful answers for the best match results.`,
+The quiz is designed to be thorough but not overwhelming. Take your time to give honest, thoughtful answers for the best match results.`,
           section: 'getting-started',
           tags: ['onboarding', 'time'],
           keywords: ['how long', 'duration', 'time'],
@@ -286,7 +282,7 @@ Navigate to Settings from the menu in the top-right corner of your screen, then 
 - Basic details (name, date of birth)
 - University and program
 - Housing preferences and budget
-- Lifestyle preferences from questionnaire
+- Lifestyle preferences from the compatibility quiz
 
 **Optional Enhancements:**
 - Profile photo
@@ -298,7 +294,7 @@ Navigate to Settings from the menu in the top-right corner of your screen, then 
 - Add a clear, friendly profile photo
 - Write an honest bio that reflects your personality
 - Keep information up-to-date, especially contact details
-- Complete all questionnaire sections for best matching
+- Complete all quiz modules for best matching
 
 **Updating Your Profile:**
 You can update your profile anytime from Settings > Profile. Changes may take a few minutes to reflect in your matches.`,
@@ -403,7 +399,7 @@ Note: You cannot switch from a university email to a personal email.`,
    - Study year proximity
 
 **How It Works:**
-1. Your questionnaire answers create a compatibility profile
+1. Your quiz answers create a compatibility profile
 2. The algorithm compares your profile with other students
 3. Compatibility scores are calculated using weighted factors
 4. Matches are ranked and presented with explanations
@@ -470,7 +466,7 @@ Remember: High scores don't guarantee a perfect match, and lower scores don't me
           content: `Get better matches by following these tips:
 
 **1. Complete Your Profile Fully**
-- Fill in all questionnaire sections
+- Complete all quiz modules
 - Answer honestly and thoughtfully
 - Update your preferences regularly
 - Add a profile photo and bio
@@ -570,7 +566,7 @@ All factors are weighted to prioritize the most important compatibility areas.`,
           id: 'faq-no-matches',
           title: 'Why am I not getting matches?',
           content: `Common reasons for few or no matches:
-- Incomplete profile or questionnaire
+- Incomplete profile or compatibility quiz
 - Very restrictive preferences or too many dealbreakers
 - Limited users in your area/university
 - Recent account creation (matches generate daily)
@@ -585,9 +581,9 @@ Try: Completing all sections, reviewing dealbreakers, being more flexible, and w
         {
           id: 'faq-score-accuracy',
           title: 'How accurate are compatibility scores?',
-          content: `Compatibility scores are based on your questionnaire answers and provide a good starting point, but:
+          content: `Compatibility scores are based on your quiz answers and provide a good starting point, but:
 - They're not guarantees of success
-- Real compatibility includes factors beyond the questionnaire
+- Real compatibility includes factors beyond the quiz
 - Conversation and meeting in person provide additional insights
 - Flexibility and communication matter more than perfect scores
 
@@ -1242,7 +1238,7 @@ Contact domumatch@gmail.com if you have questions.`,
           content: `If you're not receiving matches, try these solutions:
 
 **Check Your Profile Completion:**
-- Complete all required questionnaire sections
+- Complete all required quiz modules
 - Add a profile photo
 - Fill in your bio
 - Update your preferences
@@ -1527,7 +1523,7 @@ We aim to respond as quickly as possible. Complex issues may take longer.`,
 - Focus on long-term compatibility
 
 **Tips for Success:**
-- Be honest in your questionnaire
+- Be honest in your compatibility quiz
 - Complete your profile fully
 - Start conversations early
 - Ask important questions upfront

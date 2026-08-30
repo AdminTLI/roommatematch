@@ -26,9 +26,9 @@ const content = {
     domuWay: {
       title: 'The Domu Way',
       items: ['Verified profiles only', 'Clear match reasons', 'Start with safe chat'],
-      chips: ['ID & selfie', 'Harmony & context', '8 dimensions'],
+      chips: ['ID & selfie', 'Harmony & context', '5 dimensions'],
     },
-    footer: '✓ 100% ID Verified Users\n✓ Match on 8 different dimensions',
+    footer: '✓ 100% ID Verified Users\n✓ Match on 5 lifestyle dimensions',
   },
   nl: {
     eyebrow: 'Sla het ongemakkelijke over',
@@ -43,7 +43,7 @@ const content = {
     domuWay: {
       title: 'De Domu manier',
       items: ['Alleen geverifieerde profielen', 'Duidelijke match-redenen', 'Start met veilige chat'],
-      chips: ['ID & selfie', 'Harmony & context', '8 dimensies'],
+      chips: ['ID & selfie', 'Harmony & context', '5 dimensies'],
     },
     footer: 'Meer duidelijkheid. Meer rust thuis.',
   },

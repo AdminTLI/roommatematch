@@ -58,7 +58,7 @@ export function HowItWorksSafetyBand() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/50 backdrop-blur-xl border-white/60 text-slate-800 hover:bg-white/70 rounded-2xl"
+                className="rounded-2xl border border-slate-300 bg-white text-slate-900 shadow-sm hover:bg-slate-50 hover:text-slate-900 dark:border-slate-300 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-50 dark:hover:text-slate-900"
                 asChild
               >
                 <Link href="/safety">{t.secondary}</Link>

@@ -9,11 +9,9 @@ import {
   Users,
   Zap,
   Droplets,
-  Volume2,
   Moon,
-  Coffee,
-  BookOpen,
-  Home,
+  MessageCircle,
+  MapPin,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,14 +29,11 @@ const APP_SURFACE =
   'bg-white/92 backdrop-blur-2xl border border-white/80 shadow-[0_18px_70px_rgba(15,23,42,0.10)] rounded-[28px]'
 
 type DimensionKey =
+  | 'environment'
   | 'cleanliness'
-  | 'noise'
-  | 'guests'
-  | 'sleep'
-  | 'shared_spaces'
-  | 'substances'
-  | 'study_social'
-  | 'home_vibe'
+  | 'communication'
+  | 'social'
+  | 'logistics_context'
 
 const dimensionConfig: Record<
   DimensionKey,
@@ -48,48 +43,30 @@ const dimensionConfig: Record<
     icon: ElementType
   }
 > = {
-  cleanliness: {
-    label: { en: 'Cleanliness', nl: 'Netheid' },
-    description: {
-      en: 'Kitchen, bathroom, living areas.',
-      nl: 'Keuken, badkamer, gezamenlijke ruimtes.',
-    },
-    icon: Droplets,
-  },
-  noise: {
-    label: { en: 'Noise', nl: 'Geluid' },
-    description: { en: 'Quiet hours, music, parties.', nl: 'Stilte, muziek, feestjes.' },
-    icon: Volume2,
-  },
-  guests: {
-    label: { en: 'Guests', nl: 'Gasten' },
-    description: { en: 'Partners/friends staying over.', nl: 'Logés, partners/vrienden.' },
-    icon: Users,
-  },
-  sleep: {
-    label: { en: 'Sleep', nl: 'Slaap' },
-    description: { en: 'Bedtime & wake-up rhythm.', nl: 'Slaapschema en ritme.' },
+  environment: {
+    label: { en: 'Environment', nl: 'Omgeving' },
+    description: { en: 'Sleep, quiet hours, shared rhythm.', nl: 'Slaap, stilte, gedeeld ritme.' },
     icon: Moon,
   },
-  shared_spaces: {
-    label: { en: 'Shared spaces', nl: 'Gedeelde ruimtes' },
-    description: { en: 'How you use common areas.', nl: 'Gebruik van gezamenlijke ruimtes.' },
-    icon: Home,
+  cleanliness: {
+    label: { en: 'Cleanliness', nl: 'Netheid' },
+    description: { en: 'Chores, kitchen, upkeep.', nl: 'Chores, keuken, netheid.' },
+    icon: Droplets,
   },
-  substances: {
-    label: { en: 'Substances', nl: 'Middelen' },
-    description: { en: 'Comfort around alcohol etc.', nl: 'Comfort rond alcohol etc.' },
-    icon: Coffee,
+  communication: {
+    label: { en: 'Communication', nl: 'Communicatie' },
+    description: { en: 'Feedback and resolving friction.', nl: 'Feedback en frictie oplossen.' },
+    icon: MessageCircle,
   },
-  study_social: {
-    label: { en: 'Study/Social', nl: 'Studie/Sociaal' },
-    description: { en: 'Balance between focus and fun.', nl: 'Balans tussen focus en gezellig.' },
-    icon: BookOpen,
+  social: {
+    label: { en: 'Social Life', nl: 'Sociaal leven' },
+    description: { en: 'Guests and gatherings.', nl: 'Gasten en bijeenkomsten.' },
+    icon: Users,
   },
-  home_vibe: {
-    label: { en: 'Home vibe', nl: 'Huisvibe' },
-    description: { en: 'Quiet retreat vs social hub.', nl: 'Rustig vs sociaal huis.' },
-    icon: Heart,
+  logistics_context: {
+    label: { en: 'Logistics', nl: 'Logistiek' },
+    description: { en: 'Budget, timing, house norms.', nl: 'Budget, timing, huisnormen.' },
+    icon: MapPin,
   },
 }
 
@@ -180,14 +157,11 @@ export function MatchesPreviewCard({
 
   const orderedDimensions = useMemo(() => {
     const keys: DimensionKey[] = [
+      'environment',
       'cleanliness',
-      'noise',
-      'guests',
-      'sleep',
-      'shared_spaces',
-      'substances',
-      'study_social',
-      'home_vibe',
+      'communication',
+      'social',
+      'logistics_context',
     ]
     return keys.map((k) => ({ key: k, score: data.dimensions[k] }))
   }, [data.dimensions])
@@ -363,8 +337,8 @@ export function MatchesPreviewCard({
                         <TooltipContent className="max-w-xs bg-white border border-slate-200 text-slate-800 text-xs shadow-lg">
                           <p>
                             {locale === 'nl'
-                              ? 'Hoe goed jullie dag-tot-dag matchen op de 8 dimensies.'
-                              : 'How well you match day-to-day across the 8 dimensions.'}
+                              ? 'Hoe goed jullie dag-tot-dag matchen op de 5 dimensies.'
+                              : 'How well you match day-to-day across the 5 dimensions.'}
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -548,8 +522,8 @@ export function MatchesPreviewCard({
                     </div>
                     <div className="mt-1 text-sm text-slate-600">
                       {locale === 'nl'
-                        ? 'Harmony, context en 8 dimensies.'
-                        : 'Harmony, context, and 8 dimensions.'}
+                        ? 'Harmony, context en 5 dimensies.'
+                        : 'Harmony, context, and 5 dimensions.'}
                     </div>
                   </div>
                   <Button

@@ -7,7 +7,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Wat is Domu Match?',
         answer:
-          'Domu Match helpt geverifieerde studenten en young professionals in Nederland compatibele huisgenoten te vinden. Je vult een gestructureerde vragenlijst over je leefstijl in, krijgt suggesties met een compatibiliteitsscore en begrijpelijke uitleg, en chat op het platform. Studenten en young professionals matchen alleen binnen hun eigen groep.',
+          'Domu Match helpt geverifieerde studenten en young professionals in Nederland compatibele huisgenoten te vinden. Je vult een korte leefstijl-compatibiliteitsquiz in, krijgt suggesties met een compatibiliteitsscore en begrijpelijke uitleg, en chat op het platform. Studenten en young professionals matchen alleen binnen hun eigen groep.',
       },
       {
         question: 'Wie kan Domu Match gebruiken?',
@@ -17,7 +17,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Hoe lang duurt aanmelden en onboarding?',
         answer:
-          'Account aanmaken en verificatie is snel; de compatibiliteitsvragenlijst duurt meestal zo’n 10–15 minuten. Hoe eerlijker en completer je antwoorden, hoe nuttiger je matches en uitleg.',
+          'Account aanmaken en verificatie is snel; de compatibiliteitsquiz duurt meestal zo’n 5–8 minuten. Hoe eerlijker en completer je antwoorden, hoe nuttiger je matches en uitleg.',
       },
       {
         question: 'Moet ik al een kamer of contract hebben?',
@@ -62,7 +62,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Hoe werkt huisgenoot-matching?',
         answer:
-          'Je antwoorden beschrijven hoe je woont: netheid, geluid, gasten, slaap en stilte-uren, gedeelde ruimtes, middelen, balans tussen studie/werk en sociaal leven, en het soort thuis dat je wilt. Waar je antwoorden het vereisen, passen we harde uitsluitingen toe (bijvoorbeeld strikt niet roken binnen). Daarna scoren we de fit op die leefstijldimensies en tellen we context mee, zoals universiteit, opleiding en studiejaar. Technisch zoeken we kandidaten ook via profiel-embeddings voordat de gedetailleerde score wordt toegepast.',
+          'Je antwoorden beschrijven hoe je woont over vijf leefstijldimensies: omgeving (slaap en stilte), netheid, communicatie, sociaal leven, en logistiek (budget, timing, huisnormen). Waar je antwoorden het vereisen, passen we harde uitsluitingen toe (bijvoorbeeld strikt niet roken binnen). Daarna scoren we de fit op die dimensies en tellen we context mee, zoals universiteit, opleiding en studiejaar. Technisch zoeken we kandidaten ook via profiel-embeddings voordat de gedetailleerde score wordt toegepast.',
       },
       {
         question: 'Wat betekent de compatibiliteitsscore?',
@@ -117,7 +117,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Zijn er ook kamers of advertenties in Domu Match?',
         answer:
-          'Huisgenoot-matching is de kern. We bouwen ook huisvestingsontdekking in de app (advertenties doorbladeren, voorkeuren en—waar ondersteund—aanvragen voor bezichtigingen). Of je die sectie ziet, hangt af van de huidige uitrol en configuratie. Zie je die nog niet, dan kun je alsnog matchen en samen huisvesting zoeken buiten die omgeving.',
+          'Huisgenoot-matching is de kern. We bouwen ook huisvestingsontdekking in de app (advertenties doorbladeren, voorkeuren en - waar ondersteund - aanvragen voor bezichtigingen). Of je die sectie ziet, hangt af van de huidige uitrol en configuratie. Zie je die nog niet, dan kun je alsnog matchen en samen huisvesting zoeken buiten die omgeving.',
       },
       {
         question: 'Moet ik eerst huisgenoten of eerst een woning zoeken?',
@@ -127,7 +127,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Waar vind ik typische huren of buurten?',
         answer:
-          'Huurprijzen veranderen snel en verschillen per stad en kamertype. Gebruik gemeentelijke of landelijke cijfers, het huisvestingsloket van je instelling en betrouwbare platforms voor marktinzicht. Domu Match richt zich op met wie je woont en—waar beschikbaar—hoe advertenties bij je voorkeuren passen, niet op het noemen van gemiddelde huren.',
+          'Huurprijzen veranderen snel en verschillen per stad en kamertype. Gebruik gemeentelijke of landelijke cijfers, het huisvestingsloket van je instelling en betrouwbare platforms voor marktinzicht. Domu Match richt zich op met wie je woont en - waar beschikbaar - hoe advertenties bij je voorkeuren passen, niet op het noemen van gemiddelde huren.',
       },
     ],
   },
@@ -135,9 +135,9 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
     category: 'Account & support',
     items: [
       {
-        question: 'Hoe werk ik mijn profiel of vragenlijst bij?',
+        question: 'Hoe werk ik mijn profiel of compatibiliteitsquiz bij?',
         answer:
-          'Open Instellingen: profiel, vragenlijst, meldingen en privacy (inclusief data-export en verwijderverzoeken) staan in de tabbladen daar. Grote wijzigingen in je antwoorden kunnen je toekomstige matches beïnvloeden.',
+          'Open Instellingen: profiel, compatibiliteitsquiz, meldingen en privacy (inclusief data-export en verwijderverzoeken) staan in de tabbladen daar. Grote wijzigingen in je antwoorden kunnen je toekomstige matches beïnvloeden.',
       },
       {
         question: 'Hoe verwijder ik mijn account?',
@@ -145,7 +145,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
           'Ga naar Instellingen → Account en volg de link om je account te verwijderen. Je doorloopt een korte exitflow. Verwijdering is definitief aan onze kant zodra verwerkt; bewaring van bepaalde gegevens om juridische of beveiligingsredenen staat in ons Privacybeleid.',
       },
       {
-        question: 'Ik ben mijn wachtwoord vergeten—wat nu?',
+        question: 'Ik ben mijn wachtwoord vergeten - wat nu?',
         answer:
           'Gebruik op de inlogpagina “Wachtwoord vergeten” en controleer je mail (ook spam). Resetlinks verlopen om veiligheidsredenen; vraag zo nodig een nieuwe aan.',
       },

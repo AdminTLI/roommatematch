@@ -44,7 +44,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="quietRoommate"
-            alt="Quiet shared living room — student housing loneliness and the loss of everyday neighbour contact in the Netherlands"
+            alt="Quiet shared living room - student housing loneliness and the loss of everyday neighbour contact in the Netherlands"
           />
           <figcaption>
             Loneliness in student life is increasingly tied to housing supply and building form, not only to individual coping skills.
@@ -178,7 +178,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="internationalCampus"
-            alt="Students on a university campus — social infrastructure and neighbour contact in Dutch student cities"
+            alt="Students on a university campus - social infrastructure and neighbour contact in Dutch student cities"
           />
           <figcaption>
             Campus master plans that prioritise self-contained studios can deliver beds while quietly removing the shared kitchens and corridors where everyday friendships start.
@@ -321,7 +321,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="quietRoommate"
-            alt="Rustige gedeelde woonkamer — eenzaamheid en het verlies van alledaags burencontact in Nederlandse studentenhuisvesting"
+            alt="Rustige gedeelde woonkamer - eenzaamheid en het verlies van alledaags burencontact in Nederlandse studentenhuisvesting"
           />
           <figcaption>
             Eenzaamheid in het studentenleven hangt steeds vaker samen met aanbod en gebouwvorm, niet alleen met individuele coping.
@@ -454,7 +454,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="internationalCampus"
-            alt="Studenten op een universiteitscampus — sociale infrastructuur en burencontact in Nederlandse studentensteden"
+            alt="Studenten op een universiteitscampus - sociale infrastructuur en burencontact in Nederlandse studentensteden"
           />
           <figcaption>
             Campusplannen met losse studio&apos;s leveren bedden op, maar halen gedeelde keukens en gangen weg waar vriendschappen in het dagelijks leven ontstaan.

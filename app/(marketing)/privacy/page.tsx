@@ -160,16 +160,17 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                 </ul>
 
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                  3.2 Lifestyle and Behavioural Data (Harmony Questionnaire)
+                  3.2 Lifestyle and Behavioural Data (Harmony Compatibility Quiz)
                 </h3>
                 <p className="text-slate-700 mb-3">
-                  To improve roommate matching, we offer a lifestyle questionnaire covering:
+                  To improve roommate matching, we offer a lifestyle compatibility quiz covering five dimensions:
                 </p>
                 <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
-                  <li>Daily rhythms (wake/sleep times, noise tolerance).</li>
-                  <li>Tidiness and use of shared spaces.</li>
-                  <li>Social habits (visitors, parties, introvert/extrovert preferences).</li>
-                  <li>Study/social balance.</li>
+                  <li>Environment (sleep, quiet hours, shared-space rhythm).</li>
+                  <li>Cleanliness (chores, kitchen habits, upkeep).</li>
+                  <li>Communication (feedback style and resolving friction).</li>
+                  <li>Social life (guests, gatherings, shared areas).</li>
+                  <li>Logistics (budget, move-in timing, house norms).</li>
                 </ul>
                 <p className="text-slate-700 mb-6">
                   <span className="font-semibold">Sensitive data:</span> Some answers may indirectly hint and/or reveal
@@ -251,7 +252,7 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                       <tr>
                         <td className="px-4 py-3 align-top">Deep lifestyle profiling</td>
                         <td className="px-4 py-3 align-top">
-                          200-questionnaire - Harmony/Context scores
+                          Lifestyle compatibility quiz - Harmony/Context scores
                         </td>
                         <td className="px-4 py-3 align-top">Art. 6(1)(a) + Art. 9(2)(a) - Consent</td>
                       </tr>
@@ -289,7 +290,7 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                   </table>
                 </div>
                 <p className="text-slate-700 mt-4">
-                  You can withdraw consent for the lifestyle questionnaire or beta data collection at any time in
+                  You can withdraw consent for the lifestyle compatibility quiz or beta data collection at any time in
                   Settings. We will stop using those data for new purposes and delete or anonymize them within a
                   reasonable period.
                 </p>
@@ -322,7 +323,7 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                       <tr>
                         <td className="px-4 py-3 align-top">Beta is discontinued (no launch)</td>
                         <td className="px-4 py-3 align-top">
-                          We will give you at least 30 days’ notice. You may export your questionnaire data. All
+                          We will give you at least 30 days’ notice. You may export your compatibility quiz data. All
                           personal data will be deleted or anonymized within 60 days of shutdown.
                         </td>
                       </tr>
@@ -410,7 +411,7 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                   <li>Most personal data: kept while your account is active.</li>
                   <li>Inactivity: accounts inactive for 1 year are deleted or anonymized (Dutch DPA guidance).</li>
                   <li>
-                    Lifestyle questionnaire data: deleted/anonymized when you withdraw consent or delete your
+                    Lifestyle compatibility quiz data: deleted/anonymized when you withdraw consent or delete your
                     account.
                   </li>
                   <li>
@@ -475,13 +476,13 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                       <tr>
                         <td className="px-4 py-3 align-top">Withdraw consent</td>
                         <td className="px-4 py-3 align-top">
-                          Withdraw consent for lifestyle questionnaire or beta data collection at any time.
+                          Withdraw consent for lifestyle compatibility quiz or beta data collection at any time.
                         </td>
                       </tr>
                       <tr>
                         <td className="px-4 py-3 align-top">Data portability</td>
                         <td className="px-4 py-3 align-top">
-                          Download your questionnaire responses and key data in a portable format.
+                          Download your compatibility quiz responses and key data in a portable format.
                         </td>
                       </tr>
                       <tr>

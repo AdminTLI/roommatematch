@@ -58,7 +58,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="housingCityscape"
-            alt="Residential buildings and city skyline — student housing scarcity in Dutch university cities"
+            alt="Residential buildings and city skyline - student housing scarcity in Dutch university cities"
           />
           <figcaption>
             When stable rooms disappear, the hidden invoice shows up in commutes, counselling queues, and completion risk, not only in rent tables.
@@ -246,7 +246,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="housingCityscape"
-            alt="Woonblokken en stadsgezicht — kamertekort in Nederlandse studentensteden"
+            alt="Woonblokken en stadsgezicht - kamertekort in Nederlandse studentensteden"
           />
           <figcaption>
             Stabiliteit op de kamer bepaalt mee of ondersteuning naar studie gaat of naar crisislogistiek.

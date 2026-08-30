@@ -53,7 +53,7 @@ export function InvestmentSection() {
           >
             {locale === 'en' ? (
               <>
-                15 minutes for{' '}
+                5–8 minutes for{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
                   12 months
                 </span>{' '}
@@ -61,7 +61,7 @@ export function InvestmentSection() {
               </>
             ) : (
               <>
-                15 minuten voor{' '}
+                5–8 minuten voor{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">
                   12 maanden
                 </span>{' '}

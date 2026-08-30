@@ -17,7 +17,7 @@ export function HowItWorks({ locale = 'en' }: HowItWorksProps) {
           icon: FileText,
           number: "01",
           title: "Tell us how you live",
-          description: "Complete our 5-10 minute questionnaire about your lifestyle, preferences, and deal-breakers.",
+          description: "Complete our 5–8 minute compatibility quiz about your lifestyle, preferences, and deal-breakers.",
           details: [
             "Sleep schedule and study habits",
             "Cleanliness and social preferences", 
@@ -59,7 +59,7 @@ export function HowItWorks({ locale = 'en' }: HowItWorksProps) {
           icon: FileText,
           number: "01",
           title: "Vertel ons hoe je leeft",
-          description: "Voltooi onze 5-10 minuten vragenlijst over je leefstijl, voorkeuren en no-go's.",
+          description: "Voltooi onze compatibiliteitsquiz van 5–8 minuten over je leefstijl, voorkeuren en no-go's.",
           details: [
             "Slaapschema en studeerpatronen",
             "Schoonmaak en sociale voorkeuren",

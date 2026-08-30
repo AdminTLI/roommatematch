@@ -1,87 +1,64 @@
  'use client'
- 
+
 import { useEffect, useMemo, useRef, useState, type ElementType } from 'react'
- import { motion, useReducedMotion } from 'framer-motion'
- import {
-   Heart,
-   Info,
-   Sparkles,
-   Users,
-   Zap,
-   Droplets,
-   Volume2,
-   Moon,
-   Coffee,
-   BookOpen,
-   Home,
- } from 'lucide-react'
- import { cn } from '@/lib/utils'
- 
- const APP_SURFACE =
-   'bg-white/92 backdrop-blur-2xl border border-white/80 shadow-[0_18px_70px_rgba(15,23,42,0.10)] rounded-[28px]'
- 
- type DimensionKey =
-   | 'cleanliness'
-   | 'noise'
-   | 'guests'
-   | 'sleep'
-   | 'shared_spaces'
-   | 'substances'
-   | 'study_social'
-   | 'home_vibe'
- 
- const dimensionConfig: Record<
-   DimensionKey,
-   {
-     label: { en: string; nl: string }
-     description: { en: string; nl: string }
-     icon: ElementType
-   }
- > = {
-   cleanliness: {
-     label: { en: 'Cleanliness', nl: 'Netheid' },
-     description: {
-       en: 'Kitchen, bathroom, living areas.',
-       nl: 'Keuken, badkamer, gezamenlijke ruimtes.',
-     },
-     icon: Droplets,
-   },
-   noise: {
-     label: { en: 'Noise', nl: 'Geluid' },
-     description: { en: 'Quiet hours, music, parties.', nl: 'Stilte, muziek, feestjes.' },
-     icon: Volume2,
-   },
-   guests: {
-     label: { en: 'Guests', nl: 'Gasten' },
-     description: { en: 'Partners/friends staying over.', nl: 'Logés, partners/vrienden.' },
-     icon: Users,
-   },
-   sleep: {
-     label: { en: 'Sleep', nl: 'Slaap' },
-     description: { en: 'Bedtime & wake-up rhythm.', nl: 'Slaapschema en ritme.' },
-     icon: Moon,
-   },
-   shared_spaces: {
-     label: { en: 'Shared spaces', nl: 'Gedeelde ruimtes' },
-     description: { en: 'How you use common areas.', nl: 'Gebruik van gezamenlijke ruimtes.' },
-     icon: Home,
-   },
-   substances: {
-     label: { en: 'Substances', nl: 'Middelen' },
-     description: { en: 'Comfort around alcohol etc.', nl: 'Comfort rond alcohol etc.' },
-     icon: Coffee,
-   },
-   study_social: {
-     label: { en: 'Study/Social', nl: 'Studie/Sociaal' },
-     description: { en: 'Balance between focus and fun.', nl: 'Balans tussen focus en gezellig.' },
-     icon: BookOpen,
-   },
-   home_vibe: {
-     label: { en: 'Home vibe', nl: 'Huisvibe' },
-     description: { en: 'Quiet retreat vs social hub.', nl: 'Rustig vs sociaal huis.' },
-     icon: Heart,
-   },
- }
+import { motion, useReducedMotion } from 'framer-motion'
+import {
+  Heart,
+  Info,
+  Sparkles,
+  Users,
+  Zap,
+  Droplets,
+  Moon,
+  MessageCircle,
+  MapPin,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+const APP_SURFACE =
+  'bg-white/92 backdrop-blur-2xl border border-white/80 shadow-[0_18px_70px_rgba(15,23,42,0.10)] rounded-[28px]'
+
+type DimensionKey =
+  | 'environment'
+  | 'cleanliness'
+  | 'communication'
+  | 'social'
+  | 'logistics_context'
+
+const dimensionConfig: Record<
+  DimensionKey,
+  {
+    label: { en: string; nl: string }
+    description: { en: string; nl: string }
+    icon: ElementType
+  }
+> = {
+  environment: {
+    label: { en: 'Environment', nl: 'Omgeving' },
+    description: { en: 'Sleep, quiet hours, shared rhythm.', nl: 'Slaap, stilte, gedeeld ritme.' },
+    icon: Moon,
+  },
+  cleanliness: {
+    label: { en: 'Cleanliness', nl: 'Netheid' },
+    description: { en: 'Chores, kitchen, upkeep.', nl: 'Chores, keuken, netheid.' },
+    icon: Droplets,
+  },
+  communication: {
+    label: { en: 'Communication', nl: 'Communicatie' },
+    description: { en: 'Feedback and resolving friction.', nl: 'Feedback en frictie oplossen.' },
+    icon: MessageCircle,
+  },
+  social: {
+    label: { en: 'Social Life', nl: 'Sociaal leven' },
+    description: { en: 'Guests and gatherings.', nl: 'Gasten en bijeenkomsten.' },
+    icon: Users,
+  },
+  logistics_context: {
+    label: { en: 'Logistics', nl: 'Logistiek' },
+    description: { en: 'Budget, timing, house norms.', nl: 'Budget, timing, huisnormen.' },
+    icon: MapPin,
+  },
+}
  
  type Locale = 'en' | 'nl'
  
@@ -161,14 +138,11 @@ import { useEffect, useMemo, useRef, useState, type ElementType } from 'react'
  
    const orderedDimensions = useMemo(() => {
      const keys: DimensionKey[] = [
+       'environment',
        'cleanliness',
-       'noise',
-       'guests',
-       'sleep',
-       'shared_spaces',
-       'substances',
-       'study_social',
-       'home_vibe',
+       'communication',
+       'social',
+       'logistics_context',
      ]
      return keys.map((k) => ({ key: k, score: data.dimensions[k] }))
    }, [data.dimensions])

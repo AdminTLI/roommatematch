@@ -14,7 +14,7 @@ const copy = {
   en: {
     title: 'Peek inside the app',
     subtitle:
-      'Tap around to flip the card and explore the breakdown. Use the Student / Professional toggle to see how profiles change by life stage. Detailed dimension scores are category-by-category fit (sleep, guests, cleanliness, etc.) based on your answers - higher means closer preferences.',
+      'Tap around to flip the card and explore the breakdown. Use the Student / Professional toggle to see how profiles change by life stage. Detailed dimension scores show fit across five lifestyle areas based on your answers - higher means closer preferences.',
     student: 'Student',
     professional: 'Professional',
     demo: 'Demo preview - sample profiles.',
@@ -35,7 +35,7 @@ const copy = {
   nl: {
     title: 'Kijk even in de app',
     subtitle:
-      'Klik rond om de kaart te flippen en de breakdown te bekijken. Gebruik de Student / Professional toggle om te zien hoe profielen per levensfase veranderen. Detailed dimension scores zijn scores per categorie (slaap, gasten, schoon, etc.) op basis van jullie antwoorden - hoe hoger, hoe beter de match.',
+      'Klik rond om de kaart te flippen en de breakdown te bekijken. Gebruik de Student / Professional toggle om te zien hoe profielen per levensfase veranderen. Dimensiescores laten de fit zien over vijf leefstijlgebieden op basis van jullie antwoorden - hoe hoger, hoe dichter de voorkeuren.',
     student: 'Student',
     professional: 'Professional',
     demo: 'Demo preview - voorbeeldprofielen.',
@@ -71,14 +71,11 @@ export function PlatformPreview() {
           ? ['Gedeelde interesses', 'Vergelijkbare context', 'Fijne huisvibe']
           : ['Shared interests', 'Similar context', 'Compatible home vibe'],
       dimensions: {
+        environment: 88,
         cleanliness: 92,
-        noise: 86,
-        guests: 84,
-        sleep: 88,
-        shared_spaces: 90,
-        substances: 85,
-        study_social: 89,
-        home_vibe: 91,
+        communication: 89,
+        social: 86,
+        logistics_context: 90,
       },
     } as const
 
@@ -110,7 +107,7 @@ export function PlatformPreview() {
         locale === 'nl'
           ? ['Rustige communicatie', 'Gedeelde interesses', 'Fijne huisvibe']
           : ['Calm communication', 'Shared interests', 'Similar home vibe'],
-      dimensions: { ...base.dimensions, guests: 82, substances: 88 },
+      dimensions: { ...base.dimensions, social: 82, communication: 91 },
     }
   }, [locale, mode])
 

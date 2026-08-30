@@ -60,14 +60,11 @@ export function SocialHero() {
         ? ['Beiden open voor cross-city indien nodig', 'Zelfde niveau: bachelor', 'Vergelijkbaar afstudeerjaar']
         : ['Both open to cross-city if needed', 'Same degree level: bachelor', 'Similar graduation year'],
       dimensions: {
-        cleanliness: 90,
-        noise: 94,
-        guests: 86,
-        sleep: 88,
-        shared_spaces: 91,
-        substances: 84,
-        study_social: 89,
-        home_vibe: 92,
+        environment: 90,
+        cleanliness: 92,
+        communication: 88,
+        social: 86,
+        logistics_context: 91,
       },
     }
   }, [locale])

@@ -43,7 +43,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="studentsCollaborating"
-            alt="International students collaborating — symbolising mobility and integration in Dutch higher education"
+            alt="International students collaborating - symbolising mobility and integration in Dutch higher education"
           />
           <figcaption>
             Housing friction is an integration variable: it shapes commutes, social access, and how quickly students can anchor in a city.
@@ -259,7 +259,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="studentsCollaborating"
-            alt="Internationale studenten samen aan het werk — symbool voor mobiliteit en integratie in het Nederlandse hoger onderwijs"
+            alt="Internationale studenten samen aan het werk - symbool voor mobiliteit en integratie in het Nederlandse hoger onderwijs"
           />
           <figcaption>
             Woonfrictie beïnvloedt integratie: reistijd, netwerk en toegang tot het studentenleven hangen samen met een adres.

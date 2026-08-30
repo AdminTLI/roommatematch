@@ -235,14 +235,18 @@ export function MarketingNavbarLight() {
                             className="min-w-[220px] rounded-2xl border-0 bg-white/90 backdrop-blur-xl shadow-[0_20px_60px_rgba(15,23,42,0.18)] p-1"
                           >
                             {whoWeServeContent[mounted ? locale : 'en'].items.map((menuItem) => (
-                              <DropdownMenuItem key={menuItem.href} asChild>
+                              <DropdownMenuItem
+                                key={menuItem.href}
+                                asChild
+                                className="focus:bg-slate-100 focus:text-slate-900 data-[highlighted]:bg-slate-100 data-[highlighted]:text-slate-900"
+                              >
                                 <Link
                                   href={menuItem.href}
                                   className={cn(
                                     'flex cursor-pointer items-center px-3 py-2.5 text-sm font-semibold outline-none rounded-xl mx-1',
                                     isActiveHref(menuItem.href)
-                                      ? 'bg-slate-900 text-white'
-                                      : 'text-slate-800 hover:bg-white/70 focus:bg-white/70'
+                                      ? 'bg-slate-900 text-white focus:bg-slate-900 focus:text-white data-[highlighted]:bg-slate-900 data-[highlighted]:text-white'
+                                      : 'text-slate-800 hover:bg-slate-100 hover:text-slate-900 focus:bg-slate-100 focus:text-slate-900'
                                   )}
                                   suppressHydrationWarning
                                 >

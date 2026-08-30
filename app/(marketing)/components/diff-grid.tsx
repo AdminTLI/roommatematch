@@ -46,7 +46,7 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
           borderColor: "border-green-200 dark:border-green-800",
           solutions: [
             "Scientific compatibility matching",
-            "Lifestyle questionnaire analysis",
+            "Lifestyle compatibility quiz",
             "Group formation suggestions",
             "Transparent compatibility scores",
             "ID-verified community only",
@@ -96,7 +96,7 @@ export function DiffGrid({ locale = 'en' }: DiffGridProps) {
           borderColor: "border-green-200 dark:border-green-800",
           solutions: [
             "Wetenschappelijke compatibiliteitsmatching",
-            "Leefstijl vragenlijst analyse",
+            "Leefstijl compatibiliteitsquiz",
             "Groepsvorming suggesties",
             "Transparante compatibiliteitsscores",
             "Alleen ID-geverifieerde community",

@@ -8,7 +8,7 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
       {
         question: 'What is Domu Match?',
         answer:
-          'Domu Match helps verified students and young professionals in the Netherlands find compatible roommates. You complete a structured lifestyle questionnaire, get suggestions with a compatibility score and plain-language reasons, and chat on the platform. Students and young professionals are matched only within their own pool.',
+          'Domu Match helps verified students and young professionals in the Netherlands find compatible roommates. You complete a short lifestyle compatibility quiz, get suggestions with a compatibility score and plain-language reasons, and chat on the platform. Students and young professionals are matched only within their own pool.',
       },
       {
         question: 'Who can use Domu Match?',
@@ -18,7 +18,7 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
       {
         question: 'How long does signup and onboarding take?',
         answer:
-          'Creating an account and passing verification is quick; the compatibility questionnaire usually takes about 10–15 minutes. The more honestly and completely you answer, the more useful your matches and explanations will be.',
+          'Creating an account and passing verification is quick; the compatibility quiz usually takes about 5–8 minutes. The more honestly and completely you answer, the more useful your matches and explanations will be.',
       },
       {
         question: 'Do I need a room or contract before I join?',
@@ -63,7 +63,7 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
       {
         question: 'How does roommate matching work?',
         answer:
-          'Your questionnaire answers describe how you live: cleanliness, noise, guests, sleep and quiet hours, shared spaces, substances, balance between study/work and social life, and the kind of home you want. We apply dealbreakers where your answers require it (for example strict no-smoking indoors), then score fit across those lifestyle dimensions and add context such as university, programme, and study year. Technical search also uses profile embeddings to surface likely candidates before the detailed score is applied.',
+          'Your quiz answers describe how you live across five lifestyle dimensions: environment (sleep and quiet), cleanliness, communication, social life, and logistics (budget, timing, house norms). We apply dealbreakers where your answers require it (for example strict no-smoking indoors), then score fit across those dimensions and add context such as university, programme, and study year. Technical search also uses profile embeddings to surface likely candidates before the detailed score is applied.',
       },
       {
         question: 'What does the compatibility score mean?',
@@ -118,7 +118,7 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
       {
         question: 'Does Domu Match include housing listings?',
         answer:
-          'Roommate matching is the core product. We are also building housing discovery inside the app (browse listings, preferences, and—in supported cases—tour requests). Whether you see that section depends on current rollout and configuration. If it is not visible yet, you can still match with roommates and coordinate housing together off the listings area.',
+          'Roommate matching is the core product. We are also building housing discovery inside the app (browse listings, preferences, and - in supported cases - tour requests). Whether you see that section depends on current rollout and configuration. If it is not visible yet, you can still match with roommates and coordinate housing together off the listings area.',
       },
       {
         question: 'Should I find roommates or housing first?',
@@ -128,7 +128,7 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
       {
         question: 'Where can I learn typical rents or neighbourhoods?',
         answer:
-          'Rents change quickly and vary by city and room type. Use municipal or national housing statistics, your institution’s housing desk, and reputable listing sites for market ranges. Domu Match focuses on who you live with and, when available, how listings fit your stated preferences—not on quoting average rents.',
+          'Rents change quickly and vary by city and room type. Use municipal or national housing statistics, your institution’s housing desk, and reputable listing sites for market ranges. Domu Match focuses on who you live with and, when available, how listings fit your stated preferences - not on quoting average rents.',
       },
     ],
   },
@@ -136,9 +136,9 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
     category: 'Account & support',
     items: [
       {
-        question: 'How do I update my profile or questionnaire?',
+        question: 'How do I update my profile or compatibility quiz?',
         answer:
-          'Open Settings: profile fields, questionnaire, notifications, and privacy (including data export and deletion requests) live in the tabs there. Big changes to your answers can change who you match with going forward.',
+          'Open Settings: profile fields, compatibility quiz, notifications, and privacy (including data export and deletion requests) live in the tabs there. Big changes to your answers can change who you match with going forward.',
       },
       {
         question: 'How do I delete my account?',
@@ -146,7 +146,7 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
           'Go to Settings → Account and follow the link to delete your account. You will complete a short exit flow. Deletion is permanent on our side once processed; retention of certain records for legal or security reasons is described in our Privacy Policy.',
       },
       {
-        question: 'I forgot my password—what now?',
+        question: 'I forgot my password - what now?',
         answer:
           'On the sign-in page, use “Forgot password” and check your email (including spam). Reset links expire for security; request a new one if needed.',
       },

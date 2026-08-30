@@ -7,7 +7,7 @@ type BlogHeroImageProps = {
   className?: string
 }
 
-/** In-article hero image — always uses an approved, verified Unsplash URL. */
+/** In-article hero image - always uses an approved, verified Unsplash URL. */
 export function BlogHeroImage({ imageKey, alt, className = 'w-full rounded-2xl' }: BlogHeroImageProps) {
   const { src, width, height } = BLOG_HERO_IMAGES[imageKey]
   return (

@@ -124,7 +124,12 @@ export const ADMIN_SECTION_TABS: Record<Exclude<AdminHubId, 'overview'>, AdminSe
     { id: 'marketplace', label: 'Marketplace', href: '/admin/metrics?tab=marketplace' },
     { id: 'retention', label: 'Retention', href: '/admin/metrics?tab=retention' },
     { id: 'footprint', label: 'Footprint', href: '/admin/metrics?tab=footprint' },
-    { id: 'questionnaire', label: 'Questionnaire', href: '/admin/metrics?tab=questionnaire' },
+    {
+      id: 'questionnaire',
+      label: 'Questionnaire',
+      href: '/admin/metrics?tab=questionnaire',
+      superAdminOnly: true,
+    },
   ],
   system: [
     { id: 'settings', label: 'Settings', href: '/admin/settings', superAdminOnly: true },
