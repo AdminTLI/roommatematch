@@ -195,7 +195,7 @@ export function SafetySection() {
           ))}
         </motion.div>
 
-        {/* Safety Features  -  short, scannable cards */}
+        {/* Safety Features - short, scannable cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-12 md:mb-16">
           {t.safetyFeatures.map((feature, index) => {
             const Icon = feature.icon

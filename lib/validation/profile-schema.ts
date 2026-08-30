@@ -59,6 +59,34 @@ export const profileUpdateSchema = z.object({
     .max(5, 'You can select up to 5 preferred cities')
     .optional()
     .default([]),
+
+  /** Monthly room budget in euros; null when unknown or unset */
+  budgetMin: z.number().int().min(0).max(5000).nullable().optional(),
+  budgetMax: z.number().int().min(0).max(5000).nullable().optional(),
+  budgetUnknown: z.boolean().optional().default(false),
+}).superRefine((data, ctx) => {
+  if (data.budgetUnknown) return
+
+  const min = data.budgetMin
+  const max = data.budgetMax
+  if (min == null && max == null) return
+
+  if (min == null || max == null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Please set both a minimum and maximum budget, or check that you don\'t know your budget yet',
+      path: ['budgetMin'],
+    })
+    return
+  }
+
+  if (min > max) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Minimum budget cannot be higher than maximum budget',
+      path: ['budgetMin'],
+    })
+  }
 })
 
 

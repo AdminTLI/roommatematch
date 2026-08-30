@@ -3,8 +3,7 @@ import { MetadataRoute } from 'next'
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://domumatch.com'
   const currentDate = new Date()
-  
-  // Marketing pages - high priority
+
   const marketingPages = [
     {
       url: baseUrl,
@@ -25,12 +24,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/young-professionals`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.9,
+    },
+    {
       url: `${baseUrl}/universities`,
       lastModified: currentDate,
       changeFrequency: 'monthly' as const,
       priority: 0.9,
     },
-    // City pages - high priority for local SEO
+    // City pages
     {
       url: `${baseUrl}/amsterdam`,
       lastModified: currentDate,
@@ -80,6 +85,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/breda`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/tilburg`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.95,
+    },
+    {
       url: `${baseUrl}/pricing`,
       lastModified: currentDate,
       changeFrequency: 'monthly' as const,
@@ -92,10 +109,143 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/wws-rent-check`,
+      lastModified: currentDate,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    },
+    {
       url: `${baseUrl}/blog`,
       lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.9,
+    },
+    // Blog posts
+    {
+      url: `${baseUrl}/blog/housemate-support-living-away-from-home`,
+      lastModified: new Date('2026-08-26'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/graduate-holdover-student-housing-netherlands`,
+      lastModified: new Date('2026-08-12'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/private-landlords-student-housing-netherlands`,
+      lastModified: new Date('2026-08-05'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/thuiswonend-studenten-nederland-cbs-data`,
+      lastModified: new Date('2026-07-28'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/student-housing-loneliness-netherlands`,
+      lastModified: new Date('2026-07-20'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/international-student-housing-rights-netherlands`,
+      lastModified: new Date('2026-07-12'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/student-housing-co-living-rules-netherlands`,
+      lastModified: new Date('2026-07-05'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/roommate-conflict-resolution-tips-netherlands`,
+      lastModified: new Date('2026-06-28'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/international-student-housing-netherlands-isolation`,
+      lastModified: new Date('2026-06-20'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/student-housing-shortage-retention-roi`,
+      lastModified: new Date('2026-06-12'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/student-housing-gap-retention-roi`,
+      lastModified: new Date('2026-06-05'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/move-in-week-red-flags`,
+      lastModified: new Date('2026-05-28'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/group-chats-ground-rules`,
+      lastModified: new Date('2026-05-20'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/when-dishes-equal-disrespect`,
+      lastModified: new Date('2026-05-12'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/night-owl-vs-8am-lecture`,
+      lastModified: new Date('2026-05-05'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/surviving-the-winter-blues`,
+      lastModified: new Date('2026-04-28'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/introverts-survival-guide-shared-living`,
+      lastModified: new Date('2026-04-20'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/why-im-clean-is-a-lie`,
+      lastModified: new Date('2026-04-12'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/hidden-cost-of-wrong-roommate`,
+      lastModified: new Date('2026-04-05'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/third-wheel-policy-significant-others`,
+      lastModified: new Date('2026-03-28'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/best-friend-trap-worst-roommate`,
+      lastModified: new Date('2026-03-20'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog/how-to-find-a-great-roommate`,
@@ -140,8 +290,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
   ]
-  
-  // Legal pages - lower priority but still indexed
+
   const legalPages = [
     {
       url: `${baseUrl}/privacy`,
@@ -168,7 +317,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     },
   ]
-  
+
   return [...marketingPages, ...legalPages]
 }
-

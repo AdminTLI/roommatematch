@@ -294,7 +294,7 @@ export function HowItWorksSection() {
           </p>
         </motion.div>
 
-        {/* Steps  -  interactive stepper */}
+        {/* Steps - interactive stepper */}
         <div className="mb-20">
           <InteractiveSteps steps={t.steps} reducedMotion={!!reducedMotion} />
         </div>

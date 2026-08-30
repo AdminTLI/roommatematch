@@ -23,6 +23,8 @@ const MARKETING_ROUTE_PREFIXES = [
   '/groningen',
   '/leiden',
   '/nijmegen',
+  '/breda',
+  '/tilburg',
   '/blog',
   '/privacy',
   '/terms',

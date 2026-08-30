@@ -38,21 +38,23 @@ This document summarizes all SEO improvements implemented for Domu Match to impr
 
 **What was done**:
 - Added FAQPage schema to homepage with 5 common questions
-- Added AggregateRating schema (4.8/5 based on 127 reviews)
-- Enhanced LocalBusiness schema with service areas (8 major Dutch cities)
-- Added Product schema for the service offering
+- Enhanced LocalBusiness schema with service areas (major Dutch cities including Breda and Tilburg)
+- Added Product schema for the service offering (without AggregateRating until real reviews exist)
 - Maintained existing Organization, WebSite, and BreadcrumbList schemas
+- Removed SearchAction pointing at a non-existent `/search` route
 
-**Impact**: Eligible for rich snippets in Google search results
+**Impact**: Eligible for FAQ and organization rich results without review-spam risk
 
 ### 4. City-Specific Landing Pages
-**Status**: ✅ Complete (8 pages created)
+**Status**: ✅ Complete (10 pages)
 
 **Pages created**:
 - `/amsterdam` - Comprehensive page with market data, universities, FAQs
 - `/rotterdam` - Rotterdam-specific content and pricing
 - `/utrecht` - Utrecht market overview
 - `/den-haag` - The Hague student housing info
+- `/breda` - Brabant masterpiece page (Avans, BUas, dual marketplace)
+- `/tilburg` - Brabant masterpiece page (Tilburg University, Fontys, dual marketplace)
 - `/eindhoven` - Eindhoven tech hub focus
 - `/groningen` - Student-friendly city content
 - `/leiden` - Historic university city

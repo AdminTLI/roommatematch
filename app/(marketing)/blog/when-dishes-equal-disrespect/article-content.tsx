@@ -156,7 +156,7 @@ const content = {
   nl: {
     title: 'Als afwas = disrespect: hoe kleine taken grote irritaties worden',
     excerpt:
-      'Niemand ontploft door één bord. Leer hoe ongelijk verdeelde klusjes onder je huid kruipen – en hoe Domu Match je helpt matchen met mensen die meedoen.',
+      'Niemand ontploft door één bord. Leer hoe ongelijk verdeelde klusjes onder je huid kruipen - en hoe Domu Match je helpt matchen met mensen die meedoen.',
     publishDate: '2026-01-27',
     readTime: '7 min lezen',
     relatedLinks: [

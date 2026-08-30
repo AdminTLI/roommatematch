@@ -210,7 +210,7 @@ const content = {
   nl: {
     title: 'De overlevingsgids voor introverten in een studentenhuis',
     excerpt:
-      'Als je sociale batterij snel leeg is, moet thuis een laadpunt zijn – geen extra podium. Leer hoe je huisgenoten vindt die jouw behoefte aan rust begrijpen.',
+      'Als je sociale batterij snel leeg is, moet thuis een laadpunt zijn - geen extra podium. Leer hoe je huisgenoten vindt die jouw behoefte aan rust begrijpen.',
     publishDate: '2026-01-03',
     readTime: '8 min lezen',
     relatedLinks: [

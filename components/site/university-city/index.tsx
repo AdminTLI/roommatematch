@@ -2,6 +2,7 @@
 
 import { UniversityCityHero } from './hero-section'
 import { UniversityCityStats } from './stats-section'
+import { UniversityCityMarketplaceSides } from './marketplace-sides-section'
 import { UniversityCityHousing } from './housing-section'
 import { UniversityCityUniversities } from './universities-section'
 import { UniversityCityWhyChoose } from './why-choose-section'
@@ -24,6 +25,7 @@ export function UniversityCityPage({ cityKey }: UniversityCityPageProps) {
     <>
       <UniversityCityHero city={city} />
       <UniversityCityStats city={city} />
+      <UniversityCityMarketplaceSides city={city} />
       <UniversityCityHousing city={city} />
       <UniversityCityUniversities city={city} />
       <UniversityCityWhyChoose city={city} />

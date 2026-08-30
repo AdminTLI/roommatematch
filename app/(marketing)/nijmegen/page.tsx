@@ -4,20 +4,23 @@ import { getCityStructuredData } from '@/components/site/university-city/content
 import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 
 export const metadata: Metadata = {
-  title: 'Find Roommates in Nijmegen | Domu Match – Students & Young Professionals',
+  title: 'Find a Roommate in Nijmegen | Roommate Matching | Domu Match',
   description:
-    'Find compatible roommates in Nijmegen with Domu Match. Connect with verified students and young professionals from Radboud University, HAN. Science-backed matching for shared living.',
+    'Find a roommate in Nijmegen – or fill a free room near Radboud & HAN. Compatibility matching for verified students and young professionals.',
   keywords: [
+    'huisgenoot zoeken Nijmegen',
+    'huisgenoot gezocht Nijmegen',
     'find roommate Nijmegen',
     'Radboud roommate',
-    'student housing Nijmegen',
-    'young professionals Nijmegen',
     'HAN roommate',
-    'Nijmegen accommodation',
+    'looking for housemate Nijmegen',
+    'compatible roommate Nijmegen',
+    'verified roommate matching',
   ],
   openGraph: {
-    title: 'Find Roommates in Nijmegen | Domu Match',
-    description: 'Find compatible roommates in Nijmegen. Verified students and young professionals. Radboud and HAN. Science-backed matching.',
+    title: 'Find a Roommate in Nijmegen | Domu Match',
+    description: 
+      'Roommate matching in Nijmegen for seekers and people with a free room. Radboud and HAN.',
     type: 'website',
     url: 'https://domumatch.com/nijmegen',
     siteName: 'Domu Match',
@@ -26,7 +29,7 @@ export const metadata: Metadata = {
         url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Find Roommates in Nijmegen - Domu Match',
+        alt: 'Find a roommate in Nijmegen - Domu Match',
       },
     ],
     locale: 'en_US',

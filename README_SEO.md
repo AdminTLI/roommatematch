@@ -18,8 +18,7 @@ Your website has been transformed with comprehensive SEO improvements to maximiz
 
 3. **Enhanced Structured Data** ✓
    - FAQPage schema on homepage (5 questions)
-   - AggregateRating schema (4.8/5 stars, 127 reviews)
-   - Enhanced LocalBusiness schema with 8 service areas
+   - LocalBusiness schema with major Dutch service areas (no AggregateRating until real reviews exist)
    - Product schema for service offering
    - Breadcrumb navigation on all pages
 

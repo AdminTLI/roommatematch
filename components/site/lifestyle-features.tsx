@@ -40,7 +40,7 @@ const content = {
         previewTitle: 'Profile snapshot',
         previewPairs: [
           { k: 'Preferred city', v: 'Breda' },
-          { k: 'Budget', v: '€450 – €650' },
+          { k: 'Budget', v: '€450 - €650' },
         ],
       },
       explainable: {
@@ -84,7 +84,7 @@ const content = {
         previewTitle: 'Profiel snapshot',
         previewPairs: [
           { k: 'Voorkeursstad', v: 'Breda' },
-          { k: 'Budget', v: '€450 – €650' },
+          { k: 'Budget', v: '€450 - €650' },
         ],
       },
       explainable: {

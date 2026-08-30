@@ -46,6 +46,7 @@ interface UserInfoData {
   housing_status?: HousingStatusKey[]
   budget_min?: number | null
   budget_max?: number | null
+  budget_unknown?: boolean
   preferred_cities?: string[]
   user_type?: 'student' | 'professional' | null
   age?: number | null
@@ -583,17 +584,21 @@ export function MessengerProfilePane({
                           />
                         ))
                       : null}
-                    {(userInfo?.budget_min != null || userInfo?.budget_max != null) && (
+                    {(userInfo?.budget_unknown ||
+                      userInfo?.budget_min != null ||
+                      userInfo?.budget_max != null) && (
                       <Badge
                         variant="secondary"
                         className="rounded-full border-transparent bg-amber-50 px-3 py-1.5 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
                       >
                         💰{' '}
-                        {userInfo.budget_min != null && userInfo.budget_max != null
-                          ? `€${userInfo.budget_min}–€${userInfo.budget_max}`
-                          : userInfo.budget_min != null
-                            ? `€${userInfo.budget_min}+`
-                            : `up to €${userInfo.budget_max}`}
+                        {userInfo.budget_unknown
+                          ? 'Budget not sure yet'
+                          : userInfo.budget_min != null && userInfo.budget_max != null
+                            ? `€${userInfo.budget_min}–€${userInfo.budget_max}/mo`
+                            : userInfo.budget_min != null
+                              ? `€${userInfo.budget_min}+/mo`
+                              : `up to €${userInfo.budget_max}/mo`}
                       </Badge>
                     )}
                     {userInfo?.preferred_cities?.map(city => (
@@ -607,6 +612,7 @@ export function MessengerProfilePane({
                     ))}
                   </div>
                   {!(userInfo?.housing_status && userInfo.housing_status.length > 0) &&
+                    !userInfo?.budget_unknown &&
                     userInfo?.budget_min == null &&
                     userInfo?.budget_max == null &&
                     !(userInfo?.preferred_cities && userInfo.preferred_cities.length > 0) && (

@@ -176,6 +176,16 @@ export default function Footer() {
                   Nijmegen
                 </Link>
               </li>
+              <li>
+                <Link href="/breda" className="hover:text-white transition-colors">
+                  Breda
+                </Link>
+              </li>
+              <li>
+                <Link href="/tilburg" className="hover:text-white transition-colors">
+                  Tilburg
+                </Link>
+              </li>
             </ul>
           </div>
 

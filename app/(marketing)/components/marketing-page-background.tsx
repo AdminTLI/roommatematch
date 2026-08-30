@@ -18,7 +18,7 @@ export function MarketingPageBackground() {
         className="absolute inset-0 bg-gradient-to-b from-indigo-950/30 via-transparent to-purple-950/20 pointer-events-none"
         aria-hidden
       />
-      {/* Blur orbs – decorative gradient accents */}
+      {/* Blur orbs - decorative gradient accents */}
       <div className="pointer-events-none absolute inset-0">
         <div
           className={cn(

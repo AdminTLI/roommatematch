@@ -21,7 +21,7 @@ const content = {
       'Design campus‑ready growth experiments'
     ],
     opportunity: 'Opportunity',
-    opportunityText: 'You may be the first contributor in your area  -  set the standard and leave strong references behind you.'
+    opportunityText: 'You may be the first contributor in your area - set the standard and leave strong references behind you.'
   },
   nl: {
     title: 'Aanmelden om mee te doen',
@@ -36,7 +36,7 @@ const content = {
       'Ontwerp campusklare groei-experimenten'
     ],
     opportunity: 'Kans',
-    opportunityText: 'Je kunt de eerste contributor in jouw gebied zijn  -  zet de standaard en laat sterke referenties achter.'
+    opportunityText: 'Je kunt de eerste contributor in jouw gebied zijn - zet de standaard en laat sterke referenties achter.'
   }
 }
 

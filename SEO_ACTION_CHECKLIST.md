@@ -5,8 +5,8 @@
 All technical SEO improvements have been completed and are ready for production:
 
 - [x] Updated all URLs from domumatch.vercel.app to domumatch.com (20+ files)
-- [x] Enhanced structured data (FAQPage, AggregateRating, LocalBusiness, Product schemas)
-- [x] Created 8 city-specific landing pages (Amsterdam, Rotterdam, Utrecht, Den Haag, Eindhoven, Groningen, Leiden, Nijmegen)
+- [x] Enhanced structured data (FAQPage, LocalBusiness, Product schemas — AggregateRating removed until real reviews exist)
+- [x] Created city-specific landing pages (Amsterdam, Rotterdam, Utrecht, Den Haag, Eindhoven, Groningen, Leiden, Nijmegen, Breda, Tilburg)
 - [x] Created comprehensive FAQ page with 35+ questions
 - [x] Implemented IndexNow API for instant search engine notification
 - [x] Created RSS feed for blog content

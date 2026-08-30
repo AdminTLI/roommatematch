@@ -221,13 +221,11 @@ function WarningBanner({ userId }: { userId?: string }) {
   return (
     <>
       <div
-        className="rounded-2xl border border-amber-400/70 bg-amber-50/90 dark:bg-amber-950/50 px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors"
+        className="rounded-2xl border border-amber-400/70 bg-amber-50/90 dark:bg-amber-950/50 px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors"
         onClick={() => setIsModalOpen(true)}
       >
-        <div className="mt-0.5">
-          <AlertCircle className="w-5 h-5 text-amber-500" />
-        </div>
-        <div className="flex-1">
+        <AlertCircle className="w-5 h-5 shrink-0 text-amber-500" />
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
             You have received a warning
           </p>

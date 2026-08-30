@@ -94,7 +94,7 @@ export function UniversityCityHousing({ city }: HousingSectionProps) {
               <ul className="space-y-3 text-slate-700 text-sm md:text-base">
                 {city.neighborhoods.map((n, i) => (
                   <li key={i}>
-                    <strong className="text-slate-900">{n.name}:</strong> {n.description}  - {' '}
+                    <strong className="text-slate-900">{n.name}:</strong> {n.description} - {' '}
                     <span className="text-blue-700 font-semibold">{n.priceRange}</span>
                   </li>
                 ))}

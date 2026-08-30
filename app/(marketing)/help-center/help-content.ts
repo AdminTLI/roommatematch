@@ -369,34 +369,34 @@ Note: You cannot switch from a university email to a personal email.`,
 **Key Factors Considered:**
 
 1. **Personality Compatibility**
-   - Communication styles
-   - Conflict resolution approaches
-   - Values and priorities
-   - Lifestyle preferences
+ - Communication styles
+ - Conflict resolution approaches
+ - Values and priorities
+ - Lifestyle preferences
 
 2. **Schedule Alignment**
-   - Sleep schedules (wake/sleep times)
-   - Study habits and quiet hours
-   - Daily routines
-   - Weekend preferences
+ - Sleep schedules (wake/sleep times)
+ - Study habits and quiet hours
+ - Daily routines
+ - Weekend preferences
 
 3. **Cleanliness Preferences**
-   - Cleanliness standards
-   - Cleaning schedules
-   - Organization preferences
-   - Shared space expectations
+ - Cleanliness standards
+ - Cleaning schedules
+ - Organization preferences
+ - Shared space expectations
 
 4. **Social & Guest Preferences**
-   - Frequency of guests
-   - Noise tolerance
-   - Social activities
-   - Party preferences
+ - Frequency of guests
+ - Noise tolerance
+ - Social activities
+ - Party preferences
 
 5. **Academic Affinity**
-   - Same university
-   - Same program (highest priority)
-   - Same faculty
-   - Study year proximity
+ - Same university
+ - Same program (highest priority)
+ - Same faculty
+ - Study year proximity
 
 **How It Works:**
 1. Your quiz answers create a compatibility profile
@@ -679,29 +679,29 @@ To prevent spam and harassment, there's a limit of 30 messages per 5 minutes. Th
 
 **Safety Features:**
 1. **Text-Only Messaging**
-   - No file sharing or external links allowed
-   - Prevents malicious content and scams
-   - Keeps conversations focused
+ - No file sharing or external links allowed
+ - Prevents malicious content and scams
+ - Keeps conversations focused
 
 2. **Rate Limiting**
-   - Maximum 30 messages per 5 minutes
-   - Prevents spam and harassment
-   - Protects against abusive behavior
+ - Maximum 30 messages per 5 minutes
+ - Prevents spam and harassment
+ - Protects against abusive behavior
 
 3. **Reporting System**
-   - Report inappropriate messages or behavior
-   - Click "Report" on any message or profile
-   - Our team reviews all reports promptly
+ - Report inappropriate messages or behavior
+ - Click "Report" on any message or profile
+ - Our team reviews all reports promptly
 
 4. **Blocking Users**
-   - Block any user you don't want to hear from
-   - Blocked users cannot message you
-   - Access from profile or chat menu
+ - Block any user you don't want to hear from
+ - Blocked users cannot message you
+ - Access from profile or chat menu
 
 5. **Moderation**
-   - Automated content filtering
-   - Human moderation oversight
-   - 24/7 safety team support
+ - Automated content filtering
+ - Human moderation oversight
+ - 24/7 safety team support
 
 **What to Report:**
 - Harassment or inappropriate behavior
@@ -1125,31 +1125,31 @@ If you're in immediate danger, contact local emergency services (112 in Netherla
 As a user in the EU, you have the right to:
 
 1. **Access Your Data**
-   - View all data we have about you
-   - Download your data in JSON format
-   - Request a copy of your information
+ - View all data we have about you
+ - Download your data in JSON format
+ - Request a copy of your information
 
 2. **Rectify Your Data**
-   - Update incorrect information
-   - Modify your profile details
-   - Correct any errors
+ - Update incorrect information
+ - Modify your profile details
+ - Correct any errors
 
 3. **Erase Your Data**
-   - Delete your account and all associated data
-   - Request data deletion
-   - Right to be forgotten
+ - Delete your account and all associated data
+ - Request data deletion
+ - Right to be forgotten
 
 4. **Restrict Processing**
-   - Limit how your data is used
-   - Control data processing activities
+ - Limit how your data is used
+ - Control data processing activities
 
 5. **Data Portability**
-   - Export your data
-   - Transfer your data to another service
+ - Export your data
+ - Transfer your data to another service
 
 6. **Object to Processing**
-   - Opt out of certain data uses
-   - Object to automated decision-making
+ - Opt out of certain data uses
+ - Object to automated decision-making
 
 **Accessing Your Rights:**
 - Go to Settings > Privacy

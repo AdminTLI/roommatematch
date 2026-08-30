@@ -4,28 +4,24 @@ import { getCityStructuredData } from '@/components/site/university-city/content
 import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 
 export const metadata: Metadata = {
-  title: 'Find Roommates in Rotterdam | Domu Match – Students & Young Professionals',
+  title: 'Find a Roommate in Rotterdam | Roommate Matching | Domu Match',
   description:
-    'Find compatible roommates in Rotterdam with Domu Match. Connect with verified students and young professionals from EUR, Erasmus University, InHolland and more. Science-backed matching for shared living in Rotterdam.',
+    'Looking for a roommate in Rotterdam – or filling a free room? Match with verified EUR, Hogeschool Rotterdam & Inholland students and young professionals.',
   keywords: [
+    'huisgenoot zoeken Rotterdam',
+    'huisgenoot gezocht Rotterdam',
+    'roommates Rotterdam',
     'find roommate Rotterdam',
-    'roommate finder Rotterdam',
-    'student housing Rotterdam',
-    'young professionals Rotterdam',
-    'room share Rotterdam',
-    'flatmate Rotterdam',
+    'looking for housemate Rotterdam',
     'EUR roommate',
     'Erasmus University roommate',
-    'InHolland Rotterdam',
-    'Rotterdam accommodation',
-    'student rooms Rotterdam',
-    'shared apartment Rotterdam',
     'compatible roommate Rotterdam',
+    'verified roommate matching',
   ],
   openGraph: {
-    title: 'Find Your Perfect Roommate in Rotterdam | Domu Match',
+    title: 'Find a Roommate in Rotterdam | Domu Match',
     description:
-      'Find compatible roommates in Rotterdam with science-backed matching. Connect with verified students and young professionals from EUR and more.',
+      'Roommate matching in Rotterdam for seekers and people with a free room. Verified students & young professionals.',
     type: 'website',
     url: 'https://domumatch.com/rotterdam',
     siteName: 'Domu Match',
@@ -34,15 +30,15 @@ export const metadata: Metadata = {
         url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Find Roommates in Rotterdam - Domu Match',
+        alt: 'Find a roommate in Rotterdam - Domu Match',
       },
     ],
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Find Your Perfect Roommate in Rotterdam | Domu Match',
-    description: 'Find compatible roommates in Rotterdam with science-backed matching.',
+    title: 'Find a Roommate in Rotterdam | Domu Match',
+    description: 'Roommate matching in Rotterdam for seekers and free rooms.',
     images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {

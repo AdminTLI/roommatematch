@@ -96,19 +96,19 @@ const content = {
 
         <ol>
           <li>
-            <strong>Noise &amp; quiet hours</strong> – “What’s a reasonable quiet time on weeknights and
+            <strong>Noise &amp; quiet hours</strong> - “What’s a reasonable quiet time on weeknights and
             weekends?”
           </li>
           <li>
-            <strong>Guests &amp; partners</strong> – “Roughly how many nights a week are people okay with
+            <strong>Guests &amp; partners</strong> - “Roughly how many nights a week are people okay with
             overnight guests?”
           </li>
           <li>
-            <strong>Cleaning system</strong> – “Do we want a rota, checklist, or another system? What’s the
+            <strong>Cleaning system</strong> - “Do we want a rota, checklist, or another system? What’s the
             minimum standard?”
           </li>
           <li>
-            <strong>Shared items</strong> – “What do we share - cleaning stuff, oil and spices, toilet paper?
+            <strong>Shared items</strong> - “What do we share - cleaning stuff, oil and spices, toilet paper?
             How do we split costs?”
           </li>
         </ol>

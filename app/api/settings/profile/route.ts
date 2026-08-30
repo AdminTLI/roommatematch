@@ -59,7 +59,10 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
     
-    const { bio, interests, housingStatus } = validationResult.data
+    const { bio, interests, housingStatus, budgetMin, budgetMax, budgetUnknown } = validationResult.data
+    const resolvedBudgetUnknown = Boolean(budgetUnknown)
+    const resolvedBudgetMin = resolvedBudgetUnknown ? null : (budgetMin ?? null)
+    const resolvedBudgetMax = resolvedBudgetUnknown ? null : (budgetMax ?? null)
 
     // Check if user exists in users table using SERVICE ROLE (bypass RLS)
     const { createServiceClient } = await import('@/lib/supabase/service')
@@ -146,6 +149,9 @@ export async function POST(request: Request) {
         bio: bio || null,
         interests: interests && Array.isArray(interests) ? interests : [],
         housing_status: housingStatus && Array.isArray(housingStatus) ? housingStatus : [],
+        budget_min: resolvedBudgetMin,
+        budget_max: resolvedBudgetMax,
+        budget_unknown: resolvedBudgetUnknown,
         degree_level: academic.degree_level,
         updated_at: new Date().toISOString()
       }, {
@@ -160,6 +166,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ 
         error: `Failed to update profile: ${profileError.message}` 
       }, { status: 500 })
+    }
+
+    // Keep questionnaire responses in sync so matching / Match Insights stay aligned
+    try {
+      if (resolvedBudgetUnknown || resolvedBudgetMin == null || resolvedBudgetMax == null) {
+        await serviceSupabase
+          .from('responses')
+          .delete()
+          .eq('user_id', user.id)
+          .in('question_key', ['budget_min', 'budget_max'])
+      } else {
+        const now = new Date().toISOString()
+        await serviceSupabase.from('responses').upsert(
+          [
+            {
+              user_id: user.id,
+              question_key: 'budget_min',
+              value: resolvedBudgetMin,
+              updated_at: now,
+            },
+            {
+              user_id: user.id,
+              question_key: 'budget_max',
+              value: resolvedBudgetMax,
+              updated_at: now,
+            },
+          ],
+          { onConflict: 'user_id,question_key' }
+        )
+      }
+    } catch (syncError) {
+      safeLogger.warn('[Profile] Budget response sync failed (non-fatal)', syncError)
     }
 
     return NextResponse.json({ 

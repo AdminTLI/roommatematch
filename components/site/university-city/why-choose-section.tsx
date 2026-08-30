@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, useReducedMotion } from 'framer-motion'
-import { Users, Shield, Check } from 'lucide-react'
+import { Users, Shield, Home, Check } from 'lucide-react'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { cn } from '@/lib/utils'
@@ -13,8 +13,8 @@ interface WhyChooseSectionProps {
   city: CityContent
 }
 
-const ICONS = [Users, Shield, Check] as const
-const ICON_COLORS = ['text-indigo-400', 'text-purple-400', 'text-emerald-400'] as const
+const ICONS = [Users, Shield, Home, Check] as const
+const ICON_COLORS = ['text-indigo-400', 'text-purple-400', 'text-blue-400', 'text-emerald-400'] as const
 
 export function UniversityCityWhyChoose({ city }: WhyChooseSectionProps) {
   const { locale } = useApp()
@@ -39,9 +39,9 @@ export function UniversityCityWhyChoose({ city }: WhyChooseSectionProps) {
             {u.whyHeading(city.nameDisplay)}
           </motion.h2>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 gap-6">
             {u.whyPoints.map((item, i) => {
-              const Icon = ICONS[i]
+              const Icon = ICONS[i % ICONS.length]
               return (
                 <motion.div
                   key={item.title}
@@ -52,14 +52,14 @@ export function UniversityCityWhyChoose({ city }: WhyChooseSectionProps) {
                   initial={reducedMotion ? undefined : { opacity: 0, y: 20 }}
                   whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  transition={{ duration: 0.5, delay: i * 0.08 }}
                 >
                   <div
                     className={cn(
                       'w-14 h-14 mx-auto rounded-2xl border border-white/80 bg-white/70 flex items-center justify-center shadow-[0_10px_24px_rgba(15,23,42,0.08)]'
                     )}
                   >
-                    <Icon className={cn('h-7 w-7', ICON_COLORS[i])} aria-hidden />
+                    <Icon className={cn('h-7 w-7', ICON_COLORS[i % ICON_COLORS.length])} aria-hidden />
                   </div>
                   <h3 className="text-xl font-semibold text-slate-900">{item.title}</h3>
                   <p className="text-slate-700 text-sm md:text-base">{item.description}</p>

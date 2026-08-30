@@ -4,21 +4,23 @@ import { getCityStructuredData } from '@/components/site/university-city/content
 import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 
 export const metadata: Metadata = {
-  title: 'Find Roommates in The Hague | Domu Match – Students & Young Professionals',
+  title: 'Find a Roommate in The Hague | Roommate Matching | Domu Match',
   description:
-    'Find compatible roommates in The Hague (Den Haag) with Domu Match. Connect with verified students and young professionals from Leiden University The Hague, The Hague University, and more.',
+    'Find a roommate in The Hague – or fill a free room. Match with verified THUAS & Campus Den Haag students and young professionals. Compatibility first.',
   keywords: [
-    'find roommate Den Haag',
+    'huisgenoot zoeken Den Haag',
+    'huisgenoot gezocht Den Haag',
+    'find roommate The Hague',
+    'looking for housemate Den Haag',
     'roommate finder The Hague',
-    'student housing Den Haag',
-    'young professionals The Hague',
-    'The Hague shared living',
-    'Leiden University The Hague',
-    'Den Haag accommodation',
+    'THUAS roommate',
+    'compatible roommate Den Haag',
+    'verified roommate matching',
   ],
   openGraph: {
-    title: 'Find Your Perfect Roommate in The Hague | Domu Match',
-    description: 'Find compatible roommates in The Hague with science-backed matching.',
+    title: 'Find a Roommate in The Hague | Domu Match',
+    description: 
+      'Roommate matching in The Hague for seekers and people with a free room.',
     type: 'website',
     url: 'https://domumatch.com/den-haag',
     siteName: 'Domu Match',
@@ -27,7 +29,7 @@ export const metadata: Metadata = {
         url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Find Roommates in The Hague - Domu Match',
+        alt: 'Find a roommate in The Hague - Domu Match',
       },
     ],
     locale: 'en_US',

@@ -444,7 +444,7 @@ const content = {
         slug: 'introverts-survival-guide-shared-living',
         title: 'De overlevingsgids voor introverten in een studentenhuis',
         excerpt:
-          'Als je sociale batterij snel leeg is, moet thuis een laadpunt zijn – geen extra podium. Match met mensen die dat begrijpen.',
+          'Als je sociale batterij snel leeg is, moet thuis een laadpunt zijn - geen extra podium. Match met mensen die dat begrijpen.',
         readTime: '8 min lezen',
         date: '2026-01-03',
         category: 'Welzijn',
@@ -464,7 +464,7 @@ const content = {
         slug: 'hidden-cost-of-wrong-roommate',
         title: 'De verborgen kosten van de verkeerde huisgenoot',
         excerpt:
-          'Een slechte match kost meer dan alleen huur. Lees hoe contractbreuk, verhuizen en slechtere cijfers samen optellen  -  en hoe je dat voorkomt.',
+          'Een slechte match kost meer dan alleen huur. Lees hoe contractbreuk, verhuizen en slechtere cijfers samen optellen - en hoe je dat voorkomt.',
         readTime: '7 min lezen',
         date: '2025-12-05',
         category: 'Financiën',

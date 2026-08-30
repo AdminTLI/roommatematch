@@ -33,14 +33,6 @@ export const homepageStructuredData = {
         '@id': 'https://domumatch.com/#organization',
       },
       inLanguage: ['en-US', 'nl-NL'],
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: {
-          '@type': 'EntryPoint',
-          urlTemplate: 'https://domumatch.com/search?q={search_term_string}',
-        },
-        'query-input': 'required name=search_term_string',
-      },
     },
     {
       '@type': 'LocalBusiness',
@@ -62,18 +54,13 @@ export const homepageStructuredData = {
         { '@type': 'City', name: 'Groningen' },
         { '@type': 'City', name: 'Leiden' },
         { '@type': 'City', name: 'Nijmegen' },
+        { '@type': 'City', name: 'Breda' },
+        { '@type': 'City', name: 'Tilburg' },
       ],
       serviceType: 'Roommate Matching Service',
       description:
         'AI-driven roommate matching for verified students and young professionals in the Netherlands.',
       priceRange: 'Free for students and young professionals',
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.8',
-        ratingCount: '127',
-        bestRating: '5',
-        worstRating: '1',
-      },
     },
     {
       '@type': 'BreadcrumbList',
@@ -111,7 +98,7 @@ export const homepageStructuredData = {
           name: 'Is Domu Match only for students in the Netherlands?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Domu Match serves both verified students and young professionals in the Netherlands. Students match only with other students; professionals only with other professionals. We partner with 50+ universities and serve major cities including Amsterdam, Rotterdam, Utrecht, and more.',
+            text: 'Domu Match serves both verified students and young professionals in the Netherlands. Students match only with other students; professionals only with other professionals. We partner with 50+ universities and serve major cities including Amsterdam, Rotterdam, Utrecht, Breda, Tilburg, and more.',
           },
         },
         {
@@ -127,7 +114,7 @@ export const homepageStructuredData = {
           name: 'What makes Domu Match different from other roommate apps?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Domu Match is built around verification, deep compatibility, and emotional safety. You see why you match, and you connect with verified students and young professionals in the Netherlands.',
+            text: 'Domu Match is built around verification, deep compatibility, and emotional safety. You see why you match, and you connect with verified students and young professionals in the Netherlands - we match people, not room listings.',
           },
         },
       ],
@@ -147,13 +134,6 @@ export const homepageStructuredData = {
         priceCurrency: 'EUR',
         availability: 'https://schema.org/InStock',
         url: 'https://domumatch.com',
-      },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.8',
-        ratingCount: '127',
-        bestRating: '5',
-        worstRating: '1',
       },
     },
   ],

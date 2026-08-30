@@ -169,7 +169,7 @@ export async function GET(request: NextRequest) {
     // Fetch profile data (`program` is the display name fallback when user_academic.program_id is null)
     const { data: profile, error: profileError } = await admin
       .from('profiles')
-      .select('first_name, last_name, bio, interests, housing_status, preferred_cities, program')
+      .select('first_name, last_name, bio, interests, housing_status, preferred_cities, program, budget_min, budget_max, budget_unknown')
       .eq('user_id', targetUserId)
       .maybeSingle()
 
@@ -188,26 +188,39 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Fetch questionnaire budget (min/max rent) from responses
-    let budgetMin: number | null = null
-    let budgetMax: number | null = null
-    const { data: budgetResponses } = await admin
-      .from('responses')
-      .select('question_key, value')
-      .eq('user_id', targetUserId)
-      .in('question_key', ['budget_min', 'budget_max'])
-    if (budgetResponses?.length) {
-      const toNum = (v: unknown): number | null => {
-        if (typeof v === 'number' && Number.isFinite(v)) return v
-        if (typeof v === 'string') { const n = Number(v); return Number.isFinite(n) ? n : null }
-        return null
+    // Prefer profile housing budget (Settings); fall back to questionnaire responses
+    let budgetMin: number | null =
+      typeof profile.budget_min === 'number' && Number.isFinite(profile.budget_min)
+        ? profile.budget_min
+        : null
+    let budgetMax: number | null =
+      typeof profile.budget_max === 'number' && Number.isFinite(profile.budget_max)
+        ? profile.budget_max
+        : null
+    const budgetUnknown = Boolean(profile.budget_unknown)
+
+    if (!budgetUnknown && budgetMin == null && budgetMax == null) {
+      const { data: budgetResponses } = await admin
+        .from('responses')
+        .select('question_key, value')
+        .eq('user_id', targetUserId)
+        .in('question_key', ['budget_min', 'budget_max'])
+      if (budgetResponses?.length) {
+        const toNum = (v: unknown): number | null => {
+          if (typeof v === 'number' && Number.isFinite(v)) return v
+          if (typeof v === 'string') { const n = Number(v); return Number.isFinite(n) ? n : null }
+          return null
+        }
+        for (const r of budgetResponses) {
+          const num = toNum(r.value)
+          if (num == null) continue
+          if (r.question_key === 'budget_min') budgetMin = num
+          if (r.question_key === 'budget_max') budgetMax = num
+        }
       }
-      for (const r of budgetResponses) {
-        const num = toNum(r.value)
-        if (num == null) continue
-        if (r.question_key === 'budget_min') budgetMin = num
-        if (r.question_key === 'budget_max') budgetMax = num
-      }
+    } else if (budgetUnknown) {
+      budgetMin = null
+      budgetMax = null
     }
 
     // Preferred cities: housing prefs table first, then profiles (onboarding writes here)
@@ -423,6 +436,7 @@ export async function GET(request: NextRequest) {
       housing_status: (profile.housing_status && Array.isArray(profile.housing_status)) ? profile.housing_status : [],
       budget_min: budgetMin,
       budget_max: budgetMax,
+      budget_unknown: budgetUnknown,
       preferred_cities: preferredCities,
       user_type: targetUserType,
       wfh_status: wfhStatus,

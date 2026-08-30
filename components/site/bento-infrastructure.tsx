@@ -40,10 +40,10 @@ const content = {
       "Compatibele woningen worden micro-ondersteuningssystemen. Als je woonsituatie klopt, gedij je - universiteiten zien tevredenere studenten en betere retentie.",
     chatCompanion: 'AI-huisgenootcompanion',
     chatCompanionCopy:
-      "Maak kennis met je persoonlijke AI-huisgenootchatbot – een beetje beste vriend, een beetje campusgids. Stel vragen over huisregels, het studentenleven in Nederland of hoe alles in je gebouw werkt, wanneer je maar ondersteuning nodig hebt.",
+      "Maak kennis met je persoonlijke AI-huisgenootchatbot - een beetje beste vriend, een beetje campusgids. Stel vragen over huisregels, het studentenleven in Nederland of hoe alles in je gebouw werkt, wanneer je maar ondersteuning nodig hebt.",
     antiDropout: 'De Anti-Uitval Motor',
     antiDropoutCopy:
-      "Veilige woningen maken succesvolle studenten. Onderzoek laat zien dat woonstress een van de grootste redenen is waarom studenten denken aan stoppen – het ondermijnt focus, cijfers en mentale gezondheid. Door onverenigbaarheid al vóór intrek te verminderen, verlagen universiteiten conflicten, beschermen ze welzijn en houden ze meer studenten ingeschreven tot en met hun diploma.",
+      "Veilige woningen maken succesvolle studenten. Onderzoek laat zien dat woonstress een van de grootste redenen is waarom studenten denken aan stoppen - het ondermijnt focus, cijfers en mentale gezondheid. Door onverenigbaarheid al vóór intrek te verminderen, verlagen universiteiten conflicten, beschermen ze welzijn en houden ze meer studenten ingeschreven tot en met hun diploma.",
   },
 }
 

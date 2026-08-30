@@ -4,27 +4,26 @@ import { getCityStructuredData } from '@/components/site/university-city/content
 import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 
 export const metadata: Metadata = {
-  title: 'Find Roommates in Amsterdam | Domu Match – Students & Young Professionals',
+  title: 'Find a Roommate in Amsterdam | Roommate Matching | Domu Match',
   description:
-    'Find compatible roommates in Amsterdam with Domu Match. Connect with verified students and young professionals from UvA, VU, HvA and more. Science-backed matching for shared living in Amsterdam.',
+    'Looking for a roommate in Amsterdam – or have a free room? Match with verified UvA, VU & HvA students and young professionals. Compatibility matching, not room ads.',
   keywords: [
+    'huisgenoot zoeken Amsterdam',
+    'huisgenoot gezocht Amsterdam',
+    'roommates Amsterdam',
     'find roommate Amsterdam',
+    'looking for housemate Amsterdam',
     'roommate finder Amsterdam',
-    'student housing Amsterdam',
-    'young professionals Amsterdam',
-    'room share Amsterdam',
-    'flatmate Amsterdam',
     'UvA roommate',
     'VU Amsterdam roommate',
-    'HvA housing',
-    'Amsterdam accommodation',
-    'shared apartment Amsterdam',
     'compatible roommate Amsterdam',
+    'verified roommate matching',
+    'student roommate matching',
   ],
   openGraph: {
-    title: 'Find Roommates in Amsterdam | Domu Match',
+    title: 'Find a Roommate in Amsterdam | Domu Match',
     description:
-      'Find compatible roommates in Amsterdam with science-backed matching. Connect with verified students and young professionals from UvA, VU, HvA and more.',
+      'Roommate matching in Amsterdam for seekers and people with a free room. Verified students & young professionals from UvA, VU, HvA.',
     type: 'website',
     url: 'https://domumatch.com/amsterdam',
     siteName: 'Domu Match',
@@ -33,15 +32,15 @@ export const metadata: Metadata = {
         url: 'https://domumatch.com/images/logo.png',
         width: 1200,
         height: 630,
-        alt: 'Find Roommates in Amsterdam - Domu Match',
+        alt: 'Find a roommate in Amsterdam - Domu Match',
       },
     ],
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Find Your Perfect Roommate in Amsterdam | Domu Match',
-    description: 'Find compatible roommates in Amsterdam with science-backed matching.',
+    title: 'Find a Roommate in Amsterdam | Domu Match',
+    description: 'Roommate matching in Amsterdam for seekers and free rooms.',
     images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {

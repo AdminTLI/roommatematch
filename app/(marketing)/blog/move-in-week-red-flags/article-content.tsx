@@ -109,7 +109,7 @@ const content = {
 
         <ul>
           <li>
-            <strong>Clarify expectations</strong> – use a short house meeting to agree on quiet hours, guests
+            <strong>Clarify expectations</strong> - use a short house meeting to agree on quiet hours, guests
             and cleaning (see our article{' '}
             <Link href="/blog/group-chats-ground-rules">
               Group Chats, Ground Rules
@@ -117,14 +117,14 @@ const content = {
             ).
           </li>
           <li>
-            <strong>Use &quot;I&quot; statements</strong> – &quot;I am finding it hard to sleep when there’s
+            <strong>Use &quot;I&quot; statements</strong> - &quot;I am finding it hard to sleep when there’s
             noise after midnight. Could we agree on a quiet time on weeknights?&quot;
           </li>
           <li>
-            <strong>Document serious issues</strong> – especially safety, harassment or illegal behaviour.
+            <strong>Document serious issues</strong> - especially safety, harassment or illegal behaviour.
           </li>
           <li>
-            <strong>Involve support</strong> – talk to your university housing or student support service
+            <strong>Involve support</strong> - talk to your university housing or student support service
             early, not after months of misery.
           </li>
         </ul>

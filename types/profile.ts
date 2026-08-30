@@ -39,6 +39,9 @@ export interface Profile {
   interests?: string[] | null
   housing_status?: string[] | null
   preferred_cities?: string[] | null
+  budget_min?: number | null
+  budget_max?: number | null
+  budget_unknown?: boolean | null
   date_of_birth?: string | null
   is_visible?: boolean | null
   /** DiceBear seed shown to matches before mutual reveal */

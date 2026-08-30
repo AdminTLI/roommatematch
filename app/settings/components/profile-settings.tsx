@@ -9,6 +9,10 @@ import { Loader2, Check, User, Mail, GraduationCap, Phone, Info, CheckCircle, Al
 import { Textarea } from '@/components/ui/textarea'
 import { InterestsSelector } from '@/components/settings/interests-selector'
 import { HousingStatusSelector } from '@/components/settings/housing-status-selector'
+import {
+  HousingBudgetSlider,
+  HOUSING_BUDGET_DEFAULT,
+} from '@/components/settings/housing-budget-slider'
 import { trackProfileUpdate } from '@/lib/notifications/activity-tracker'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -56,12 +60,16 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
     bio: profile?.bio || '',
     interests: (profile?.interests && Array.isArray(profile.interests)) ? profile.interests : [],
     housingStatus: (profile?.housing_status && Array.isArray(profile.housing_status)) ? profile.housing_status as HousingStatusKey[] : [],
+    budgetMin: typeof profile?.budget_min === 'number' ? profile.budget_min : null as number | null,
+    budgetMax: typeof profile?.budget_max === 'number' ? profile.budget_max : null as number | null,
+    budgetUnknown: Boolean(profile?.budget_unknown),
     university: academic?.university_id || '',
     degreeLevel: academic?.degree_level || '',
     program: academic?.program_id || '',
     graduationYear: academic?.study_start_year || ''
   })
   const [interestsError, setInterestsError] = useState<string | null>(null)
+  const [budgetError, setBudgetError] = useState<string | null>(null)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -76,10 +84,20 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
     setFormData(prev => ({ ...prev, housingStatus }))
   }
 
+  const handleBudgetChange = (next: {
+    budgetMin: number | null
+    budgetMax: number | null
+    budgetUnknown: boolean
+  }) => {
+    setFormData(prev => ({ ...prev, ...next }))
+    setBudgetError(null)
+  }
+
   const handleSave = async () => {
     setIsLoading(true)
     setError(null)
     setInterestsError(null)
+    setBudgetError(null)
     setIsSuccess(false)
 
     // Validate interests before submitting
@@ -95,6 +113,30 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
       return
     }
 
+    const resolvedBudgetMin = formData.budgetUnknown
+      ? null
+      : (formData.budgetMin ?? (formData.budgetMax != null ? HOUSING_BUDGET_DEFAULT[0] : null))
+    const resolvedBudgetMax = formData.budgetUnknown
+      ? null
+      : (formData.budgetMax ?? (formData.budgetMin != null ? HOUSING_BUDGET_DEFAULT[1] : null))
+
+    if (!formData.budgetUnknown && (resolvedBudgetMin != null) !== (resolvedBudgetMax != null)) {
+      setBudgetError('Please set both a minimum and maximum budget, or check that you don\'t know your budget yet')
+      setIsLoading(false)
+      return
+    }
+
+    if (
+      !formData.budgetUnknown &&
+      resolvedBudgetMin != null &&
+      resolvedBudgetMax != null &&
+      resolvedBudgetMin > resolvedBudgetMax
+    ) {
+      setBudgetError('Minimum budget cannot be higher than maximum budget')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const response = await fetchWithCSRF('/api/settings/profile', {
         method: 'POST',
@@ -104,7 +146,10 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
         body: JSON.stringify({
           bio: formData.bio,
           interests: formData.interests,
-          housingStatus: formData.housingStatus
+          housingStatus: formData.housingStatus,
+          budgetMin: resolvedBudgetMin,
+          budgetMax: resolvedBudgetMax,
+          budgetUnknown: formData.budgetUnknown,
         })
       })
 
@@ -113,6 +158,8 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
         // Check if error is related to interests
         if (errorData.error?.includes('interests')) {
           setInterestsError(errorData.error)
+        } else if (errorData.error?.toLowerCase?.().includes('budget')) {
+          setBudgetError(errorData.error)
         }
         throw new Error(errorData.error || 'Failed to update profile')
       }
@@ -127,6 +174,16 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
       const existingHousingStatus = (profile?.housing_status && Array.isArray(profile.housing_status)) ? profile.housing_status.sort() : []
       if (JSON.stringify(formData.housingStatus.sort()) !== JSON.stringify(existingHousingStatus)) {
         changes.push('housing status')
+      }
+      const existingBudgetMin = typeof profile?.budget_min === 'number' ? profile.budget_min : null
+      const existingBudgetMax = typeof profile?.budget_max === 'number' ? profile.budget_max : null
+      const existingBudgetUnknown = Boolean(profile?.budget_unknown)
+      if (
+        resolvedBudgetMin !== existingBudgetMin ||
+        resolvedBudgetMax !== existingBudgetMax ||
+        formData.budgetUnknown !== existingBudgetUnknown
+      ) {
+        changes.push('budget')
       }
 
       if (changes.length > 0) {
@@ -289,10 +346,17 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
       {/* Housing Status Group */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Housing Status</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden p-6 backdrop-blur-xl shadow-sm">
+        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden p-6 backdrop-blur-xl shadow-sm space-y-0">
           <HousingStatusSelector
             value={formData.housingStatus}
             onChange={handleHousingStatusChange}
+          />
+          <HousingBudgetSlider
+            budgetMin={formData.budgetMin}
+            budgetMax={formData.budgetMax}
+            budgetUnknown={formData.budgetUnknown}
+            onChange={handleBudgetChange}
+            error={budgetError || undefined}
           />
         </div>
       </div>

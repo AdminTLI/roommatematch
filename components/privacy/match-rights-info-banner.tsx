@@ -37,11 +37,11 @@ export function MatchRightsInfoBanner() {
         className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-violet-400/15 blur-2xl dark:bg-violet-500/10"
         aria-hidden
       />
-      <div className="relative flex items-start gap-3">
-        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-300">
+      <div className="relative flex items-center gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-300">
           <Sparkles className="h-4 w-4" strokeWidth={2} aria-hidden />
         </span>
-        <div className="min-w-0 flex-1 pr-6">
+        <div className="min-w-0 flex-1">
           <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
             Compatibility scores are suggestions, not automatic decisions. You can request a human
             review in{' '}
@@ -57,7 +57,7 @@ export function MatchRightsInfoBanner() {
         <button
           type="button"
           onClick={dismiss}
-          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-violet-100/80 hover:text-slate-700 dark:hover:bg-violet-900/50 dark:hover:text-slate-200"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-violet-100/80 hover:text-slate-700 dark:hover:bg-violet-900/50 dark:hover:text-slate-200"
           aria-label="Dismiss"
         >
           <X className="h-4 w-4" strokeWidth={2} />
