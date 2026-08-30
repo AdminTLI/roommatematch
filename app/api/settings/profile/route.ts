@@ -197,7 +197,9 @@ export async function POST(request: Request) {
         )
       }
     } catch (syncError) {
-      safeLogger.warn('[Profile] Budget response sync failed (non-fatal)', syncError)
+      safeLogger.warn('[Profile] Budget response sync failed (non-fatal)', {
+        error: syncError instanceof Error ? syncError.message : String(syncError),
+      })
     }
 
     return NextResponse.json({ 
