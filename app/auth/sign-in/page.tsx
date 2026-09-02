@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; reason?: string }>
 }) {
   const sp = await searchParams
   return (
@@ -50,7 +50,7 @@ export default async function SignInPage({
           {/* Right: form */}
           <div className="mx-auto w-full max-w-md">
             <div className="rounded-3xl border border-white/60 bg-white/50 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] p-6 sm:p-8">
-              <SignInForm initialErrorCode={sp.error} />
+              <SignInForm initialErrorCode={sp.error} reason={sp.reason} />
             </div>
           </div>
         </div>

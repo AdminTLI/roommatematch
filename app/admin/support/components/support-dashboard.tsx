@@ -427,6 +427,9 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
                       <div className="flex items-center gap-2 mt-2">
                         {getPriorityBadge(ticket.priority)}
                         {getCategoryBadge(ticket.category)}
+                    {ticket.tags?.includes('university-email-recovery') && (
+                      <Badge variant="secondary">Campus email</Badge>
+                    )}
                       </div>
                       <div className="text-xs text-gray-400 mt-2">
                         {new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -458,11 +461,22 @@ export function SupportDashboard({ admin }: SupportDashboardProps) {
                         <span>{selectedTicket.user.email}</span>
                       </div>
                     )}
+                    {selectedTicket.metadata?.university_email && (
+                      <p className="mt-2 text-sm text-indigo-800">
+                        Campus email: {selectedTicket.metadata.university_email}
+                        {selectedTicket.metadata.reply_email
+                          ? ` · Reply to: ${selectedTicket.metadata.reply_email}`
+                          : ''}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     {getStatusBadge(selectedTicket.status)}
                     {getPriorityBadge(selectedTicket.priority)}
                     {getCategoryBadge(selectedTicket.category)}
+                    {selectedTicket.tags?.includes('university-email-recovery') && (
+                      <Badge variant="secondary">Campus email</Badge>
+                    )}
                   </div>
                 </div>
               </CardHeader>

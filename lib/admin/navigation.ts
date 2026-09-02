@@ -52,7 +52,7 @@ export const ADMIN_HUBS: AdminHubDefinition[] = [
     label: 'Safety',
     href: '/admin/reports',
     icon: Shield,
-    description: 'User reports, flagged messages, and Lab wish reports',
+    description: 'User reports, flagged messages, Lab wish reports, and university email reuse',
   },
   {
     id: 'platform',
@@ -115,6 +115,12 @@ export const ADMIN_SECTION_TABS: Record<Exclude<AdminHubId, 'overview'>, AdminSe
       id: 'lab',
       label: 'Lab reports',
       href: '/admin/reports?tab=lab',
+      superAdminOnly: true,
+    },
+    {
+      id: 'university-email',
+      label: 'University email',
+      href: '/admin/reports?tab=university-email',
       superAdminOnly: true,
     },
   ],

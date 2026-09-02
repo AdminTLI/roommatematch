@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
+import {
+  UNIVERSITY_EMAIL_IN_USE_MESSAGE,
+  evaluateUniversityEmailOccupancy,
+  findUniversityEmailOccupantIds,
+  normalizeUniversityEmail,
+  recordUniversityEmailReuseFlag,
+} from '@/lib/university-email/claims'
 
 /** Allowed academic TLDs and known Dutch university email domains */
 const ACADEMIC_TLDS = [
@@ -59,6 +67,40 @@ export async function POST(request: Request) {
           'Please enter a valid university email address (e.g., ending in .nl or .edu).',
       },
       { status: 400 }
+    )
+  }
+
+  try {
+    const service = createServiceClient()
+    const emailNormalized = normalizeUniversityEmail(email)
+    const { data: currentUser } = await service
+      .from('users')
+      .select('university_email')
+      .eq('id', user.id)
+      .maybeSingle()
+    const occupantIds = await findUniversityEmailOccupantIds(service, emailNormalized)
+    const occupancy = evaluateUniversityEmailOccupancy({
+      currentUserId: user.id,
+      currentUniversityEmail: currentUser?.university_email ?? null,
+      emailNormalized,
+      occupantIds,
+    })
+    if (!occupancy.allow) {
+      await recordUniversityEmailReuseFlag(service, {
+        emailNormalized,
+        attemptingUserId: user.id,
+        holderUserIds: occupancy.holderIds,
+      }).catch(() => undefined)
+      return NextResponse.json(
+        { error: UNIVERSITY_EMAIL_IN_USE_MESSAGE },
+        { status: 409 }
+      )
+    }
+  } catch (error) {
+    console.error('[verify-academic-email] occupancy check error:', error)
+    return NextResponse.json(
+      { error: 'Failed to send verification code' },
+      { status: 500 }
     )
   }
 

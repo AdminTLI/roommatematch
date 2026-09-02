@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { attachVerifiedUniversityEmail } from '@/lib/university-email/claims'
 
 /**
  * Verifies the OTP using a standalone client so we do not overwrite the
@@ -65,33 +66,14 @@ export async function POST(request: Request) {
   }
 
   const service = createServiceClient()
+  const result = await attachVerifiedUniversityEmail(service, {
+    userId: user.id,
+    email,
+  })
 
-  const { error: userUpdateError } = await service
-    .from('users')
-    .update({
-      is_verified_student: true,
-      university_email: email,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', user.id)
-
-  if (userUpdateError) {
-    console.error('[confirm-academic-email] users update error:', userUpdateError.message)
-    return NextResponse.json(
-      { error: 'Failed to update your student status. Please try again.' },
-      { status: 500 }
-    )
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: result.status })
   }
-
-  await service
-    .from('profiles')
-    .update({
-      is_verified_student: true,
-      university_email: email,
-      user_type: 'student',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('user_id', user.id)
 
   return NextResponse.json({ ok: true })
 }

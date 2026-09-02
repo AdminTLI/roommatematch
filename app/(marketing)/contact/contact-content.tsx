@@ -3,7 +3,7 @@
 import Section from '@/components/ui/primitives/section'
 import Container from '@/components/ui/primitives/container'
 import { useApp } from '@/app/providers'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 const content = {
@@ -38,6 +38,23 @@ export function ContactContent() {
   const [email, setEmail] = useState('')
   const [topic, setTopic] = useState('')
   const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const topicParam = params.get('topic')
+    const messageParam = params.get('message')
+    const universityEmail = params.get('universityEmail')
+    if (topicParam) setTopic(topicParam)
+    if (messageParam) {
+      setMessage(messageParam)
+    } else if (universityEmail) {
+      setTopic((current) => current || 'Account, verification or onboarding issues')
+      setMessage(
+        `I tried to verify this university email on Domu Match but it is already linked to another account: ${universityEmail}\n\nI do not have access to the original login email for that account (or I forgot which email I used).`
+      )
+    }
+  }, [])
 
   const canSubmit = name.trim().length >= 2 && email.trim().length >= 3 && topic.trim().length >= 2 && message.trim().length >= 10
 

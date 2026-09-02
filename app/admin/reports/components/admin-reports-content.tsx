@@ -22,6 +22,7 @@ import { ADMIN_FIELD_CLASS, ADMIN_LABEL_CLASS, ADMIN_PAGE_STACK } from '@/lib/ad
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { CHAT_REPORT_CATEGORY_LABELS, type ChatReportCategory } from '@/lib/chat/report-categories'
 import { AdminLabReportsPanel } from '@/app/admin/lab/components/admin-lab-reports-panel'
+import { AdminUniversityEmailFlagsPanel } from '@/app/admin/reports/components/admin-university-email-flags-panel'
 
 interface ChatContextMessage {
   id: string
@@ -100,7 +101,13 @@ export function AdminReportsContent() {
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
   const activeTab =
-    tabParam === 'flagged' ? 'flagged' : tabParam === 'lab' ? 'lab' : 'reports'
+    tabParam === 'flagged'
+      ? 'flagged'
+      : tabParam === 'lab'
+        ? 'lab'
+        : tabParam === 'university-email'
+          ? 'university-email'
+          : 'reports'
   const [reports, setReports] = useState<Report[]>([])
   const [flaggedMessages, setFlaggedMessages] = useState<FlaggedMessage[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -439,6 +446,10 @@ export function AdminReportsContent() {
 
   if (activeTab === 'lab') {
     return <AdminLabReportsPanel />
+  }
+
+  if (activeTab === 'university-email') {
+    return <AdminUniversityEmailFlagsPanel />
   }
 
   return (

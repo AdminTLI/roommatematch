@@ -20,6 +20,7 @@ import {
   Activity,
   BarChart3,
   Database,
+  GraduationCap,
   Bug,
   FileText,
   Clock,
@@ -34,6 +35,7 @@ interface DashboardMetrics {
   verifiedUsers: number
   pendingReports: number
   pendingLabReports?: number
+  openUniversityEmailFlags?: number
   openBugReports: number
   period: string
   lastUpdated: string
@@ -52,6 +54,7 @@ interface ActivityItem {
 interface QueueCounts {
   pendingReports: number
   pendingLabReports: number
+  openUniversityEmailFlags: number
   flaggedMessages: number
   openBugReports: number
   dsarOverdue: number
@@ -71,6 +74,7 @@ export function AdminCommandCenter() {
     verifiedUsers: 0,
     pendingReports: 0,
     pendingLabReports: 0,
+    openUniversityEmailFlags: 0,
     openBugReports: 0,
     period: 'all',
     lastUpdated: '',
@@ -78,6 +82,7 @@ export function AdminCommandCenter() {
   const [queues, setQueues] = useState<QueueCounts>({
     pendingReports: 0,
     pendingLabReports: 0,
+    openUniversityEmailFlags: 0,
     flaggedMessages: 0,
     openBugReports: 0,
     dsarOverdue: 0,
@@ -144,6 +149,7 @@ export function AdminCommandCenter() {
         ...prev,
         pendingReports: metrics.pendingReports,
         pendingLabReports: metrics.pendingLabReports ?? 0,
+        openUniversityEmailFlags: metrics.openUniversityEmailFlags ?? 0,
         openBugReports: metrics.openBugReports,
         flaggedMessages: flaggedTotal,
         dsarOverdue,
@@ -160,9 +166,10 @@ export function AdminCommandCenter() {
       ...prev,
       pendingReports: metrics.pendingReports,
       pendingLabReports: metrics.pendingLabReports ?? 0,
+      openUniversityEmailFlags: metrics.openUniversityEmailFlags ?? 0,
       openBugReports: metrics.openBugReports,
     }))
-  }, [metrics.pendingReports, metrics.pendingLabReports, metrics.openBugReports])
+  }, [metrics.pendingReports, metrics.pendingLabReports, metrics.openUniversityEmailFlags, metrics.openBugReports])
 
   const loadSystemHealth = async () => {
     setIsHealthLoading(true)
@@ -228,6 +235,14 @@ export function AdminCommandCenter() {
       bg: 'bg-orange-50 dark:bg-orange-950/30',
     },
     {
+      label: 'University email flags',
+      count: queues.openUniversityEmailFlags,
+      href: '/admin/reports?tab=university-email',
+      icon: GraduationCap,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50 dark:bg-indigo-950/30',
+    },
+    {
       label: 'Flagged messages',
       count: queues.flaggedMessages,
       href: '/admin/reports?tab=flagged',
@@ -267,7 +282,11 @@ export function AdminCommandCenter() {
       color: 'text-blue-600',
       bg: 'bg-blue-50 dark:bg-blue-950/30',
     },
-  ].filter(item => item.label !== 'Lab reports' || item.count > 0)
+  ].filter(
+    (item) =>
+      (item.label !== 'Lab reports' && item.label !== 'University email flags') ||
+      item.count > 0
+  )
 
   return (
     <AdminHubShell

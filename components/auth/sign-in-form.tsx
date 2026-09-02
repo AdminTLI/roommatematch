@@ -17,7 +17,13 @@ import {
 } from '@/lib/auth/session-terminated'
 import { BETA_SIGNUP_GOOGLE_FORM_URL } from '@/lib/marketing/beta-signup'
 
-export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | null }) {
+export function SignInForm({
+  initialErrorCode,
+  reason,
+}: {
+  initialErrorCode?: string | null
+  reason?: string | null
+}) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -225,6 +231,13 @@ export function SignInForm({ initialErrorCode }: { initialErrorCode?: string | n
         <p className="mt-1 text-sm sm:text-base text-slate-700">
           Sign in to your Domu Match account
         </p>
+        {reason === 'university-email-reuse' && (
+          <p className="mt-3 rounded-xl bg-indigo-50 px-3.5 py-2.5 text-left text-sm leading-relaxed text-indigo-950 ring-1 ring-indigo-200/80">
+            That university email is already linked to an existing account. Sign in with the{' '}
+            <span className="font-semibold">login email</span> for that account – it may be a
+            personal email, not the campus address.
+          </p>
+        )}
       </div>
       <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 sm:pb-6 pt-6">
         {error && (

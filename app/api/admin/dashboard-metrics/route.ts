@@ -3,6 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/admin'
 import { safeLogger } from '@/lib/utils/logger'
 import { logAdminApiFailure } from '@/lib/monitoring/ops-log'
+import { UNIVERSITY_EMAIL_RECOVERY_TAG } from '@/lib/university-email/constants'
 
 type TimePeriod = '24h' | '7d' | '1m' | '3m' | '6m' | '1y' | 'all'
 
@@ -299,6 +300,7 @@ export async function GET(request: NextRequest) {
         verifiedUsers: verifiedUsers || 0,
         pendingReports: pendingReports || 0,
         pendingLabReports: 0,
+        openUniversityEmailFlags: 0,
         openBugReports: openBugReports || 0,
         period,
         lastUpdated: new Date().toISOString()
@@ -397,6 +399,17 @@ export async function GET(request: NextRequest) {
         .from('lab_wish_reports')
         .select('id', { count: 'exact', head: true })
 
+      const { count: openUniversityEmailFlags } = await adminClient
+        .from('university_email_reuse_flags')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'open')
+
+      const { count: openEmailRecoveryTickets } = await adminClient
+        .from('support_tickets')
+        .select('id', { count: 'exact', head: true })
+        .contains('tags', [UNIVERSITY_EMAIL_RECOVERY_TAG])
+        .in('status', ['open', 'in_progress'])
+
       const { count: openBugReports, error: bugReportsError } = await adminClient
         .from('bug_reports')
         .select('id', { count: 'exact', head: true })
@@ -413,6 +426,8 @@ export async function GET(request: NextRequest) {
         activeMatches,
         pendingReports,
         pendingLabReports: pendingLabReports || 0,
+        openUniversityEmailFlags: openUniversityEmailFlags || 0,
+        openEmailRecoveryTickets: openEmailRecoveryTickets || 0,
         openBugReports: openBugReports || 0,
         matchesDataCount: matchesData?.length || 0
       })
@@ -423,6 +438,7 @@ export async function GET(request: NextRequest) {
         verifiedUsers: verifiedUsers || 0,
         pendingReports: pendingReports || 0,
         pendingLabReports: pendingLabReports || 0,
+        openUniversityEmailFlags: (openUniversityEmailFlags || 0) + (openEmailRecoveryTickets || 0),
         openBugReports: openBugReports || 0,
         period,
         lastUpdated: new Date().toISOString()
