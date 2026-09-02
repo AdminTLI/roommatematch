@@ -30,6 +30,7 @@ export function ThemeRouteHandler() {
             pathname?.startsWith('/about') ||
             pathname?.startsWith('/privacy') ||
             pathname?.startsWith('/terms') ||
+            pathname?.startsWith('/legal') ||
             pathname?.startsWith('/cookies') ||
             pathname?.startsWith('/accessibility')
 

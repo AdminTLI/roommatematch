@@ -13,9 +13,11 @@ import { ToggleYesNo } from '@/components/questionnaire/ToggleYesNo'
 import { TimeRange } from '@/components/questionnaire/TimeRange'
 import { ModuleCompletionScreen } from '@/components/questionnaire/ModuleCompletionScreen'
 import { ModuleTracker, isV2QuestionnaireComplete } from '@/components/questionnaire/ModuleTracker'
-import { HardGateModal } from '@/components/questionnaire/HardGateModal'
 import { OnboardingChromeHeader } from '@/components/questionnaire/OnboardingChromeHeader'
-import { DealbreakerBadge } from '@/components/questionnaire/DealbreakerBadge'
+import {
+  DealbreakerBadge,
+  DealbreakerMatchToggle,
+} from '@/components/questionnaire/DealbreakerBadge'
 import { useAutosave } from '@/components/questionnaire/useAutosave'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
 
@@ -106,11 +108,7 @@ function CardSwipeFlowInner({
   const [savedVisible, setSavedVisible] = useState(false)
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const [gateModal, setGateModal] = useState<{
-    open: boolean
-    pendingValue: AnswerValue | null
-    pendingAutoAdvance: boolean
-  }>({ open: false, pendingValue: null, pendingAutoAdvance: false })
+  const [gateOverrides, setGateOverrides] = useState<Record<string, boolean>>({})
 
   const { showToast: autosaveToast } = useAutosave(sectionKey)
 
@@ -174,10 +172,22 @@ function CardSwipeFlowInner({
     }
   }, [currentIndex, canJumpToReview, returnToReview])
 
+  const hardGateItems = items.filter((i) => i.hardGate)
+  const hardGateIndex = item?.hardGate
+    ? hardGateItems.findIndex((g) => g.id === item.id)
+    : -1
+  const gateEnabled = item
+    ? (gateOverrides[item.id] ?? currentAnswer?.userSetGate ?? false)
+    : false
+
   const commitAnswer = useCallback(
     (value: AnswerValue, userSetGate: boolean | undefined, autoAdvance: boolean) => {
       if (!item) return
-      setAnswer(sectionKey, { itemId: item.id, value, userSetGate } as Answer)
+      setAnswer(sectionKey, {
+        itemId: item.id,
+        value,
+        ...(userSetGate !== undefined ? { userSetGate } : {}),
+      } as Answer)
       showSavedToast()
       if (autoAdvance) setTimeout(goNext, AUTO_ADVANCE_MS)
     },
@@ -187,28 +197,20 @@ function CardSwipeFlowInner({
   const handleAnswer = useCallback(
     (value: AnswerValue, autoAdvance = false) => {
       if (!item) return
-      if (item.hardGate) {
-        setGateModal({ open: true, pendingValue: value, pendingAutoAdvance: autoAdvance })
-        setAnswer(sectionKey, {
-          itemId: item.id,
-          value,
-          userSetGate: currentAnswer?.userSetGate,
-        } as Answer)
-        showSavedToast()
-      } else {
-        commitAnswer(value, undefined, autoAdvance)
-      }
+      commitAnswer(value, item.hardGate ? gateEnabled : undefined, autoAdvance)
     },
-    [item, sectionKey, setAnswer, currentAnswer, commitAnswer, showSavedToast]
+    [item, commitAnswer, gateEnabled]
   )
 
-  const handleGateConfirm = useCallback(
-    (userSetGate: boolean) => {
-      if (!item || !gateModal.pendingValue) return
-      setGateModal((s) => ({ ...s, open: false }))
-      commitAnswer(gateModal.pendingValue, userSetGate, gateModal.pendingAutoAdvance)
+  const handleGateToggle = useCallback(
+    (next: boolean) => {
+      if (!item) return
+      setGateOverrides((prev) => ({ ...prev, [item.id]: next }))
+      if (currentAnswer?.value) {
+        commitAnswer(currentAnswer.value, next, false)
+      }
     },
-    [item, gateModal, commitAnswer]
+    [item, currentAnswer, commitAnswer]
   )
 
   useEffect(() => {
@@ -286,9 +288,13 @@ function CardSwipeFlowInner({
                   </p>
                 </div>
 
-                {item.hardGate && (
-                  <DealbreakerBadge enabled={currentAnswer?.userSetGate} />
-                )}
+                {item.hardGate && hardGateIndex >= 0 ? (
+                  <DealbreakerBadge
+                    index={hardGateIndex + 1}
+                    total={hardGateItems.length}
+                    showExplanation={hardGateIndex === 0}
+                  />
+                ) : null}
 
                 <h2 className="mb-6 text-lg font-bold leading-snug tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-xl">
                   {item.label}
@@ -352,6 +358,14 @@ function CardSwipeFlowInner({
                     />
                   )}
                 </div>
+
+                {item.hardGate && hardGateIndex >= 0 ? (
+                  <DealbreakerMatchToggle
+                    itemId={item.id}
+                    enabled={gateEnabled}
+                    onEnabledChange={handleGateToggle}
+                  />
+                ) : null}
               </motion.div>
             </AnimatePresence>
 
@@ -398,15 +412,6 @@ function CardSwipeFlowInner({
           </div>
         </main>
       </div>
-
-      <HardGateModal
-        open={gateModal.open}
-        userSetGate={currentAnswer?.userSetGate ?? false}
-        onConfirm={handleGateConfirm}
-        onDismiss={() =>
-          setGateModal({ open: false, pendingValue: null, pendingAutoAdvance: false })
-        }
-      />
     </div>
   )
 }
