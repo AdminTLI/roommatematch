@@ -122,6 +122,7 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/dev/email-preview') ||
     pathname.startsWith('/dev/unsubscribe-preview') ||
     pathname.startsWith('/dev/live-notification-preview') ||
+    pathname.startsWith('/dev/onboarding-path') ||
     pathname.startsWith('/unsubscribe')
 
   if (platformSettings.maintenanceMode && !maintenanceExempt) {
@@ -159,6 +160,7 @@ export async function middleware(req: NextRequest) {
     '/dev/email-preview',
     '/dev/unsubscribe-preview',
     '/dev/live-notification-preview',
+    '/dev/onboarding-path',
   ]
   const isApiRoute = pathname.startsWith('/api')
   const method = req.method.toUpperCase()

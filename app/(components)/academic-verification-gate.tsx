@@ -2,12 +2,9 @@
 
 import { useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
@@ -20,9 +17,22 @@ export interface AcademicVerificationGateProps {
   onVerified?: () => void
   onBack?: () => void
   className?: string
+  /** Skip real email/OTP APIs so the UI can be reviewed without auth. */
+  preview?: boolean
 }
 
-export function AcademicVerificationGate({ onVerified, onBack, className }: AcademicVerificationGateProps) {
+const fieldClass =
+  'h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-[#0F172A] shadow-none placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:placeholder:text-slate-500 dark:focus-visible:ring-indigo-400/30'
+
+const primaryButtonClass =
+  'inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] disabled:cursor-not-allowed disabled:bg-indigo-500/40 disabled:shadow-none dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:disabled:bg-indigo-500/40'
+
+export function AcademicVerificationGate({
+  onVerified,
+  onBack,
+  className,
+  preview = false,
+}: AcademicVerificationGateProps) {
   const router = useRouter()
   const [step, setStep] = useState<Step>('email')
   const [email, setEmail] = useState('')
@@ -36,6 +46,14 @@ export function AcademicVerificationGate({ onVerified, onBack, className }: Acad
     const trimmed = email.trim()
     if (!trimmed) {
       showErrorToast('Email required', 'Please enter your university email address.')
+      return
+    }
+    if (preview) {
+      setEmail(trimmed)
+      setStep('otp')
+      setOtp(Array(OTP_LENGTH).fill(''))
+      showSuccessToast('Preview', 'No email is sent in preview. Enter any 6 digits to see the next step.')
+      setTimeout(() => otpInputRefs.current[0]?.focus(), 100)
       return
     }
     setSendLoading(true)
@@ -71,12 +89,17 @@ export function AcademicVerificationGate({ onVerified, onBack, className }: Acad
     } finally {
       setSendLoading(false)
     }
-  }, [email])
+  }, [email, preview])
 
   const verifyCode = useCallback(async () => {
     const token = otp.join('').trim()
     if (token.length !== OTP_LENGTH) {
       showErrorToast('Invalid code', 'Please enter all 6 digits.')
+      return
+    }
+    if (preview) {
+      showSuccessToast('Preview', 'Student verification would continue to the welcome page.')
+      onVerified?.()
       return
     }
     setVerifyLoading(true)
@@ -99,10 +122,14 @@ export function AcademicVerificationGate({ onVerified, onBack, className }: Acad
     } finally {
       setVerifyLoading(false)
     }
-  }, [email, otp, onVerified])
+  }, [email, otp, onVerified, preview])
 
   const resendCode = useCallback(async () => {
     if (resendCooldown > 0) return
+    if (preview) {
+      showSuccessToast('Preview', 'No email is resent in preview.')
+      return
+    }
     setSendLoading(true)
     try {
       const res = await fetchWithCSRF('/api/auth/verify-academic-email', {
@@ -129,7 +156,7 @@ export function AcademicVerificationGate({ onVerified, onBack, className }: Acad
     } finally {
       setSendLoading(false)
     }
-  }, [resendCooldown, email])
+  }, [resendCooldown, email, preview])
 
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) {
@@ -159,167 +186,184 @@ export function AcademicVerificationGate({ onVerified, onBack, className }: Acad
     }
   }
 
-  const inputBaseClass =
-    'flex h-11 w-full rounded-xl border border-white/20 bg-white/5 backdrop-blur-xl px-3 py-2 text-body-sm text-slate-50 placeholder:text-slate-400/70 ring-offset-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/60 focus-visible:ring-offset-2 focus-visible:border-sky-300/50 transition-colors'
+  const handleBack = () => {
+    if (step === 'otp') {
+      setStep('email')
+      return
+    }
+    if (onBack) {
+      onBack()
+      return
+    }
+    router.back()
+  }
 
   return (
-    <Card
-      className={cn(
-        'rounded-2xl border border-white/15 bg-white/5 backdrop-blur-2xl shadow-[0_24px_80px_rgba(15,23,42,0.85)]',
-        'hover:border-white/30 hover:bg-white/8 transition-colors duration-300',
-        className
-      )}
-    >
-      <CardHeader className="space-y-1.5 p-6 pb-4">
-        <AnimatePresence mode="wait">
-          {step === 'email' ? (
-            <motion.div
-              key="email-header"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <CardTitle className="text-xl font-semibold tracking-tight text-slate-50">
-                Verify your{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-                  student status
-                </span>
-              </CardTitle>
-              <CardDescription className="text-slate-300/90 mt-2">
-                To keep our campus communities safe, please enter your university email address.
-                We&apos;ll send you a quick 6-digit code.
-              </CardDescription>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="otp-header"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <CardTitle className="text-xl font-semibold text-slate-50">
-                Enter Your Code
-              </CardTitle>
-              <CardDescription className="text-slate-300 mt-1">
-                We sent a 6-digit code to <span className="font-medium text-slate-200">{email}</span>.
-                It might take a minute to arrive.
-              </CardDescription>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </CardHeader>
-      <CardContent className="space-y-5 p-6 pt-0">
-        <AnimatePresence mode="wait">
-          {step === 'email' ? (
-            <motion.div
-              key="email-form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-4"
-            >
-              <Input
-                type="email"
-                placeholder="e.g. you@university.nl"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && sendCode()}
-                className={cn(inputBaseClass, 'max-w-md')}
+    <div className={cn('flex flex-col gap-5 sm:gap-6', className)}>
+      <AnimatePresence mode="wait">
+        {step === 'email' ? (
+          <motion.div
+            key="email-header"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-2.5 text-center"
+          >
+            <h1 className="text-[1.65rem] font-extrabold leading-tight tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-[2rem]">
+              Verify your student status
+            </h1>
+            <p className="mx-auto max-w-sm text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-[15px]">
+              Enter your university email and we&apos;ll send a 6-digit code to keep campus communities
+              safe.
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="otp-header"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-2.5 text-center"
+          >
+            <h1 className="text-[1.65rem] font-extrabold leading-tight tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-[2rem]">
+              Enter your code
+            </h1>
+            <p className="mx-auto max-w-sm text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-[15px]">
+              We sent a 6-digit code to{' '}
+              <span className="font-semibold text-[#0F172A] dark:text-slate-50">{email}</span>. It
+              might take a minute to arrive.
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {step === 'email' ? (
+          <motion.div
+            key="email-form"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-3.5"
+          >
+            <input
+              type="email"
+              placeholder="e.g. you@university.nl"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendCode()}
+              className={fieldClass}
+              disabled={sendLoading}
+              autoComplete="email"
+              aria-label="University email"
+            />
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleBack}
+                className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700"
+              >
+                <ArrowLeft className="h-4 w-4" strokeWidth={2.25} />
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={sendCode}
                 disabled={sendLoading}
-              />
-              <div className="flex items-center justify-between gap-4">
-                <Button
-                  onClick={sendCode}
-                  disabled={sendLoading}
-                  className="min-h-[44px] rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-slate-50 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-primary/50"
-                >
-                  {sendLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending…
-                    </>
-                  ) : (
-                    'Send Verification Code'
-                  )}
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    // Prefer returning to the onboarding step that opened this gate.
-                    // Falling back to browser history keeps the component usable elsewhere.
-                    if (onBack) {
-                      onBack()
-                      return
-                    }
-                    router.back()
+                className={primaryButtonClass}
+              >
+                {sendLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Sending…
+                  </>
+                ) : (
+                  <>
+                    Send code
+                    <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="otp-form"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-5"
+          >
+            <div className="flex justify-center gap-2 sm:gap-3">
+              {otp.map((digit, i) => (
+                <input
+                  key={i}
+                  ref={(el) => {
+                    otpInputRefs.current[i] = el
                   }}
-                  className="text-sm text-slate-400 underline underline-offset-2 hover:text-slate-200"
-                >
-                  Back
-                </button>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="otp-form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-5"
-            >
-              <div className="flex justify-center gap-2 sm:gap-3">
-                {otp.map((digit, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => { otpInputRefs.current[i] = el }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                    className={cn(
-                      inputBaseClass,
-                      'h-12 w-11 sm:w-12 px-0 py-0 text-center text-lg font-semibold tracking-[0.35em] tabular-nums'
-                    )}
-                  />
-                ))}
-              </div>
-              <Button
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete={i === 0 ? 'one-time-code' : 'off'}
+                  maxLength={6}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(i, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                  aria-label={`Digit ${i + 1}`}
+                  className={cn(
+                    fieldClass,
+                    'h-12 w-11 px-0 text-center text-lg font-semibold tabular-nums sm:w-12'
+                  )}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleBack}
+                className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700"
+              >
+                <ArrowLeft className="h-4 w-4" strokeWidth={2.25} />
+                Back
+              </button>
+              <button
+                type="button"
                 onClick={verifyCode}
                 disabled={verifyLoading || otp.join('').length !== OTP_LENGTH}
-                className="w-full min-h-[44px] rounded-xl bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-slate-50 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-50"
+                className={primaryButtonClass}
               >
                 {verifyLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Verifying…
                   </>
                 ) : (
-                  'Verify Code'
+                  <>
+                    Verify code
+                    <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+                  </>
                 )}
-              </Button>
-              <p className="text-center text-sm text-slate-400">
-                {resendCooldown > 0 ? (
-                  <span>Resend code in {resendCooldown}s</span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={resendCode}
-                    className="text-sky-400 hover:text-sky-300 underline underline-offset-2"
-                  >
-                    Didn&apos;t receive it? Resend code.
-                  </button>
-                )}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </CardContent>
-    </Card>
+              </button>
+            </div>
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+              {resendCooldown > 0 ? (
+                <span>Resend code in {resendCooldown}s</span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={resendCode}
+                  className="font-semibold text-[#6366F1] underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  Didn&apos;t receive it? Resend code.
+                </button>
+              )}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

@@ -13,10 +13,12 @@ interface OnboardingHeaderProps {
   /**
    * Center status chip.
    * - `autosave` (default): shows live Autosaved state
-   * - `welcome`: static "Welcome" badge (no fake save indicator)
+   * - `welcome`: static badge (no fake save indicator)
    * - `none`: hide the status chip
    */
   statusMode?: 'autosave' | 'welcome' | 'none'
+  /** Override the welcome-chip label (defaults to "Welcome") */
+  chipLabel?: string
   /** Force a specific save label when statusMode is autosave */
   saveLabel?: string
 }
@@ -25,6 +27,7 @@ export function OnboardingHeader({
   className,
   exitHref = '/dashboard',
   statusMode = 'autosave',
+  chipLabel = 'Welcome',
   saveLabel,
 }: OnboardingHeaderProps) {
   const router = useRouter()
@@ -64,7 +67,7 @@ export function OnboardingHeader({
         <div className="flex shrink-0 items-center gap-2">
           {statusMode === 'welcome' && (
             <span className="inline-flex items-center rounded-xl bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 sm:text-xs">
-              Welcome
+              {chipLabel}
             </span>
           )}
 

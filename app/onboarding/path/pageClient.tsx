@@ -1,29 +1,67 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { GraduationCap, Briefcase } from 'lucide-react'
-import { showErrorToast } from '@/lib/toast'
+import { ArrowRight, Briefcase, GraduationCap, Lightbulb } from 'lucide-react'
+import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import type { UserType } from '@/types/profile'
 import { pathSelectionSchema } from '@/lib/validation/profile-schema'
-import { motion } from 'framer-motion'
 import { AcademicVerificationGate } from '@/app/(components)/academic-verification-gate'
+import { OnboardingHeader } from '@/components/questionnaire/OnboardingHeader'
+import { cn } from '@/lib/utils'
 
-export default function PathSelectionClient() {
+const PATH_OPTIONS: {
+  value: UserType
+  title: string
+  description: string
+  Icon: typeof GraduationCap
+}[] = [
+  {
+    value: 'student',
+    title: 'I am a student',
+    description: 'Match exclusively with other students and unlock university-specific features.',
+    Icon: GraduationCap,
+  },
+  {
+    value: 'professional',
+    title: 'I am a young professional',
+    description: 'Match with other working professionals and graduates.',
+    Icon: Briefcase,
+  },
+]
+
+export default function PathSelectionClient({ preview = false }: { preview?: boolean }) {
   const router = useRouter()
   const supabase = createClient()
   const [selected, setSelected] = useState<UserType | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showStudentGate, setShowStudentGate] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const canContinue = Boolean(selected) && !isLoading
 
   const handleNext = async () => {
     const parsed = pathSelectionSchema.safeParse({ user_type: selected })
     if (!parsed.success || !selected) {
       showErrorToast('Please select an option', 'Choose whether you are a student or a young professional.')
+      return
+    }
+
+    if (preview) {
+      if (selected === 'student') {
+        setShowStudentGate(true)
+        return
+      }
+      showSuccessToast(
+        'Preview only',
+        'Professionals would continue to /onboarding-professional/welcome. This route does not save or redirect.'
+      )
       return
     }
 
@@ -84,139 +122,133 @@ export default function PathSelectionClient() {
   }
 
   const handleStudentVerified = () => {
+    if (preview) {
+      setShowStudentGate(false)
+      return
+    }
     router.push('/onboarding/welcome')
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-bg-body text-text-primary">
+    <div className="relative min-h-screen overflow-hidden bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0F172A] dark:text-slate-50">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
-        <div className="absolute -bottom-40 -right-20 h-96 w-96 rounded-full bg-purple-500/25 blur-3xl" />
-        <div className="absolute inset-x-0 top-1/3 h-72 bg-gradient-to-r from-sky-500/10 via-transparent to-violet-500/10 blur-3xl" />
+        <div className="absolute -left-40 -top-40 h-80 w-80 rounded-full bg-indigo-200/25 blur-3xl dark:bg-indigo-500/15" />
+        <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-indigo-100/30 blur-3xl dark:bg-indigo-400/10" />
       </div>
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.15),_transparent_60%),radial-gradient(circle_at_bottom,_rgba(59,130,246,0.15),_transparent_55%)] mix-blend-screen" />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="border-b border-transparent bg-transparent">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 via-sky-400 to-purple-500 shadow-lg shadow-indigo-500/30">
-                <span className="text-xs font-semibold tracking-tight text-white">DM</span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold tracking-tight text-text-primary">Domu Match</p>
-                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-text-secondary">
-                  Compatibility first, flatmates second
-                </p>
-              </div>
-            </div>
-            <div className="hidden text-xs font-medium text-text-secondary sm:block">
-              Step 0 · Choose your path
-            </div>
-          </div>
-        </header>
+        <OnboardingHeader
+          statusMode="welcome"
+          chipLabel={preview ? 'Preview' : showStudentGate ? 'Verify' : 'Get started'}
+          exitHref={preview ? '/' : '/dashboard'}
+        />
 
-        <main className="flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-          <div className="mx-auto max-w-4xl">
+        <main className="flex flex-1 items-center justify-center px-4 py-8 sm:py-10">
+          <div
+            className={cn(
+              'flex w-full max-w-[540px] flex-col gap-5 rounded-2xl bg-white p-6 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] ring-1 ring-slate-200/70 transition-all duration-500 sm:gap-6 sm:p-8',
+              'dark:bg-slate-800 dark:shadow-black/40 dark:ring-slate-700/80',
+              mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+            )}
+          >
             {showStudentGate ? (
-              <div className="max-w-md mx-auto">
-                <AcademicVerificationGate
-                  onVerified={handleStudentVerified}
-                  onBack={() => setShowStudentGate(false)}
-                />
-              </div>
+              <AcademicVerificationGate
+                preview={preview}
+                onVerified={handleStudentVerified}
+                onBack={() => setShowStudentGate(false)}
+              />
             ) : (
               <>
-            <div className="mb-8 text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-text-secondary">
-                Get started
-              </p>
-              <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-text-primary sm:text-4xl">
-                Which best describes{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">
-                  your current stage
-                </span>{' '}
-                in life?
-              </h1>
-              <p className="mt-3 text-text-secondary">
-                We match you only with people in the same cohort for a safe and relevant experience.
-              </p>
-            </div>
+                <div className="space-y-2.5 text-center">
+                  <h1 className="text-[1.65rem] font-extrabold leading-tight tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-[2rem]">
+                    Which best describes you?
+                  </h1>
+                  <p className="mx-auto max-w-sm text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-[15px]">
+                    We match you only with people in the same cohort
+                  </p>
+                </div>
 
-            <div className="grid gap-6 sm:grid-cols-2">
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Card
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setSelected('student')}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelected('student')}
-                  className={[
-                    'cursor-pointer transition-all duration-300 rounded-2xl border backdrop-blur-xl shadow-[0_18px_60px_rgba(15,23,42,0.85)]',
-                    'bg-bg-surface-alt/20 border-border-subtle/40 hover:bg-bg-surface-alt/40 hover:border-border-subtle/70 hover:shadow-[0_22px_80px_rgba(15,23,42,0.95)]',
-                    selected === 'student'
-                      ? 'ring-2 ring-primary border-primary/60 bg-bg-surface-alt/50 shadow-[0_24px_90px_rgba(56,189,248,0.75)]'
-                      : ''
-                  ].join(' ')}
+                <div className="flex flex-col gap-2.5" role="radiogroup" aria-label="Choose your path">
+                  {PATH_OPTIONS.map(({ value, title, description, Icon }) => {
+                    const isSelected = selected === value
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        role="radio"
+                        aria-checked={isSelected}
+                        onClick={() => setSelected(value)}
+                        className={cn(
+                          'flex w-full items-start gap-3 rounded-2xl border-2 px-4 py-4 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40',
+                          isSelected
+                            ? 'border-indigo-500 bg-indigo-50 shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)] dark:border-indigo-400 dark:bg-indigo-500/15'
+                            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-slate-500 dark:hover:bg-slate-700/50'
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+                            isSelected
+                              ? 'bg-white text-[#6366F1] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] dark:bg-slate-800 dark:text-indigo-300'
+                              : 'bg-slate-50 text-slate-500 ring-1 ring-slate-200/80 dark:bg-slate-900/60 dark:text-slate-300 dark:ring-slate-700'
+                          )}
+                          aria-hidden
+                        >
+                          <Icon className="h-5 w-5" strokeWidth={2.25} />
+                        </span>
+                        <span className="min-w-0 space-y-0.5">
+                          <span
+                            className={cn(
+                              'block text-sm font-semibold',
+                              isSelected
+                                ? 'text-[#6366F1] dark:text-indigo-300'
+                                : 'text-[#0F172A] dark:text-slate-50'
+                            )}
+                          >
+                            {title}
+                          </span>
+                          <span
+                            className={cn(
+                              'block text-sm leading-relaxed',
+                              isSelected
+                                ? 'text-indigo-700/80 dark:text-indigo-200/80'
+                                : 'text-slate-600 dark:text-slate-300'
+                            )}
+                          >
+                            {description}
+                          </span>
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <div className="flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2.5 ring-1 ring-amber-200/80 dark:bg-amber-950/50 dark:ring-amber-800/70">
+                  <Lightbulb
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-300"
+                    strokeWidth={2.25}
+                    aria-hidden
+                  />
+                  <p className="text-left text-xs font-medium leading-relaxed text-amber-950 dark:text-amber-100 sm:text-[13px]">
+                    Students and professionals are matched separately for a safer, more relevant
+                    experience.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={!canContinue}
+                  className={cn(
+                    'inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold text-white transition-all',
+                    canContinue
+                      ? 'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                      : 'cursor-not-allowed bg-indigo-500/40 dark:bg-indigo-500/40'
+                  )}
                 >
-                  <CardHeader className="space-y-3 pb-2">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400">
-                      <GraduationCap className="h-6 w-6" />
-                    </div>
-                    <CardTitle className="text-xl text-text-primary">I am a Student</CardTitle>
-                    <CardDescription className="text-text-secondary">
-                      Match exclusively with other students and unlock university-specific features.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent />
-                </Card>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Card
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setSelected('professional')}
-                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelected('professional')}
-                  className={[
-                    'cursor-pointer transition-all duration-300 rounded-2xl border backdrop-blur-xl shadow-[0_18px_60px_rgba(15,23,42,0.85)]',
-                    'bg-bg-surface-alt/20 border-border-subtle/40 hover:bg-bg-surface-alt/40 hover:border-border-subtle/70 hover:shadow-[0_22px_80px_rgba(15,23,42,0.95)]',
-                    selected === 'professional'
-                      ? 'ring-2 ring-primary border-primary/60 bg-bg-surface-alt/50 shadow-[0_24px_90px_rgba(129,140,248,0.75)]'
-                      : ''
-                  ].join(' ')}
-                >
-                  <CardHeader className="space-y-3 pb-2">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400">
-                      <Briefcase className="h-6 w-6" />
-                    </div>
-                    <CardTitle className="text-xl text-text-primary">I am a Young Professional</CardTitle>
-                    <CardDescription className="text-text-secondary">
-                      Match with other working professionals and graduates.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent />
-                </Card>
-              </motion.div>
-            </div>
-
-            <div className="mt-8 flex justify-center">
-              <Button
-                type="button"
-                onClick={handleNext}
-                disabled={!selected || isLoading}
-                className="min-h-[48px] rounded-xl px-8 bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-text-primary hover:brightness-110 disabled:opacity-50 disabled:pointer-events-none"
-              >
-                {isLoading ? 'Saving…' : 'Next'}
-              </Button>
-            </div>
+                  {isLoading ? 'Saving…' : 'Continue'}
+                  {!isLoading && <ArrowRight className="h-4 w-4" strokeWidth={2.25} />}
+                </button>
               </>
             )}
           </div>
