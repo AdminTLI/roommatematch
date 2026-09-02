@@ -131,7 +131,7 @@ export function PlatformPreview() {
                 className={cn(
                   'rounded-full',
                   mode === 'student'
-                    ? 'bg-slate-900 text-white hover:bg-slate-900/90'
+                    ? 'bg-indigo-500 text-white hover:bg-indigo-600'
                     : 'bg-white/60 text-slate-800 border border-white/70 hover:bg-white/80'
                 )}
                 onClick={() => setMode('student')}
@@ -144,7 +144,7 @@ export function PlatformPreview() {
                 className={cn(
                   'rounded-full',
                   mode === 'professional'
-                    ? 'bg-slate-900 text-white hover:bg-slate-900/90'
+                    ? 'bg-indigo-500 text-white hover:bg-indigo-600'
                     : 'bg-white/60 text-slate-800 border border-white/70 hover:bg-white/80'
                 )}
                 onClick={() => setMode('professional')}

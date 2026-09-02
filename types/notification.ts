@@ -26,6 +26,7 @@ export const CATEGORY_TYPES: Record<NotificationFilterCategory, NotificationType
     'safety_alert',
     'system_announcement',
     'admin_alert',
+    'lab_wish_shipped',
   ],
 }
 

@@ -394,7 +394,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
             <div className="shrink-0 px-6 pb-4">
               <Button
                 onClick={() => setIsFlipped(true)}
-                className="h-11 w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:from-violet-500 hover:to-indigo-500 active:scale-95 dark:shadow-violet-900/30 transform hover:scale-[1.02]"
+                className="h-11 w-full rounded-xl bg-indigo-500 font-semibold text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] transition-all hover:bg-indigo-600 active:scale-95"
               >
                 View Details
               </Button>
@@ -449,7 +449,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                     {onConnect && (
                         <Button
                             onClick={handleConnect}
-                            className={`${onSkip ? 'flex-1' : 'w-full'} h-11 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:from-violet-500 hover:to-indigo-500 active:scale-95 dark:shadow-violet-900/30 transform hover:scale-[1.02]`}
+                            className={`${onSkip ? 'flex-1' : 'w-full'} h-11 rounded-xl bg-indigo-500 font-semibold text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] transition-all hover:bg-indigo-600 active:scale-95`}
                         >
                             <ConnectIcon className="mr-2 h-4 w-4" />
                             {connectButtonText}
@@ -595,7 +595,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                 <div className="shrink-0 border-t border-slate-200/90 px-5 pb-5 pt-4 dark:border-slate-700/50 sm:px-6 sm:pb-6">
                   <Button
                     onClick={() => setIsFlipped(false)}
-                    className="h-11 w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 font-semibold text-white shadow-lg shadow-violet-500/25 transition-all hover:from-violet-500 hover:to-indigo-500 active:scale-95 dark:shadow-violet-900/30 transform hover:scale-[1.02]"
+                    className="h-11 w-full rounded-xl bg-indigo-500 font-semibold text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] transition-all hover:bg-indigo-600 active:scale-95"
                   >
                     Back to Profile
                   </Button>

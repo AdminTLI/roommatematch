@@ -83,7 +83,7 @@ export function ApplyDialog({ cta = 'Apply now' }: { cta?: string }) {
       <DialogTrigger asChild>
         <Button
           size="lg"
-          className="rounded-2xl bg-slate-900 text-white shadow-lg shadow-slate-900/15 hover:bg-slate-800 hover:scale-105 transition-all"
+          className="rounded-xl bg-indigo-500 text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 transition-all"
         >
           {cta}
         </Button>

@@ -27,6 +27,7 @@ import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 import { GroupInvitationCard } from './group-invitation-card'
 import { queryKeys, queryClient } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
+import { dedupeDirectChatsByPartner } from '@/lib/chat/dedupe-direct-chats'
 
 interface ChatRoom {
   id: string
@@ -590,10 +591,13 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         }
       }
 
-      return chatsWithPartners.filter((chat) => {
-        if (chat.type !== 'individual') return true
-        return chat.participants.some((p) => p.id !== user.id)
-      })
+      return dedupeDirectChatsByPartner(
+        chatsWithPartners.filter((chat) => {
+          if (chat.type !== 'individual') return true
+          return chat.participants.some((p) => p.id !== user.id)
+        }),
+        user.id,
+      )
     } catch (error) {
       // Use console.error here as this is client-side code
       const errorMessage = error instanceof Error ? error.message : String(error)

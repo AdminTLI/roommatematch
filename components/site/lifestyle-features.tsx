@@ -130,7 +130,7 @@ function FeatureTile({
       icon: 'text-indigo-700',
     },
     violet: {
-      chip: 'bg-violet-600 text-white',
+      chip: 'bg-indigo-500 text-white',
       iconBg: 'bg-violet-50/80 border-violet-200/80',
       icon: 'text-violet-700',
     },
@@ -208,7 +208,7 @@ export function LifestyleFeatures() {
                       className={cn(
                         'rounded-2xl px-4 py-3.5 text-left transition-colors border',
                         isActive
-                          ? 'bg-slate-900 text-white border-slate-900'
+                          ? 'bg-indigo-500 text-white border-indigo-500'
                           : 'bg-white/50 text-slate-800 border-white/60 hover:bg-white/70'
                       )}
                     >

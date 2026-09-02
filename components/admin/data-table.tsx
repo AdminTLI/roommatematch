@@ -144,7 +144,7 @@ export function DataTable<T extends Record<string, any>>({
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-slate-600 dark:text-slate-300">
           Showing {(currentPage - 1) * pageSize + 1} to{' '}
           {Math.min(currentPage * pageSize, filteredData.length)} of{' '}
           {filteredData.length} results

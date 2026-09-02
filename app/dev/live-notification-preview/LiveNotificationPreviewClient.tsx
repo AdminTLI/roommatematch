@@ -87,7 +87,7 @@ export function LiveNotificationPreviewClient() {
             onClick={() => setViewport('desktop')}
             className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors ${
               viewport === 'desktop'
-                ? 'bg-violet-600 text-white'
+                ? 'bg-indigo-500 text-white'
                 : 'bg-white text-zinc-700 ring-1 ring-zinc-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-white/10'
             }`}
           >
@@ -98,7 +98,7 @@ export function LiveNotificationPreviewClient() {
             onClick={() => setViewport('mobile')}
             className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors ${
               viewport === 'mobile'
-                ? 'bg-violet-600 text-white'
+                ? 'bg-indigo-500 text-white'
                 : 'bg-white text-zinc-700 ring-1 ring-zinc-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-white/10'
             }`}
           >

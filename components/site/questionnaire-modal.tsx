@@ -39,7 +39,7 @@ export default function QuestionnaireModal() {
           </DialogDescription>
         </DialogHeader>
         <div className="mt-6 flex gap-3">
-          <Button onClick={handleStart} className="bg-brand-600 text-white">Start quiz</Button>
+          <Button onClick={handleStart} className="bg-indigo-500 text-white">Start quiz</Button>
           <Button variant="outline" onClick={handleLater}>Maybe later</Button>
         </div>
       </DialogContent>

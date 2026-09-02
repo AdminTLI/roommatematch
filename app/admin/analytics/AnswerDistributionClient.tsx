@@ -256,15 +256,8 @@ export function AnswerDistributionClient() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Answer Distribution</h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-            Anonymous aggregate counts and percentages per answer. Use high concentration
-            (“Very similar”) to spot questions that add little signal and may be removable.
-          </p>
-        </div>
+    <div className="space-y-8">
+      <div className="flex justify-end">
         <Button variant="outline" size="sm" onClick={handleExportCSV}>
           <Download className="w-4 h-4 mr-2" />
           Export CSV

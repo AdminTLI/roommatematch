@@ -42,8 +42,8 @@ const config: Config = {
         'chat-border': "hsl(var(--chat-border))",
         'chat-online': "hsl(var(--chat-online))",
         brand: {
-          primary: '#7a3bb6',        // Purple
-          primaryHover: '#6a32a0',   // Darker purple
+          primary: '#6366f1',        // indigo-500 (Lab "Top")
+          primaryHover: '#4f46e5',   // indigo-600
           accent: '#06B6D4',         // Cyan 500
           surface: '#F8FAFC',        // Section tint
           text: '#0F172A',           // Slate 900
@@ -72,8 +72,8 @@ const config: Config = {
         line: '#E5E7EB',
         dashboard: '#F6F7FB',
         // Scales used by badges and buttons
-        'brand-600': '#7a3bb6',
-        'brand-700': '#6a32a0',
+        'brand-600': '#6366f1',
+        'brand-700': '#4f46e5',
         'accent-100': '#CFFAFE',
         'accent-200': '#A5F3FC',
         'accent-600': '#0891B2',

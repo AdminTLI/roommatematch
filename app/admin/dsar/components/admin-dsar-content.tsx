@@ -172,12 +172,8 @@ export function AdminDSARContent() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">DSAR Management</h1>
-          <p className="text-gray-600 mt-1">Manage Data Subject Access Requests (GDPR Articles 15-20)</p>
-        </div>
+    <div className="space-y-8">
+      <div className="flex items-center justify-end">
         <Button onClick={fetchRequests} variant="outline">
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh

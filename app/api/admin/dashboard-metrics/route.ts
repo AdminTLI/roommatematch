@@ -298,6 +298,7 @@ export async function GET(request: NextRequest) {
         activeMatches,
         verifiedUsers: verifiedUsers || 0,
         pendingReports: pendingReports || 0,
+        pendingLabReports: 0,
         openBugReports: openBugReports || 0,
         period,
         lastUpdated: new Date().toISOString()
@@ -392,6 +393,10 @@ export async function GET(request: NextRequest) {
 
       const pendingReports = (pendingReportsOpen || 0) + (pendingReportsPending || 0)
 
+      const { count: pendingLabReports } = await adminClient
+        .from('lab_wish_reports')
+        .select('id', { count: 'exact', head: true })
+
       const { count: openBugReports, error: bugReportsError } = await adminClient
         .from('bug_reports')
         .select('id', { count: 'exact', head: true })
@@ -407,6 +412,7 @@ export async function GET(request: NextRequest) {
         verifiedUsers: verifiedUsers || 0,
         activeMatches,
         pendingReports,
+        pendingLabReports: pendingLabReports || 0,
         openBugReports: openBugReports || 0,
         matchesDataCount: matchesData?.length || 0
       })
@@ -416,6 +422,7 @@ export async function GET(request: NextRequest) {
         activeMatches,
         verifiedUsers: verifiedUsers || 0,
         pendingReports: pendingReports || 0,
+        pendingLabReports: pendingLabReports || 0,
         openBugReports: openBugReports || 0,
         period,
         lastUpdated: new Date().toISOString()

@@ -503,15 +503,7 @@ export function AdminMetricsContent({
 
   if (!metrics) {
     return (
-      <div className="p-4 md:p-6 max-w-2xl space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Institutional Metrics</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Cross-tenant rollups are not available. Choose an institution to load the dashboard.
-            </p>
-          </div>
-        </div>
+      <div className="space-y-6">
         <AdminUniversityScopeBar
           isPlatformSuper={isPlatformSuper}
           universityOptions={universityOptions}
@@ -544,15 +536,9 @@ export function AdminMetricsContent({
     })) || []
 
   return (
-    <div className="p-4 md:p-6 space-y-6 md:space-y-8">
+    <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold tracking-tight">Institutional Metrics</h1>
-          <p className="text-muted-foreground text-sm mt-1 max-w-2xl">
-            Retention, wellbeing, and operational signals for the active institution and cohort filters.
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto lg:ml-auto">
           <AdminUniversityScopeBar
             isPlatformSuper={isPlatformSuper}
             universityOptions={universityOptions}

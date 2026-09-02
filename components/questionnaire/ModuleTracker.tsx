@@ -119,7 +119,7 @@ export function ModuleTracker({
             className={cn(
               'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ring-1 sm:text-[13px]',
               isActive &&
-                'bg-[#4F46E5] text-white shadow-[0_4px_10px_-2px_rgba(79,70,229,0.28)] ring-[#4F46E5] dark:bg-indigo-500 dark:ring-indigo-400',
+                'bg-indigo-500 text-white shadow-[0_4px_10px_-2px_rgba(79,70,229,0.28)] ring-indigo-500 dark:bg-indigo-500 dark:ring-indigo-400',
               isCompleted && !isActive && MODULE_ACCENTS[idx],
               !isActive &&
                 !isCompleted &&
@@ -142,8 +142,8 @@ export function ModuleTracker({
           className={cn(
             'inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ring-1 sm:text-[13px]',
             reviewActive
-              ? 'bg-[#4F46E5] text-white shadow-[0_4px_10px_-2px_rgba(79,70,229,0.28)] ring-[#4F46E5] dark:bg-indigo-500 dark:ring-indigo-400'
-              : 'bg-white text-[#4F46E5] ring-indigo-200 hover:bg-indigo-50 dark:bg-slate-800 dark:text-indigo-300 dark:ring-indigo-800 dark:hover:bg-indigo-950/50'
+              ? 'bg-indigo-500 text-white shadow-[0_4px_10px_-2px_rgba(79,70,229,0.28)] ring-indigo-500 dark:bg-indigo-500 dark:ring-indigo-400'
+              : 'bg-white text-[#6366F1] ring-indigo-200 hover:bg-indigo-50 dark:bg-slate-800 dark:text-indigo-300 dark:ring-indigo-800 dark:hover:bg-indigo-950/50'
           )}
           title="Go to review"
         >

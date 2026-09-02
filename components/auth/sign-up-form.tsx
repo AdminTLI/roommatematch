@@ -386,7 +386,7 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
 
             <Button
               type="submit"
-              className="w-full min-h-[44px] text-base bg-slate-900 text-white border-0 shadow-[0_12px_30px_rgba(15,23,42,0.16)] hover:bg-slate-900/90 transition-colors disabled:opacity-70"
+              className="w-full min-h-[44px] text-base bg-indigo-500 text-white border-0 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 transition-colors disabled:opacity-70"
               disabled={isLoading || !!ageError}
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

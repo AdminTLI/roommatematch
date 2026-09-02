@@ -4,10 +4,9 @@
 
 @layer base {
   :root {
-    /* Brand Colors - Standard Light Mode */
-    --brand-primary: #7c3aed;
-    /* Indigo/Violet */
-    --brand-primaryHover: #6d28d9;
+    /* Brand Colors - Standard Light Mode (Lab "Top" indigo-500) */
+    --brand-primary: #6366f1;
+    --brand-primaryHover: #4f46e5;
     --brand-accent: #db2777;
     /* Pink/Rose */
     --brand-surface: #ffffff;
@@ -25,9 +24,9 @@
     --text-primary: 222 47% 11%;
     --text-secondary: 215 16% 47%;
     --text-muted: 215 16% 65%;
-    --accent: 263 70% 50%;
-    --accent-hover: 263 70% 40%;
-    --accent-soft: 264 100% 96%;
+    --accent: 239 84% 67%;
+    --accent-hover: 239 84% 60%;
+    --accent-soft: 239 100% 96%;
     --danger: 0 84.2% 60.2%;
     --warning: 38 92% 50%;
     --success: 142 76% 36%;
@@ -39,7 +38,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 263.4 70% 50.4%;
+    --primary: 239 84% 67%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -50,7 +49,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 263.4 70% 50.4%;
+    --ring: 239 84% 67%;
     --radius: 1rem;
 
     /* Chat-specific semantic color tokens - Light Mode */
@@ -60,10 +59,10 @@
     /* Page canvas #F8F9FA */
     --chat-surface: 210 40% 96%;
     /* Received bubbles #F1F5F9 */
-    --chat-surface-sent: 263 70% 50%;
-    /* Brand purple #7C3AED for sent messages */
-    --chat-surface-sent-end: 263 69% 42%;
-    /* #6D28D9 gradient end */
+    --chat-surface-sent: 239 84% 67%;
+    /* Brand indigo-500 for sent messages */
+    --chat-surface-sent-end: 239 84% 60%;
+    /* indigo-600 gradient end */
     --chat-active-fill: 270 100% 95%;
     /* Soft lavender #F3E8FF */
     --chat-text-primary: 222 47% 11%;
@@ -80,8 +79,8 @@
 
   .dark {
     /* Brand Colors - Deep Slate Premium Palette (Dark) */
-    --brand-primary: #8b5cf6;
-    --brand-primaryHover: #7c3aed;
+    --brand-primary: #6366f1;
+    --brand-primaryHover: #4f46e5;
     --brand-accent: #f472b6;
     --brand-surface: #0f172a;
     --brand-text: #f1f5f9;
@@ -98,12 +97,12 @@
     --border-subtle: 215 20% 35%;
     --text-primary: 210 40% 98%;
     /* slate-50 #f8fafc */
-    --text-secondary: 215 20% 65%;
-    /* slate-400 #94a3b8 */
-    --text-muted: 215 16% 47%;
-    /* slate-500 #64748b */
-    --accent: 263 70% 50%;
-    --accent-hover: 263 70% 40%;
+    --text-secondary: 214 20% 82%;
+    /* slate-300 — readable on slate-800 cards */
+    --text-muted: 215 16% 70%;
+    /* slate-400 — helper text still meets contrast */
+    --accent: 239 84% 67%;
+    --accent-hover: 239 84% 60%;
     --accent-soft: 264 60% 25%;
 
     /* Score indicator colors */
@@ -126,20 +125,20 @@
     --card-foreground: 210 40% 98%;
     --popover: 217 33% 17%;
     --popover-foreground: 210 40% 98%;
-    --primary: 263.4 70% 50.4%;
+    --primary: 239 84% 67%;
     --primary-foreground: 210 40% 98%;
     --secondary: 215 25% 27%;
     /* slate-700 */
     --secondary-foreground: 210 40% 98%;
     --muted: 215 25% 27%;
-    --muted-foreground: 215 20% 65%;
+    --muted-foreground: 214 20% 82%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 215 25% 27%;
     /* slate-700 */
     --input: 215 25% 27%;
-    --ring: 263.4 70% 50.4%;
+    --ring: 239 84% 67%;
 
     /* Surface hierarchy */
     --surface-0: #0f172a;
@@ -160,15 +159,15 @@
     /* Page canvas (slate-900) */
     --chat-surface: 215 25% 27%;
     /* Received bubbles (slate-700) */
-    --chat-surface-sent: 263 70% 58%;
-    /* Brand purple for sent messages */
-    --chat-surface-sent-end: 263 69% 48%;
+    --chat-surface-sent: 239 84% 67%;
+    /* Brand indigo-500 for sent messages */
+    --chat-surface-sent-end: 239 84% 60%;
     --chat-active-fill: 270 50% 22%;
     /* Soft lavender tint for active states */
     --chat-text-primary: 210 40% 98%;
     /* Light text for primary content (slate-50) */
-    --chat-text-secondary: 215 20% 65%;
-    /* Muted light text for secondary content (slate-400) */
+    --chat-text-secondary: 214 20% 82%;
+    /* Secondary text (slate-300) */
     --chat-border: 215 25% 27%;
     /* Border color (slate-700) */
     --chat-online: 160 84% 39%;
@@ -311,29 +310,31 @@
   }
 
   /*
-   * Focus ring for interactive controls. Omit input/textarea/select so text fields
-   * use component styles (or browser default) -- the purple double ring on every
-   * :focus-visible was especially noisy in chat composers.
+   * No focus rings on buttons, links, or button-like controls.
    */
-  *:focus-visible:not(input):not(textarea):not(select):not([role='menu']) {
+  button:focus,
+  button:focus-visible,
+  [role='button']:focus,
+  [role='button']:focus-visible,
+  a:focus,
+  a:focus-visible,
+  input[type='submit']:focus,
+  input[type='submit']:focus-visible,
+  input[type='button']:focus,
+  input[type='button']:focus-visible {
+    outline: none !important;
+    --tw-ring-offset-width: 0px !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+  }
+
+  *:focus-visible:not(input):not(textarea):not(select):not([role='menu']):not(button):not([role='button']):not(a):not(input[type='submit']):not(input[type='button']) {
     outline: none;
-    box-shadow: 0 0 0 2px #7a3bb6, 0 0 0 4px rgba(122, 59, 182, 0.2);
   }
 
-  .dark *:focus-visible:not(input):not(textarea):not(select):not([role='menu']) {
-    box-shadow: 0 0 0 2px #9d5dd1, 0 0 0 4px rgba(157, 93, 209, 0.3);
-  }
-
-  /* Native toggles are still `input` but should keep a clear keyboard focus ring */
   input[type='checkbox']:focus-visible,
   input[type='radio']:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px #7a3bb6, 0 0 0 4px rgba(122, 59, 182, 0.2);
-  }
-
-  .dark input[type='checkbox']:focus-visible,
-  .dark input[type='radio']:focus-visible {
-    box-shadow: 0 0 0 2px #9d5dd1, 0 0 0 4px rgba(157, 93, 209, 0.3);
   }
 }
 
@@ -788,6 +789,20 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
 
 /* Marketing pages: full-page radial gradient (no via-transparent, avoids middle line) */
 @layer components {
+  /* Solid fill used by every primary action button (Lab "Top" indigo-500). */
+  .btn-fill {
+    background-color: #6366f1;
+    color: #fff;
+    box-shadow: 0 0 20px -5px rgba(99, 102, 241, 0.5);
+  }
+  .btn-fill:hover:not(:disabled) {
+    background-color: #4f46e5;
+  }
+  .btn-fill:focus,
+  .btn-fill:focus-visible {
+    outline: none;
+  }
+
   .marketing-page-bg-base {
     background: radial-gradient(
       ellipse 140% 100% at 15% 0%,
@@ -1346,7 +1361,7 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
 .onboarding-root {
   --ob-bg: #f8fafc;
   --ob-card: #ffffff;
-  --ob-primary: #4f46e5;
+  --ob-primary: #6366f1;
   --ob-text: #0f172a;
   --ob-muted: #64748b;
   --ob-border: #e2e8f0;

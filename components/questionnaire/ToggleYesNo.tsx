@@ -5,9 +5,9 @@ import { cn } from '@/lib/utils'
 /** Shared choice-button styles for questionnaire answers */
 export function choiceButtonClass(selected: boolean) {
   return cn(
-    'flex h-[54px] w-full items-center gap-3 rounded-xl border px-4 text-left text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/40 dark:focus-visible:ring-indigo-400/40',
+    'flex h-[54px] w-full items-center gap-3 rounded-xl border px-4 text-left text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 ',
     selected
-      ? 'border-[#4F46E5] bg-[#4F46E5] text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] dark:border-indigo-400 dark:bg-indigo-500 dark:shadow-[0_10px_25px_-5px_rgba(99,102,241,0.35)]'
+      ? 'border-indigo-500 bg-indigo-500 text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:border-indigo-400 dark:bg-indigo-500 dark:shadow-[0_10px_25px_-5px_rgba(99,102,241,0.35)]'
       : 'border-slate-200 bg-white text-[#0F172A] hover:border-indigo-500 hover:bg-indigo-50/30 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:hover:border-indigo-400 dark:hover:bg-indigo-500/10'
   )
 }

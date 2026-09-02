@@ -51,7 +51,7 @@ export const nl = {
     home: 'Home',
     matches: 'Matches',
     chat: 'Chat',
-    forum: 'Forum',
+    forum: 'Domu Lab',
     profile: 'Profiel',
     settings: 'Instellingen',
     admin: 'Beheer',
@@ -517,35 +517,34 @@ export const nl = {
     }
   },
 
-  // Forum
   forum: {
-    title: 'Forum',
-    subtitle: 'Verbind met je universiteitsgemeenschap',
-    newPost: 'Nieuw Bericht',
-    anonymous: 'Anoniem Plaatsen',
+    title: 'Domu Lab',
+    subtitle: 'Vertel wat er ontbreekt. Stem op wat je echt zou gebruiken.',
+    newPost: 'Nieuwe wens',
+    anonymous: 'Anoniem geplaatst',
     posts: {
-      title: 'Berichten',
-      noPosts: 'Nog geen berichten. Wees de eerste die post!',
-      createPost: 'Bericht Aanmaken',
-      reply: 'Antwoorden',
-      report: 'Bericht Rapporteren',
-      delete: 'Bericht Verwijderen',
-      edit: 'Bericht Bewerken'
+      title: 'Wensen',
+      noPosts: 'Nog geen wensen. Wees de eerste!',
+      createPost: 'Wens plaatsen',
+      reply: '',
+      report: 'Rapporteren',
+      delete: '',
+      edit: ''
     },
     createPost: {
-      title: 'Nieuw Bericht Aanmaken',
-      postTitle: 'Berichttitel',
-      postContent: 'Wat wil je delen?',
-      anonymous: 'Anoniem plaatsen',
-      submit: 'Bericht Publiceren',
+      title: 'Deel een wens',
+      postTitle: 'Kopregel',
+      postContent: 'Wat gebeurde er?',
+      anonymous: 'Anoniem voor andere studenten',
+      submit: 'Wens plaatsen',
       cancel: 'Annuleren',
-      preview: 'Voorbeeld',
+      preview: '',
       characterCount: '{current}/{max} tekens'
     },
     moderation: {
-      reported: 'Dit bericht is gerapporteerd',
-      removed: 'Dit bericht is verwijderd',
-      underReview: 'Dit bericht wordt beoordeeld'
+      reported: 'Deze wens is gerapporteerd',
+      removed: 'Deze wens is verwijderd',
+      underReview: 'Deze wens wordt beoordeeld'
     }
   },
 

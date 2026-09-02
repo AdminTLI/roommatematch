@@ -62,6 +62,8 @@ import {
 } from '@/lib/matching/live-compatibility'
 import { WellnessSurveyModal } from './wellness-survey-modal'
 import { SuccessNpsWidget } from '@/app/(components)/success-nps-widget'
+import { LabPromptCard } from '@/app/(components)/lab-prompt-card'
+import type { LabPromptKey } from '@/lib/lab/types'
 import { isDashboardActivityNotification } from '@/lib/notifications/dashboard-activity'
 
 const fadeInUp = {
@@ -794,6 +796,14 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     // Start with empty array and let the query populate with correctly filtered matches
   })
 
+  const labPromptKeys = useMemo((): LabPromptKey[] => {
+    const keys: LabPromptKey[] = []
+    if (hasCompletedQuestionnaire) keys.push('onboarding_complete')
+    if (hasCompletedQuestionnaire && recentMatches.length === 0) keys.push('empty_matches')
+    if (recentMatches.length > 0) keys.push('first_match')
+    return keys
+  }, [hasCompletedQuestionnaire, recentMatches.length])
+
   // Fetch total matches count with React Query
   const fetchTotalMatchesCount = useCallback(async (): Promise<number> => {
     if (!user?.id) {
@@ -1411,6 +1421,12 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           </motion.div>
         )}
       </motion.div>
+
+      {userType === 'student' && (
+        <motion.div variants={fadeInUp} initial="initial" animate="animate" className="mt-6">
+          <LabPromptCard eligibleKeys={labPromptKeys} />
+        </motion.div>
+      )}
 
       {/* Recent Activity Section */}
       <motion.div

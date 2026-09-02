@@ -223,7 +223,7 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
             type="button"
             onClick={() => void handleSaveAvatar()}
             disabled={savingAvatar}
-            className="rounded-xl bg-violet-600 text-white hover:bg-violet-700"
+            className="rounded-xl bg-indigo-500 text-white hover:bg-indigo-600"
           >
             {savingAvatar ? (
               <>
@@ -244,7 +244,7 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
             id="profile-photo"
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            className="block w-full max-w-md text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border-0 file:bg-violet-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-violet-700 dark:text-zinc-300"
+            className="block w-full max-w-md text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-500 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-indigo-600 dark:text-zinc-300"
             disabled={uploading}
             onChange={(e) => {
               const f = e.target.files?.[0] ?? null

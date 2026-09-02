@@ -58,10 +58,10 @@ export function UniversityCityHero({ city }: HeroSectionProps) {
             <Link
               href="/auth/sign-up"
               className={cn(
-                'inline-flex items-center justify-center rounded-2xl px-6 py-4 text-base font-semibold',
-                'bg-slate-900 text-white',
-                'shadow-[0_12px_30px_rgba(15,23,42,0.16)] hover:bg-slate-900/90 transition-colors',
-                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
+                'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold',
+                'bg-indigo-500 text-white',
+                'shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 transition-colors',
+                'focus-visible:outline-none'
               )}
             >
               {u.getStarted}

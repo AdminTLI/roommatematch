@@ -101,7 +101,7 @@ export function FaqMarketingBody() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <a
                   href="mailto:domumatch@gmail.com"
-                  className="inline-flex items-center justify-center px-6 py-3 bg-slate-900 text-white rounded-2xl hover:bg-slate-900/90 transition-colors font-semibold shadow-[0_12px_30px_rgba(15,23,42,0.16)]"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-colors font-semibold shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
                 >
                   {u.emailCta}
                 </a>

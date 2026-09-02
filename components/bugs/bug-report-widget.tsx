@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import { Bug, X, Send, Lightbulb } from 'lucide-react'
@@ -35,7 +36,7 @@ const MAX_DESCRIPTION = 4000
 const selectTriggerClass = (hasValue: boolean) =>
   cn(
     'h-12 w-full rounded-xl border border-slate-200 bg-white pl-3.5 pr-3 text-sm shadow-none',
-    'focus:ring-2 focus:ring-[#4F46E5]/30',
+    'focus:ring-2 focus:ring-indigo-500/30',
     '[&_svg]:h-5 [&_svg]:w-5 [&_svg]:opacity-70 [&_svg]:text-slate-500',
     'dark:border-slate-500 dark:bg-slate-700/80 dark:focus:ring-indigo-400/30 dark:[&_svg]:text-slate-300',
     // Override SelectTrigger base styles that hardcode light-mode span colours
@@ -51,7 +52,9 @@ const selectContentClass = cn(
 )
 
 export function BugReportWidget() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
+  const [panelStep, setPanelStep] = useState<'chooser' | 'bug'>('chooser')
   const [category, setCategory] = useState<BugReportCategory | ''>('')
   const [description, setDescription] = useState('')
   const [consent, setConsent] = useState(false)
@@ -78,6 +81,7 @@ export function BugReportWidget() {
     setCategory('')
     setDescription('')
     setConsent(false)
+    setPanelStep('chooser')
   }, [])
 
   const handleClose = () => {
@@ -144,7 +148,7 @@ export function BugReportWidget() {
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
         <div className="flex shrink-0 items-center gap-3 border-b border-slate-100 px-5 py-4 dark:border-slate-700">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#4F46E5] ring-1 ring-indigo-200/80 dark:bg-indigo-950 dark:text-indigo-300 dark:ring-indigo-800/80">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#6366F1] ring-1 ring-indigo-200/80 dark:bg-indigo-950 dark:text-indigo-300 dark:ring-indigo-800/80">
             <Bug className="h-4 w-4" strokeWidth={2.25} aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
@@ -161,7 +165,7 @@ export function BugReportWidget() {
           <button
             type="button"
             onClick={handleClose}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-[#0F172A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-[#0F172A] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50"
             aria-label="Close bug report form"
           >
             <X className="h-4 w-4" strokeWidth={2.25} />
@@ -169,6 +173,39 @@ export function BugReportWidget() {
         </div>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 py-4">
+          {panelStep === 'chooser' ? (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                What would you like to share?
+              </p>
+              <button
+                type="button"
+                onClick={() => setPanelStep('bug')}
+                className="w-full flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+              >
+                <Bug className="h-5 w-5 text-[#6366F1] shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm">Something&apos;s broken</p>
+                  <p className="text-xs text-slate-500">Report a bug privately to our team</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleClose()
+                  router.push('/forum?compose=1')
+                }}
+                className="w-full flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-600 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+              >
+                <Lightbulb className="h-5 w-5 text-amber-600 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm">I wish this existed</p>
+                  <p className="text-xs text-slate-500">Post an idea to Domu Lab</p>
+                </div>
+              </button>
+            </div>
+          ) : (
+            <>
           <div className="flex items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2.5 ring-1 ring-amber-200/80 dark:bg-indigo-950/50 dark:ring-indigo-500/25">
             <Lightbulb
               className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-400"
@@ -214,9 +251,9 @@ export function BugReportWidget() {
               rows={3}
               className={cn(
                 'min-h-[88px] resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-[#0F172A]',
-                'shadow-none placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30',
+                'shadow-none placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-indigo-500/30',
                 'dark:border-slate-500 dark:bg-slate-700/80 dark:text-slate-100 dark:placeholder:!text-slate-400',
-                'dark:focus-visible:ring-indigo-400/30',
+                '',
               )}
             />
             <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
@@ -236,7 +273,7 @@ export function BugReportWidget() {
               id="bug-consent"
               checked={consent}
               onCheckedChange={(v) => setConsent(v === true)}
-              className="mt-0.5 shrink-0 rounded border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5] dark:border-slate-400 dark:data-[state=checked]:border-indigo-400 dark:data-[state=checked]:bg-indigo-500"
+              className="mt-0.5 shrink-0 rounded border-slate-300 data-[state=checked]:border-indigo-500 data-[state=checked]:bg-indigo-500 dark:border-slate-400 dark:data-[state=checked]:border-indigo-400 dark:data-[state=checked]:bg-indigo-500"
             />
             <label
               htmlFor="bug-consent"
@@ -259,8 +296,11 @@ export function BugReportWidget() {
               diagnose the issue. No screenshot image is taken.
             </label>
           </div>
+            </>
+          )}
         </div>
 
+        {panelStep === 'bug' && (
         <div className="flex shrink-0 items-center gap-3 border-t border-slate-100 px-5 py-4 dark:border-slate-700">
           <button
             type="button"
@@ -276,14 +316,15 @@ export function BugReportWidget() {
             className={cn(
               'inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold transition-all',
               canSubmit
-                ? 'bg-[#4F46E5] text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:text-white dark:hover:bg-indigo-400'
-                : 'cursor-not-allowed bg-[#4F46E5]/40 text-white/70 dark:bg-indigo-500/35 dark:text-slate-300',
+                ? 'bg-indigo-500 text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500 dark:text-white dark:hover:bg-indigo-400'
+                : 'cursor-not-allowed bg-indigo-500/40 text-white/70 dark:bg-indigo-500/35 dark:text-slate-300',
             )}
           >
             <Send className="h-4 w-4" strokeWidth={2.25} aria-hidden />
             {isSubmitting ? 'Sending…' : 'Submit report'}
           </button>
         </div>
+        )}
       </div>
     </>
   )
@@ -353,12 +394,12 @@ export function BugReportWidget() {
       {/* FAB: mid-right, aligned with Domu; hidden on mobile while sheet is open */}
       <button
         type="button"
-        onClick={() => (open ? handleClose() : setOpen(true))}
+        onClick={() => (open ? handleClose() : (setOpen(true), setPanelStep('chooser')))}
         className={cn(
           'pointer-events-auto fixed right-4 top-1/2 z-[55] flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full md:right-6',
-          'bg-[#4F46E5] text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.45)]',
-          'transition hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.55)]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/40 focus-visible:ring-offset-2 dark:focus-visible:ring-indigo-400/50 dark:focus-visible:ring-offset-slate-900',
+          'bg-indigo-500 text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
+          'transition hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
+          'focus-visible:outline-none',
           'dark:bg-indigo-500 dark:text-white dark:hover:bg-indigo-400',
           open && 'max-md:pointer-events-none max-md:invisible',
         )}

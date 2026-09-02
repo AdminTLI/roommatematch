@@ -5,6 +5,8 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
 
+type BulletItem = string | { lead: string; body: string }
+
 type SectionItem = {
   id: string
   title: string
@@ -14,11 +16,31 @@ type SectionItem = {
     headers?: [string, string]
     rows: { left: string; right: string }[]
   }
-  bullets?: string[]
+  bullets?: BulletItem[]
+  afterBulletsIntro?: string
+  afterBullets?: BulletItem[]
   note?: string
 }
 
-const LAST_UPDATED = 'March 2026'
+function BulletList({ items }: { items: BulletItem[] }) {
+  return (
+    <ul className="list-disc pl-6 space-y-2 text-slate-700 text-sm sm:text-base">
+      {items.map((item, index) => (
+        <li key={index}>
+          {typeof item === 'string' ? (
+            item
+          ) : (
+            <>
+              <strong>{item.lead}</strong> {item.body}
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+const LAST_UPDATED = 'September 2026'
 
 const content: Record<
   'en' | 'nl',
@@ -68,6 +90,11 @@ const content: Record<
                 'Yes, for users during the beta. Domu Match is currently funded by the co-founders, and universities may subsidise student access in the future.',
             },
             {
+              left: 'Founding 200 promo',
+              right:
+                'Free, no-cost access for life to what Domu Match offers today (roommate matching, messaging, verification, etc. - see “Covered Services”). If Domu Match ever launches a fundamentally different paid business - for example, becoming a licensed housing/rental agency - that new business isn’t covered by this promo. See Section 3.7.',
+            },
+            {
               left: 'Can I share what I see?',
               right:
                 'Please do not. Beta features are confidential (see Section 3).',
@@ -100,6 +127,11 @@ const content: Record<
           'Status: Domu Match is not a landlord, rental agency, housing provider, or law firm.',
           'Tools: the WWS rent calculator and document templates are informational only (see Section 8).',
           'Legal form: Domu Match is a handelsnaam of DMS Enterprise (eenmanszaak), KvK 97573337.',
+        ],
+        afterBulletsIntro: 'Defined terms used throughout these Terms:',
+        afterBullets: [
+          '“Covered Services” means Domu Match’s current feature set as offered during the Beta: roommate matching (including Harmony and Context scoring), profile creation and browsing, in-app messaging, identity verification, and the WWS calculator and legal document templates described in Section 8. If Domu Match introduces room or property listing functionality, it is included in the Covered Services as a continuation of the roommate-matching service.',
+          '“New Services” means any product, service, or business line Domu Match may introduce that is not reasonably characterized as a continuation or enhancement of the Covered Services — including, without limitation, brokerage or real-estate agency services, property management services, financial or insurance products, or any service requiring separate licensing or regulatory registration in the Netherlands or elsewhere — regardless of similarity or relation to the Covered Services. Domu Match has sole discretion to classify a feature as within the Covered Services or as a New Service, and an earlier classification does not bind a later one.',
         ],
       },
       {
@@ -184,6 +216,48 @@ const content: Record<
           'If we decide to end the beta, we will give you at least 30 days’ notice by email and/or in-app notification. For urgent technical or legal reasons, this period may be shorter; we will explain why.',
       },
       {
+        id: 'founding-member',
+        title: '3.7 Founding Member Program (First 200 Beta Users)',
+        bullets: [
+          {
+            lead: 'Eligibility.',
+            body: 'The Founding Member Program (“Program”) is limited to the first 200 user accounts that (a) complete registration and (b) pass mandatory identity verification under Section 5, during the Beta, as determined by Domu Match’s own account records. Domu Match’s records are conclusive for determining Program membership.',
+          },
+          {
+            lead: 'Grant.',
+            body: 'Each eligible account (a “Founding Member”) receives free, no-cost access to the Covered Services (“Founding Member Access”) for as long as (i) the Founding Member’s account remains active and in good standing, and (ii) Domu Match continues to offer the Covered Services in substantially their current form.',
+          },
+          {
+            lead: 'Scope limitation.',
+            body: 'Founding Member Access applies only to the Covered Services. It does not extend to, and creates no expectation, right, or entitlement to, any New Services. If Domu Match introduces a New Service, Founding Members may be offered access to it at Domu Match’s then-current pricing, entirely at Domu Match’s discretion; nothing in this Program obligates Domu Match to extend free or discounted access to any New Service. By way of illustration only, if Domu Match were in the future to begin operating as a licensed housing or rental agency, brokerage, or property manager, that activity would constitute a New Service and would not be covered by this Program.',
+          },
+          {
+            lead: 'No implied expansion.',
+            body: 'This Program is the entire scope of the free-access promise. It is not to be interpreted by reference to marketing language, informal statements, or the general similarity of a future offering to the Covered Services.',
+          },
+          {
+            lead: 'Domu Match may still evolve the Covered Services.',
+            body: 'Domu Match may modify, rebrand, restructure, add features to, deprecate individual features within, or (subject to Sections 3.1, 3.2, and 13) discontinue the Covered Services. Founding Member Access follows the Covered Services as they evolve, but does not freeze any specific feature, interface, or version in place.',
+          },
+          {
+            lead: 'Non-transferable.',
+            body: 'Founding Member Access is personal to the verified individual account holder. It may not be sold, gifted, transferred, sublicensed, or assigned, and does not carry over to a new or replacement account.',
+          },
+          {
+            lead: 'Reverification and inactivity.',
+            body: 'Domu Match may periodically require reverification of continued eligibility under Section 2. Founding Member Access lapses if the account is deleted, or is inactive for a continuous period of 12 months or more.',
+          },
+          {
+            lead: 'Successor entities.',
+            body: 'If Domu Match’s business is transferred, acquired, restructured, or continued under a different entity or brand, that successor’s obligations under this Program are limited strictly to the Covered Services as defined as of the date of transfer, and do not extend to any New Services the successor separately offers, including under a different brand or legal entity.',
+          },
+          {
+            lead: 'This section controls.',
+            body: 'If any marketing material, landing page, email, or informal communication describing the Founding Member Program conflicts with this Section 3.7, this Section 3.7 governs.',
+          },
+        ],
+      },
+      {
         id: 'account',
         title: '4. Account Registration and Accuracy',
         bullets: [
@@ -253,7 +327,8 @@ const content: Record<
         id: 'fees',
         title: '10. Pricing and Payment',
         bullets: [
-          'Students and young professionals: access is free.',
+          'Students and young professionals: access to the Covered Services is free during the Beta.',
+          'The first 200 verified users receive Founding Member Access as described in Section 3.7, which remains scoped to the Covered Services even after the Beta ends.',
           'Universities/partners: funded via institutional licensing under separate agreements.',
           'Beta access is free and does not create any commitment to paid tiers at launch.',
         ],
@@ -277,6 +352,7 @@ const content: Record<
           'Content may be removed if reasonably believed illegal or in violation of these terms.',
           'Where required and feasible, we will notify you of significant enforcement actions and provide an appeal route.',
           'You may delete your account at any time via Settings. Data deletion follows the Privacy Policy timelines.',
+          'Suspension or termination for cause under this Section ends Founding Member Access; reinstatement of an account after review does not automatically restore it and is at Domu Match’s discretion.',
         ],
       },
       {
@@ -285,6 +361,7 @@ const content: Record<
         bullets: [
           'Significant changes: at least 15 days’ advance notice by email and/or in-app notification.',
           'If you disagree with updates, stop using Domu Match and request account deletion. Continued use after the effective date means acceptance.',
+          'Changes that narrow the definition of Covered Services, or that affect Founding Member Access under Section 3.7, are “significant changes” for purposes of this Section and require the notice above.',
         ],
       },
       {
@@ -583,13 +660,11 @@ export default function TermsPage({ embedded = false }: { embedded?: boolean } =
               </table>
             </div>
           )}
-          {section.bullets && (
-            <ul className="list-disc pl-6 space-y-2 text-slate-700 text-sm sm:text-base">
-              {section.bullets.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+          {section.bullets && <BulletList items={section.bullets} />}
+          {section.afterBulletsIntro && (
+            <p className="text-slate-700 mt-4 mb-3 text-sm sm:text-base">{section.afterBulletsIntro}</p>
           )}
+          {section.afterBullets && <BulletList items={section.afterBullets} />}
           {section.note && (
             <p className="text-slate-700 mt-3 text-sm sm:text-base">{section.note}</p>
           )}

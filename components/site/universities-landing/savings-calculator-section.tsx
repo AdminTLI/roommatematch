@@ -98,7 +98,7 @@ export function SavingsCalculatorSection() {
               aria-label={t.cta}
               className={cn(
                 'inline-flex items-center justify-center gap-2 rounded-2xl px-8 py-4 min-h-[48px] text-base font-semibold',
-                'bg-slate-900 text-white hover:bg-slate-900/90',
+                'bg-indigo-500 text-white hover:bg-indigo-600',
                 'shadow-[0_12px_30px_rgba(15,23,42,0.18)] hover:scale-105 transition-all duration-200',
                 'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
               )}

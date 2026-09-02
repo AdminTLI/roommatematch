@@ -257,7 +257,7 @@ export function PrivacySettings({ user, profile, openReviewOnMount }: PrivacySet
               <Switch
                 checked={privacySettings[item.id as keyof typeof privacySettings]}
                 onCheckedChange={(checked) => handlePrivacyChange(item.id, checked)}
-                className="shrink-0 self-start data-[state=checked]:bg-blue-500 sm:self-center"
+                className="shrink-0 self-start data-[state=checked]:bg-indigo-500 sm:self-center"
               />
             </div>
           ))}
@@ -268,7 +268,7 @@ export function PrivacySettings({ user, profile, openReviewOnMount }: PrivacySet
         <Button
           onClick={handleSavePrivacy}
           disabled={isLoading}
-          className="w-full sm:w-auto min-w-[140px] h-11 text-base bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20"
+          className="w-full sm:w-auto min-w-[140px] h-11 text-base bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
         >
           {isLoading ? (
             <>

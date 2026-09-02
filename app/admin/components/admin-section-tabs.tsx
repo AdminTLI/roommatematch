@@ -36,7 +36,7 @@ export function AdminSectionTabs({ hub, badgeCounts }: AdminSectionTabsProps) {
   return (
     <div className="-mx-1 overflow-x-auto overscroll-x-contain px-1 pb-1">
       <nav
-        className="inline-flex min-w-full items-center gap-1 rounded-full border border-border-subtle/60 bg-bg-surface-alt/80 p-1"
+        className="inline-flex min-w-full items-center gap-1.5 rounded-full border border-border-subtle bg-bg-surface-alt p-1.5"
         aria-label="Section navigation"
       >
         {visibleTabs.map((tab) => {
@@ -48,10 +48,10 @@ export function AdminSectionTabs({ hub, badgeCounts }: AdminSectionTabsProps) {
               key={tab.id}
               href={tab.href}
               className={cn(
-                'relative flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                'relative flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors',
                 active
-                  ? 'bg-violet-600 text-white shadow-sm'
-                  : 'text-text-secondary hover:bg-bg-surface hover:text-text-primary'
+                  ? 'bg-indigo-500 text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-bg-surface hover:text-text-primary dark:text-slate-200 dark:hover:bg-slate-700/80 dark:hover:text-white'
               )}
             >
               {tab.label}

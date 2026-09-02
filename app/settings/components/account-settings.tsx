@@ -281,7 +281,7 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
               <Switch
                 checked={notifications[item.id as keyof typeof notifications]}
                 onCheckedChange={(checked) => handleNotificationChange(item.id, checked)}
-                className="data-[state=checked]:bg-blue-500"
+                className="data-[state=checked]:bg-indigo-500"
               />
             </div>
           ))}
@@ -303,7 +303,7 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
               <Switch
                 checked={notifications[item.id as keyof typeof notifications]}
                 onCheckedChange={(checked) => handleNotificationChange(item.id, checked)}
-                className="data-[state=checked]:bg-blue-500"
+                className="data-[state=checked]:bg-indigo-500"
               />
             </div>
           ))}
@@ -314,7 +314,7 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
         <Button
           onClick={handleSaveNotifications}
           disabled={isLoading}
-          className="w-full sm:w-auto min-w-[160px] h-11 text-base bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20"
+          className="w-full sm:w-auto min-w-[160px] h-11 text-base bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
         >
           {isLoading ? (
             <>
@@ -325,6 +325,18 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
             'Save Preferences'
           )}
         </Button>
+      </div>
+
+      <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-900/40 p-4 mb-6">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
+          Help us build Domu — share what is missing and upvote ideas from other students.
+        </p>
+        <Link
+          href="/forum"
+          className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+        >
+          Open Domu Lab
+        </Link>
       </div>
 
       {/* Danger Zone Group */}

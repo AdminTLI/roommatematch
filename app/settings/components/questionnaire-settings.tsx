@@ -329,7 +329,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Button
               onClick={handleEditAnswers}
-              className="h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20 font-semibold"
+              className="h-12 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] font-semibold"
             >
               <Edit className="w-4 h-4 mr-2" />
               Edit Responses

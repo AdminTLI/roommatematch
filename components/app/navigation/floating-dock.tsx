@@ -79,6 +79,7 @@ export function FloatingDock() {
           const m = await metricsRes.json()
           pendingReports = m.pendingReports ?? 0
           openBugs = m.openBugReports ?? 0
+          pendingReports += m.pendingLabReports ?? 0
         }
 
         let flagged = 0

@@ -85,7 +85,7 @@ export function UnsubscribePreviewClient({ startMock }: { startMock: boolean }) 
               onClick={() => loadPreview({ mock: true })}
               className={`rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50 ${
                 mode === 'mock'
-                  ? 'bg-violet-600 text-white shadow-sm'
+                  ? 'bg-indigo-500 text-white shadow-sm'
                   : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
               }`}
             >
@@ -97,7 +97,7 @@ export function UnsubscribePreviewClient({ startMock }: { startMock: boolean }) 
               onClick={() => loadPreview({})}
               className={`rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50 ${
                 mode === 'live'
-                  ? 'bg-violet-600 text-white shadow-sm'
+                  ? 'bg-indigo-500 text-white shadow-sm'
                   : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
               }`}
             >

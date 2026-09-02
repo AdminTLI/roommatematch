@@ -562,7 +562,7 @@ export function MatchCard({
                       academicBonuses && (
                         <>
                           {academicBonuses.program_affinity && (
-                            <Badge variant="default" className="text-xs bg-blue-600 hover:bg-blue-700 text-white">
+                            <Badge variant="default" className="text-xs bg-indigo-500 hover:bg-indigo-600 text-white">
                               Same Programme
                             </Badge>
                           )}
@@ -701,7 +701,7 @@ export function MatchCard({
             <div className="mb-6">
               <Button
                 onClick={() => setIsFlipped(true)}
-                className="w-full h-11 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold shadow-lg shadow-violet-900/30 transition-all transform hover:scale-[1.02] active:scale-95"
+                className="w-full h-11 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-semibold shadow-lg shadow-violet-900/30 transition-all transform hover:scale-[1.02] active:scale-95"
               >
                 View Details
               </Button>
@@ -816,7 +816,7 @@ export function MatchCard({
               <Button 
                 size="sm" 
                 onClick={() => onAccept(id)}
-                className="flex-1 h-11 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold shadow-lg shadow-violet-900/30 transition-all transform hover:scale-[1.02] active:scale-95"
+                className="flex-1 h-11 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-semibold shadow-lg shadow-violet-900/30 transition-all transform hover:scale-[1.02] active:scale-95"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
                 {isGroup ? 'Accept Group' : 'Connect'}
@@ -976,7 +976,7 @@ export function MatchCard({
             <div className="mt-auto pt-4">
               <Button
                 onClick={() => setIsFlipped(false)}
-                className="w-full h-11 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold shadow-lg shadow-violet-900/30 transition-all transform hover:scale-[1.02] active:scale-95"
+                className="w-full h-11 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-semibold shadow-lg shadow-violet-900/30 transition-all transform hover:scale-[1.02] active:scale-95"
               >
                 Back to Profile
               </Button>

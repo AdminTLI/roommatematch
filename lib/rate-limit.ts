@@ -407,6 +407,25 @@ export const RATE_LIMITS = {
     failClosed: true
   }, getSharedStore),
 
+  // Domu Lab wishes (fail-closed to prevent spam)
+  lab_wishes: new RateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 3,
+    failClosed: true
+  }, getSharedStore),
+
+  lab_votes: new RateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 60,
+    failClosed: true
+  }, getSharedStore),
+
+  lab_reports: new RateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 10,
+    failClosed: true
+  }, getSharedStore),
+
   // ID verification (fail-closed to prevent abuse)
   id_verification: new RateLimiter({
     windowMs: 60 * 60 * 1000, // 1 hour

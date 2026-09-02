@@ -324,18 +324,16 @@ export function AdminVerificationsContent() {
   ]
 
   if (isLoading) {
-    return <div className="p-6">Loading...</div>
+    return (
+      <div className="rounded-2xl border border-border-subtle bg-bg-surface p-6 text-sm text-slate-600 dark:text-slate-300">
+        Loading verifications...
+      </div>
+    )
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Verification Management</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Review and manage identity verifications ({stats.total} total)
-          </p>
-        </div>
+    <div className="space-y-8">
+      <div className="flex items-center justify-end">
         <Button onClick={() => loadVerifications(true)} variant="outline" disabled={isRefreshing}>
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -346,7 +344,7 @@ export function AdminVerificationsContent() {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300">
               Total Verifications
             </CardTitle>
           </CardHeader>
@@ -356,7 +354,7 @@ export function AdminVerificationsContent() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300">
               Pending Review
             </CardTitle>
           </CardHeader>
@@ -366,7 +364,7 @@ export function AdminVerificationsContent() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300">
               Approved
             </CardTitle>
           </CardHeader>
@@ -376,7 +374,7 @@ export function AdminVerificationsContent() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300">
               Rejected
             </CardTitle>
           </CardHeader>
@@ -386,7 +384,7 @@ export function AdminVerificationsContent() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300">
               Expired
             </CardTitle>
           </CardHeader>

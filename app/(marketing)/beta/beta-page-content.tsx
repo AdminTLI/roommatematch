@@ -233,7 +233,7 @@ export function BetaPageContent() {
                     href={formUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full px-8 py-4 transition-colors"
+                    className="inline-flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-full px-8 py-4 transition-colors"
                   >
                     {t.ctaPrimary}
                   </a>
@@ -334,7 +334,7 @@ export function BetaPageContent() {
                   href={formUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex w-full lg:w-auto items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full px-8 py-4 transition-colors"
+                  className="inline-flex w-full lg:w-auto items-center justify-center bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-full px-8 py-4 transition-colors"
                 >
                   {t.ctaSecondary}
                 </a>

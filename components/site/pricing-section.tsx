@@ -263,8 +263,8 @@ export function PricingSection() {
                   <Button 
                     className={`w-full min-h-[44px] ${
                       plan.highlight 
-                        ? 'bg-violet-600 hover:bg-violet-500' 
-                        : 'bg-rose-600 hover:bg-rose-500'
+                        ? 'bg-indigo-500 hover:bg-indigo-600' 
+                        : 'bg-indigo-500 hover:bg-indigo-600'
                     }`}
                     size="lg"
                   >

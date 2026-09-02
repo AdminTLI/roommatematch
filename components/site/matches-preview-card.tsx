@@ -412,7 +412,7 @@ export function MatchesPreviewCard({
                 <div className="mt-6">
                   <Button
                     type="button"
-                    className="w-full bg-slate-900 text-white hover:bg-slate-900/90 rounded-2xl"
+                    className="w-full bg-indigo-500 text-white hover:bg-indigo-600 rounded-xl"
                     disabled={!interactive}
                     aria-disabled={!interactive}
                     tabIndex={interactive ? 0 : -1}
@@ -508,7 +508,7 @@ export function MatchesPreviewCard({
                 </div>
 
                 <div className="mt-6">
-                  <div className="w-full rounded-2xl bg-indigo-600/90 text-white py-4 text-center font-semibold">
+                  <div className="w-full rounded-2xl bg-indigo-500 text-white py-4 text-center font-semibold">
                     {locale === 'nl' ? 'Terug naar profiel' : 'Back to Profile'}
                   </div>
                 </div>

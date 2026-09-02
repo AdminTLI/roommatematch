@@ -12,7 +12,8 @@ export type NotificationType =
   | 'agreement_update'
   | 'safety_alert'
   | 'system_announcement'
-  | 'admin_alert';
+  | 'admin_alert'
+  | 'lab_wish_shipped';
 
 export interface Notification {
   id: string;
@@ -125,6 +126,11 @@ export const NOTIFICATION_CONFIG = {
     icon: 'Megaphone',
     color: 'orange',
     priority: 'high' as const,
+  },
+  lab_wish_shipped: {
+    icon: 'Lightbulb',
+    color: 'green',
+    priority: 'medium' as const,
   },
 } as const;
 

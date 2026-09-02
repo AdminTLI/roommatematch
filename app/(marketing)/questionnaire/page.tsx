@@ -89,7 +89,7 @@ export default function QuestionnairePage() {
                             className={[
                               'px-4 py-2 rounded-2xl border text-sm font-semibold transition-colors',
                               selected
-                                ? 'bg-slate-900 text-white border-slate-900 shadow-[0_12px_30px_rgba(15,23,42,0.18)]'
+                                ? 'bg-indigo-500 text-white border-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]'
                                 : 'bg-white/60 border-white/70 text-slate-800 hover:bg-white/75',
                             ].join(' ')}
                           >
@@ -105,7 +105,7 @@ export default function QuestionnairePage() {
               <div className="mt-8">
                 <Button
                   onClick={handleSubmit}
-                  className="h-11 rounded-2xl bg-slate-900 text-white hover:bg-slate-900/90 shadow-[0_12px_30px_rgba(15,23,42,0.16)]"
+                  className="h-11 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
                 >
                   {t.continue}
                 </Button>

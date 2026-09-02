@@ -396,9 +396,9 @@ export function HowItWorksSection() {
             href="/auth/sign-up"
             className={cn(
               'inline-flex items-center justify-center font-medium transition-all',
-              'px-6 text-base h-10 rounded-full bg-blue-600 text-white hover:bg-blue-700',
+              'px-6 text-base h-10 rounded-full bg-indigo-500 text-white hover:bg-indigo-600',
               'shadow-[0_12px_30px_rgba(15,23,42,0.16)] active:translate-y-[1px]',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none'
+              'focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-60 disabled:pointer-events-none'
             )}
           >
             {t.ctaButton}

@@ -130,7 +130,7 @@ export function ResetPasswordConfirmForm() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Button asChild className="w-full min-h-[44px] bg-slate-900 text-white border-0 shadow-[0_12px_30px_rgba(15,23,42,0.16)] hover:bg-slate-900/90 transition-colors">
+          <Button asChild className="w-full min-h-[44px] bg-indigo-500 text-white border-0 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 transition-colors">
             <a href="/auth/reset-password">Request New Reset Link</a>
           </Button>
           <p className="text-center text-xs sm:text-sm text-slate-700">
@@ -246,7 +246,7 @@ export function ResetPasswordConfirmForm() {
 
           <Button
             type="submit"
-            className="w-full min-h-[44px] text-base bg-slate-900 text-white border-0 shadow-[0_12px_30px_rgba(15,23,42,0.16)] hover:bg-slate-900/90 transition-colors disabled:opacity-70"
+            className="w-full min-h-[44px] text-base bg-indigo-500 text-white border-0 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 transition-colors disabled:opacity-70"
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

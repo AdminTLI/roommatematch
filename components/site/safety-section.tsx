@@ -306,9 +306,9 @@ export function SafetySection() {
               href="/support"
               className={cn(
                 'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold min-h-[44px]',
-                'bg-gradient-to-r from-indigo-500 to-purple-500 text-white',
+                'bg-indigo-500 text-white',
                 'shadow-lg shadow-indigo-500/50 hover:scale-105 transition-all duration-200',
-                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+                'focus-visible:outline-none'
               )}
             >
               {t.contactSafety}
@@ -318,7 +318,7 @@ export function SafetySection() {
               className={cn(
                 'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold min-h-[44px]',
                 'bg-transparent border border-white/30 text-white hover:bg-white/10 transition-all duration-200',
-                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+                'focus-visible:outline-none'
               )}
             >
               {t.viewSafetyCenter}

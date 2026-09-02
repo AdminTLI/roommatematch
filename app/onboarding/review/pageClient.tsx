@@ -405,7 +405,7 @@ function ReviewClientContent() {
                                 </div>
                                 <Link
                                   href={editHref(section, it.id)}
-                                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white hover:text-[#4F46E5] dark:hover:bg-slate-800 dark:hover:text-indigo-300"
+                                  className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white hover:text-[#6366F1] dark:hover:bg-slate-800 dark:hover:text-indigo-300"
                                   aria-label={`Edit answer: ${it.label}`}
                                   title="Edit"
                                 >
@@ -423,7 +423,7 @@ function ReviewClientContent() {
 
               <div className="mt-6 space-y-3.5 border-t border-slate-100 pt-6 dark:border-slate-700">
                 <div className="flex items-start gap-3 rounded-xl bg-slate-50 px-3.5 py-3 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/80">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] dark:bg-slate-800 dark:text-indigo-400 dark:shadow-black/30">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[#6366F1] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] dark:bg-slate-800 dark:text-indigo-400 dark:shadow-black/30">
                     <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
                   </span>
                   <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
@@ -436,7 +436,7 @@ function ReviewClientContent() {
                       href="/legal/beta-terms"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-[#4F46E5] underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      className="font-semibold text-[#6366F1] underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                       Beta Terms &amp; Conditions
                     </Link>{' '}
@@ -451,8 +451,8 @@ function ReviewClientContent() {
                   className={cn(
                     'inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
                     isSubmitting
-                      ? 'cursor-not-allowed bg-[#4F46E5]/40 dark:bg-indigo-500/40'
-                      : 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                      ? 'cursor-not-allowed bg-indigo-500/40 dark:bg-indigo-500/40'
+                      : 'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400'
                   )}
                 >
                   {isSubmitting

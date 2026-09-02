@@ -111,18 +111,7 @@ export default function SecurityDashboard({ admin }: SecurityDashboardProps) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 pb-24">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-          <Shield className="h-8 w-8 text-blue-500" />
-          Security Dashboard
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">
-          Monitor security events, track suspicious activity, and manage security controls
-        </p>
-      </div>
-
+    <div className="space-y-8">
       {/* Security Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         <Card>
@@ -131,7 +120,7 @@ export default function SecurityDashboard({ admin }: SecurityDashboardProps) {
               <Lock className="h-8 w-8 text-red-500" />
               <div>
                 <div className="text-2xl font-bold">{metrics?.failedLoginAttempts || 0}</div>
-                <div className="text-sm text-gray-500">Failed Logins</div>
+                <div className="text-sm text-slate-600 dark:text-slate-300">Failed Logins</div>
                 <div className="text-xs text-gray-400">Last 24h</div>
               </div>
             </div>

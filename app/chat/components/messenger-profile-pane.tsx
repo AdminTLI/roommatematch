@@ -554,7 +554,7 @@ export function MessengerProfilePane({
                           className={cn(
                             'rounded-full px-3 py-1.5 text-xs',
                             isShared
-                              ? 'border-transparent bg-violet-600 text-white hover:bg-violet-500'
+                              ? 'border-transparent bg-indigo-500 text-white hover:bg-violet-500'
                               : 'border-transparent bg-[hsl(var(--chat-active-fill))] text-violet-900 hover:bg-violet-100 dark:bg-violet-950/50 dark:text-violet-200',
                           )}
                         >

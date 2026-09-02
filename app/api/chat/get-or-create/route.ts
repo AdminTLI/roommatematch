@@ -3,7 +3,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { requireAdmin } from '@/lib/auth/admin'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
-import { ensureProfileAccessRows, resolvePairMatchId } from '@/lib/privacy/profile-access-server'
+import { ensureDirectChat } from '@/lib/chat/ensure-direct-chat'
 
 export async function POST(request: NextRequest) {
   try {
@@ -134,70 +134,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if chat already exists
-    const { data: existingChats } = await admin
-      .from('chat_members')
-      .select('chat_id')
-      .eq('user_id', user.id)
-
-    if (existingChats && existingChats.length > 0) {
-      const chatIds = existingChats.map((r: any) => r.chat_id)
-      const { data: common } = await admin
-        .from('chat_members')
-        .select('chat_id')
-        .in('chat_id', chatIds)
-        .eq('user_id', targetUserId)
-      
-      if (common && common.length > 0) {
-        return NextResponse.json({ chat_id: common[0].chat_id })
-      }
-    }
-
-    const pairMatchId = await resolvePairMatchId(admin, user.id, targetUserId)
-
-    // Create new chat
-    const { data: createdChat, error: chatErr } = await admin
-      .from('chats')
-      .insert({ is_group: false, created_by: user.id, match_id: pairMatchId })
-      .select('id')
-      .single()
-
-    if (chatErr || !createdChat) {
-      return NextResponse.json(
-        { error: `Failed to create chat: ${chatErr?.message || 'Unknown error'}` },
-        { status: 500 }
-      )
-    }
-
-    const chatId = createdChat.id
-
-    // Add members
-    const { error: membersErr } = await admin.from('chat_members').insert([
-      { chat_id: chatId, user_id: user.id },
-      { chat_id: chatId, user_id: targetUserId }
-    ])
-
-    if (membersErr) {
-      return NextResponse.json(
-        { error: `Failed to add chat members: ${membersErr.message}` },
-        { status: 500 }
-      )
-    }
-
-    await ensureProfileAccessRows(admin, chatId)
-
-    // Create welcome message
-    await admin.from('messages').insert({
-      chat_id: chatId,
-      user_id: user.id,
-      content: "You're matched! Start your conversation 👋"
+    const { chatId } = await ensureDirectChat(admin, user.id, targetUserId, {
+      createdBy: user.id,
     })
-
-    // Update chat updated_at
-    await admin
-      .from('chats')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', chatId)
 
     return NextResponse.json({ chat_id: chatId })
   } catch (error) {

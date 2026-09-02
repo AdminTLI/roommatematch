@@ -3,7 +3,7 @@
  * Centralized feature flag management based on environment variables
  */
 
-export type FeatureFlag = 'housing' | 'move_in' | 'demo_chat'
+export type FeatureFlag = 'housing' | 'move_in' | 'demo_chat' | 'domu_lab'
 
 /**
  * Check if a feature is enabled
@@ -36,8 +36,19 @@ export function getAllFeatureFlags(): Record<FeatureFlag, boolean> {
   return {
     housing: isFeatureEnabled('housing'),
     move_in: isFeatureEnabled('move_in'),
-    demo_chat: isDemoChatAllowed()
+    demo_chat: isDemoChatAllowed(),
+    domu_lab: isDomuLabEnabled(),
   }
+}
+
+/**
+ * Domu Lab wish board — enabled by default unless explicitly disabled.
+ */
+export function isDomuLabEnabled(): boolean {
+  const value = process.env.FEATURE_DOMU_LAB
+  if (value === undefined) return true
+  if (['false', '0', 'no'].includes(value.toLowerCase())) return false
+  return ['true', '1', 'yes'].includes(value.toLowerCase())
 }
 
 

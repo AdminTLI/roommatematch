@@ -12,6 +12,7 @@
 import * as dotenv from 'dotenv'
 import { existsSync } from 'fs'
 import { createAdminClient } from '@/lib/supabase/server'
+import { ensureDirectChat } from '@/lib/chat/ensure-direct-chat'
 import { safeLogger } from '@/lib/utils/logger'
 
 // Load environment variables if .env.local exists
@@ -78,127 +79,21 @@ async function fixMissingChats() {
     }
     
     try {
-      // Check if chat already exists for these two users
-      const { data: existingChats, error: existingChatsError } = await admin
-        .from('chat_members')
-        .select('chat_id')
-        .eq('user_id', userA)
-      
-      if (existingChatsError) {
-        safeLogger.error(`[Fix Missing Chats] Failed to check for existing chats`, {
-          error: existingChatsError,
+      const ensured = await ensureDirectChat(admin, userA, userB, { createdBy: userA })
+      if (ensured.created) {
+        createdCount++
+        safeLogger.info(`[Fix Missing Chats] Created chat for confirmed match`, {
+          chatId: ensured.chatId,
           userA,
           userB,
           suggestionId: suggestion.id
         })
-        errorCount++
-        continue
-      }
-      
-      let chatId: string | undefined
-      
-      if (existingChats && existingChats.length > 0) {
-        const chatIds = existingChats.map((r: any) => r.chat_id)
-        const { data: common, error: commonError } = await admin
-          .from('chat_members')
-          .select('chat_id')
-          .in('chat_id', chatIds)
-          .eq('user_id', userB)
-        
-        if (commonError) {
-          safeLogger.error(`[Fix Missing Chats] Failed to check for common chats`, {
-            error: commonError,
-            userA,
-            userB,
-            suggestionId: suggestion.id
-          })
-          errorCount++
-          continue
-        }
-        
-        if (common && common.length > 0) {
-          chatId = common[0].chat_id
-          existingCount++
-          safeLogger.debug(`[Fix Missing Chats] Chat already exists for suggestion ${suggestion.id}`, {
-            chatId,
-            userA,
-            userB
-          })
-        }
-      }
-      
-      if (!chatId) {
-        // Create chat
-        const { data: createdChat, error: chatErr } = await admin
-          .from('chats')
-          .insert({ is_group: false, created_by: userA, match_id: null })
-          .select('id')
-          .single()
-        
-        if (chatErr) {
-          safeLogger.error(`[Fix Missing Chats] Failed to create chat`, {
-            error: chatErr,
-            userA,
-            userB,
-            suggestionId: suggestion.id
-          })
-          errorCount++
-          continue
-        }
-        
-        chatId = createdChat.id
-        
-        // Add members
-        const { error: membersErr } = await admin
-          .from('chat_members')
-          .insert([
-            { chat_id: chatId, user_id: userA },
-            { chat_id: chatId, user_id: userB }
-          ])
-        
-        if (membersErr) {
-          safeLogger.error(`[Fix Missing Chats] Failed to add chat members`, {
-            error: membersErr,
-            chatId,
-            userA,
-            userB,
-            suggestionId: suggestion.id
-          })
-          // Try to clean up the chat if members couldn't be added
-          await admin.from('chats').delete().eq('id', chatId)
-          errorCount++
-          continue
-        }
-        
-        // System message
-        const { error: msgErr } = await admin
-          .from('messages')
-          .insert({
-            chat_id: chatId,
-            user_id: userA,
-            content: "You're matched! Start your conversation 👋"
-          })
-        
-        if (msgErr) {
-          safeLogger.warn(`[Fix Missing Chats] Failed to create system message`, {
-            error: msgErr,
-            chatId
-          })
-          // Don't fail - chat and members are created
-        }
-        
-        // Update chat timestamp
-        await admin
-          .from('chats')
-          .update({ updated_at: new Date().toISOString() })
-          .eq('id', chatId)
-        
-        createdCount++
-        safeLogger.info(`[Fix Missing Chats] Created chat for confirmed match`, {
-          chatId,
+      } else {
+        existingCount++
+        safeLogger.debug(`[Fix Missing Chats] Chat already exists for suggestion ${suggestion.id}`, {
+          chatId: ensured.chatId,
           userA,
-          userB,
-          suggestionId: suggestion.id
+          userB
         })
       }
     } catch (error) {
@@ -238,4 +133,3 @@ fixMissingChats()
     safeLogger.error('[Fix Missing Chats] Script failed', error)
     process.exit(1)
   })
-

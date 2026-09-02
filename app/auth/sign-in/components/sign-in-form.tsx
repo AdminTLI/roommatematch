@@ -319,7 +319,7 @@ export function SignInForm() {
 
           <Button 
             type="submit" 
-            className="w-full bg-brand-600 hover:bg-brand-700" 
+            className="w-full bg-indigo-500 hover:bg-indigo-600" 
             disabled={isLoading || !email || !password}
           >
             {isLoading ? (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { DataTable } from '@/components/admin/data-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -17,8 +18,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { AlertTriangle, CheckCircle, XCircle, Ban, MessageSquare, Eye, RefreshCw } from 'lucide-react'
+import { ADMIN_FIELD_CLASS, ADMIN_LABEL_CLASS, ADMIN_PAGE_STACK } from '@/lib/admin/ui'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { CHAT_REPORT_CATEGORY_LABELS, type ChatReportCategory } from '@/lib/chat/report-categories'
+import { AdminLabReportsPanel } from '@/app/admin/lab/components/admin-lab-reports-panel'
 
 interface ChatContextMessage {
   id: string
@@ -94,7 +97,10 @@ interface FlaggedMessage {
 }
 
 export function AdminReportsContent() {
-  const [activeTab, setActiveTab] = useState<'reports' | 'flagged'>('reports')
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const activeTab =
+    tabParam === 'flagged' ? 'flagged' : tabParam === 'lab' ? 'lab' : 'reports'
   const [reports, setReports] = useState<Report[]>([])
   const [flaggedMessages, setFlaggedMessages] = useState<FlaggedMessage[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -114,7 +120,7 @@ export function AdminReportsContent() {
   useEffect(() => {
     if (activeTab === 'reports') {
       loadReports()
-    } else {
+    } else if (activeTab === 'flagged') {
       loadFlaggedMessages()
     }
   }, [filters, activeTab])
@@ -431,15 +437,13 @@ export function AdminReportsContent() {
     }
   }
 
+  if (activeTab === 'lab') {
+    return <AdminLabReportsPanel />
+  }
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Safety & Moderation</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Review reports and flagged content
-          </p>
-        </div>
+    <div className={ADMIN_PAGE_STACK}>
+      <div className="flex items-center justify-end">
         <Button 
           onClick={() => activeTab === 'reports' ? loadReports() : loadFlaggedMessages()} 
           variant="outline" 
@@ -450,45 +454,19 @@ export function AdminReportsContent() {
         </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
-        <div className="flex space-x-8">
-          <button
-            onClick={() => setActiveTab('reports')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'reports'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            User Reports ({total})
-          </button>
-          <button
-            onClick={() => setActiveTab('flagged')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'flagged'
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Flagged Messages ({flaggedTotal})
-          </button>
-        </div>
-      </div>
-
       {activeTab === 'reports' ? (
         <>
           {/* Filters */}
           <Card>
             <CardHeader>
-              <CardTitle>Filters</CardTitle>
+              <CardTitle className="text-lg">Filters</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Status</label>
+                  <label className={ADMIN_LABEL_CLASS}>Status</label>
                   <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
-                    <SelectTrigger>
+                    <SelectTrigger className={ADMIN_FIELD_CLASS}>
                       <SelectValue placeholder="All statuses" />
                     </SelectTrigger>
                     <SelectContent>
@@ -500,9 +478,9 @@ export function AdminReportsContent() {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Category</label>
+                  <label className={ADMIN_LABEL_CLASS}>Category</label>
                   <Select value={filters.category} onValueChange={(value) => setFilters({ ...filters, category: value })}>
-                    <SelectTrigger>
+                    <SelectTrigger className={ADMIN_FIELD_CLASS}>
                       <SelectValue placeholder="All categories" />
                     </SelectTrigger>
                     <SelectContent>
@@ -527,7 +505,7 @@ export function AdminReportsContent() {
           {/* Reports Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Reports</CardTitle>
+              <CardTitle className="text-lg">Reports ({total})</CardTitle>
               <CardDescription>All abuse reports submitted by users</CardDescription>
             </CardHeader>
             <CardContent>
@@ -557,7 +535,7 @@ export function AdminReportsContent() {
         /* Flagged Messages */
         <Card>
           <CardHeader>
-            <CardTitle>Flagged Messages</CardTitle>
+            <CardTitle className="text-lg">Flagged Messages ({flaggedTotal})</CardTitle>
             <CardDescription>Messages automatically flagged by the system for review</CardDescription>
           </CardHeader>
           <CardContent>

@@ -1,5 +1,107 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { DUTCH_LAW_RETENTION } from '@/lib/privacy/retention-policies'
 import { safeLogger } from '@/lib/utils/logger'
+
+/** Successful KYC rows use this value. Do not confuse with profiles.verification_status='verified'. */
+export const KYC_APPROVED_STATUS = 'approved' as const
+
+export type VerificationRetentionRow = {
+  user_id: string
+  retention_expires_at: string | null
+  updated_at?: string | null
+  provider_data?: unknown
+}
+
+export type VerificationRetentionHold = {
+  userId: string
+  retentionUntil: string
+}
+
+function isScrubbedProviderData(providerData: unknown): boolean {
+  return Boolean(
+    providerData &&
+      typeof providerData === 'object' &&
+      !Array.isArray(providerData) &&
+      (providerData as { scrubbed?: unknown }).scrubbed === true
+  )
+}
+
+function retentionExpiryForRow(row: VerificationRetentionRow): Date | null {
+  if (row.retention_expires_at) {
+    const expiry = new Date(row.retention_expires_at)
+    return Number.isNaN(expiry.getTime()) ? null : expiry
+  }
+
+  // After UAVG purge, retention_expires_at is cleared and the payload is marked scrubbed.
+  // Those stubs must not block deletion.
+  if (isScrubbedProviderData(row.provider_data)) {
+    return null
+  }
+
+  if (!row.updated_at) {
+    return null
+  }
+
+  const updated = new Date(row.updated_at)
+  if (Number.isNaN(updated.getTime())) {
+    return null
+  }
+
+  return new Date(
+    updated.getTime() + DUTCH_LAW_RETENTION.VERIFICATION_DOCUMENTS_DAYS * 24 * 60 * 60 * 1000
+  )
+}
+
+/**
+ * Find users whose identity-verification documents are still inside the UAVG 4-week hold.
+ * `verifications.status` is kyc_status (pending/approved/rejected/expired), not profile "verified".
+ */
+export function collectVerificationRetentionHolds(
+  rows: VerificationRetentionRow[],
+  now = new Date()
+): VerificationRetentionHold[] {
+  const latestByUser = new Map<string, Date>()
+
+  for (const row of rows) {
+    const expiry = retentionExpiryForRow(row)
+    if (!expiry || expiry <= now) continue
+
+    const existing = latestByUser.get(row.user_id)
+    if (!existing || expiry > existing) {
+      latestByUser.set(row.user_id, expiry)
+    }
+  }
+
+  return [...latestByUser.entries()].map(([userId, retentionUntil]) => ({
+    userId,
+    retentionUntil: retentionUntil.toISOString(),
+  }))
+}
+
+export async function findVerificationRetentionHolds(
+  supabase: SupabaseClient,
+  userIds: string[],
+  now = new Date()
+): Promise<{ holds: VerificationRetentionHold[]; error: { message: string } | null }> {
+  if (userIds.length === 0) {
+    return { holds: [], error: null }
+  }
+
+  const { data, error } = await supabase
+    .from('verifications')
+    .select('user_id, retention_expires_at, updated_at, provider_data')
+    .in('user_id', userIds)
+    .eq('status', KYC_APPROVED_STATUS)
+
+  if (error) {
+    return { holds: [], error }
+  }
+
+  return {
+    holds: collectVerificationRetentionHolds((data || []) as VerificationRetentionRow[], now),
+    error: null,
+  }
+}
 
 const VERIFICATION_BUCKET = 'verification-documents'
 

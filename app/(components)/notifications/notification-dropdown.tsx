@@ -259,6 +259,9 @@ export function NotificationDropdown({
         case 'questionnaire_completed':
           router.push('/matches?tab=suggested')
           break
+        case 'lab_wish_shipped':
+          router.push('/forum')
+          break
         case 'verification_status':
           router.push('/verify')
           break

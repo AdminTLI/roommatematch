@@ -130,7 +130,7 @@ export function NotificationsList({
                   'flex min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full px-2 text-[11px] font-semibold transition-colors sm:px-2.5 sm:text-xs',
                   isMobile ? 'min-h-[40px] py-2' : 'min-h-[34px] py-1.5',
                   active
-                    ? 'bg-gradient-to-br from-violet-600 to-purple-600 text-white shadow-[0_4px_14px_rgba(124,58,237,0.35)]'
+                    ? 'bg-indigo-500 text-white shadow-[0_4px_14px_rgba(124,58,237,0.35)]'
                     : 'bg-transparent text-zinc-600 hover:bg-white/70 dark:text-slate-300 dark:hover:bg-white/10'
                 )}
               >
@@ -160,14 +160,14 @@ export function NotificationsList({
             className={cn(
               'inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3.5 text-xs font-semibold transition-colors',
               unreadOnly
-                ? 'border-violet-600 bg-violet-600 text-white shadow-sm'
+                ? 'border-indigo-500 bg-indigo-500 text-white shadow-sm'
                 : 'border-violet-200 bg-violet-50 text-violet-800 hover:border-violet-300 hover:bg-violet-100 dark:border-violet-500/40 dark:bg-violet-950/50 dark:text-violet-200 dark:hover:bg-violet-950/80'
             )}
           >
             <span
               className={cn(
                 'h-1.5 w-1.5 rounded-full',
-                unreadOnly ? 'bg-white' : 'bg-violet-600 dark:bg-violet-300'
+                unreadOnly ? 'bg-white' : 'bg-indigo-500 dark:bg-indigo-400'
               )}
               aria-hidden
             />

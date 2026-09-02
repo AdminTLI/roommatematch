@@ -170,7 +170,7 @@ export default function OnboardingWelcomePage() {
             {/* Scope badge */}
             <div className="mx-auto inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80 dark:bg-slate-900/60 dark:text-slate-200 dark:ring-slate-700 sm:w-auto sm:text-sm">
               <span className="inline-flex items-center gap-1.5">
-                <Zap className="h-3.5 w-3.5 text-[#4F46E5] dark:text-indigo-400" strokeWidth={2.25} aria-hidden />
+                <Zap className="h-3.5 w-3.5 text-[#6366F1] dark:text-indigo-400" strokeWidth={2.25} aria-hidden />
                 5 Quick Modules
               </span>
               <span className="text-slate-300 dark:text-slate-600" aria-hidden>
@@ -228,7 +228,7 @@ export default function OnboardingWelcomePage() {
 
             {/* Privacy — standalone info card */}
             <div className="flex gap-3 rounded-2xl bg-slate-50 px-3.5 py-3 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/80">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] dark:bg-slate-800 dark:text-indigo-400 dark:shadow-black/30">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white text-[#6366F1] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] dark:bg-slate-800 dark:text-indigo-400 dark:shadow-black/30">
                 <Lock className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
               </span>
               <div className="min-w-0 space-y-0.5">
@@ -248,7 +248,7 @@ export default function OnboardingWelcomePage() {
                 <Checkbox
                   checked={privacyConsent}
                   onCheckedChange={(checked) => setPrivacyConsent(!!checked)}
-                  className="shrink-0 rounded border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5] dark:border-slate-500"
+                  className="shrink-0 rounded border-slate-300 data-[state=checked]:border-indigo-500 data-[state=checked]:bg-indigo-500 dark:border-slate-500"
                 />
                 <span className="leading-none text-slate-700 dark:text-slate-200">
                   I agree to the{' '}
@@ -259,7 +259,7 @@ export default function OnboardingWelcomePage() {
                       e.stopPropagation()
                       setShowLegalModal(true)
                     }}
-                    className="font-semibold text-[#4F46E5] underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    className="font-semibold text-[#6366F1] underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                   >
                     Terms &amp; Privacy Policy
                   </button>
@@ -273,8 +273,8 @@ export default function OnboardingWelcomePage() {
                 className={cn(
                   'inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold text-white transition-all',
                   canStart
-                    ? 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
-                    : 'cursor-not-allowed bg-[#4F46E5]/40 dark:bg-indigo-500/40'
+                    ? 'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                    : 'cursor-not-allowed bg-indigo-500/40 dark:bg-indigo-500/40'
                 )}
               >
                 {isStarting ? 'Starting…' : 'Get Started'}

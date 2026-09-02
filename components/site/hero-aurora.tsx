@@ -104,9 +104,9 @@ export function HeroAurora() {
             className={cn(
               'inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-base font-semibold w-full sm:w-auto min-h-[52px]',
               'bg-white/10 backdrop-blur-md border border-white/20 text-white',
-              'bg-gradient-to-r from-indigo-500 to-purple-500 border-0 shadow-lg shadow-indigo-500/30',
+              'bg-indigo-500 border-0 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
               'hover:scale-[1.02] hover:shadow-indigo-500/40 transition-all duration-200',
-              'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+              'focus-visible:outline-none'
             )}
             onMouseEnter={() => setHoveredCard('students')}
             onMouseLeave={() => setHoveredCard(null)}
@@ -122,7 +122,7 @@ export function HeroAurora() {
               'inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 text-base font-semibold w-full sm:w-auto min-h-[52px]',
               'bg-white/10 backdrop-blur-md border border-white/20 text-white',
               'hover:bg-white/15 hover:border-white/30 transition-all duration-200',
-              'focus-visible:outline focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+              'focus-visible:outline-none'
             )}
             onMouseEnter={() => setHoveredCard('universities')}
             onMouseLeave={() => setHoveredCard(null)}

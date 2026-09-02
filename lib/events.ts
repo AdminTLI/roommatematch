@@ -69,6 +69,10 @@ export const EVENT_TYPES = {
   FORUM_COMMENT_CREATED: 'forum_comment_created',
   FORUM_POST_ANONYMOUS: 'forum_post_anonymous',
 
+  // Domu Lab events
+  LAB_WISH_CREATED: 'lab_wish_created',
+  LAB_WISH_VOTED: 'lab_wish_voted',
+
   // Reporting events
   REPORT_CREATED: 'report_created',
   REPORT_RESOLVED: 'report_resolved',

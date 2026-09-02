@@ -64,7 +64,7 @@ export function LegalConsentModal({
               className={cn(
                 'rounded-lg px-3 py-2 text-sm font-semibold transition',
                 tab === 'terms'
-                  ? 'bg-white text-[#4F46E5] shadow-sm dark:bg-slate-700 dark:text-indigo-300'
+                  ? 'bg-white text-[#6366F1] shadow-sm dark:bg-slate-700 dark:text-indigo-300'
                   : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               )}
             >
@@ -78,7 +78,7 @@ export function LegalConsentModal({
               className={cn(
                 'rounded-lg px-3 py-2 text-sm font-semibold transition',
                 tab === 'privacy'
-                  ? 'bg-white text-[#4F46E5] shadow-sm dark:bg-slate-700 dark:text-indigo-300'
+                  ? 'bg-white text-[#6366F1] shadow-sm dark:bg-slate-700 dark:text-indigo-300'
                   : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               )}
             >
@@ -96,7 +96,7 @@ export function LegalConsentModal({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="inline-flex w-full items-center justify-center rounded-xl bg-[#4F46E5] px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+            className="inline-flex w-full items-center justify-center rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400"
           >
             Got it
           </button>

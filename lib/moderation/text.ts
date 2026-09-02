@@ -348,6 +348,12 @@ export const MODERATION_RULES = {
     blockPII: true,
     blockSlurs: true,
     maxLength: 1000
+  },
+  lab_wish: {
+    blockLinks: true,
+    blockPII: true,
+    blockSlurs: true,
+    maxLength: 600
   }
 } as const
 

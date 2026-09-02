@@ -8,6 +8,7 @@ import {
   clearVerificationCache,
   markIdentityVerified,
 } from '@/lib/auth/verification-check'
+import { findVerificationRetentionHolds } from '@/lib/privacy/verification-retention'
 
 export async function GET(request: NextRequest) {
   const adminCheck = await requireAdmin(request, false)
@@ -356,31 +357,33 @@ export async function POST(request: NextRequest) {
         break
       }
       case 'delete': {
-        // UAVG Art. 23: verification documents must be retained for 4 weeks after verification.
-        // Reject the bulk delete if any user still has a verification record within that window.
-        const fourWeeksAgo = new Date()
-        fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28)
-
-        const { data: recentVerifications, error: verificationCheckError } = await admin
-          .from('verifications')
-          .select('user_id, updated_at')
-          .in('user_id', userIds)
-          .eq('status', 'verified')
-          .gt('updated_at', fourWeeksAgo.toISOString())
+        // UAVG Art. 23: verification documents must be retained for 4 weeks after approval.
+        // Query kyc_status='approved' (not profiles.verification_status='verified') — the latter
+        // is not a valid enum value and Postgres rejects it with 22P02.
+        const { holds, error: verificationCheckError } = await findVerificationRetentionHolds(
+          admin,
+          userIds
+        )
 
         if (verificationCheckError) {
           safeLogger.error('[Admin Users] Failed to check verification retention', verificationCheckError)
           return NextResponse.json({ error: 'Failed to verify UAVG retention period' }, { status: 500 })
         }
 
-        if (recentVerifications && recentVerifications.length > 0) {
-          const blockedIds = recentVerifications.map((v: { user_id: string }) => v.user_id)
-          safeLogger.warn('[Admin Users] Deletion blocked by UAVG 4-week verification retention', { blockedIds })
+        if (holds.length > 0) {
+          const blockedIds = holds.map((hold) => hold.userId)
+          const retentionDates = holds.map((hold) => hold.retentionUntil).sort()
+          const retentionUntil = retentionDates[retentionDates.length - 1]
+          safeLogger.warn('[Admin Users] Deletion blocked by UAVG 4-week verification retention', {
+            blockedIds,
+            retentionUntil,
+          })
           return NextResponse.json(
             {
               error: 'UAVG retention period not met',
-              message: `${blockedIds.length} user(s) cannot be deleted: verification documents must be retained for 4 weeks after verification per Dutch law (UAVG Art. 23).`,
+              message: `${blockedIds.length} user(s) cannot be deleted until ${retentionUntil}: identity verification documents must be retained for 4 weeks after verification per Dutch law (UAVG Art. 23).`,
               blockedUserIds: blockedIds,
+              retention_until: retentionUntil,
             },
             { status: 409 }
           )

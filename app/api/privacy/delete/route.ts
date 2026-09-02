@@ -6,6 +6,7 @@ import {
   ACCOUNT_DELETION_GRACE_PERIOD_DAYS,
   scheduleAccountDeletion,
 } from '@/lib/privacy/account-deletion'
+import { findVerificationRetentionHolds } from '@/lib/privacy/verification-retention'
 
 /**
  * POST /api/privacy/delete
@@ -162,31 +163,30 @@ export async function DELETE(req: NextRequest) {
       )
     }
 
-    const { data: verifications } = await adminClient
-      .from('verifications')
-      .select('created_at, updated_at')
-      .eq('user_id', targetUserId)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-
-    const latestVerificationDate = verifications?.[0]?.updated_at
-      ? new Date(verifications[0].updated_at)
-      : null
-
-    const fourWeeksAgo = new Date()
-    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28)
-
     // UAVG hard block: verification documents must be retained for 4 weeks per Dutch law.
     // The cron job enforces this automatically, but the admin-manual endpoint must also
     // block deletion during the retention window — otherwise cascade-delete on public.users
     // would wipe the verifications table despite the UAVG requirement.
-    if (latestVerificationDate && latestVerificationDate > fourWeeksAgo) {
-      const retentionUntil = new Date(
-        latestVerificationDate.getTime() + 28 * 24 * 60 * 60 * 1000
-      ).toISOString()
+    const { holds, error: retentionCheckError } = await findVerificationRetentionHolds(
+      adminClient,
+      [targetUserId]
+    )
+
+    if (retentionCheckError) {
+      safeLogger.error('Failed to check UAVG verification retention before admin deletion', {
+        userId: targetUserId,
+        error: retentionCheckError,
+      })
+      return NextResponse.json(
+        { error: 'Failed to verify UAVG retention period' },
+        { status: 500 }
+      )
+    }
+
+    if (holds.length > 0) {
+      const retentionUntil = holds[0].retentionUntil
       safeLogger.warn('Admin deletion blocked: verification documents within UAVG 4-week retention window', {
         userId: targetUserId,
-        latestVerificationDate: latestVerificationDate.toISOString(),
         retentionUntil,
         requestedBy: user.id,
       })
@@ -216,9 +216,7 @@ export async function DELETE(req: NextRequest) {
     // now so the row is fully populated while user_id is still resolvable, satisfying
     // GDPR Art. 5(2) accountability.  After auth deletion user_id → NULL but the row
     // is retained rather than cascade-deleted.
-    const adminNotes = latestVerificationDate
-      ? 'Account permanently deleted by admin. Verification documents deleted (past 4-week UAVG retention window).'
-      : 'Account permanently deleted by admin.'
+    const adminNotes = 'Account permanently deleted by admin.'
 
     await adminClient
       .from('dsar_requests')

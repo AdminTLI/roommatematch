@@ -165,53 +165,22 @@ test.describe('Integration Tests with Real Data', () => {
     })
   })
 
-  test.describe('Forum with Real Data', () => {
-    test('should create and display forum posts', async ({ page }) => {
+  test.describe('Domu Lab with Real Data', () => {
+    test('should create and display lab wishes', async ({ page }) => {
       await page.goto('/forum')
-      
-      // Create a new post
-      await page.click('[data-testid="new-post-button"]')
-      await page.fill('[data-testid="post-title"]', 'Test Post Title')
-      await page.fill('[data-testid="post-content"]', 'This is a test post content.')
-      await page.click('[data-testid="create-post"]')
-      
-      // Verify post appears in list
-      await expect(page.locator('text=Test Post Title')).toBeVisible()
-      await expect(page.locator('text=This is a test post content.')).toBeVisible()
+
+      await page.getByRole('button', { name: 'New wish' }).click()
+      await page.fill('#lab-title', 'Better match filters')
+      await page.fill('#lab-body', 'I still had to ask about smoking habits in chat after matching.')
+      await page.getByRole('button', { name: 'Post wish' }).click()
+
+      await expect(page.locator('text=Better match filters')).toBeVisible()
     })
 
-    test('should allow anonymous posting', async ({ page }) => {
+    test('should list lab wishes', async ({ page }) => {
       await page.goto('/forum')
-      
-      // Create anonymous post
-      await page.click('[data-testid="new-post-button"]')
-      await page.fill('[data-testid="post-title"]', 'Anonymous Test Post')
-      await page.fill('[data-testid="post-content"]', 'This post is anonymous.')
-      await page.check('[data-testid="anonymous-checkbox"]')
-      await page.click('[data-testid="create-post"]')
-      
-      // Verify anonymous badge appears
-      await expect(page.locator('[data-testid="anonymous-badge"]')).toBeVisible()
-    })
 
-    test('should handle post likes', async ({ page }) => {
-      await page.goto('/forum')
-      
-      // Wait for posts to load
-      await page.waitForSelector('[data-testid="forum-post"]', { timeout: 10000 })
-      
-      const posts = page.locator('[data-testid="forum-post"]')
-      const count = await posts.count()
-      
-      if (count > 0) {
-        const firstPost = posts.first()
-        
-        // Like the post
-        await firstPost.locator('[data-testid="like-button"]').click()
-        
-        // Verify like count increased
-        await expect(firstPost.locator('[data-testid="like-count"]')).toContainText('1')
-      }
+      await page.waitForSelector('[data-testid="lab-wish"], text=No wishes yet', { timeout: 10000 })
     })
   })
 
@@ -348,16 +317,13 @@ test.describe('Integration Tests with Real Data', () => {
       }
     })
 
-    test('should validate form inputs properly', async ({ page }) => {
+    test('should validate Domu Lab form inputs', async ({ page }) => {
       await page.goto('/forum')
-      
-      // Try to create post without title
-      await page.click('[data-testid="new-post-button"]')
-      await page.fill('[data-testid="post-content"]', 'Content without title')
-      await page.click('[data-testid="create-post"]')
-      
-      // Should show validation error
-      await expect(page.locator('text=Title is required')).toBeVisible()
+
+      await page.getByRole('button', { name: 'New wish' }).click()
+      await page.fill('#lab-body', 'Content without enough headline')
+      const postBtn = page.getByRole('button', { name: 'Post wish' })
+      await expect(postBtn).toBeDisabled()
     })
   })
 })

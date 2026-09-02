@@ -24,6 +24,7 @@ import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 import { preferStableAvatarUrl } from '@/lib/avatars/stable-url'
+import { dedupeDirectChatsByPartner } from '@/lib/chat/dedupe-direct-chats'
 
 interface ChatRoom {
   id: string
@@ -705,7 +706,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
       }
 
       // Drop broken 1:1 chats that only contain the current user (would render as "yourself")
-      return chatsWithPartners
+      const usableChats = chatsWithPartners
         .filter((chat) => {
           if (chat.type !== 'individual') return true
           return chat.participants.some((p) => p.id !== user.id)
@@ -717,6 +718,8 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
             avatar: stabilizeAvatar(p.id, p.avatar),
           })),
         }))
+
+      return dedupeDirectChatsByPartner(usableChats, user.id)
     } catch (error) {
       // Safely log error - handle case where console methods might not be available
       try {

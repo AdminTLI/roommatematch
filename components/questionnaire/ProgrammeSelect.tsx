@@ -102,9 +102,9 @@ export function ProgrammeSelect({
           disabled={!isEnabled || loading || Boolean(error)}
           className={cn(
             'flex h-12 w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white pl-3.5 pr-3 text-left text-sm transition',
-            'hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30',
+            'hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30',
             'disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 disabled:opacity-80',
-            'dark:border-slate-600 dark:bg-slate-800 dark:hover:border-slate-500 dark:focus-visible:ring-indigo-400/30',
+            'dark:border-slate-600 dark:bg-slate-800 dark:hover:border-slate-500 ',
             'dark:disabled:bg-slate-900 dark:disabled:text-slate-500',
             selected
               ? 'font-medium text-[#0F172A] dark:text-slate-50'
@@ -125,7 +125,7 @@ export function ProgrammeSelect({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type to search…"
-            className="h-10 rounded-xl border-0 bg-slate-50 px-3 text-sm shadow-none ring-1 ring-slate-200/80 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#4F46E5]/40 dark:bg-slate-900 dark:text-slate-50 dark:ring-slate-700 dark:placeholder:text-slate-500 dark:focus-visible:ring-indigo-400/40"
+            className="h-10 rounded-xl border-0 bg-slate-50 px-3 text-sm shadow-none ring-1 ring-slate-200/80 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:bg-slate-900 dark:text-slate-50 dark:ring-slate-700 dark:placeholder:text-slate-500 "
             autoFocus
           />
         </div>
@@ -149,7 +149,7 @@ export function ProgrammeSelect({
                   className={cn(
                     'flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-sm transition',
                     active
-                      ? 'bg-indigo-50 font-medium text-[#4F46E5] dark:bg-indigo-500/15 dark:text-indigo-300'
+                      ? 'bg-indigo-50 font-medium text-[#6366F1] dark:bg-indigo-500/15 dark:text-indigo-300'
                       : 'text-[#0F172A] hover:bg-slate-50 dark:text-slate-50 dark:hover:bg-slate-700'
                   )}
                 >

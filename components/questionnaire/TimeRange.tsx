@@ -51,7 +51,7 @@ export function timesInRange(from: string, to: string, stepMinutes = 30): string
 const ALL_TIMES = timesInRange('00:00', '23:30')
 
 const triggerClass =
-  'h-14 w-full rounded-xl border border-slate-200 bg-white pl-3.5 pr-3 text-sm shadow-none focus:ring-2 focus:ring-[#4F46E5]/30 data-[placeholder]:text-slate-500 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-slate-500 [&_svg]:opacity-70 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:data-[placeholder]:text-slate-400 dark:focus:ring-indigo-400/30 dark:[&_svg]:text-slate-400'
+  'h-14 w-full rounded-xl border border-slate-200 bg-white pl-3.5 pr-3 text-sm shadow-none focus:ring-2 focus:ring-indigo-500/30 data-[placeholder]:text-slate-500 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-slate-500 [&_svg]:opacity-70 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:data-[placeholder]:text-slate-400 dark:focus:ring-indigo-400/30 dark:[&_svg]:text-slate-400'
 
 const contentClass =
   'rounded-2xl border border-slate-200 bg-white text-[#0F172A] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12)] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-black/40'

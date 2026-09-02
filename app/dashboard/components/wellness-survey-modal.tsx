@@ -78,7 +78,7 @@ function markSurveyCompletedLocally(trigger: TriggerType) {
 }
 
 const radioItemClass =
-  'size-[18px] border-slate-300 text-[#4F46E5] focus-visible:ring-[#4F46E5]/30 dark:border-slate-500 dark:text-indigo-400 dark:focus-visible:ring-indigo-400/30'
+  'size-[18px] border-slate-300 text-[#6366F1] focus-visible:ring-indigo-500/30 dark:border-slate-500 dark:text-indigo-400 '
 
 const questionBlockClass =
   'space-y-3 rounded-2xl bg-slate-50 px-3.5 py-3.5 ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/80'
@@ -225,7 +225,7 @@ export function WellnessSurveyModal() {
         <div className="relative z-10">
           <DialogHeader className="border-b border-slate-100 px-5 py-4 text-left dark:border-slate-700">
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#4F46E5] ring-1 ring-indigo-200/80 dark:bg-indigo-950 dark:text-indigo-300 dark:ring-indigo-800/80">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEF2FF] text-[#6366F1] ring-1 ring-indigo-200/80 dark:bg-indigo-950 dark:text-indigo-300 dark:ring-indigo-800/80">
                 <HeartPulse className="h-4 w-4" strokeWidth={2.25} aria-hidden />
               </span>
               <div className="min-w-0 flex-1">
@@ -239,7 +239,7 @@ export function WellnessSurveyModal() {
               <DialogClose
                 type="button"
                 aria-label="Close wellness check"
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-[#0F172A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50 dark:focus-visible:ring-indigo-400/30"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-[#0F172A] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50 "
               >
                 <X className="h-4 w-4" strokeWidth={2.25} />
               </DialogClose>
@@ -351,8 +351,8 @@ export function WellnessSurveyModal() {
               className={cn(
                 'inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
                 canSubmit && !submitting
-                  ? 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
-                  : 'cursor-not-allowed bg-[#4F46E5]/40 dark:bg-indigo-500/40',
+                  ? 'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                  : 'cursor-not-allowed bg-indigo-500/40 dark:bg-indigo-500/40',
               )}
             >
               {submitting ? (

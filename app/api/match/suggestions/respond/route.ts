@@ -7,7 +7,7 @@ import { safeLogger } from '@/lib/utils/logger'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { trackEvent, EVENT_TYPES } from '@/lib/events'
 import { validateMatchSuggestion, validateUserAction, validateStatusTransition } from '@/lib/matching/validation'
-import { ensureProfileAccessRows, resolvePairMatchId } from '@/lib/privacy/profile-access-server'
+import { ensureDirectChat } from '@/lib/chat/ensure-direct-chat'
 import { joinedUserEmail } from '@/lib/supabase/relation-helpers'
 
 export async function POST(request: NextRequest) {
@@ -520,130 +520,19 @@ export async function POST(request: NextRequest) {
             }
           }
           
-          // Check if chat already exists for these two users
-          const { data: existingChats, error: existingChatsError } = await admin
-            .from('chat_members')
-            .select('chat_id')
-            .eq('user_id', userA)
-          
-          if (existingChatsError) {
-            safeLogger.error(`[ERROR] Failed to check for existing chats`, existingChatsError)
-            throw existingChatsError
-          }
-          
-          if (existingChats && existingChats.length > 0) {
-            const chatIds = existingChats.map((r: any) => r.chat_id)
-            const { data: common, error: commonError } = await admin
-              .from('chat_members')
-              .select('chat_id')
-              .in('chat_id', chatIds)
-              .eq('user_id', userB)
-            
-            if (commonError) {
-              safeLogger.error(`[ERROR] Failed to check for common chats`, commonError)
-              throw commonError
-            }
-            
-            if (common && common.length > 0) {
-              chatId = common[0].chat_id
-              safeLogger.info(`[INFO] Chat already exists for confirmed match`, {
-                chatId,
-                userA,
-                userB,
-                suggestionId: suggestion.id
-              })
-            }
-          }
-          
-          if (!chatId) {
-            const pairMatchId = await resolvePairMatchId(admin, userA, userB)
-            // Create chat
-            const { data: createdChat, error: chatErr } = await admin
-              .from('chats')
-              .insert({ is_group: false, created_by: userA, match_id: pairMatchId })
-              .select('id')
-              .single()
-            
-            if (chatErr) {
-              safeLogger.error(`[ERROR] Failed to create chat`, {
-                error: chatErr,
-                userA,
-                userB,
-                suggestionId: suggestion.id
-              })
-              throw chatErr
-            }
-            
-            chatId = createdChat.id
-            safeLogger.info(`[INFO] Created chat for confirmed match`, {
+          const ensured = await ensureDirectChat(admin, userA, userB, { createdBy: userA })
+          chatId = ensured.chatId
+          safeLogger.info(
+            ensured.created
+              ? '[INFO] Created chat for confirmed match'
+              : '[INFO] Chat already exists for confirmed match',
+            {
               chatId,
               userA,
               userB,
-              suggestionId: suggestion.id
-            })
-            
-            // Add members - CRITICAL: Both users must be added
-            const { error: membersErr } = await admin
-              .from('chat_members')
-              .insert([
-                { chat_id: chatId, user_id: userA },
-                { chat_id: chatId, user_id: userB }
-              ])
-            
-            if (membersErr) {
-              safeLogger.error(`[ERROR] Failed to add chat members`, {
-                error: membersErr,
-                chatId,
-                userA,
-                userB,
-                suggestionId: suggestion.id
-              })
-              // Try to clean up the chat if members couldn't be added
-              await admin.from('chats').delete().eq('id', chatId)
-              throw membersErr
+              suggestionId: suggestion.id,
             }
-            
-            safeLogger.info(`[INFO] Added chat members for confirmed match`, {
-              chatId,
-              userA,
-              userB,
-              memberCount: 2
-            })
-
-            if (chatId) {
-              await ensureProfileAccessRows(admin, chatId)
-            }
-            
-            // System message (use first user as sender)
-            const { error: msgErr } = await admin
-              .from('messages')
-              .insert({
-                chat_id: chatId,
-                user_id: userA,
-                content: "You're matched! Start your conversation 👋"
-              })
-            
-            if (msgErr) {
-              safeLogger.warn(`[WARN] Failed to create system message for chat`, {
-                error: msgErr,
-                chatId
-              })
-              // Don't fail the whole operation if message creation fails
-            }
-            
-            // Touch chat updated_at
-            const { error: updateErr } = await admin
-              .from('chats')
-              .update({ updated_at: new Date().toISOString() })
-              .eq('id', chatId)
-            
-            if (updateErr) {
-              safeLogger.warn(`[WARN] Failed to update chat timestamp`, {
-                error: updateErr,
-                chatId
-              })
-            }
-          }
+          )
         } catch (chatError) {
           safeLogger.error('Failed to create chat on confirmation', {
             error: chatError,
@@ -773,130 +662,19 @@ export async function POST(request: NextRequest) {
               }
             }
             
-            // Check if chat already exists for these two users
-            const { data: existingChats, error: existingChatsError } = await admin
-              .from('chat_members')
-              .select('chat_id')
-              .eq('user_id', userA)
-            
-            if (existingChatsError) {
-              safeLogger.error(`[ERROR] Failed to check for existing chats (re-check)`, existingChatsError)
-              throw existingChatsError
-            }
-            
-            if (existingChats && existingChats.length > 0) {
-              const chatIds = existingChats.map((r: any) => r.chat_id)
-              const { data: common, error: commonError } = await admin
-                .from('chat_members')
-                .select('chat_id')
-                .in('chat_id', chatIds)
-                .eq('user_id', userB)
-              
-              if (commonError) {
-                safeLogger.error(`[ERROR] Failed to check for common chats (re-check)`, commonError)
-                throw commonError
-              }
-              
-              if (common && common.length > 0) {
-                chatId = common[0].chat_id
-                safeLogger.info(`[INFO] Chat already exists for confirmed match (re-check)`, {
-                  chatId,
-                  userA,
-                  userB,
-                  suggestionId: suggestion.id
-                })
-              }
-            }
-            
-            if (!chatId) {
-              const pairMatchIdRecheck = await resolvePairMatchId(admin, userA, userB)
-              // Create chat
-              const { data: createdChat, error: chatErr } = await admin
-                .from('chats')
-                .insert({ is_group: false, created_by: userA, match_id: pairMatchIdRecheck })
-                .select('id')
-                .single()
-              
-              if (chatErr) {
-                safeLogger.error(`[ERROR] Failed to create chat (re-check)`, {
-                  error: chatErr,
-                  userA,
-                  userB,
-                  suggestionId: suggestion.id
-                })
-                throw chatErr
-              }
-              
-              chatId = createdChat.id
-              safeLogger.info(`[INFO] Created chat for confirmed match (re-check)`, {
+            const ensured = await ensureDirectChat(admin, userA, userB, { createdBy: userA })
+            chatId = ensured.chatId
+            safeLogger.info(
+              ensured.created
+                ? '[INFO] Created chat for confirmed match (re-check)'
+                : '[INFO] Chat already exists for confirmed match (re-check)',
+              {
                 chatId,
                 userA,
                 userB,
-                suggestionId: suggestion.id
-              })
-              
-              // Add members - CRITICAL: Both users must be added
-              const { error: membersErr } = await admin
-                .from('chat_members')
-                .insert([
-                  { chat_id: chatId, user_id: userA },
-                  { chat_id: chatId, user_id: userB }
-                ])
-              
-              if (membersErr) {
-                safeLogger.error(`[ERROR] Failed to add chat members (re-check)`, {
-                  error: membersErr,
-                  chatId,
-                  userA,
-                  userB,
-                  suggestionId: suggestion.id
-                })
-                // Try to clean up the chat if members couldn't be added
-                await admin.from('chats').delete().eq('id', chatId)
-                throw membersErr
+                suggestionId: suggestion.id,
               }
-              
-              safeLogger.info(`[INFO] Added chat members for confirmed match (re-check)`, {
-                chatId,
-                userA,
-                userB,
-                memberCount: 2
-              })
-
-              if (chatId) {
-                await ensureProfileAccessRows(admin, chatId)
-              }
-              
-              // System message (use first user as sender)
-              const { error: msgErr } = await admin
-                .from('messages')
-                .insert({
-                  chat_id: chatId,
-                  user_id: userA,
-                  content: "You're matched! Start your conversation 👋"
-                })
-              
-              if (msgErr) {
-                safeLogger.warn(`[WARN] Failed to create system message for chat (re-check)`, {
-                  error: msgErr,
-                  chatId
-                })
-                // Don't fail the whole operation if message creation fails
-              }
-              
-              // Touch chat updated_at
-              const { error: updateErr } = await admin
-                .from('chats')
-                .update({ updated_at: new Date().toISOString() })
-                .eq('id', chatId)
-              
-              if (updateErr) {
-                safeLogger.warn(`[WARN] Failed to update chat timestamp (re-check)`, {
-                  error: updateErr,
-                  chatId
-                })
-              }
-            }
+            )
             
             // Create notifications
             try {

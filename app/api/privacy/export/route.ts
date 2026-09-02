@@ -441,6 +441,36 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // 18. Domu Lab wish board (GDPR Art. 15)
+      const adminForLab = createAdminClient()
+      const { data: labWishes } = await adminForLab
+        .from('lab_wishes')
+        .select('id, title, body, status, focus_group_opt_in, vote_count, use_this_count, created_at, updated_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(500)
+
+      const { data: labVotes } = await adminForLab
+        .from('lab_wish_votes')
+        .select('id, wish_id, intensity, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(500)
+
+      const { data: labBadge } = await adminForLab
+        .from('lab_co_creator_badges')
+        .select('wish_id, wish_title, awarded_at')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (labWishes || labVotes || labBadge) {
+        exportData.wish_board = {
+          wishes: labWishes ?? [],
+          votes: labVotes ?? [],
+          co_creator_badge: labBadge ?? null,
+        }
+      }
+
       // Convert to JSON string
       const jsonData = JSON.stringify(exportData, null, 2)
       const blob = new Blob([jsonData], { type: 'application/json' })

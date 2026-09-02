@@ -187,7 +187,7 @@ export function RequestDemoSection() {
                 disabled={loading}
                 className={cn(
                   'w-full sm:w-auto inline-flex items-center justify-center rounded-xl px-8 py-4 min-h-[48px] text-base font-semibold',
-                  'bg-slate-900 text-white hover:bg-slate-900/90',
+                  'bg-indigo-500 text-white hover:bg-indigo-600',
                   'shadow-[0_12px_30px_rgba(15,23,42,0.18)] hover:scale-[1.02] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100',
                   'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
                 )}

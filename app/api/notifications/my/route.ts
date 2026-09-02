@@ -27,6 +27,7 @@ const ALL_NOTIFICATION_TYPES: NotificationType[] = [
   'safety_alert',
   'system_announcement',
   'admin_alert',
+  'lab_wish_shipped',
 ]
 
 const MATCH_NOTIFICATION_TYPES: NotificationType[] = ['match_created', 'match_accepted', 'match_confirmed']

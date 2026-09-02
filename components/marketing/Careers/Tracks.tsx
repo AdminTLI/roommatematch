@@ -122,7 +122,7 @@ export function Tracks() {
         <Button
           asChild
           size="lg"
-          className="rounded-2xl bg-slate-900 text-white shadow-[0_12px_30px_rgba(15,23,42,0.16)] hover:bg-slate-900/90"
+          className="rounded-xl bg-indigo-500 text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600"
         >
           <a href="/careers/apply">{t.cta}</a>
         </Button>

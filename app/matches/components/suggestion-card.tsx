@@ -660,7 +660,7 @@ export function SuggestionCard({
               </Button>
               <Button
                 onClick={() => handleRespond('accept')}
-                className="flex-1 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium shadow-sm hover:shadow transition-all"
+                className="flex-1 h-11 rounded-xl bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium shadow-sm hover:shadow transition-all"
                 disabled={isResponding || isLoading}
               >
                 <UserPlus className="w-4 h-4 mr-2" />
@@ -676,7 +676,7 @@ export function SuggestionCard({
                 handleChatNow()
               }}
               disabled={isOpeningChat}
-              className="flex-1 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium shadow-sm hover:shadow transition-all"
+              className="flex-1 h-11 rounded-xl bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium shadow-sm hover:shadow transition-all"
             >
               <MessageCircle className="w-4 h-4 mr-2" />
               Send Message

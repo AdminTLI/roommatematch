@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Users, RefreshCw, Lightbulb } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { LabPromptCard } from '@/app/(components)/lab-prompt-card'
 import { cn } from '@/lib/utils'
 
 interface EmptyMatchesStateProps {
@@ -40,7 +41,7 @@ export function EmptyMatchesState({
         <div className="flex flex-col items-center text-center">
           <div className="relative mb-6">
             <div className="absolute inset-0 animate-pulse rounded-2xl bg-gradient-to-br from-indigo-400/20 to-purple-400/20 blur-md" />
-            <div className="relative rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 p-[2px] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)]">
+            <div className="relative rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 p-[2px] shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]">
               <div className="flex h-16 w-16 items-center justify-center rounded-[14px] bg-white dark:bg-slate-800 sm:h-20 sm:w-20">
                 <Users
                   className="h-8 w-8 text-indigo-600 dark:text-indigo-400 sm:h-9 sm:w-9"
@@ -74,8 +75,8 @@ export function EmptyMatchesState({
                 onClick={onRefresh}
                 className={cn(
                   'inline-flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
-                  'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)]',
-                  'hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)]',
+                  'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
+                  'hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
                   'active:scale-[0.98]',
                 )}
               >
@@ -94,6 +95,10 @@ export function EmptyMatchesState({
                   over quantity.
                 </p>
               </div>
+
+              <div className="mt-6 w-full max-w-md">
+                <LabPromptCard eligibleKeys={['empty_matches']} />
+              </div>
             </>
           ) : (
             <>
@@ -106,8 +111,8 @@ export function EmptyMatchesState({
                 onClick={() => router.push('/onboarding')}
                 className={cn(
                   'inline-flex h-11 min-w-[200px] items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
-                  'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)]',
-                  'hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)]',
+                  'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
+                  'hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
                   'active:scale-[0.98]',
                 )}
               >

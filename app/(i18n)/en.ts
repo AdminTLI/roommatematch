@@ -51,7 +51,7 @@ export const en = {
     home: 'Home',
     matches: 'Matches',
     chat: 'Chat',
-    forum: 'Forum',
+    forum: 'Domu Lab',
     profile: 'Profile',
     settings: 'Settings',
     admin: 'Admin',
@@ -526,35 +526,35 @@ export const en = {
     }
   },
 
-  // Forum
+  // Forum → Domu Lab
   forum: {
-    title: 'Forum',
-    subtitle: 'Connect with your university community',
-    newPost: 'New Post',
-    anonymous: 'Post Anonymously',
+    title: 'Domu Lab',
+    subtitle: 'Tell us what is missing. Upvote what you would actually use.',
+    newPost: 'New wish',
+    anonymous: 'Posted anonymously',
     posts: {
-      title: 'Posts',
-      noPosts: 'No posts yet. Be the first to post!',
-      createPost: 'Create Post',
-      reply: 'Reply',
-      report: 'Report Post',
-      delete: 'Delete Post',
-      edit: 'Edit Post'
+      title: 'Wishes',
+      noPosts: 'No wishes yet. Be the first to post!',
+      createPost: 'Post a wish',
+      reply: '',
+      report: 'Report',
+      delete: '',
+      edit: ''
     },
     createPost: {
-      title: 'Create New Post',
-      postTitle: 'Post Title',
-      postContent: 'What would you like to share?',
-      anonymous: 'Post anonymously',
-      submit: 'Publish Post',
+      title: 'Share a wish',
+      postTitle: 'Headline',
+      postContent: 'What happened?',
+      anonymous: 'Posted anonymously to other students',
+      submit: 'Post wish',
       cancel: 'Cancel',
-      preview: 'Preview',
+      preview: '',
       characterCount: '{current}/{max} characters'
     },
     moderation: {
-      reported: 'This post has been reported',
-      removed: 'This post has been removed',
-      underReview: 'This post is under review'
+      reported: 'This wish has been reported',
+      removed: 'This wish has been removed',
+      underReview: 'This wish is under review'
     }
   },
 

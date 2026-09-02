@@ -82,7 +82,7 @@ export function HardGateModal({
             <DialogClose
               type="button"
               aria-label="Close"
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-[#0F172A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]/30 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50 dark:focus-visible:ring-indigo-400/30"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-50 hover:text-[#0F172A] focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50 "
             >
               <X className="h-4 w-4" strokeWidth={2.25} />
             </DialogClose>
@@ -105,7 +105,7 @@ export function HardGateModal({
             <Checkbox
               checked={checked}
               onCheckedChange={(v) => setChecked(!!v)}
-              className="shrink-0 border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5] dark:border-slate-500"
+              className="shrink-0 border-slate-300 data-[state=checked]:border-indigo-500 data-[state=checked]:bg-indigo-500 dark:border-slate-500"
             />
             <span className="text-sm font-semibold text-[#0F172A] dark:text-slate-50">
               Make this a dealbreaker
@@ -128,7 +128,7 @@ export function HardGateModal({
             className={cn(
               'w-full rounded-xl py-2.5 text-sm font-semibold tracking-tight transition-all',
               canContinue
-                ? 'bg-[#4F46E5] text-white hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                ? 'bg-indigo-500 text-white hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400'
                 : 'cursor-not-allowed bg-slate-100 text-slate-400 ring-1 ring-slate-200/70 dark:bg-slate-700 dark:text-slate-500 dark:ring-slate-600'
             )}
           >

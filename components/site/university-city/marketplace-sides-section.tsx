@@ -98,7 +98,7 @@ export function UniversityCityMarketplaceSides({ city }: MarketplaceSidesSection
                     href={side.href}
                     className={cn(
                       'inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold',
-                      'bg-slate-900 text-white hover:bg-slate-900/90 transition-colors',
+                      'bg-indigo-500 text-white hover:bg-indigo-600 transition-colors',
                       'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20'
                     )}
                   >

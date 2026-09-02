@@ -97,8 +97,8 @@ export function OnboardingModuleShell({
                     className={cn(
                       'inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
                       continueDisabled || isContinuing
-                        ? 'cursor-not-allowed bg-[#4F46E5]/40 dark:bg-indigo-500/40'
-                        : 'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                        ? 'cursor-not-allowed bg-indigo-500/40 dark:bg-indigo-500/40'
+                        : 'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
                     )}
                   >
                     {isContinuing ? 'Saving…' : continueLabel}

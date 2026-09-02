@@ -343,9 +343,9 @@ export function PartnershipROIContent() {
               href="/contact"
               className={cn(
                 'mt-8 inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold w-full',
-                'bg-slate-900 text-white',
-                'shadow-lg shadow-slate-900/20 hover:bg-slate-800 hover:scale-105 transition-all duration-200',
-                'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/15 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
+                'bg-indigo-500 text-white',
+                'shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 hover:scale-105 transition-all duration-200',
+                'focus-visible:outline-none'
               )}
             >
               {t.ctaPilot}

@@ -153,7 +153,7 @@ export function EmailPreviewClient({ kinds }: Props) {
                       type="button"
                       onClick={handleCopy}
                       disabled={!rawHtml && !previewHtml}
-                      className="rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-violet-700 disabled:opacity-50"
+                      className="rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-600 disabled:opacity-50"
                     >
                       {copyStatus === 'copied' ? 'Copied!' : copyStatus === 'error' ? 'Copy failed' : 'Copy raw HTML'}
                     </button>
@@ -260,7 +260,7 @@ function ViewportToggle({ value, onChange }: { value: ViewportSize; onChange: (v
           type="button"
           onClick={() => onChange(v)}
           className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-            value === v ? 'bg-violet-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+            value === v ? 'bg-indigo-500 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
           }`}
         >
           {v === 'mobile' ? 'Mobile' : 'Desktop'}

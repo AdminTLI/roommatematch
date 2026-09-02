@@ -85,7 +85,7 @@ export function SocialHero() {
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Button
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full px-8 py-4 shadow-lg transition-transform hover:-translate-y-1"
+                className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-full px-8 py-4 shadow-lg transition-transform hover:-translate-y-1"
                 asChild
               >
                 <a href={BETA_SIGNUP_GOOGLE_FORM_URL}>{t.ctaPrimary}</a>

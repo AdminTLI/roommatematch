@@ -4,6 +4,7 @@ import { getMatchRepo } from '@/lib/matching/repo.factory'
 import { createMatchNotification } from '@/lib/notifications/create'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from '@/lib/admin/audit'
+import { ensureDirectChat } from '@/lib/chat/ensure-direct-chat'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function POST(request: NextRequest) {
@@ -110,56 +111,15 @@ export async function POST(request: NextRequest) {
           safeLogger.debug('[Admin] Pair already confirmed - checking if chat exists')
           
           // Even if already confirmed, ensure chat exists
-          let chatId: string | undefined
           try {
-            const { data: existingChatsA } = await admin
-              .from('chat_members')
-              .select('chat_id')
-              .eq('user_id', userA)
-
-            if (existingChatsA && existingChatsA.length > 0) {
-              const chatIds = existingChatsA.map((r: any) => r.chat_id)
-              const { data: common } = await admin
-                .from('chat_members')
-                .select('chat_id')
-                .in('chat_id', chatIds)
-                .eq('user_id', userB)
-              if (common && common.length > 0) {
-                chatId = common[0].chat_id
-                safeLogger.debug('[Admin] Chat already exists for confirmed pair')
-              }
-            }
-
-            if (!chatId) {
-              safeLogger.info('[Admin] Creating missing chat for already-confirmed pair')
-              // Use the first confirmed suggestion ID as match_id
-              const confirmedSuggestion = suggestions.find(s => s.status === 'confirmed') || suggestions[0]
-              const { data: createdChat, error: chatErr } = await admin
-                .from('chats')
-                .insert({ is_group: false, created_by: userA, match_id: confirmedSuggestion?.id || null })
-                .select('id')
-                .single()
-
-              if (!chatErr && createdChat) {
-                chatId = createdChat.id
-                await admin.from('chat_members').insert([
-                  { chat_id: chatId, user_id: userA },
-                  { chat_id: chatId, user_id: userB }
-                ])
-                await admin.from('messages').insert({
-                  chat_id: chatId,
-                  user_id: userA,
-                  content: "You're matched! Start your conversation 👋"
-                })
-                await admin
-                  .from('chats')
-                  .update({ updated_at: new Date().toISOString() })
-                  .eq('id', chatId)
-                safeLogger.info('[Admin] Created missing chat for confirmed pair')
-                processed++ // Count as processed since we created the chat
-              } else if (chatErr) {
-                safeLogger.error('[Admin] Failed to create chat for confirmed pair', chatErr)
-              }
+            const ensured = await ensureDirectChat(admin, userA, userB, {
+              createdBy: userA,
+            })
+            if (ensured.created) {
+              safeLogger.info('[Admin] Created missing chat for confirmed pair')
+              processed++
+            } else {
+              safeLogger.debug('[Admin] Chat already exists for confirmed pair')
             }
           } catch (chatError) {
             safeLogger.error('[Admin] Error checking/creating chat for confirmed pair', chatError)
@@ -217,87 +177,13 @@ export async function POST(request: NextRequest) {
         // Create chat if it doesn't exist
         let chatId: string | undefined
         try {
-          safeLogger.debug('[Admin] Checking for existing chat for pair')
-          const { data: existingChatsA, error: existingChatsError } = await admin
-            .from('chat_members')
-            .select('chat_id')
-            .eq('user_id', userA)
-
-          if (existingChatsError) {
-            safeLogger.warn('[Admin] Error checking existing chats', existingChatsError)
-          }
-
-          if (existingChatsA && existingChatsA.length > 0) {
-            const chatIds = existingChatsA.map((r: any) => r.chat_id)
-            safeLogger.debug('[Admin] Found existing chats, checking if pair exists', {
-              chatCount: chatIds.length
-            })
-            const { data: common, error: commonError } = await admin
-              .from('chat_members')
-              .select('chat_id')
-              .in('chat_id', chatIds)
-              .eq('user_id', userB)
-            
-            if (commonError) {
-              safeLogger.warn('[Admin] Error checking common chats', commonError)
-            }
-            
-            if (common && common.length > 0) {
-              chatId = common[0].chat_id
-              safeLogger.debug('[Admin] Found existing chat for pair')
-            }
-          }
-
-          if (!chatId) {
-            safeLogger.info('[Admin] Creating new chat for pair')
-            // Use the first suggestion ID as match_id
-            const { data: createdChat, error: chatErr } = await admin
-              .from('chats')
-              .insert({ is_group: false, created_by: userA, match_id: firstSug.id })
-              .select('id')
-              .single()
-
-            if (chatErr) {
-              throw new Error(`Failed to create chat: ${chatErr.message}`)
-            }
-
-            chatId = createdChat.id
-            safeLogger.info('[Admin] Created chat for pair')
-
-            const { error: membersErr } = await admin.from('chat_members').insert([
-              { chat_id: chatId, user_id: userA },
-              { chat_id: chatId, user_id: userB }
-            ])
-
-            if (membersErr) {
-              throw new Error(`Failed to add chat members: ${membersErr.message}`)
-            }
-            safeLogger.debug('[Admin] Added members to chat')
-
-            const { error: msgErr } = await admin.from('messages').insert({
-              chat_id: chatId,
-              user_id: userA,
-              content: "You're matched! Start your conversation 👋"
-            })
-
-            if (msgErr) {
-              safeLogger.warn('[Admin] Failed to create system message for chat', msgErr)
-              // Don't fail if message creation fails
-            } else {
-              safeLogger.debug('[Admin] Created system message in chat')
-            }
-
-            const { error: updateErr } = await admin
-              .from('chats')
-              .update({ updated_at: new Date().toISOString() })
-              .eq('id', chatId)
-
-            if (updateErr) {
-              safeLogger.warn('[Admin] Failed to update chat updated_at', updateErr)
-            }
-            
-            safeLogger.info('[Admin] Successfully created chat for pair')
-          }
+          const ensured = await ensureDirectChat(admin, userA, userB, {
+            createdBy: userA,
+          })
+          chatId = ensured.chatId
+          safeLogger.info(
+            ensured.created ? '[Admin] Created chat for pair' : '[Admin] Found existing chat for pair'
+          )
         } catch (chatError) {
           safeLogger.error('[Admin] Failed to create chat for pair', chatError)
           // Don't fail the whole operation if chat creation fails

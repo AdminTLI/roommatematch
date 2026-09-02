@@ -55,7 +55,7 @@ function FieldLabel({ children }: { children: ReactNode }) {
 /** Shared onboarding select trigger: 48px tall, white, clear chevron */
 export const onboardingSelectTriggerClass = cn(
   'h-12 w-full rounded-xl border border-slate-200 bg-white pl-3.5 pr-3 text-sm shadow-none',
-  'focus:ring-2 focus:ring-[#4F46E5]/30 data-[placeholder]:text-slate-500',
+  'focus:ring-2 focus:ring-indigo-500/30 data-[placeholder]:text-slate-500',
   '[&_svg]:h-5 [&_svg]:w-5 [&_svg]:opacity-70 [&_svg]:text-slate-500',
   'dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:data-[placeholder]:text-slate-400',
   'dark:[&>span[data-placeholder]]:text-slate-400',
@@ -218,7 +218,7 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
                 className={cn(
                   'min-h-[48px] rounded-2xl px-2 py-3 text-center text-sm font-semibold transition-all sm:px-3',
                   active
-                    ? 'border-2 border-[#4F46E5] bg-indigo-50 text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)] dark:border-indigo-400 dark:bg-indigo-500/15 dark:text-indigo-300'
+                    ? 'border-2 border-indigo-500 bg-indigo-50 text-[#6366F1] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)] dark:border-indigo-400 dark:bg-indigo-500/15 dark:text-indigo-300'
                     : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700/50'
                 )}
               >
@@ -258,7 +258,7 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
             id="undecided_program"
             checked={data.undecided_program || false}
             onCheckedChange={(checked) => handleChange('undecided_program', checked)}
-            className="rounded border-slate-300 data-[state=checked]:border-[#4F46E5] data-[state=checked]:bg-[#4F46E5] dark:border-slate-500"
+            className="rounded border-slate-300 data-[state=checked]:border-indigo-500 data-[state=checked]:bg-indigo-500 dark:border-slate-500"
           />
           I haven&apos;t decided on a specific programme yet
         </label>
@@ -337,7 +337,7 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
             className={cn(
               'flex min-h-[48px] items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition-all',
               data.student_origin === 'dutch'
-                ? 'border-2 border-[#4F46E5] bg-indigo-50 text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)] dark:border-indigo-400 dark:bg-indigo-500/15 dark:text-indigo-300'
+                ? 'border-2 border-indigo-500 bg-indigo-50 text-[#6366F1] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)] dark:border-indigo-400 dark:bg-indigo-500/15 dark:text-indigo-300'
                 : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700/50'
             )}
           >
@@ -350,7 +350,7 @@ export function AcademicStep({ data, onChange, errors = {} }: AcademicStepProps)
             className={cn(
               'flex min-h-[48px] items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-semibold transition-all',
               data.student_origin === 'international'
-                ? 'border-2 border-[#4F46E5] bg-indigo-50 text-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)] dark:border-indigo-400 dark:bg-indigo-500/15 dark:text-indigo-300'
+                ? 'border-2 border-indigo-500 bg-indigo-50 text-[#6366F1] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.15)] dark:border-indigo-400 dark:bg-indigo-500/15 dark:text-indigo-300'
                 : 'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700/50'
             )}
           >

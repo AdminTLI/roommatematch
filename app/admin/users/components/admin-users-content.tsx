@@ -1,18 +1,19 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { DataTable } from '@/components/admin/data-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { RefreshCw, Users, ShieldCheck, Activity, Download } from 'lucide-react'
+import { RefreshCw, Download } from 'lucide-react'
 import { useIsSuperAdmin } from '@/lib/auth/roles-client'
 import { UserDetailDialog } from './user-detail-dialog'
 import { UserActionsDropdown } from './user-actions-dropdown'
 import { UserFilters } from './user-filters'
 import { RoleManagementPanel } from './role-management-panel'
 import { RegistrationWorkflowPanel } from './registration-workflow-panel'
+import { ADMIN_PAGE_STACK } from '@/lib/admin/ui'
 
 interface User {
   id: string
@@ -201,55 +202,28 @@ export function AdminUsersContent() {
   ]
 
   const { isSuperAdmin, isLoading: isRoleLoading } = useIsSuperAdmin()
-  const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'workflow'>('users')
-  const [tabsMounted, setTabsMounted] = useState(false)
-  const tabsScrollRef = useRef<HTMLDivElement>(null)
-
-  // Defer Radix Tabs until after mount to avoid hydration mismatch from server/client ID differences.
-  useEffect(() => {
-    setTabsMounted(true)
-  }, [])
-
-  useEffect(() => {
-    const scrollEl = tabsScrollRef.current
-    if (!scrollEl) return
-
-    if (activeTab === 'users') {
-      scrollEl.scrollLeft = 0
-      return
-    }
-
-    const activeTrigger = scrollEl.querySelector<HTMLElement>('[data-state="active"]')
-    activeTrigger?.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'smooth' })
-  }, [activeTab])
-
-  const segmentedTriggerClassName =
-    'flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ' +
-    'data-[state=active]:bg-violet-600 data-[state=active]:text-white ' +
-    'data-[state=inactive]:bg-transparent data-[state=inactive]:text-text-secondary ' +
-    'dark:data-[state=active]:bg-violet-600 dark:data-[state=active]:text-white'
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const activeTab =
+    tabParam === 'roles' && (isRoleLoading || isSuperAdmin)
+      ? 'roles'
+      : tabParam === 'workflow'
+        ? 'workflow'
+        : 'users'
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold">User Management</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            All users live in the Users tab. Role Management only shows accounts you grant
-            elevated access. The Registration Workflow tab tracks where users get stuck.
-          </p>
-        </div>
-        {activeTab === 'users' && (
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open('/api/admin/users/export', '_blank')}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
-            <Button
+    <div className={ADMIN_PAGE_STACK}>
+      {activeTab === 'users' && (
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open('/api/admin/users/export', '_blank')}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button
             onClick={handleRefresh}
             disabled={isLoading || isRefreshing}
             variant="outline"
@@ -260,106 +234,47 @@ export function AdminUsersContent() {
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
-          </div>
-        )}
-      </div>
-
-      {!tabsMounted ? (
-        <div className="space-y-6">
-          <div className="h-auto w-max rounded-full border border-border-subtle/60 bg-bg-surface-alt/80 p-1">
-            <div className="flex gap-1">
-              <div className={`${segmentedTriggerClassName} bg-violet-600 text-white`}>
-                <Users className="h-4 w-4" />
-                Users
-              </div>
-              <div className={`${segmentedTriggerClassName} opacity-50`}>
-                <ShieldCheck className="h-4 w-4" />
-                Role Management
-              </div>
-              <div className={`${segmentedTriggerClassName} opacity-50`}>
-                <Activity className="h-4 w-4" />
-                Registration Workflow
-              </div>
-            </div>
-          </div>
-          <div className="p-6 text-sm text-gray-600 dark:text-gray-400">Loading users...</div>
         </div>
-      ) : (
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="space-y-6">
-          <div
-            ref={tabsScrollRef}
-            className="-mx-6 overflow-x-auto overscroll-x-contain px-6 touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:overflow-visible sm:px-0"
-          >
-            <TabsList className="h-auto w-max justify-start gap-1 rounded-full border border-border-subtle/60 bg-bg-surface-alt/80 p-1 sm:w-auto">
-              <TabsTrigger
-                value="users"
-                className={segmentedTriggerClassName}
-              >
-                <Users className="h-4 w-4" />
-                Users
-              </TabsTrigger>
-              <TabsTrigger
-                value="roles"
-                className={segmentedTriggerClassName}
-                disabled={isRoleLoading || !isSuperAdmin}
-              >
-                <ShieldCheck className="h-4 w-4" />
-                Role Management
-              </TabsTrigger>
-              <TabsTrigger
-                value="workflow"
-                className={segmentedTriggerClassName}
-              >
-                <Activity className="h-4 w-4" />
-                Registration Workflow
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="users" className="space-y-6">
-            {isLoading ? (
-              <div className="p-6 text-sm text-gray-600 dark:text-gray-400">Loading users...</div>
-            ) : (
-              <>
-                {filters && (
-                  <UserFilters
-                    filters={filters}
-                    selectedFilters={selectedFilters}
-                    onFiltersChange={setSelectedFilters}
-                  />
-                )}
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Users</CardTitle>
-                    <CardDescription>
-                      Every account on the platform. Roles aren&apos;t shown here because almost
-                      every user is a Student or Young Professional - manage elevated roles in the
-                      Role Management tab.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <DataTable
-                      columns={columns}
-                      data={users}
-                      searchKey="email"
-                      searchPlaceholder="Search by email or name..."
-                    />
-                  </CardContent>
-                </Card>
-              </>
-            )}
-          </TabsContent>
-
-          <TabsContent value="roles" className="space-y-6">
-            <RoleManagementPanel />
-          </TabsContent>
-
-          <TabsContent value="workflow" className="space-y-6">
-            <RegistrationWorkflowPanel />
-          </TabsContent>
-        </Tabs>
       )}
+
+      {activeTab === 'users' &&
+        (isLoading ? (
+          <div className="rounded-2xl border border-border-subtle bg-bg-surface p-6 text-sm text-slate-600 dark:text-slate-300">
+            Loading users...
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {filters && (
+              <UserFilters
+                filters={filters}
+                selectedFilters={selectedFilters}
+                onFiltersChange={setSelectedFilters}
+              />
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Users</CardTitle>
+                <CardDescription>
+                  Every account on the platform. Manage elevated access from Roles, and
+                  registration drop-off from Registration.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DataTable
+                  columns={columns}
+                  data={users}
+                  searchKey="email"
+                  searchPlaceholder="Search by email or name..."
+                />
+              </CardContent>
+            </Card>
+          </div>
+        ))}
+
+      {activeTab === 'roles' && <RoleManagementPanel />}
+
+      {activeTab === 'workflow' && <RegistrationWorkflowPanel />}
 
       {selectedUserId && (
         <UserDetailDialog

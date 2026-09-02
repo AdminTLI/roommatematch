@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Users, Target, Lock, CheckCircle } from 'lucide-react'
 import type { MatchRecord } from '@/lib/matching/repo'
 import { AdminPageWrapper } from '../components/admin-page-wrapper'
+import { ADMIN_FIELD_CLASS, ADMIN_PAGE_STACK } from '@/lib/admin/ui'
 
 interface CohortFilter {
   campusCity?: string
@@ -141,7 +142,7 @@ export default function AdminMatchingPage() {
       title="Matching Controls"
       description="Run matching algorithm and lock cohort results (super admin only)."
     >
-    <div className="space-y-6">
+    <div className={ADMIN_PAGE_STACK}>
       <div className="flex items-center justify-between">
         <Badge variant="outline" className="text-sm">
           <Users className="w-4 h-4 mr-1" />
@@ -179,7 +180,7 @@ export default function AdminMatchingPage() {
                   value={filters.degreeLevel || ''}
                   onValueChange={(value) => setFilters({ ...filters, degreeLevel: value || undefined })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={ADMIN_FIELD_CLASS}>
                     <SelectValue placeholder="Select degree level" />
                   </SelectTrigger>
                   <SelectContent>
@@ -246,7 +247,7 @@ export default function AdminMatchingPage() {
             <div>
               <Label htmlFor="mode">Mode</Label>
               <Select value={mode} onValueChange={(value: 'pairs' | 'groups') => setMode(value)}>
-                <SelectTrigger>
+                <SelectTrigger className={ADMIN_FIELD_CLASS}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

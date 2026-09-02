@@ -18,6 +18,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
+import { AdminStatCard } from '@/components/admin/stat-card'
+import { ADMIN_FIELD_CLASS, ADMIN_LABEL_CLASS, ADMIN_PAGE_STACK } from '@/lib/admin/ui'
 
 interface Match {
   id: string
@@ -278,9 +280,9 @@ export function AdminMatchesContent() {
       accessor: (row: Match) => (
         <div className="flex items-center gap-2">
           {row.kind === 'pair' ? (
-            <User className="h-4 w-4 text-gray-500" />
+            <User className="h-4 w-4 text-slate-500 dark:text-slate-400" />
           ) : (
-            <Users className="h-4 w-4 text-gray-500" />
+            <Users className="h-4 w-4 text-slate-500 dark:text-slate-400" />
           )}
           <div className="flex flex-col">
             {row.members.map((m, idx) => (
@@ -297,7 +299,7 @@ export function AdminMatchesContent() {
       accessor: (row: Match) => (
         <div className="flex flex-col">
           <span className="font-medium">{(row.fit_score * 100).toFixed(1)}%</span>
-          <span className="text-xs text-gray-500">Index: {row.fit_index}</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">Index: {row.fit_index}</span>
         </div>
       )
     },
@@ -305,11 +307,11 @@ export function AdminMatchesContent() {
       header: 'Status',
       accessor: (row: Match) => {
         const colors: Record<string, string> = {
-          pending: 'bg-blue-100 text-blue-800',
-          accepted: 'bg-yellow-100 text-yellow-800',
-          declined: 'bg-red-100 text-red-800',
-          expired: 'bg-gray-100 text-gray-800',
-          confirmed: 'bg-green-100 text-green-800'
+          pending: 'bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-200',
+          accepted: 'bg-yellow-100 text-yellow-800 dark:bg-amber-950/70 dark:text-amber-200',
+          declined: 'bg-red-100 text-red-800 dark:bg-red-950/70 dark:text-red-200',
+          expired: 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-slate-200',
+          confirmed: 'bg-green-100 text-green-800 dark:bg-emerald-950/70 dark:text-emerald-200'
         }
         return (
           <Badge className={colors[row.status] || colors.pending}>
@@ -362,84 +364,66 @@ export function AdminMatchesContent() {
   ]
 
   if (isLoading) {
-    return <div className="p-6">Loading...</div>
+    return (
+      <div className="rounded-2xl border border-border-subtle bg-bg-surface p-6 text-sm text-slate-600 dark:text-slate-300">
+        Loading matches...
+      </div>
+    )
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Match Management</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            View and manage match suggestions ({total} total)
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={handleExport} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button onClick={handleRefresh} disabled={isRefreshing}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh Matches
-          </Button>
-        </div>
+    <div className={ADMIN_PAGE_STACK}>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Button onClick={handleExport} variant="outline">
+          <Download className="h-4 w-4 mr-2" />
+          Export
+        </Button>
+        <Button onClick={handleRefresh} disabled={isRefreshing}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Refresh Matches
+        </Button>
       </div>
 
-      {/* Statistics */}
       {statistics && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Total</div>
-              <div className="text-2xl font-bold">{statistics.total}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Pending</div>
-              <div className="text-2xl font-bold text-blue-600">{statistics.pending}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Accepted</div>
-              <div className="text-2xl font-bold text-yellow-600">{statistics.accepted}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Declined</div>
-              <div className="text-2xl font-bold text-red-600">{statistics.declined}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Expired</div>
-              <div className="text-2xl font-bold text-gray-600">{statistics.expired}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Confirmed</div>
-              <div className="text-2xl font-bold text-green-600">{statistics.confirmed}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-sm text-gray-600">Avg Score</div>
-              <div className="text-2xl font-bold">{(statistics.avgScore * 100).toFixed(1)}%</div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7">
+          <AdminStatCard label="Total" value={statistics.total} />
+          <AdminStatCard
+            label="Pending"
+            value={statistics.pending}
+            valueClassName="text-blue-600 dark:text-blue-400"
+          />
+          <AdminStatCard
+            label="Accepted"
+            value={statistics.accepted}
+            valueClassName="text-amber-600 dark:text-amber-400"
+          />
+          <AdminStatCard
+            label="Declined"
+            value={statistics.declined}
+            valueClassName="text-red-600 dark:text-red-400"
+          />
+          <AdminStatCard
+            label="Expired"
+            value={statistics.expired}
+            valueClassName="text-slate-600 dark:text-slate-300"
+          />
+          <AdminStatCard
+            label="Confirmed"
+            value={statistics.confirmed}
+            valueClassName="text-emerald-600 dark:text-emerald-400"
+          />
+          <AdminStatCard
+            label="Avg Score"
+            value={`${(statistics.avgScore * 100).toFixed(1)}%`}
+          />
         </div>
       )}
 
-      {/* Bulk Actions */}
       {selectedMatches.size > 0 && (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/40">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="text-sm font-medium text-text-primary">
                 {selectedMatches.size} match(es) selected
               </span>
               <div className="flex gap-2">
@@ -467,17 +451,16 @@ export function AdminMatchesContent() {
         </Card>
       )}
 
-      {/* Filters */}
       <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg">Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div>
-              <label className="text-sm font-medium mb-2 block">Status</label>
+              <label className={ADMIN_LABEL_CLASS}>Status</label>
               <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
-                <SelectTrigger>
+                <SelectTrigger className={ADMIN_FIELD_CLASS}>
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -491,7 +474,7 @@ export function AdminMatchesContent() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Min Score</label>
+              <label className={ADMIN_LABEL_CLASS}>Min Score</label>
               <Input
                 type="number"
                 step="0.01"
@@ -500,10 +483,11 @@ export function AdminMatchesContent() {
                 placeholder="0.0"
                 value={filters.minScore}
                 onChange={(e) => setFilters({ ...filters, minScore: e.target.value })}
+                className={ADMIN_FIELD_CLASS}
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Max Score</label>
+              <label className={ADMIN_LABEL_CLASS}>Max Score</label>
               <Input
                 type="number"
                 step="0.01"
@@ -512,39 +496,38 @@ export function AdminMatchesContent() {
                 placeholder="1.0"
                 value={filters.maxScore}
                 onChange={(e) => setFilters({ ...filters, maxScore: e.target.value })}
+                className={ADMIN_FIELD_CLASS}
               />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Tabs for different views */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="matches">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-xl bg-bg-surface-alt p-1.5">
+          <TabsTrigger value="matches" className="rounded-lg px-4 py-2">
             <Users className="h-4 w-4 mr-2" />
             Matches
           </TabsTrigger>
-          <TabsTrigger value="stats">
+          <TabsTrigger value="stats" className="rounded-lg px-4 py-2">
             <TrendingDown className="h-4 w-4 mr-2" />
             Statistics
           </TabsTrigger>
-          <TabsTrigger value="blocklist">
+          <TabsTrigger value="blocklist" className="rounded-lg px-4 py-2">
             <Ban className="h-4 w-4 mr-2" />
             Blocklist
           </TabsTrigger>
-          <TabsTrigger value="activity">
+          <TabsTrigger value="activity" className="rounded-lg px-4 py-2">
             <Activity className="h-4 w-4 mr-2" />
             Activity Log
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="matches" className="space-y-6">
-          {/* Matches Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Matches</CardTitle>
-              <CardDescription>All match suggestions in the system</CardDescription>
+              <CardTitle className="text-lg">Match suggestions</CardTitle>
+              <CardDescription>All match suggestions in the system ({total} total)</CardDescription>
             </CardHeader>
             <CardContent>
               <DataTable
@@ -565,25 +548,25 @@ export function AdminMatchesContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
                   <CardContent className="p-4">
-                    <div className="text-sm text-text-muted">Total Declines</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-300">Total Declines</div>
                     <div className="text-2xl font-bold text-red-600">{matchStats.summary.totalDeclines}</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4">
-                    <div className="text-sm text-text-muted">Blocklist Additions</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-300">Blocklist Additions</div>
                     <div className="text-2xl font-bold text-orange-600">{matchStats.summary.totalBlocklistAdditions}</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4">
-                    <div className="text-sm text-text-muted">Decline Rate</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-300">Decline Rate</div>
                     <div className="text-2xl font-bold">{matchStats.summary.declineRate}%</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4">
-                    <div className="text-sm text-text-muted">Avg Declined Score</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-300">Avg Declined Score</div>
                     <div className="text-2xl font-bold">{matchStats.summary.avgDeclinedScore}</div>
                   </CardContent>
                 </Card>
@@ -603,7 +586,7 @@ export function AdminMatchesContent() {
                         <div className="space-y-1">
                           {matchStats.trends.declineByDay.slice(-7).map((item: any) => (
                             <div key={item.date} className="flex items-center gap-2">
-                              <span className="text-xs text-text-muted w-24">{new Date(item.date).toLocaleDateString()}</span>
+                              <span className="text-xs text-slate-600 dark:text-slate-300 w-24">{new Date(item.date).toLocaleDateString()}</span>
                               <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-4">
                                 <div 
                                   className="bg-red-500 h-4 rounded-full" 
@@ -620,7 +603,7 @@ export function AdminMatchesContent() {
                         <div className="space-y-1">
                           {matchStats.trends.blocklistByDay.slice(-7).map((item: any) => (
                             <div key={item.date} className="flex items-center gap-2">
-                              <span className="text-xs text-text-muted w-24">{new Date(item.date).toLocaleDateString()}</span>
+                              <span className="text-xs text-slate-600 dark:text-slate-300 w-24">{new Date(item.date).toLocaleDateString()}</span>
                               <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-4">
                                 <div 
                                   className="bg-orange-500 h-4 rounded-full" 
@@ -634,7 +617,7 @@ export function AdminMatchesContent() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-text-muted">No decline data available</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">No decline data available</p>
                   )}
                 </CardContent>
               </Card>
@@ -653,7 +636,7 @@ export function AdminMatchesContent() {
                         return (
                           <div key={item.date} className="space-y-1">
                             <div className="flex items-center justify-between text-xs">
-                              <span className="text-text-muted">{new Date(item.date).toLocaleDateString()}</span>
+                              <span className="text-slate-600 dark:text-slate-300">{new Date(item.date).toLocaleDateString()}</span>
                               <span className="font-medium">Total: {total}</span>
                             </div>
                             <div className="flex h-6 rounded overflow-hidden">
@@ -667,7 +650,7 @@ export function AdminMatchesContent() {
                       })}
                     </div>
                   ) : (
-                    <p className="text-sm text-text-muted">No status data available</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">No status data available</p>
                   )}
                 </CardContent>
               </Card>
@@ -697,7 +680,7 @@ export function AdminMatchesContent() {
                         accessor: (row: any) => (
                           <div>
                             <div className="font-medium">{row.userName}</div>
-                            <div className="text-xs text-text-muted">{row.userEmail}</div>
+                            <div className="text-xs text-slate-600 dark:text-slate-300">{row.userEmail}</div>
                           </div>
                         )
                       },
@@ -706,7 +689,7 @@ export function AdminMatchesContent() {
                         accessor: (row: any) => (
                           <div>
                             <div className="font-medium">{row.blockedUserName}</div>
-                            <div className="text-xs text-text-muted">{row.blockedUserEmail}</div>
+                            <div className="text-xs text-slate-600 dark:text-slate-300">{row.blockedUserEmail}</div>
                           </div>
                         )
                       },
@@ -722,7 +705,7 @@ export function AdminMatchesContent() {
                   />
                 </div>
               ) : (
-                <p className="text-sm text-text-muted text-center py-8">No blocklist entries found</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300 text-center py-8">No blocklist entries found</p>
               )}
             </CardContent>
           </Card>
@@ -757,17 +740,17 @@ export function AdminMatchesContent() {
                               </Badge>
                               <span className="text-sm font-medium">{activity.userName}</span>
                               {activity.matchScore && (
-                                <span className="text-xs text-text-muted">(Score: {activity.matchScore})</span>
+                                <span className="text-xs text-slate-600 dark:text-slate-300">(Score: {activity.matchScore})</span>
                               )}
                             </div>
                             <p className="text-sm text-text-secondary">{activity.description}</p>
                             {activity.blockedUserIds && activity.blockedUserIds.length > 0 && (
-                              <p className="text-xs text-text-muted mt-1">
+                              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                                 Blocked users: {activity.blockedUserIds.length}
                               </p>
                             )}
                           </div>
-                          <span className="text-xs text-text-muted ml-4">
+                          <span className="text-xs text-slate-600 dark:text-slate-300 ml-4">
                             {new Date(activity.timestamp).toLocaleString()}
                           </span>
                         </div>
@@ -776,7 +759,7 @@ export function AdminMatchesContent() {
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-text-muted text-center py-8">No activity found</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300 text-center py-8">No activity found</p>
               )}
             </CardContent>
           </Card>
@@ -796,47 +779,47 @@ export function AdminMatchesContent() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Match ID</label>
+                  <label className="text-sm font-medium text-slate-500 dark:text-slate-300">Match ID</label>
                   <p className="text-sm font-mono">{selectedMatch.id}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Run ID</label>
+                  <label className="text-sm font-medium text-slate-500 dark:text-slate-300">Run ID</label>
                   <p className="text-sm font-mono">{selectedMatch.run_id}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Status</label>
+                  <label className="text-sm font-medium text-slate-500 dark:text-slate-300">Status</label>
                   <Badge>{selectedMatch.status}</Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Kind</label>
+                  <label className="text-sm font-medium text-slate-500 dark:text-slate-300">Kind</label>
                   <Badge variant="outline">{selectedMatch.kind}</Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Fit Score</label>
+                  <label className="text-sm font-medium text-slate-500 dark:text-slate-300">Fit Score</label>
                   <p className="text-sm font-bold">{(selectedMatch.fit_score * 100).toFixed(1)}%</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Fit Index</label>
+                  <label className="text-sm font-medium text-slate-500 dark:text-slate-300">Fit Index</label>
                   <p className="text-sm">{selectedMatch.fit_index}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Created</label>
+                  <label className="text-sm font-medium text-slate-500 dark:text-slate-300">Created</label>
                   <p className="text-sm">{new Date(selectedMatch.created_at).toLocaleString()}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Expires</label>
+                  <label className="text-sm font-medium text-slate-500 dark:text-slate-300">Expires</label>
                   <p className="text-sm">{new Date(selectedMatch.expires_at).toLocaleString()}</p>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-500 mb-2 block">Members</label>
+                <label className="text-sm font-medium text-slate-500 dark:text-slate-300 mb-2 block">Members</label>
                 <div className="space-y-2">
                   {selectedMatch.members.map((member) => (
-                    <div key={member.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div key={member.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-slate-800 rounded">
                       <div>
                         <p className="text-sm font-medium">{member.name}</p>
-                        <p className="text-xs text-gray-500">{member.email}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{member.email}</p>
                       </div>
                       {selectedMatch.accepted_by?.includes(member.id) ? (
                         <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -850,10 +833,10 @@ export function AdminMatchesContent() {
 
               {selectedMatch.section_scores && Object.keys(selectedMatch.section_scores).length > 0 && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 mb-2 block">Section Scores</label>
+                  <label className="text-sm font-medium text-slate-500 dark:text-slate-300 mb-2 block">Section Scores</label>
                   <div className="grid grid-cols-2 gap-2">
                     {Object.entries(selectedMatch.section_scores).map(([section, score]) => (
-                      <div key={section} className="flex justify-between p-2 bg-gray-50 rounded">
+                      <div key={section} className="flex justify-between p-2 bg-gray-50 dark:bg-slate-800 rounded">
                         <span className="text-xs capitalize">{section.replace(/_/g, ' ')}</span>
                         <span className="text-xs font-medium">{(score as number * 100).toFixed(1)}%</span>
                       </div>
@@ -864,7 +847,7 @@ export function AdminMatchesContent() {
 
               {selectedMatch.reasons && selectedMatch.reasons.length > 0 && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 mb-2 block">Match Reasons</label>
+                  <label className="text-sm font-medium text-slate-500 dark:text-slate-300 mb-2 block">Match Reasons</label>
                   <ul className="list-disc list-inside space-y-1">
                     {selectedMatch.reasons.map((reason, idx) => (
                       <li key={idx} className="text-sm">{reason}</li>

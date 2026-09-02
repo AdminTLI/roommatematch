@@ -144,7 +144,7 @@ export function EmailVerification({ user }: EmailVerificationProps) {
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   onClick={handleCompleteEmailVerification}
-                  className="bg-blue-500 hover:bg-blue-600 text-white h-11 px-6 rounded-xl font-semibold shadow-lg shadow-blue-500/20"
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white h-11 px-6 rounded-xl font-semibold shadow-lg shadow-blue-500/20"
                 >
                   Verify Now
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -232,7 +232,7 @@ export function EmailVerification({ user }: EmailVerificationProps) {
                 </div>
                 <Button
                   onClick={handleCompletePersonaVerification}
-                  className="bg-blue-500 hover:bg-blue-600 text-white h-11 px-8 rounded-xl font-semibold shadow-lg shadow-blue-500/20 w-full sm:w-auto"
+                  className="bg-indigo-500 hover:bg-indigo-600 text-white h-11 px-8 rounded-xl font-semibold shadow-lg shadow-blue-500/20 w-full sm:w-auto"
                 >
                   Start Verification
                   <ArrowRight className="ml-2 h-4 w-4" />

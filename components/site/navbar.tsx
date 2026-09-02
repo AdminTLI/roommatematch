@@ -170,7 +170,7 @@ export function Navbar() {
               <DropdownMenu>
                 <DropdownMenuTrigger
                   className={cn(
-                    'transition-colors font-medium leading-tight flex items-center h-full py-0 whitespace-nowrap px-1 gap-1 outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent rounded',
+                    'transition-colors font-medium leading-tight flex items-center h-full py-0 whitespace-nowrap px-1 gap-1 outline-none focus-visible:ring-0 focus-visible:ring-offset-transparent rounded',
                     isDarkPage ? 'text-white/80 hover:text-white data-[state=open]:text-white' : 'text-brand-muted hover:text-brand-text data-[state=open]:text-brand-text'
                   )}
                   suppressHydrationWarning
@@ -231,7 +231,7 @@ export function Navbar() {
                 className={cn(
                   'h-10',
                   isDarkPage &&
-                    'bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/50 hover:scale-105'
+                    'bg-indigo-500 text-white border-0 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:scale-105'
                 )}
               >
                 <span suppressHydrationWarning>{buttons.getStarted}</span>
@@ -341,7 +341,7 @@ export function Navbar() {
             {/* Action Buttons */}
             <div className="space-y-3">
               <button
-                className="inline-flex items-center justify-center font-medium rounded-2xl transition-all w-full h-12 px-6 text-base font-semibold bg-transparent border border-white/30 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
+                className="inline-flex items-center justify-center font-medium rounded-2xl transition-all w-full h-12 px-6 text-base font-semibold bg-transparent border border-white/30 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-slate-900 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
                 onClick={() => {
                   handleSignIn()
                   handleCloseMenu()
@@ -350,7 +350,7 @@ export function Navbar() {
                 <span suppressHydrationWarning>{buttons.signIn}</span>
               </button>
               <button
-                className="inline-flex items-center justify-center font-medium rounded-2xl transition-all w-full h-12 px-6 text-base font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
+                className="inline-flex items-center justify-center font-medium rounded-2xl transition-all w-full h-12 px-6 text-base font-semibold bg-indigo-500 text-white border-0 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap"
                 onClick={() => {
                   handleGetStarted()
                   handleCloseMenu()

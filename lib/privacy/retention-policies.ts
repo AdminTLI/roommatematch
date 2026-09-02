@@ -64,6 +64,13 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
     exceptions: ['May be anonymized for longer-term quality analysis']
   },
   {
+    dataType: 'wish_board',
+    retentionDays: 365,
+    description: 'Domu Lab feature wishes, votes, and focus-group opt-ins',
+    legalBasis: 'Legitimate interest in product discovery and improving the platform',
+    exceptions: ['Anonymized after account deletion via CASCADE']
+  },
+  {
     dataType: 'application_logs',
     retentionDays: 90, // 90 days
     description: 'Application and server logs',

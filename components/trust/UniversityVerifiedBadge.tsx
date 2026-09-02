@@ -48,7 +48,7 @@ export function UniversityVerifiedBadge({
 
   const badge = (
     <Badge 
-      className={`bg-blue-600 text-white hover:bg-blue-700 transition-colors cursor-pointer flex items-center gap-1 ${sizeClasses[size]}`}
+      className={`bg-indigo-500 text-white hover:bg-indigo-600 transition-colors cursor-pointer flex items-center gap-1 ${sizeClasses[size]}`}
       onClick={() => setShowInfoModal(true)}
     >
       <Shield className={iconSizes[size]} />

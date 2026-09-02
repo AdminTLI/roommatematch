@@ -20,7 +20,7 @@ export const cookieConsentGlass = {
     row: 'border-slate-200/90 !bg-white',
     rowMuted: 'border-slate-200/90 !bg-slate-50',
     primaryBtn:
-      'rounded-full !bg-blue-600 !text-white font-semibold shadow-[0_12px_30px_rgba(15,23,42,0.16)] hover:!bg-blue-700',
+      'rounded-full !bg-indigo-500 !text-white font-semibold shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:!bg-indigo-600',
     outlineBtn:
       'rounded-full !border-slate-300 !bg-white !text-slate-900 shadow-sm hover:!bg-slate-50 hover:!border-slate-400',
     ghostBtn:
@@ -44,7 +44,7 @@ export const cookieConsentGlass = {
     row: 'border-slate-600',
     rowMuted: 'border-slate-600 bg-slate-800/60',
     primaryBtn:
-      'rounded-full !bg-violet-600 !text-white font-semibold shadow-lg shadow-violet-600/25 hover:!bg-violet-700',
+      'rounded-full !bg-indigo-500 !text-white font-semibold shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:!bg-indigo-600',
     outlineBtn:
       'rounded-full !border-slate-600 !bg-slate-800/80 !text-slate-100 hover:!bg-slate-800',
     ghostBtn:

@@ -40,13 +40,15 @@ export function AdminHubShell({
   const displayDescription = description ?? hubDef.description
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 space-y-1">
+    <div className="admin-console mx-auto max-w-7xl space-y-8">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-2">
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             {displayTitle}
           </h1>
-          <p className="text-sm text-muted-foreground max-w-2xl">{displayDescription}</p>
+          <p className="max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+            {displayDescription}
+          </p>
         </div>
         {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
       </div>

@@ -20,7 +20,7 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       // High-contrast glass field on dark background
-      "flex h-11 w-full items-center justify-between rounded-xl border border-white/40 bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-md shadow-slate-900/40 ring-offset-transparent backdrop-blur-md placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/80 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 [&>span]:text-slate-900 [&>span[data-placeholder]]:text-slate-500",
+      "flex h-11 w-full items-center justify-between rounded-xl border border-white/40 bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-md shadow-slate-900/40 ring-offset-transparent backdrop-blur-md placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/80 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 [&>span]:text-inherit [&>span[data-placeholder]]:text-slate-500 dark:border-slate-500 dark:bg-slate-800 dark:text-slate-50 dark:shadow-none dark:[&>span]:!text-slate-50 dark:[&>span[data-placeholder]]:!text-slate-400 dark:[&_svg]:text-slate-300",
       className
     )}
     {...props}

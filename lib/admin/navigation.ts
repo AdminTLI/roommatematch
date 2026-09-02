@@ -43,35 +43,35 @@ export const ADMIN_HUBS: AdminHubDefinition[] = [
   {
     id: 'people',
     label: 'People',
-    href: '/admin/people',
+    href: '/admin/users',
     icon: Users,
     description: 'Users, registration funnel, roles, and identity verification',
   },
   {
     id: 'safety',
     label: 'Safety',
-    href: '/admin/safety',
+    href: '/admin/reports',
     icon: Shield,
-    description: 'User reports and flagged messages',
+    description: 'User reports, flagged messages, and Lab wish reports',
   },
   {
     id: 'platform',
     label: 'Platform',
-    href: '/admin/platform',
+    href: '/admin/matches',
     icon: Layers,
     description: 'Matches, matching controls, and chat moderation',
   },
   {
     id: 'insights',
     label: 'Insights',
-    href: '/admin/insights',
+    href: '/admin/metrics',
     icon: BarChart3,
     description: 'Institutional metrics and questionnaire analytics',
   },
   {
     id: 'system',
     label: 'System',
-    href: '/admin/system',
+    href: '/admin/settings',
     icon: Settings,
     description: 'Settings, logs, security, privacy, and support',
   },
@@ -87,7 +87,7 @@ export const ADMIN_HUB_ROUTE_MAP: Record<AdminHubId, string[]> = {
   ],
   safety: ['/admin/safety', '/admin/reports'],
   platform: ['/admin/platform', '/admin/matches', '/admin/matching', '/admin/chats'],
-  insights: ['/admin/insights', '/admin/metrics', '/admin/analytics'],
+  insights: ['/admin/insights', '/admin/metrics', '/admin/analytics', '/admin/lab'],
   system: [
     '/admin/system',
     '/admin/settings',
@@ -111,6 +111,12 @@ export const ADMIN_SECTION_TABS: Record<Exclude<AdminHubId, 'overview'>, AdminSe
   safety: [
     { id: 'reports', label: 'Reports', href: '/admin/reports' },
     { id: 'flagged', label: 'Flagged', href: '/admin/reports?tab=flagged' },
+    {
+      id: 'lab',
+      label: 'Lab reports',
+      href: '/admin/reports?tab=lab',
+      superAdminOnly: true,
+    },
   ],
   platform: [
     { id: 'matches', label: 'Matches', href: '/admin/matches' },
@@ -130,6 +136,7 @@ export const ADMIN_SECTION_TABS: Record<Exclude<AdminHubId, 'overview'>, AdminSe
       href: '/admin/metrics?tab=questionnaire',
       superAdminOnly: true,
     },
+    { id: 'domu-lab', label: 'Domu Lab', href: '/admin/lab' },
   ],
   system: [
     { id: 'settings', label: 'Settings', href: '/admin/settings', superAdminOnly: true },

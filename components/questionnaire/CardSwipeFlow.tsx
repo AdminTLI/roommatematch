@@ -389,7 +389,7 @@ function CardSwipeFlowInner({
                 <button
                   type="button"
                   onClick={returnToReview}
-                  className="inline-flex items-center justify-center rounded-xl bg-[#4F46E5] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] transition hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                  className="inline-flex items-center justify-center rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] transition hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400"
                 >
                   Back to review
                 </button>

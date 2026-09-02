@@ -315,7 +315,7 @@ export function MessengerTypingBar({
               className={cn(
                 'grid h-11 w-11 shrink-0 place-items-center touch-manipulation rounded-full transition-colors',
                 hasText
-                  ? 'bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] text-white shadow-md hover:brightness-110'
+                  ? 'bg-indigo-500 text-white shadow-md hover:brightness-110'
                   : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-700 dark:text-zinc-500',
                 'disabled:cursor-not-allowed',
               )}

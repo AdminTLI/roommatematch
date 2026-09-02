@@ -178,7 +178,7 @@ export function DeleteAccountClient({
               <Button
                 onClick={handleHideProfile}
                 disabled={hideLoading}
-                className="flex-1 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20"
+                className="flex-1 h-12 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
               >
                 {hideLoading ? (
                   <>

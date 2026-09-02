@@ -285,7 +285,7 @@ const CONTEXT_TOOLTIP =
             <div className="mt-4">
               <button
                 type="button"
-                className="w-full rounded-2xl py-3 text-center font-semibold text-white shadow-[0_14px_40px_rgba(124,58,237,0.28)] bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600"
+                className="w-full rounded-2xl py-3 text-center font-semibold text-white shadow-[0_14px_40px_rgba(124,58,237,0.28)] bg-indigo-500"
                 onClick={() => setShowDetails(true)}
               >
                 {locale === 'nl' ? 'Bekijk details' : 'View Details'}
@@ -312,7 +312,7 @@ const CONTEXT_TOOLTIP =
             <div className="pt-4">
               <Button
                 asChild
-                className="w-full rounded-2xl py-3 h-auto text-center font-semibold text-white shadow-[0_14px_40px_rgba(124,58,237,0.22)] bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:opacity-95"
+                className="w-full rounded-2xl py-3 h-auto text-center font-semibold text-white shadow-[0_14px_40px_rgba(124,58,237,0.22)] bg-indigo-500 hover:opacity-95"
               >
                 <Link href="/auth/sign-up">{locale === 'nl' ? 'Chat' : 'Chat'}</Link>
               </Button>
@@ -464,7 +464,7 @@ const CONTEXT_TOOLTIP =
             <div className="mt-6">
               <button
                 type="button"
-                className="w-full rounded-2xl bg-indigo-600/90 text-white py-4 text-center font-semibold"
+                className="w-full rounded-2xl bg-indigo-500 text-white py-4 text-center font-semibold"
                 onClick={() => setShowDetails(false)}
               >
                 {locale === 'nl' ? 'Terug naar profiel' : 'Back to Profile'}

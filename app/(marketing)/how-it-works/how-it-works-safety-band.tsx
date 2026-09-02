@@ -50,7 +50,7 @@ export function HowItWorksSafetyBand() {
             <div className="flex flex-col sm:flex-row gap-3 md:justify-end">
               <Button
                 size="lg"
-                className="bg-slate-900 text-white hover:bg-slate-900/90 shadow-[0_12px_30px_rgba(15,23,42,0.18)] rounded-2xl"
+                className="bg-indigo-500 text-white hover:bg-indigo-600 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] rounded-xl"
                 asChild
               >
                 <Link href="/auth/sign-up">{t.primary}</Link>

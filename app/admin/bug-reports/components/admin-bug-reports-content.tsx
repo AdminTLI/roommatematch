@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Bug, Eye, RefreshCw } from 'lucide-react'
+import { Eye, RefreshCw } from 'lucide-react'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { cn } from '@/lib/utils'
@@ -188,17 +188,8 @@ export function AdminBugReportsContent() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-            <Bug className="h-6 w-6 text-amber-600" />
-            Bug Reports
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Product and error reports from users ({total} total)
-          </p>
-        </div>
+    <div className="space-y-8">
+      <div className="flex justify-end">
         <Button type="button" variant="outline" size="sm" onClick={loadReports} disabled={isLoading}>
           <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
@@ -247,9 +238,12 @@ export function AdminBugReportsContent() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Reports ({total})</CardTitle>
+        </CardHeader>
+        <CardContent>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">Loading…</p>
           ) : (
             <DataTable
               columns={columns}

@@ -9,10 +9,10 @@ import { Loader2, Check, User, Mail, GraduationCap, Phone, Info, CheckCircle, Al
 import { Textarea } from '@/components/ui/textarea'
 import { InterestsSelector } from '@/components/settings/interests-selector'
 import { HousingStatusSelector } from '@/components/settings/housing-status-selector'
-import {
-  HousingBudgetSlider,
+import { HousingBudgetSlider,
   HOUSING_BUDGET_DEFAULT,
 } from '@/components/settings/housing-budget-slider'
+import { CoCreatorBadgeSettings } from '@/components/lab/co-creator-badge-settings'
 import { trackProfileUpdate } from '@/lib/notifications/activity-tracker'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -201,6 +201,7 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
 
   return (
     <div className="space-y-10">
+      <CoCreatorBadgeSettings />
       {error && (
         <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
           <AlertDescription>{error}</AlertDescription>
@@ -430,7 +431,7 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
         <Button
           onClick={handleSave}
           disabled={isLoading}
-          className="w-full sm:w-auto min-w-[160px] h-11 text-base bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/20"
+          className="w-full sm:w-auto min-w-[160px] h-11 text-base bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
         >
           {isLoading ? (
             <>

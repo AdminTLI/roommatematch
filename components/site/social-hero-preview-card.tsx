@@ -262,7 +262,7 @@ const dimensionConfig: Record<
             {/* View details placeholder (must be above Why you match) */}
             <div className="mt-5">
               <div
-                className="w-full rounded-2xl py-3.5 text-center font-semibold text-white shadow-[0_14px_40px_rgba(124,58,237,0.28)] bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600"
+                className="w-full rounded-2xl py-3.5 text-center font-semibold text-white shadow-[0_14px_40px_rgba(124,58,237,0.28)] bg-indigo-500"
                 aria-hidden
               >
                 {locale === 'nl' ? 'Bekijk details' : 'View Details'}
@@ -288,7 +288,7 @@ const dimensionConfig: Record<
             {/* Chat placeholder (bottom, like screenshot) */}
             <div className="pt-5">
               <div
-                className="w-full rounded-2xl py-3.5 text-center font-semibold text-white shadow-[0_14px_40px_rgba(124,58,237,0.22)] bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600"
+                className="w-full rounded-2xl py-3.5 text-center font-semibold text-white shadow-[0_14px_40px_rgba(124,58,237,0.22)] bg-indigo-500"
                 aria-hidden
               >
                 {locale === 'nl' ? 'Chat' : 'Chat'}
@@ -384,7 +384,7 @@ const dimensionConfig: Record<
               </div>
 
               <div className="mt-6">
-                <div className="w-full rounded-2xl bg-indigo-600/90 text-white py-4 text-center font-semibold" aria-hidden>
+                <div className="w-full rounded-2xl bg-indigo-500 text-white py-4 text-center font-semibold" aria-hidden>
                   {locale === 'nl' ? 'Terug naar profiel' : 'Back to Profile'}
                 </div>
               </div>

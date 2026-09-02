@@ -138,7 +138,7 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-300 ${activeTab === item.id
-                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                      ? 'bg-indigo-500 text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]'
                       : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white'
                     }`}
                 >
@@ -157,7 +157,7 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
                   className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 border ${activeTab === item.id
-                      ? 'bg-blue-500 border-blue-400 text-white'
+                      ? 'bg-indigo-500 border-indigo-400 text-white'
                       : 'bg-white/80 dark:bg-zinc-900/40 border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400'
                     }`}
                 >

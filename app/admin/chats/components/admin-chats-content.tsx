@@ -337,19 +337,16 @@ export function AdminChatsContent() {
   ]
 
   if (isLoading) {
-    return <div className="p-6">Loading...</div>
+    return (
+      <div className="rounded-2xl border border-border-subtle bg-bg-surface p-6 text-sm text-slate-600 dark:text-slate-300">
+        Loading chats...
+      </div>
+    )
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Chat Management</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            View and manage chat rooms ({total} total)
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-center justify-end gap-2">
           <ChatFilters
             filters={filterMetadata}
             selectedFilters={selectedFilters}
@@ -359,13 +356,12 @@ export function AdminChatsContent() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-        </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Chats</CardTitle>
-          <CardDescription>All chat rooms in the system</CardDescription>
+          <CardTitle className="text-lg">Chats</CardTitle>
+          <CardDescription>All chat rooms in the system ({total} total)</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

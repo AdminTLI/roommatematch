@@ -91,7 +91,7 @@ export function StatusQuoSection() {
                   className={cn(
                     'rounded-2xl px-4 py-3 text-left transition-colors border',
                     side === 'old'
-                      ? 'bg-slate-900 text-white border-slate-900'
+                      ? 'bg-indigo-500 text-white border-indigo-500'
                       : 'bg-white/50 text-slate-800 border-white/60 hover:bg-white/70'
                   )}
                 >
@@ -108,7 +108,7 @@ export function StatusQuoSection() {
                   className={cn(
                     'rounded-2xl px-4 py-3 text-left transition-colors border',
                     side === 'domu'
-                      ? 'bg-slate-900 text-white border-slate-900'
+                      ? 'bg-indigo-500 text-white border-indigo-500'
                       : 'bg-white/50 text-slate-800 border-white/60 hover:bg-white/70'
                   )}
                 >

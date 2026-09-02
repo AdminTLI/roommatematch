@@ -85,7 +85,7 @@ export function ModuleCompletionScreen({
     }
 
     const colors = [
-      '#4F46E5',
+      '#6366F1',
       '#6366F1',
       '#818CF8',
       '#A5B4FC',
@@ -214,7 +214,7 @@ export function ModuleCompletionScreen({
             ref={cardRef}
             className="relative z-20 w-full max-w-[560px] rounded-2xl bg-white p-8 text-center shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/70 dark:bg-slate-800 dark:shadow-black/40 dark:ring-slate-700/80 sm:p-10"
           >
-            <div className="mx-auto mb-5 flex h-9 w-9 items-center justify-center rounded-full bg-[#4F46E5] text-white shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] dark:bg-indigo-500">
+            <div className="mx-auto mb-5 flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500 text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500">
               <Check className="h-5 w-5" strokeWidth={2.75} aria-hidden />
             </div>
 
@@ -245,7 +245,7 @@ export function ModuleCompletionScreen({
               onClick={() => router.push(nextUrl)}
               className={cn(
                 'mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
-                'bg-[#4F46E5] shadow-[0_10px_25px_-5px_rgba(79,70,229,0.35)] hover:bg-indigo-600 hover:shadow-[0_12px_28px_-5px_rgba(79,70,229,0.45)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
               )}
             >
               {isLast ? 'Review your answers' : 'Continue'}

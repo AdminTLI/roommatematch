@@ -123,7 +123,7 @@ export function OnboardingChromeHeader({
           aria-label={titleOverride ?? `Module ${moduleIndex} of ${moduleTotal}`}
         >
           <div
-            className="h-full rounded-full bg-[#4F46E5] transition-all duration-500 ease-out dark:bg-indigo-400"
+            className="h-full rounded-full bg-indigo-500 transition-all duration-500 ease-out dark:bg-indigo-400"
             style={{ width: `${progress}%` }}
           />
         </div>

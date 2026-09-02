@@ -327,7 +327,7 @@ export function MessengerMessageBubble({
   }
 
   const bubbleGlass = isOwn
-    ? 'bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] text-white shadow-[0_2px_12px_rgba(124,58,237,0.25)]'
+    ? 'bg-indigo-500 text-white shadow-[0_2px_12px_rgba(124,58,237,0.25)]'
     : 'bg-[#F1F5F9] text-[#0F172A] shadow-[0_1px_8px_rgba(15,23,42,0.04)] dark:bg-zinc-800 dark:text-zinc-100'
 
   const bubbleInner = (
