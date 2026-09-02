@@ -60,14 +60,13 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
   const supabase = createClient()
   const personaClientRef = useRef<any>(null)
   const scriptLoadedRef = useRef(false)
-  const shouldAutoOpenRef = useRef(true) // Track if we should auto-open when ready
-  const statusFetchedRef = useRef(false) // Track if status has been fetched
   const statusRef = useRef<VerificationStatus>('unverified') // Track latest status in ref
   const hasOpenedPersonaRef = useRef(false) // Track if Persona has been opened to prevent multiple opens
   
   const [status, setStatus] = useState<VerificationStatus>('unverified')
   const [isLoading, setIsLoading] = useState(true)
   const [isStarting, setIsStarting] = useState(false)
+  const [isPersonaReady, setIsPersonaReady] = useState(false)
   const [isPersonaActive, setIsPersonaActive] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
@@ -152,11 +151,7 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
 
   // Fetch verification status on mount
   useEffect(() => {
-    fetchStatus().then(() => {
-      statusFetchedRef.current = true
-      // Don't auto-open here - let onReady handle it to avoid double-opening
-      // This prevents rate limiting from Persona
-    })
+    fetchStatus()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -200,50 +195,10 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
         templateId,
         environmentId,
         onReady: () => {
-          // Auto-open Persona widget when ready (embedded flow)
-          setIsLoading(false)
-          // Store client reference immediately
+          // Keep the intro on screen until the user starts verification.
           personaClientRef.current = client
-          
-          // Auto-open immediately when ready, but only if:
-          // 1. We should auto-open (user hasn't manually started)
-          // 2. Status has been fetched OR we'll wait for it
-          // 3. User is unverified or failed
-          // 4. Persona hasn't been opened yet (prevent multiple opens)
-          const tryAutoOpen = () => {
-            const currentStatus = statusRef.current
-            
-            // Prevent multiple opens that could cause rate limiting
-            if (hasOpenedPersonaRef.current) {
-              console.log('[Verify] Persona already opened, skipping auto-open')
-              return
-            }
-            
-            if (shouldAutoOpenRef.current && (currentStatus === 'unverified' || currentStatus === 'failed')) {
-              setIsStarting(true)
-              setIsPersonaActive(true)
-              hasOpenedPersonaRef.current = true
-              try {
-                client.open()
-              } catch (err) {
-                console.error('Failed to open Persona on ready:', err)
-                setIsStarting(false)
-                setIsPersonaActive(false)
-                hasOpenedPersonaRef.current = false // Reset on error so user can retry
-                setError('Failed to start verification. Please try again.')
-              }
-            } else if (currentStatus === 'verified' || currentStatus === 'pending') {
-              // Status is verified or pending, don't auto-open
-              shouldAutoOpenRef.current = false
-            }
-          }
-          
-          // CRITICAL: Only auto-open if status has been fetched. Never open before API confirms -
-          // otherwise verified users see Persona due to race (Persona loads before status API).
-          if (statusFetchedRef.current) {
-            tryAutoOpen()
-          }
-          // If not fetched yet: fetchStatus completion will open when it gets unverified/failed
+          setIsPersonaReady(true)
+          setIsLoading(false)
         },
         onComplete: async ({ inquiryId, status: personaStatus }) => {
           console.log(`Completed inquiry ${inquiryId} with status ${personaStatus}`)
@@ -422,38 +377,16 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
         console.log('[Verify] Status fetched:', { newStatus, fullData: data })
         setStatus(newStatus)
         statusRef.current = newStatus
-        statusFetchedRef.current = true
-        
-        if (newStatus === 'verified' || newStatus === 'pending') {
-          shouldAutoOpenRef.current = false
-        }
 
         // Already verified: leave /verify immediately (fixes login redirect loops / white screens)
         if (newStatus === 'verified') {
           window.location.replace(redirectTo)
           return
         }
-        
-        // If user needs verification AND Persona is ready, open now (Persona onReady may have fired before us)
-        if ((newStatus === 'unverified' || newStatus === 'failed') && shouldAutoOpenRef.current && !hasOpenedPersonaRef.current && personaClientRef.current) {
-          setIsStarting(true)
-          setIsPersonaActive(true)
-          hasOpenedPersonaRef.current = true
-          try {
-            personaClientRef.current.open()
-          } catch (err) {
-            console.error('Failed to open Persona after status fetch:', err)
-            setIsStarting(false)
-            setIsPersonaActive(false)
-            hasOpenedPersonaRef.current = false
-          }
-        }
       } else if (response.status === 404) {
         // Profile doesn't exist yet - user is unverified
         console.log('[Verification] Status endpoint returned 404, treating as unverified')
         setStatus('unverified')
-        statusFetchedRef.current = true
-        // Keep shouldAutoOpen as true for unverified users
       } else if (response.status === 401) {
         // Unauthorized - session might have expired
         console.warn('[Verification] Status check unauthorized, redirecting to sign in')
@@ -461,12 +394,10 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
       } else {
         console.error('[Verification] Status check failed:', response.status, response.statusText)
         // Don't set error for status check failures - just log it
-        statusFetchedRef.current = true
       }
     } catch (error) {
       console.error('[Verification] Failed to fetch verification status:', error)
       // Don't set error for status check failures - just log it
-      statusFetchedRef.current = true
     } finally {
       setIsLoading(false)
     }
@@ -482,7 +413,6 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
     setIsStarting(true)
     setIsPersonaActive(true)
     setError(null)
-    shouldAutoOpenRef.current = false // User manually started, don't auto-open again
 
     if (!personaClientRef.current) {
       setError('Verification service not ready. Please wait a moment and try again.')
@@ -690,9 +620,9 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
                       Try again or contact support if this keeps happening.
                     </p>
                   </div>
-                  <Button onClick={retryVerification} disabled={isStarting} className="w-full">
-                    <RefreshCw className={cn('h-4 w-4 mr-2', isStarting && 'animate-spin')} />
-                    {isStarting ? 'Starting...' : 'Retry verification'}
+                  <Button onClick={retryVerification} disabled={isStarting || !isPersonaReady} className="w-full">
+                    <RefreshCw className={cn('h-4 w-4 mr-2', (isStarting || !isPersonaReady) && 'animate-spin')} />
+                    {isStarting ? 'Starting...' : !isPersonaReady ? 'Preparing verification...' : 'Retry verification'}
                   </Button>
                 </div>
               )}
@@ -753,7 +683,7 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
 
                   <Button
                     onClick={startVerification}
-                    disabled={isStarting || !personaClientRef.current}
+                    disabled={isStarting || !isPersonaReady}
                     size="lg"
                     className="w-full"
                   >
@@ -761,6 +691,11 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Starting...
+                      </>
+                    ) : !isPersonaReady ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Preparing verification...
                       </>
                     ) : (
                       'Start verification'
