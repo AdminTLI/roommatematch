@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { SettingsContent } from './components/settings-content'
 import { getUserProfile } from '@/lib/auth/user-profile'
+import { resolveAuthIdentityName, resolveStoredProfileName } from '@/lib/auth/identity-name'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { getUserType } from '@/lib/auth/cohort-visibility'
 import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
@@ -308,13 +309,14 @@ export default async function SettingsPage() {
           // Use upsertProfileAndAcademic to create the record
           const { upsertProfileAndAcademic } = await import('@/lib/onboarding/submission')
           
-          // Get first name from user metadata or email
-          const firstName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
+          const identity = resolveAuthIdentityName(user)
+          const firstName = identity.firstName || 'User'
           
           await upsertProfileAndAcademic(serviceSupabase, {
             user_id: user.id,
             university_id: university_id,
             first_name: firstName,
+            last_name: identity.lastName,
             degree_level: degree_level,
             program_id: programUUID || undefined,
             program: undefined,
@@ -729,6 +731,15 @@ export default async function SettingsPage() {
       }
     } catch (e) {
       console.warn('[Settings] Failed deriving program name from snapshot:', e)
+    }
+  }
+
+  const identityNames = resolveStoredProfileName(profile, user)
+  if (profile) {
+    profile = {
+      ...profile,
+      first_name: identityNames.firstName || profile.first_name,
+      last_name: identityNames.lastName ?? profile.last_name,
     }
   }
 

@@ -447,6 +447,7 @@ export async function POST(request: Request) {
               user_id: userId,
               university_id: submissionData.university_id,
               first_name: submissionData.first_name,
+              last_name: submissionData.last_name,
               degree_level: submissionData.degree_level,
               program_id: submissionData.program_id ?? undefined,
               program: submissionData.program,

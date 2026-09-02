@@ -4,29 +4,14 @@ import { createClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { profileUpdateSchema } from '@/lib/validation/profile-schema'
 import { getUserFriendlyError as getFriendlyError } from '@/lib/errors/user-friendly-messages'
+import { resolveStoredProfileName } from '@/lib/auth/identity-name'
 
 /** Name and phone on the profile row are not updated via this endpoint (support-only). */
 function preservedProfileIdentity(user: User, existing: { first_name: string | null; last_name: string | null; phone: string | null } | null) {
-  if (existing?.first_name != null && String(existing.first_name).trim() !== '') {
-    return {
-      first_name: existing.first_name.trim(),
-      last_name: existing.last_name?.trim() || null,
-      phone: existing.phone?.trim() || null,
-    }
-  }
-  const meta = user.user_metadata || {}
-  const full = typeof meta.full_name === 'string' ? meta.full_name.trim() : ''
-  const firstFromFull = full.split(/\s+/)[0] || ''
-  const first =
-    (typeof meta.first_name === 'string' && meta.first_name.trim()) ||
-    firstFromFull ||
-    'Member'
-  const lastFromMeta = typeof meta.last_name === 'string' ? meta.last_name.trim() : ''
-  const lastFromFull = full.split(/\s+/).slice(1).join(' ').trim()
-  const last = lastFromMeta || lastFromFull || null
+  const resolved = resolveStoredProfileName(existing, user)
   return {
-    first_name: first,
-    last_name: last,
+    first_name: resolved.firstName || 'Member',
+    last_name: resolved.lastName,
     phone: existing?.phone?.trim() || null,
   }
 }

@@ -3,6 +3,7 @@ import { User } from '@supabase/supabase-js'
 import { itemIdToQuestionKey } from '@/lib/question-key-mapping'
 import { getInstitutionType } from '@/lib/getInstitutionType'
 import { calculateStudyYearWithMonths } from '@/lib/academic/calculateStudyYear'
+import { resolveAuthIdentityName } from '@/lib/auth/identity-name'
 
 import type { UserType } from '@/types/profile'
 
@@ -10,6 +11,7 @@ export interface OnboardingSubmissionData {
   user_id: string
   university_id: string
   first_name: string
+  last_name?: string | null
   degree_level: string
   date_of_birth?: string
   program_id?: string | null | undefined
@@ -185,7 +187,8 @@ export function extractSubmissionDataFromIntro(
     programme_duration_months = Math.max(12, Math.min(120, monthsDiff))
   }
 
-  const firstName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || 'User'
+  const identity = resolveAuthIdentityName(user)
+  const firstName = identity.firstName || 'User'
 
   // Ensure university_id is set if we have institution_slug (will be looked up in submit route if not set)
   // Return empty string if not set (submit route will handle lookup)
@@ -200,6 +203,7 @@ export function extractSubmissionDataFromIntro(
     user_id: user.id,
     university_id: finalUniversityId,
     first_name: firstName,
+    last_name: identity.lastName || undefined,
     date_of_birth: date_of_birth || undefined,
     degree_level,
     program_id,
@@ -433,12 +437,18 @@ export async function upsertProfileAndAcademic(
     }
   }
 
+  const lastName =
+    typeof data.last_name === 'string' && data.last_name.trim() !== ''
+      ? data.last_name.trim()
+      : null
+
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .upsert({
       user_id: data.user_id,
       university_id: data.university_id,
       first_name: data.first_name,
+      ...(lastName ? { last_name: lastName } : {}),
       degree_level: profileDegreeLevel, // Use mapped enum value for profiles table
       program: truncatedProgramName, // Use program name, not UUID
       campus: data.campus,
@@ -628,6 +638,7 @@ export interface CompleteOnboardingData {
   user_id: string
   university_id: string
   first_name: string
+  last_name?: string | null
   degree_level: string
   program_id?: string
   program?: string
@@ -718,6 +729,7 @@ export async function submitCompleteOnboarding(
         user_id: data.user_id,
         university_id: data.university_id,
         first_name: data.first_name,
+        last_name: data.last_name,
         degree_level: data.degree_level,
         program_id: data.program_id,
         program: data.program,

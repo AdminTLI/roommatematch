@@ -4,6 +4,7 @@ import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/auth/user-profile'
+import { resolveStoredProfileName } from '@/lib/auth/identity-name'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { getOnboardingRedirectUrlIfIncomplete } from '@/lib/onboarding/server-redirect'
 import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
@@ -43,16 +44,18 @@ export default async function MatchesPage() {
   // Get first name from profile for the greeting
   const { data: profile } = await supabase
     .from('profiles')
-    .select('first_name')
+    .select('first_name, last_name')
     .eq('user_id', user.id)
     .maybeSingle()
+
+  const identity = resolveStoredProfileName(profile, user)
 
   // Create user object with name and first name for StudentMatchesInterface
   const userWithName = {
     id: user.id,
     email: user.email || '',
     name: userProfile.name,
-    firstName: profile?.first_name || userProfile.name?.split(' ')[0] || 'Student',
+    firstName: identity.firstName || userProfile.name?.split(' ')[0] || 'Student',
     avatar: userProfile.avatar,
   }
 

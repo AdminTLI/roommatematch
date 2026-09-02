@@ -114,8 +114,9 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
         password,
         options: {
           data: {
-            first_name: firstName,
-            last_name: lastName,
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
             date_of_birth: dateOfBirth,
           },
           emailRedirectTo: `${window.location.origin}/auth/verify-email`,

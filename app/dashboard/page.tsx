@@ -7,7 +7,7 @@ import { DomuChatWidget } from './components/domu-chat-widget'
 import type { DashboardData } from '@/types/dashboard'
 import { checkQuestionnaireCompletion, questionSchemas } from '@/lib/onboarding/validation'
 import { calculateSectionProgress } from '@/lib/onboarding/sections'
-import { getUserDisplayName, getUserProfile } from '@/lib/auth/user-profile'
+import { getUserProfile } from '@/lib/auth/user-profile'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import matchModeConfig from '@/config/match-mode.json'
 
@@ -133,9 +133,7 @@ export default async function DashboardPage() {
     redirect('/auth/sign-in')
   }
 
-  // Derive first name for greeting from display name helper
-  const displayName = await getUserDisplayName(user.id)
-  const firstName = displayName.split(' ')[0] || ''
+  const firstName = userProfile.name.split(' ')[0] || ''
 
   return (
     <>

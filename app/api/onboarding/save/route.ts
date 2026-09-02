@@ -258,6 +258,7 @@ export async function POST(request: Request) {
             user_id: user.id,
             university_id: finalUniversityId,
             first_name: submissionData.first_name,
+            last_name: submissionData.last_name,
             degree_level: submissionData.degree_level,
             program_id: programUUID,
             program: submissionData.program,

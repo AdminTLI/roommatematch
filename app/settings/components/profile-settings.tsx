@@ -18,6 +18,7 @@ import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { type HousingStatusKey } from '@/lib/constants/housing-status'
+import { resolveStoredProfileName } from '@/lib/auth/identity-name'
 
 interface ProfileSettingsProps {
   user: any
@@ -51,8 +52,9 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
     }
   }
 
-  const displayFirstName = (profile?.first_name || user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || '').trim()
-  const displayLastName = (profile?.last_name || user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '').trim()
+  const identity = resolveStoredProfileName(profile, user)
+  const displayFirstName = identity.firstName || ''
+  const displayLastName = identity.lastName || ''
   const displayEmail = user.email || ''
   const displayPhone = profile?.phone || ''
 
