@@ -2,6 +2,14 @@
   "description": "Tracks published blog topics to reduce week-to-week repetition. Append one entry per new post.",
   "entries": [
     {
+      "slug": "roommate-chore-fairness-netherlands",
+      "date": "2026-09-02",
+      "category": "Compatibility",
+      "primaryKeyword": "roommate chore fairness Netherlands",
+      "pillar": "Living together",
+      "angle": "Three incompatible fairness meters for chores (task-box vs standards vs invisible labour); Roomietalks/Studiekeuzelab/CBS Emancipatiemonitor; not shortage-led"
+    },
+    {
       "slug": "housemate-support-living-away-from-home",
       "date": "2026-08-26",
       "category": "Wellbeing",

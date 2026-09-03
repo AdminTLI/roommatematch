@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'roommate-chore-fairness-netherlands',
+        title: 'Roommate Chore Fairness in Dutch Student Houses',
+        excerpt:
+          'A schoonmaakrooster is not fairness by itself. Student houses clash when people count contribution differently: hours, standards, or invisible noticing work.',
+        readTime: '8 min read',
+        date: '2026-09-02',
+        category: 'Compatibility',
+        icon: BookOpen,
+      },
+      {
         slug: 'housemate-support-living-away-from-home',
         title: 'Housemate Support When Living Away From Home',
         excerpt:
@@ -272,6 +282,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'roommate-chore-fairness-netherlands',
+        title: 'Eerlijke klusjesverdeling in Nederlandse studentenhuizen',
+        excerpt:
+          'Een schoonmaakrooster is nog geen eerlijkheid. Conflicten ontstaan wanneer huisgenoten bijdrage anders tellen: uren, standaarden of onzichtbaar noticeerwerk.',
+        readTime: '8 min lezen',
+        date: '2026-09-02',
+        category: 'Compatibiliteit',
+        icon: BookOpen,
+      },
       {
         slug: 'housemate-support-living-away-from-home',
         title: 'Steun van huisgenoten als je uit huis woont',

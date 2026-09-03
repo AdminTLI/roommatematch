@@ -2,6 +2,18 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "roommate-chore-fairness-netherlands",
+      "date": "2026-09-02",
+      "primarySourceUrls": [
+        "https://www.preventivelaw.nl/publicaties/roomietalks-samen-afspreken-beter-wonen/",
+        "https://www.studiekeuzelab.nl/kies/zo-maak-je-afspraken-met-je-huisgenoten",
+        "https://longreads.cbs.nl/emancipatiemonitor-2024/gelijk-in-europees-perspectief/"
+      ],
+      "statsUsed": [
+        "CBS Emancipatiemonitor 2024 70% women / 55% men daily household tasks NL"
+      ]
+    },
+    {
       "slug": "housemate-support-living-away-from-home",
       "date": "2026-08-26",
       "primarySourceUrls": [
