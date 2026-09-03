@@ -12,6 +12,11 @@ import { UNIVERSITY_EMAIL_RECOVERY_TAG } from '@/lib/university-email/constants'
 
 type FlagStatus = 'open' | 'dismissed' | 'released'
 
+function holderUserIds(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((id): id is string => typeof id === 'string')
+}
+
 function displayName(holder: Pick<UniversityEmailHolder, 'firstName' | 'lastName' | 'loginEmail'>) {
   const name = [holder.firstName, holder.lastName].filter(Boolean).join(' ').trim()
   return name || holder.loginEmail || 'Unknown'
@@ -85,7 +90,7 @@ export async function GET(request: NextRequest) {
     const userIds = new Set<string>()
     for (const flag of flags ?? []) {
       userIds.add(flag.attempting_user_id)
-      for (const holderId of flag.holder_user_ids ?? []) {
+      for (const holderId of holderUserIds(flag.holder_user_ids)) {
         userIds.add(holderId)
       }
     }
@@ -105,8 +110,8 @@ export async function GET(request: NextRequest) {
 
     const rows = (flags ?? []).map((flag) => {
       const attempting = peopleById.get(flag.attempting_user_id)
-      const holders = (flag.holder_user_ids ?? [])
-        .map((id: string) => peopleById.get(id))
+      const holders = holderUserIds(flag.holder_user_ids)
+        .map((id) => peopleById.get(id))
         .filter((holder): holder is UniversityEmailHolder => Boolean(holder))
 
       return {
