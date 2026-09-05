@@ -19,7 +19,17 @@ import {
 } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { AdminStatCard } from '@/components/admin/stat-card'
-import { ADMIN_FIELD_CLASS, ADMIN_LABEL_CLASS, ADMIN_PAGE_STACK } from '@/lib/admin/ui'
+import { AdminEmptyState } from '@/components/admin/empty-state'
+import { AdminStatusBadge } from '@/components/admin/status-badge'
+import {
+  ADMIN_FIELD_CLASS,
+  ADMIN_HELPER_TEXT,
+  ADMIN_KPI_CARD_CLASS,
+  ADMIN_LABEL_CLASS,
+  ADMIN_PAGE_STACK,
+  ADMIN_UNDERLINE_TAB_LIST,
+  ADMIN_UNDERLINE_TAB_TRIGGER,
+} from '@/lib/admin/ui'
 
 interface Match {
   id: string
@@ -305,20 +315,7 @@ export function AdminMatchesContent() {
     },
     {
       header: 'Status',
-      accessor: (row: Match) => {
-        const colors: Record<string, string> = {
-          pending: 'bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-200',
-          accepted: 'bg-yellow-100 text-yellow-800 dark:bg-amber-950/70 dark:text-amber-200',
-          declined: 'bg-red-100 text-red-800 dark:bg-red-950/70 dark:text-red-200',
-          expired: 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-slate-200',
-          confirmed: 'bg-green-100 text-green-800 dark:bg-emerald-950/70 dark:text-emerald-200'
-        }
-        return (
-          <Badge className={colors[row.status] || colors.pending}>
-            {row.status}
-          </Badge>
-        )
-      }
+      accessor: (row: Match) => <AdminStatusBadge status={row.status} />,
     },
     {
       header: 'Kind',
@@ -504,21 +501,21 @@ export function AdminMatchesContent() {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 rounded-xl bg-bg-surface-alt p-1.5">
-          <TabsTrigger value="matches" className="rounded-lg px-4 py-2">
-            <Users className="h-4 w-4 mr-2" />
+        <TabsList className={ADMIN_UNDERLINE_TAB_LIST}>
+          <TabsTrigger value="matches" className={ADMIN_UNDERLINE_TAB_TRIGGER}>
+            <Users className="mr-2 h-4 w-4" />
             Matches
           </TabsTrigger>
-          <TabsTrigger value="stats" className="rounded-lg px-4 py-2">
-            <TrendingDown className="h-4 w-4 mr-2" />
+          <TabsTrigger value="stats" className={ADMIN_UNDERLINE_TAB_TRIGGER}>
+            <TrendingDown className="mr-2 h-4 w-4" />
             Statistics
           </TabsTrigger>
-          <TabsTrigger value="blocklist" className="rounded-lg px-4 py-2">
-            <Ban className="h-4 w-4 mr-2" />
+          <TabsTrigger value="blocklist" className={ADMIN_UNDERLINE_TAB_TRIGGER}>
+            <Ban className="mr-2 h-4 w-4" />
             Blocklist
           </TabsTrigger>
-          <TabsTrigger value="activity" className="rounded-lg px-4 py-2">
-            <Activity className="h-4 w-4 mr-2" />
+          <TabsTrigger value="activity" className={ADMIN_UNDERLINE_TAB_TRIGGER}>
+            <Activity className="mr-2 h-4 w-4" />
             Activity Log
           </TabsTrigger>
         </TabsList>
@@ -545,29 +542,29 @@ export function AdminMatchesContent() {
           {matchStats ? (
             <>
               {/* Decline Statistics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
-                  <CardContent className="p-4">
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Total Declines</div>
-                    <div className="text-2xl font-bold text-red-600">{matchStats.summary.totalDeclines}</div>
+                  <CardContent className={ADMIN_KPI_CARD_CLASS}>
+                    <div className={ADMIN_HELPER_TEXT}>Total Declines</div>
+                    <div className="mt-1.5 text-2xl font-semibold text-red-600">{matchStats.summary.totalDeclines}</div>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardContent className="p-4">
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Blocklist Additions</div>
-                    <div className="text-2xl font-bold text-orange-600">{matchStats.summary.totalBlocklistAdditions}</div>
+                  <CardContent className={ADMIN_KPI_CARD_CLASS}>
+                    <div className={ADMIN_HELPER_TEXT}>Blocklist Additions</div>
+                    <div className="mt-1.5 text-2xl font-semibold text-orange-600">{matchStats.summary.totalBlocklistAdditions}</div>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardContent className="p-4">
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Decline Rate</div>
-                    <div className="text-2xl font-bold">{matchStats.summary.declineRate}%</div>
+                  <CardContent className={ADMIN_KPI_CARD_CLASS}>
+                    <div className={ADMIN_HELPER_TEXT}>Decline Rate</div>
+                    <div className="mt-1.5 text-2xl font-semibold">{matchStats.summary.declineRate}%</div>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardContent className="p-4">
-                    <div className="text-sm text-slate-600 dark:text-slate-300">Avg Declined Score</div>
-                    <div className="text-2xl font-bold">{matchStats.summary.avgDeclinedScore}</div>
+                  <CardContent className={ADMIN_KPI_CARD_CLASS}>
+                    <div className={ADMIN_HELPER_TEXT}>Avg Declined Score</div>
+                    <div className="mt-1.5 text-2xl font-semibold">{matchStats.summary.avgDeclinedScore}</div>
                   </CardContent>
                 </Card>
               </div>
@@ -667,7 +664,7 @@ export function AdminMatchesContent() {
         <TabsContent value="blocklist" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Blocklist</CardTitle>
+              <CardTitle className="text-lg font-medium">Blocklist</CardTitle>
               <CardDescription>Users who have been blocked from matching</CardDescription>
             </CardHeader>
             <CardContent>
@@ -705,7 +702,11 @@ export function AdminMatchesContent() {
                   />
                 </div>
               ) : (
-                <p className="text-sm text-slate-600 dark:text-slate-300 text-center py-8">No blocklist entries found</p>
+                <AdminEmptyState
+                  icon={Ban}
+                  title="No blocklist entries found"
+                  description="Users who block each other from matching will appear here."
+                />
               )}
             </CardContent>
           </Card>
@@ -714,43 +715,48 @@ export function AdminMatchesContent() {
         <TabsContent value="activity" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Activity Log</CardTitle>
+              <CardTitle className="text-lg font-medium">Activity Log</CardTitle>
               <CardDescription>Recent match actions (declines, accepts, confirms)</CardDescription>
             </CardHeader>
             <CardContent>
               {activityLog.length > 0 ? (
                 <div className="space-y-2">
                   {activityLog.map((activity) => {
-                    const actionColors: Record<string, string> = {
-                      decline: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300',
-                      accept: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300',
-                      confirm: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
-                      create: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
-                    }
+                    const actionStatus =
+                      activity.actionType === 'decline'
+                        ? 'declined'
+                        : activity.actionType === 'accept'
+                          ? 'accepted'
+                          : activity.actionType === 'confirm'
+                            ? 'confirmed'
+                            : 'pending'
                     return (
-                      <div 
-                        key={activity.id} 
-                        className="p-3 border border-border rounded-lg hover:bg-bg-surface-alt transition-colors"
+                      <div
+                        key={activity.id}
+                        className="rounded-lg border border-border p-4 transition-colors hover:bg-bg-surface-alt"
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge className={actionColors[activity.actionType] || 'bg-gray-100 text-gray-800'}>
-                                {activity.actionType}
-                              </Badge>
+                            <div className="mb-1 flex items-center gap-2">
+                              <AdminStatusBadge
+                                status={actionStatus}
+                                label={activity.actionType}
+                              />
                               <span className="text-sm font-medium">{activity.userName}</span>
                               {activity.matchScore && (
-                                <span className="text-xs text-slate-600 dark:text-slate-300">(Score: {activity.matchScore})</span>
+                                <span className={`text-xs ${ADMIN_HELPER_TEXT}`}>
+                                  (Score: {activity.matchScore})
+                                </span>
                               )}
                             </div>
-                            <p className="text-sm text-text-secondary">{activity.description}</p>
+                            <p className={`text-sm ${ADMIN_HELPER_TEXT}`}>{activity.description}</p>
                             {activity.blockedUserIds && activity.blockedUserIds.length > 0 && (
-                              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                              <p className={`mt-1 text-xs ${ADMIN_HELPER_TEXT}`}>
                                 Blocked users: {activity.blockedUserIds.length}
                               </p>
                             )}
                           </div>
-                          <span className="text-xs text-slate-600 dark:text-slate-300 ml-4">
+                          <span className={`ml-4 text-xs ${ADMIN_HELPER_TEXT}`}>
                             {new Date(activity.timestamp).toLocaleString()}
                           </span>
                         </div>
@@ -759,7 +765,11 @@ export function AdminMatchesContent() {
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-slate-600 dark:text-slate-300 text-center py-8">No activity found</p>
+                <AdminEmptyState
+                  icon={Activity}
+                  title="No activity found"
+                  description="Recent match declines, accepts, and confirms will show up here."
+                />
               )}
             </CardContent>
           </Card>
@@ -788,7 +798,9 @@ export function AdminMatchesContent() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-500 dark:text-slate-300">Status</label>
-                  <Badge>{selectedMatch.status}</Badge>
+                  <div className="mt-1">
+                    <AdminStatusBadge status={selectedMatch.status} />
+                  </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-slate-500 dark:text-slate-300">Kind</label>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Users, Star, MessageSquare, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Star, MessageSquare, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 
 interface OverallStats {
   totalResponses: number
@@ -63,15 +63,14 @@ export function SuccessNpsCard({ analyticsQuery = '' }: Props) {
   const overall = data?.overall
 
   return (
-    <Card className="border-indigo-200/70 dark:border-indigo-800/70 bg-indigo-50/40 dark:bg-indigo-950/20">
-      <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div>
-          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-            <Users className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            Placement Success & NPS
+          <CardTitle className="text-lg font-medium">
+            Placement and NPS
           </CardTitle>
-          <CardDescription className="mt-1 text-xs md:text-sm">
-            One-question micro-survey for roommate placement and Net Promoter Score.
+          <CardDescription className="mt-1">
+            Roommate placement outcomes and Net Promoter Score.
           </CardDescription>
         </div>
         {overall && (
@@ -101,15 +100,10 @@ export function SuccessNpsCard({ analyticsQuery = '' }: Props) {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <p className="text-xs uppercase tracking-wide text-indigo-700 dark:text-indigo-300 font-semibold">
-                  Placement rate
-                </p>
+                <p className="text-sm text-muted-foreground">Placement rate</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl md:text-3xl font-bold text-indigo-900 dark:text-indigo-100">
+                  <span className="text-2xl font-semibold tabular-nums tracking-tight">
                     {overall.placementRate.toFixed(1)}%
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    of respondents report having found a roommate
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
@@ -128,11 +122,9 @@ export function SuccessNpsCard({ analyticsQuery = '' }: Props) {
               </div>
 
               <div className="space-y-2">
-                <p className="text-xs uppercase tracking-wide text-indigo-700 dark:text-indigo-300 font-semibold">
-                  Net Promoter Score
-                </p>
+                <p className="text-sm text-muted-foreground">Net Promoter Score</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl md:text-3xl font-bold text-indigo-900 dark:text-indigo-100">
+                  <span className="text-2xl font-semibold tabular-nums tracking-tight">
                     {overall.npsScore !== null ? Math.round(overall.npsScore) : '–'}
                   </span>
                   {overall.npsScore !== null && (
@@ -161,7 +153,7 @@ export function SuccessNpsCard({ analyticsQuery = '' }: Props) {
 
             {data?.recentFeedback && data.recentFeedback.length > 0 && (
               <div className="mt-2 space-y-2">
-                <div className="flex items-center gap-2 text-xs font-semibold text-indigo-900 dark:text-indigo-100">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-gray-50">
                   <MessageSquare className="h-3 w-3" />
                   Recent qualitative feedback
                 </div>
@@ -172,10 +164,10 @@ export function SuccessNpsCard({ analyticsQuery = '' }: Props) {
                     .map((feedback) => (
                       <div
                         key={feedback.id}
-                        className="rounded-md bg-white/70 dark:bg-zinc-900/40 border border-indigo-100/70 dark:border-indigo-900/60 px-2.5 py-1.5 text-[11px] leading-snug text-zinc-800 dark:text-zinc-100"
+                        className="rounded-md border border-gray-200 bg-muted/40 px-3 py-2 text-sm leading-snug text-gray-800 dark:border-slate-700 dark:text-gray-100"
                       >
                         {feedback.nps_score !== null && (
-                          <div className="mb-0.5 flex items-center gap-1 text-[10px] text-indigo-700 dark:text-indigo-300">
+                          <div className="mb-0.5 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                             <Star className="h-3 w-3" />
                             Score {feedback.nps_score}/10
                             {feedback.success_status === 'domu_match' && (

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Globe2 } from 'lucide-react'
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
 
 interface IntegrationMetrics {
@@ -59,10 +58,7 @@ export function IntegrationMetricsCard({ analyticsQuery = '' }: Props) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe2 className="h-5 w-5 text-sky-500" />
-            <span>Cross-Cultural Integration Rate</span>
-          </CardTitle>
+          <CardTitle className="text-lg font-medium">Cross-cultural matches</CardTitle>
           <CardDescription>
             Matches bridging international and domestic student populations.
           </CardDescription>
@@ -81,10 +77,7 @@ export function IntegrationMetricsCard({ analyticsQuery = '' }: Props) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe2 className="h-5 w-5 text-sky-500" />
-            <span>Cross-Cultural Integration Rate</span>
-          </CardTitle>
+          <CardTitle className="text-lg font-medium">Cross-cultural matches</CardTitle>
           <CardDescription>
             Matches bridging international and domestic student populations.
           </CardDescription>
@@ -115,10 +108,7 @@ export function IntegrationMetricsCard({ analyticsQuery = '' }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Globe2 className="h-5 w-5 text-sky-500" />
-          <span>Cross-Cultural Integration Rate</span>
-        </CardTitle>
+        <CardTitle className="text-lg font-medium">Cross-cultural matches</CardTitle>
         <CardDescription>
           Matches bridging international and domestic student populations.
         </CardDescription>
@@ -126,7 +116,7 @@ export function IntegrationMetricsCard({ analyticsQuery = '' }: Props) {
       <CardContent>
         <div className="grid gap-6 md:grid-cols-2 md:items-center">
           <div className="space-y-3">
-            <div className="text-4xl font-bold tracking-tight">
+            <div className="text-2xl font-semibold tabular-nums tracking-tight">
               {rateDisplay}
               <span className="ml-1 text-xl text-muted-foreground">%</span>
             </div>

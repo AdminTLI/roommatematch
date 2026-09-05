@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Building2 } from 'lucide-react'
+import { ADMIN_FIELD_CLASS, ADMIN_LABEL_CLASS } from '@/lib/admin/ui'
 
 const NONE = '__none__'
 
@@ -18,7 +19,6 @@ type Props = {
   universityOptions: Array<{ id: string; name: string }>
   selectedUniversityId: string | null
   onUniversityChange: (id: string | null) => void
-  /** Shown to university admins (read-only context). */
   lockedUniversityName?: string | null
 }
 
@@ -31,42 +31,37 @@ export const AdminUniversityScopeBar = memo(function AdminUniversityScopeBar({
 }: Props) {
   if (!isPlatformSuper) {
     return (
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/80 bg-muted/30 px-3 py-2 text-sm">
-        <Building2 className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden />
-        <span className="font-medium text-foreground">Institution</span>
-        <span className="text-muted-foreground">
+      <div className="space-y-1.5 min-w-[200px]">
+        <Label className={ADMIN_LABEL_CLASS}>Institution</Label>
+        <p className="flex h-10 items-center gap-2 text-sm text-gray-900 dark:text-gray-50">
+          <Building2 className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
           {lockedUniversityName?.trim() ? lockedUniversityName : 'Your assigned university'}
-        </span>
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-4 min-w-0 flex-1 max-w-xl">
-      <div className="space-y-1.5 flex-1 min-w-0">
-        <Label htmlFor="admin-metrics-university" className="text-xs font-medium">
-          Institution Scope
-        </Label>
-        <Select
-          value={selectedUniversityId ?? NONE}
-          onValueChange={(v) => onUniversityChange(v === NONE ? null : v)}
-        >
-          <SelectTrigger id="admin-metrics-university" className="h-10 w-full bg-background">
-            <SelectValue placeholder="Select a university" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={NONE}>Choose a university…</SelectItem>
-            {universityOptions.map((u) => (
-              <SelectItem key={u.id} value={u.id}>
-                {u.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="text-[11px] text-muted-foreground leading-snug">
-          You can switch institutions at any time. All figures reload for the newly selected tenant.
-        </p>
-      </div>
+    <div className="space-y-1.5 min-w-[220px] flex-1 max-w-sm">
+      <Label htmlFor="admin-metrics-university" className={ADMIN_LABEL_CLASS}>
+        Institution
+      </Label>
+      <Select
+        value={selectedUniversityId ?? NONE}
+        onValueChange={(v) => onUniversityChange(v === NONE ? null : v)}
+      >
+        <SelectTrigger id="admin-metrics-university" className={ADMIN_FIELD_CLASS}>
+          <SelectValue placeholder="Select a university" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={NONE}>Choose a university…</SelectItem>
+          {universityOptions.map((u) => (
+            <SelectItem key={u.id} value={u.id}>
+              {u.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 })

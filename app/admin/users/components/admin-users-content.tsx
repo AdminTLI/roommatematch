@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { DataTable } from '@/components/admin/data-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, Download } from 'lucide-react'
 import { useIsSuperAdmin } from '@/lib/auth/roles-client'
@@ -13,6 +12,7 @@ import { UserActionsDropdown } from './user-actions-dropdown'
 import { UserFilters } from './user-filters'
 import { RoleManagementPanel } from './role-management-panel'
 import { RegistrationWorkflowPanel } from './registration-workflow-panel'
+import { AdminStatusBadge } from '@/components/admin/status-badge'
 import { ADMIN_PAGE_STACK } from '@/lib/admin/ui'
 
 interface User {
@@ -140,20 +140,9 @@ export function AdminUsersContent() {
     },
     {
       header: 'Verification',
-      accessor: (row: User) => {
-        const status = row.verification_status
-        const colors: Record<string, string> = {
-          verified: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
-          pending: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
-          failed: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
-          unverified: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
-        }
-        return (
-          <Badge className={colors[status] || colors.unverified}>
-            {status}
-          </Badge>
-        )
-      },
+      accessor: (row: User) => (
+        <AdminStatusBadge status={row.verification_status || 'unverified'} />
+      ),
       tooltip: 'Identity verification status: "verified" means the user has successfully completed identity verification, "pending" means verification is in progress, "failed" means verification was rejected, and "unverified" means the user has not yet started the verification process.'
     },
     {
@@ -163,9 +152,10 @@ export function AdminUsersContent() {
         // If undefined/null, assume active (since they can log in)
         const isSuspended = row.is_active === false
         return (
-          <Badge variant={isSuspended ? 'secondary' : 'default'}>
-            {isSuspended ? 'Suspended' : 'Active'}
-          </Badge>
+          <AdminStatusBadge
+            status={isSuspended ? 'suspended' : 'active'}
+            label={isSuspended ? 'Suspended' : 'Active'}
+          />
         )
       },
       tooltip: 'Account status: "Active" means the user can log in and use the platform normally. "Suspended" means the account has been temporarily or permanently disabled by an administrator and the user cannot access the platform. Note: If a user can log in, their status will always be Active.'
@@ -254,7 +244,7 @@ export function AdminUsersContent() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Users</CardTitle>
+                <CardTitle className="text-lg font-medium">Users</CardTitle>
                 <CardDescription>
                   Every account on the platform. Manage elevated access from Roles, and
                   registration drop-off from Registration.

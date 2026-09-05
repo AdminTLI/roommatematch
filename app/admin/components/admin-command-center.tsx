@@ -12,6 +12,11 @@ import {
 } from '@/app/admin/components/system-status-panel'
 import { AdminHubShell } from '@/app/admin/components/admin-hub-shell'
 import {
+  ADMIN_HELPER_TEXT,
+  ADMIN_KPI_CARD_CLASS,
+  ADMIN_SECTION_TITLE,
+} from '@/lib/admin/ui'
+import {
   Users,
   TrendingUp,
   Shield,
@@ -310,28 +315,36 @@ export function AdminCommandCenter() {
     >
       {/* Action queues */}
       <div>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-          Action queues
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <h2 className={ADMIN_SECTION_TITLE}>Action queues</h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 lg:gap-5">
           {queueItems.map((item) => {
             const Icon = item.icon
             return (
-              <Link key={item.label} href={item.href}>
+              <Link key={item.label} href={item.href} className="min-w-0">
                 <Card
-                  className={`cursor-pointer transition hover:ring-2 hover:ring-violet-300/50 ${item.count > 0 ? 'border-amber-200/80' : ''}`}
+                  className={`h-full min-h-[8.5rem] overflow-hidden border-transparent shadow-md shadow-slate-900/8 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/12 ${item.bg} ${
+                    item.count > 0 ? 'ring-1 ring-amber-300/60' : 'ring-1 ring-black/5'
+                  }`}
                 >
-                  <CardContent className={`p-4 ${item.bg} rounded-lg`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <Icon className={`h-4 w-4 ${item.color}`} />
-                      {item.count > 0 && (
-                        <Badge variant="destructive" className="text-xs">
+                  <CardContent className="flex h-full min-h-[8.5rem] flex-col p-5">
+                    <div className="mb-3 flex items-center justify-between gap-2">
+                      <Icon className={`h-4 w-4 shrink-0 ${item.color}`} />
+                      {item.count > 0 ? (
+                        <Badge variant="destructive" className="shrink-0 text-xs">
                           {item.count}
                         </Badge>
+                      ) : (
+                        <span className="h-5 w-5 shrink-0" aria-hidden />
                       )}
                     </div>
-                    <p className="text-2xl font-bold tabular-nums">{item.count}</p>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.label}</p>
+                    <p className="text-2xl font-semibold tabular-nums tracking-tight">
+                      {item.count}
+                    </p>
+                    <p
+                      className={`mt-auto pt-2 line-clamp-2 min-h-[2.5rem] leading-snug ${ADMIN_HELPER_TEXT}`}
+                    >
+                      {item.label}
+                    </p>
                   </CardContent>
                 </Card>
               </Link>
@@ -340,12 +353,12 @@ export function AdminCommandCenter() {
         </div>
       </div>
 
-      {/* Time period */}
+      {/* Time period — segmented control, not a tab bar */}
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-6">
           <div className="-mx-2 overflow-x-auto">
-            <div className="px-2 inline-flex items-center gap-2 whitespace-nowrap">
-              <span className="text-sm text-muted-foreground mr-2">KPI period:</span>
+            <div className="inline-flex items-center gap-2 whitespace-nowrap px-2">
+              <span className={`mr-2 ${ADMIN_HELPER_TEXT}`}>KPI period:</span>
               {(Object.keys(timePeriodLabels) as TimePeriod[]).map((period) => (
                 <Button
                   key={period}
@@ -363,7 +376,7 @@ export function AdminCommandCenter() {
       </Card>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
         {[
           { label: 'Total Users', value: metrics.totalUsers, icon: Users, color: 'text-blue-600' },
           { label: 'Active Matches', value: metrics.activeMatches, icon: TrendingUp, color: 'text-green-600' },
@@ -390,17 +403,17 @@ export function AdminCommandCenter() {
               className={kpi.onClick ? 'cursor-pointer hover:ring-2 hover:ring-violet-300/50' : ''}
               onClick={kpi.onClick}
             >
-              <CardContent className="p-5">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-muted p-2">
+              <CardContent className={ADMIN_KPI_CARD_CLASS}>
+                <div className="flex h-full items-center gap-3">
+                  <div className="rounded-lg bg-muted p-2.5">
                     <Icon className={`h-5 w-5 ${kpi.color}`} />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">{kpi.label}</p>
+                    <p className={ADMIN_HELPER_TEXT}>{kpi.label}</p>
                     {isLoading ? (
-                      <div className="h-8 w-16 bg-muted rounded animate-pulse mt-1" />
+                      <div className="mt-1 h-8 w-16 animate-pulse rounded bg-muted" />
                     ) : (
-                      <p className="text-2xl font-bold">{kpi.value.toLocaleString()}</p>
+                      <p className="text-2xl font-semibold">{kpi.value.toLocaleString()}</p>
                     )}
                   </div>
                 </div>
@@ -414,7 +427,7 @@ export function AdminCommandCenter() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-lg font-medium">
               <Activity className="h-5 w-5 text-green-600" />
               System Status
               {systemHealth && (
@@ -435,7 +448,7 @@ export function AdminCommandCenter() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-lg font-medium">
               <BarChart3 className="h-5 w-5 text-blue-600" />
               Today&apos;s Activity
             </CardTitle>
@@ -444,7 +457,7 @@ export function AdminCommandCenter() {
             {isActivityLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-4 w-48 bg-muted rounded animate-pulse" />
+                  <div key={i} className="h-4 w-48 animate-pulse rounded bg-muted" />
                 ))}
               </div>
             ) : activities.length > 0 ? (
@@ -460,12 +473,12 @@ export function AdminCommandCenter() {
                     <div
                       className={`h-2 w-2 rounded-full ${iconColors[activity.icon] || 'bg-gray-500'}`}
                     />
-                    <span className="text-sm text-muted-foreground">{activity.description}</span>
+                    <span className={ADMIN_HELPER_TEXT}>{activity.description}</span>
                   </div>
                 )
               })
             ) : (
-              <p className="text-sm text-muted-foreground">No recent activity</p>
+              <p className={ADMIN_HELPER_TEXT}>No recent activity</p>
             )}
           </CardContent>
         </Card>
@@ -474,10 +487,10 @@ export function AdminCommandCenter() {
       {/* Quick hub links */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Quick navigation</CardTitle>
+          <CardTitle className="text-lg font-medium">Quick navigation</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {[
               { label: 'People', href: '/admin/people', icon: Users },
               { label: 'Safety', href: '/admin/safety', icon: Shield },
@@ -490,7 +503,7 @@ export function AdminCommandCenter() {
                 <Button
                   key={item.href}
                   variant="outline"
-                  className="h-auto py-4 flex flex-col gap-2"
+                  className="flex h-auto flex-col gap-2 py-4"
                   onClick={() => router.push(item.href)}
                 >
                   <Icon className="h-5 w-5" />

@@ -24,15 +24,15 @@ export const AtRiskMetricsCard = memo(function AtRiskMetricsCard({ data, isPendi
   const chartData = data?.byStudyYear ?? []
 
   return (
-    <Card className="border-amber-200/60 dark:border-amber-900/50 shadow-sm">
+    <Card>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
-              Student Stability &amp; Retention Risk
+            <CardTitle className="text-lg font-medium flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-gray-500" />
+              At-risk students
             </CardTitle>
-            <CardDescription>Prolonged unmatched, academically verified students</CardDescription>
+            <CardDescription>Verified students unmatched for 30+ days</CardDescription>
           </div>
           <TooltipProvider>
             <Tooltip>
@@ -50,7 +50,7 @@ export const AtRiskMetricsCard = memo(function AtRiskMetricsCard({ data, isPendi
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <div className="text-3xl font-bold tabular-nums">{isPending ? '—' : (data?.totalAtRisk ?? 0).toLocaleString()}</div>
+          <div className="text-2xl font-semibold tabular-nums tracking-tight">{isPending ? '—' : (data?.totalAtRisk ?? 0).toLocaleString()}</div>
           <p className="text-xs text-muted-foreground">
             Active in last 14 days · no confirmed match · still looking
           </p>
@@ -79,7 +79,7 @@ export const AtRiskMetricsCard = memo(function AtRiskMetricsCard({ data, isPendi
                 />
                 <RTooltip {...chartTooltipProps} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="count" name="At-Risk Students" fill="#f59e0b" radius={[6, 6, 0, 0]} maxBarSize={48} />
+                <Bar dataKey="count" name="At-risk students" fill="#334155" radius={[4, 4, 0, 0]} maxBarSize={48} />
               </BarChart>
             </ResponsiveContainer>
           </div>

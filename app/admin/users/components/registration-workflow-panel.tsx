@@ -41,6 +41,8 @@ import {
   normalizeRegistrationStages,
   type FunnelStage,
 } from '@/lib/admin/registration-funnel'
+import { AdminEmptyState } from '@/components/admin/empty-state'
+import { ADMIN_FIELD_CLASS, ADMIN_TABLE_CELL } from '@/lib/admin/ui'
 
 interface JourneyUser {
   user_id: string
@@ -164,17 +166,17 @@ export function RegistrationWorkflowPanel() {
         {/* Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center flex-1">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <div className="relative max-w-md flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
                 placeholder="Search by email…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
+                className={`pl-9 ${ADMIN_FIELD_CLASS}`}
               />
             </div>
             <Select value={days} onValueChange={setDays}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className={`w-40 ${ADMIN_FIELD_CLASS}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -187,7 +189,7 @@ export function RegistrationWorkflowPanel() {
             </Select>
             {data && (
               <Select value={stageFilter} onValueChange={setStageFilter}>
-                <SelectTrigger className="w-56">
+                <SelectTrigger className={`w-56 ${ADMIN_FIELD_CLASS}`}>
                   <SelectValue placeholder="Filter by furthest stage" />
                 </SelectTrigger>
                 <SelectContent>
@@ -365,25 +367,25 @@ export function RegistrationWorkflowPanel() {
                   <table className="min-w-full text-sm border-collapse">
                     <thead>
                       <tr className="border-b border-gray-200 dark:border-gray-800">
-                        <th className="text-left px-3 py-2 sticky left-0 bg-white dark:bg-gray-950 z-10 min-w-[220px]">
+                        <th className={`${ADMIN_TABLE_CELL} sticky left-0 z-10 min-w-[220px] bg-white text-left dark:bg-gray-950`}>
                           User
                         </th>
-                        <th className="text-left px-3 py-2 whitespace-nowrap">Signed up</th>
+                        <th className={`${ADMIN_TABLE_CELL} whitespace-nowrap text-left`}>Signed up</th>
                         {data.stages.map((s) => (
-                          <th key={s.id} className="px-2 py-2">
+                          <th key={s.id} className={ADMIN_TABLE_CELL}>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="flex flex-col items-center gap-1 cursor-help">
-                                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-[10px] font-semibold">
+                                <div className="flex cursor-help flex-col items-center gap-1">
+                                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-[10px] font-semibold dark:bg-gray-800">
                                     {s.id}
                                   </span>
-                                  <span className="text-[10px] font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                                  <span className="whitespace-nowrap text-[10px] font-medium text-gray-600 dark:text-gray-300">
                                     {s.shortLabel}
                                   </span>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent side="bottom" className="max-w-xs">
-                                <div className="font-semibold mb-1">
+                                <div className="mb-1 font-semibold">
                                   {s.id}. {s.label}
                                 </div>
                                 <div className="text-xs opacity-80">{s.description}</div>
@@ -391,17 +393,19 @@ export function RegistrationWorkflowPanel() {
                             </Tooltip>
                           </th>
                         ))}
-                        <th className="text-right px-3 py-2 whitespace-nowrap">Progress</th>
+                        <th className={`${ADMIN_TABLE_CELL} whitespace-nowrap text-right`}>Progress</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredUsers.length === 0 ? (
                         <tr>
-                          <td
-                            colSpan={data.stages.length + 3}
-                            className="text-center py-8 text-sm text-gray-500"
-                          >
-                            No users match the current filters.
+                          <td colSpan={data.stages.length + 3} className="p-0">
+                            <AdminEmptyState
+                              icon={Users2}
+                              title="No users match the current filters"
+                              description="Try adjusting search or stage filters to see registration journeys."
+                              className="py-12"
+                            />
                           </td>
                         </tr>
                       ) : (
@@ -415,31 +419,31 @@ export function RegistrationWorkflowPanel() {
                               key={u.user_id}
                               className="border-b border-gray-100 dark:border-gray-900 hover:bg-gray-50 dark:hover:bg-gray-900/40"
                             >
-                              <td className="px-3 py-2 sticky left-0 bg-white dark:bg-gray-950 z-10">
-                                <div className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[210px]">
+                              <td className={`${ADMIN_TABLE_CELL} sticky left-0 z-10 bg-white dark:bg-gray-950`}>
+                                <div className="max-w-[210px] truncate font-medium text-gray-900 dark:text-gray-100">
                                   {[u.first_name, u.last_name].filter(Boolean).join(' ') ||
                                     u.email.split('@')[0]}
                                 </div>
-                                <div className="text-xs text-gray-500 truncate max-w-[210px]">
+                                <div className="max-w-[210px] truncate text-xs text-gray-500">
                                   {u.email}
                                 </div>
                               </td>
-                              <td className="px-3 py-2 text-xs text-gray-500 whitespace-nowrap">
+                              <td className={`${ADMIN_TABLE_CELL} whitespace-nowrap text-xs text-gray-500`}>
                                 {new Date(u.signed_up_at).toLocaleDateString()}
                               </td>
                               {data.stages.map((s) => {
                                 const reached = stages[s.id]
                                 return (
-                                  <td key={s.id} className="px-2 py-2 text-center">
+                                  <td key={s.id} className={`${ADMIN_TABLE_CELL} text-center`}>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <div className="inline-flex items-center justify-center cursor-help">
+                                        <div className="inline-flex cursor-help items-center justify-center">
                                           {reached ? (
-                                            <div className="h-7 w-7 rounded-md bg-green-500/15 ring-1 ring-green-500/30 flex items-center justify-center">
+                                            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-green-500/15 ring-1 ring-green-500/30">
                                               <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                                             </div>
                                           ) : (
-                                            <div className="h-7 w-7 rounded-md bg-gray-100 dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 flex items-center justify-center">
+                                            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gray-100 ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700">
                                               <Circle className="h-3.5 w-3.5 text-gray-300 dark:text-gray-600" />
                                             </div>
                                           )}
@@ -456,12 +460,12 @@ export function RegistrationWorkflowPanel() {
                                   </td>
                                 )
                               })}
-                              <td className="px-3 py-2 text-right">
+                              <td className={`${ADMIN_TABLE_CELL} text-right`}>
                                 <div className="flex items-center justify-end gap-2">
-                                  <span className="text-xs font-mono text-gray-600 dark:text-gray-300">
+                                  <span className="font-mono text-xs text-gray-600 dark:text-gray-300">
                                     {completedCount}/{data.stages.length}
                                   </span>
-                                  <div className="h-1.5 w-16 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                                  <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
                                     <div
                                       className={`h-full ${
                                         progressPct === 100
@@ -514,14 +518,14 @@ function StatCard({
 }) {
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent className="flex min-h-[7rem] flex-col justify-center p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-xs uppercase tracking-wider text-gray-500">{label}</div>
-            <div className="text-2xl font-bold mt-1 truncate">{value}</div>
-            {hint && <div className="text-xs text-gray-500 mt-1 truncate">{hint}</div>}
+            <div className="mt-1 truncate text-2xl font-semibold">{value}</div>
+            {hint && <div className="mt-1 truncate text-xs text-gray-500">{hint}</div>}
           </div>
-          <div className={`h-10 w-10 rounded-md flex items-center justify-center flex-shrink-0 ${tint}`}>
+          <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md ${tint}`}>
             {icon}
           </div>
         </div>

@@ -14,6 +14,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AdminEmptyState } from '@/components/admin/empty-state'
+import { AdminStatusBadge } from '@/components/admin/status-badge'
+import { ADMIN_FIELD_CLASS, ADMIN_TABLE_CELL } from '@/lib/admin/ui'
 import {
   Dialog,
   DialogContent,
@@ -103,12 +106,6 @@ const ROLE_BADGE_CLASS: Record<Exclude<UserRole, 'user'>, string> = {
     'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800',
   university_admin:
     'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 border-teal-200 dark:border-teal-800',
-}
-
-const STATUS_BADGE_CLASS: Record<Assignment['status'], string> = {
-  active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  revoked: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
 }
 
 export function RoleManagementPanel() {
@@ -559,15 +556,15 @@ export function RoleManagementPanel() {
             </Alert>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <Input
               placeholder="Search by email, name, institution…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="sm:max-w-md"
+              className={`sm:max-w-md ${ADMIN_FIELD_CLASS}`}
             />
             <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
-              <SelectTrigger className="sm:w-44">
+              <SelectTrigger className={`sm:w-44 ${ADMIN_FIELD_CLASS}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -582,43 +579,51 @@ export function RoleManagementPanel() {
           {isLoading ? (
             <div className="py-10 text-center text-sm text-gray-500">Loading assignments…</div>
           ) : filtered.length === 0 ? (
-            <div className="py-10 text-center text-sm text-gray-500">
-              {assignments.length === 0
-                ? 'No role assignments yet. Click “Add role by email” to grant your first one.'
-                : 'No assignments match your filters.'}
-            </div>
+            <AdminEmptyState
+              title={
+                assignments.length === 0
+                  ? 'No role assignments yet'
+                  : 'No assignments match your filters'
+              }
+              description={
+                assignments.length === 0
+                  ? 'Click “Invite user” to grant your first elevated role.'
+                  : 'Try adjusting search or status filters.'
+              }
+              className="py-12"
+            />
           ) : (
             <div className="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-800">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-900/40 text-left text-xs uppercase tracking-wider text-gray-500">
+              <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-800">
+                <thead className="bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500 dark:bg-gray-900/40">
                   <tr>
-                    <th className="px-4 py-3">Person</th>
-                    <th className="px-4 py-3">Role</th>
-                    <th className="px-4 py-3">Institution</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Added</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
+                    <th className={ADMIN_TABLE_CELL}>Person</th>
+                    <th className={ADMIN_TABLE_CELL}>Role</th>
+                    <th className={ADMIN_TABLE_CELL}>Institution</th>
+                    <th className={ADMIN_TABLE_CELL}>Status</th>
+                    <th className={ADMIN_TABLE_CELL}>Added</th>
+                    <th className={`${ADMIN_TABLE_CELL} text-right`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filtered.map((a) => (
                     <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/30">
-                      <td className="px-4 py-3">
+                      <td className={ADMIN_TABLE_CELL}>
                         <div className="font-medium text-gray-900 dark:text-gray-100">
                           {[a.first_name, a.last_name].filter(Boolean).join(' ') || '-'}
                         </div>
                         <div className="text-xs text-gray-500">{a.email}</div>
                         {a.department_title && (
-                          <div className="text-xs text-gray-400 mt-0.5">{a.department_title}</div>
+                          <div className="mt-0.5 text-xs text-gray-400">{a.department_title}</div>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className={ADMIN_TABLE_CELL}>
                         <Select
                           value={a.role}
                           onValueChange={(v) => handleRoleChange(a.id, v as UserRole)}
                           disabled={busyId === a.id}
                         >
-                          <SelectTrigger className="w-44 h-8 text-xs">
+                          <SelectTrigger className={`h-10 w-44 text-xs ${ADMIN_FIELD_CLASS}`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -635,7 +640,7 @@ export function RoleManagementPanel() {
                           </Badge>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className={ADMIN_TABLE_CELL}>
                         {a.institution_name ? (
                           <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
                             <Building2 className="h-3.5 w-3.5 text-gray-400" />
@@ -645,23 +650,29 @@ export function RoleManagementPanel() {
                           <span className="text-xs text-gray-400">-</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        <Badge className={STATUS_BADGE_CLASS[a.status]}>
-                          {a.status === 'active' &&
-                            (a.can_resend_invite ? 'Active · setup incomplete' : 'Active')}
-                          {a.status === 'pending' && 'Pending invite'}
-                          {a.status === 'revoked' && 'Revoked'}
-                        </Badge>
+                      <td className={ADMIN_TABLE_CELL}>
+                        <AdminStatusBadge
+                          status={a.status === 'revoked' ? 'inactive' : a.status}
+                          label={
+                            a.status === 'active'
+                              ? a.can_resend_invite
+                                ? 'Active · setup incomplete'
+                                : 'Active'
+                              : a.status === 'pending'
+                                ? 'Pending invite'
+                                : 'Revoked'
+                          }
+                        />
                         {a.status === 'pending' && a.invite_sent_at && (
-                          <div className="text-xs text-gray-400 mt-1">
+                          <div className="mt-1 text-xs text-gray-400">
                             Invited {new Date(a.invite_sent_at).toLocaleDateString()}
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-500">
+                      <td className={`${ADMIN_TABLE_CELL} text-xs text-gray-500`}>
                         {new Date(a.created_at).toLocaleDateString()}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className={`${ADMIN_TABLE_CELL} text-right`}>
                         <div className="flex items-center justify-end gap-2">
                           {a.can_resend_invite && (
                             <Button
@@ -722,13 +733,13 @@ function SummaryCard({
 }) {
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent className="flex min-h-[7rem] flex-col justify-center p-6">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-xs uppercase tracking-wider text-gray-500">{label}</div>
-            <div className="text-2xl font-bold mt-1">{value}</div>
+            <div className="mt-1 text-2xl font-semibold">{value}</div>
           </div>
-          <div className={`h-10 w-10 rounded-md flex items-center justify-center ${tint}`}>{icon}</div>
+          <div className={`flex h-10 w-10 items-center justify-center rounded-md ${tint}`}>{icon}</div>
         </div>
       </CardContent>
     </Card>

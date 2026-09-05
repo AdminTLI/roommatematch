@@ -87,16 +87,16 @@ export function TrustAlgorithmCards({ analyticsQuery = '' }: Props) {
       : '[&>div]:bg-amber-500'
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       {/* Card 1: Platform Trust (IDV Conversion) */}
       <Card>
         <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
           <div>
-            <CardTitle className="text-base md:text-lg">
-              Platform Trust (IDV Conversion)
+            <CardTitle className="text-lg font-medium">
+              Identity verification
             </CardTitle>
-            <CardDescription className="mt-1 text-xs md:text-sm">
-              Share of active users who have passed full identity verification.
+            <CardDescription className="mt-1">
+              Share of active users who have passed identity verification.
             </CardDescription>
           </div>
           <Badge
@@ -129,16 +129,11 @@ export function TrustAlgorithmCards({ analyticsQuery = '' }: Props) {
             <>
               <div className="flex items-baseline justify-between gap-3">
                 <div>
-                  <p className="text-[11px] uppercase tracking-wide text-emerald-700 dark:text-emerald-300 font-semibold">
-                    IDV conversion rate
-                  </p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl md:text-3xl font-bold">
+                    <span className="text-2xl font-semibold tabular-nums tracking-tight">
                       {verificationRate.toFixed(1)}%
                     </span>
-                    <span className="text-[11px] text-muted-foreground">
-                      of active users
-                    </span>
+                    <span className="text-sm text-muted-foreground">of active users</span>
                   </div>
                 </div>
               </div>
@@ -166,12 +161,12 @@ export function TrustAlgorithmCards({ analyticsQuery = '' }: Props) {
       {/* Card 2: Algorithm Bottleneck (Top Dealbreakers) */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base md:text-lg">
-            Algorithm Bottleneck (Top Dealbreakers)
-          </CardTitle>
-          <CardDescription className="mt-1 text-xs md:text-sm">
-            Most common strict constraints that shrink the effective matching pool.
-          </CardDescription>
+            <CardTitle className="text-lg font-medium">
+              Top dealbreakers
+            </CardTitle>
+            <CardDescription className="mt-1">
+              Constraints that most often shrink the matching pool.
+            </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 md:space-y-4">
           {isLoading && (
@@ -210,10 +205,8 @@ export function TrustAlgorithmCards({ analyticsQuery = '' }: Props) {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs md:text-sm text-muted-foreground">
-                  No strong dealbreaker patterns detected yet. As more students
-                  complete onboarding, this view will highlight which hard
-                  constraints are most likely to choke the matching pool.
+                <p className="text-sm text-muted-foreground">
+                  No strong dealbreaker patterns yet.
                 </p>
               )}
             </>

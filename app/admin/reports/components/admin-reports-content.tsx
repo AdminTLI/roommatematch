@@ -23,6 +23,8 @@ import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { CHAT_REPORT_CATEGORY_LABELS, type ChatReportCategory } from '@/lib/chat/report-categories'
 import { AdminLabReportsPanel } from '@/app/admin/lab/components/admin-lab-reports-panel'
 import { AdminUniversityEmailFlagsPanel } from '@/app/admin/reports/components/admin-university-email-flags-panel'
+import { AdminEmptyState } from '@/components/admin/empty-state'
+import { AdminStatusBadge } from '@/components/admin/status-badge'
 
 interface ChatContextMessage {
   id: string
@@ -313,18 +315,7 @@ export function AdminReportsContent() {
     },
     {
       header: 'Status',
-      accessor: (row: Report) => {
-        const colors: Record<string, string> = {
-          open: 'bg-blue-100 text-blue-800',
-          actioned: 'bg-green-100 text-green-800',
-          dismissed: 'bg-gray-100 text-gray-800'
-        }
-        return (
-          <Badge className={colors[row.status] || colors.open}>
-            {row.status}
-          </Badge>
-        )
-      }
+      accessor: (row: Report) => <AdminStatusBadge status={row.status} />,
     },
     {
       header: 'Warning Acknowledgement',
@@ -521,15 +512,15 @@ export function AdminReportsContent() {
             </CardHeader>
             <CardContent>
               {reports.length === 0 ? (
-                <div className="text-center py-12">
-                  <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Reports Found</p>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    {filters.status !== 'all' || filters.category !== 'all'
+                <AdminEmptyState
+                  icon={AlertTriangle}
+                  title="No Reports Found"
+                  description={
+                    filters.status !== 'all' || filters.category !== 'all'
                       ? 'No reports match your current filters. Try adjusting your filters.'
-                      : 'There are currently no reports in the system. Reports will appear here when users submit them.'}
-                  </p>
-                </div>
+                      : 'There are currently no reports in the system. Reports will appear here when users submit them.'
+                  }
+                />
               ) : (
                 <DataTable
                   columns={columns}
@@ -556,13 +547,11 @@ export function AdminReportsContent() {
                 <p className="text-gray-500">Loading flagged messages...</p>
               </div>
             ) : flaggedMessages.length === 0 ? (
-              <div className="text-center py-12">
-                <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Flagged Messages</p>
-                <p className="text-gray-500 dark:text-gray-400">
-                  There are currently no flagged messages. Messages will appear here when the system detects suspicious content.
-                </p>
-              </div>
+              <AdminEmptyState
+                icon={CheckCircle}
+                title="No Flagged Messages"
+                description="There are currently no flagged messages. Messages will appear here when the system detects suspicious content."
+              />
             ) : (
               <div className="space-y-4">
                 {flaggedMessages.map((message) => (

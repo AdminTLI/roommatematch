@@ -44,12 +44,12 @@ export const InternationalIntegrationPulseCard = memo(function InternationalInte
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Globe2 className="h-4 w-4 text-sky-600" />
-          International Integration Pulse
+        <CardTitle className="text-lg font-medium flex items-center gap-2">
+          <Globe2 className="h-4 w-4 text-gray-500" />
+          International vs domestic
         </CardTitle>
         <CardDescription>
-          Time-to-first confirmed match — domestic vs international (verified cohort)
+          Time to first confirmed match for the verified cohort
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -91,7 +91,7 @@ export const InternationalIntegrationPulseCard = memo(function InternationalInte
                 <Bar
                   dataKey="days"
                   name="Average Days To First Confirmed Match"
-                  fill="#0ea5e9"
+                  fill="#334155"
                   radius={[6, 6, 0, 0]}
                   maxBarSize={56}
                 />

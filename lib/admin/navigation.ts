@@ -66,7 +66,7 @@ export const ADMIN_HUBS: AdminHubDefinition[] = [
     label: 'Insights',
     href: '/admin/metrics',
     icon: BarChart3,
-    description: 'Institutional metrics and questionnaire analytics',
+    description: 'Institutional overview, detailed insights, and questionnaire analytics',
   },
   {
     id: 'system',
@@ -130,7 +130,7 @@ export const ADMIN_SECTION_TABS: Record<Exclude<AdminHubId, 'overview'>, AdminSe
     { id: 'chats', label: 'Chats', href: '/admin/chats' },
   ],
   insights: [
-    { id: 'metrics', label: 'Metrics', href: '/admin/metrics' },
+    { id: 'metrics', label: 'Overview', href: '/admin/metrics' },
     { id: 'executive', label: 'Executive', href: '/admin/metrics?tab=executive' },
     { id: 'engagement', label: 'Engagement', href: '/admin/metrics?tab=engagement' },
     { id: 'marketplace', label: 'Marketplace', href: '/admin/metrics?tab=marketplace' },

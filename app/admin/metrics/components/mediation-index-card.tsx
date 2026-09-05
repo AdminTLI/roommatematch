@@ -41,11 +41,11 @@ export const MediationIndexCard = memo(function MediationIndexCard({ data, isPen
   return (
     <Card className="shadow-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Scale className="h-4 w-4 text-indigo-600" />
-          Relational Health &amp; Mediation Volume
+        <CardTitle className="text-lg font-medium flex items-center gap-2">
+          <Scale className="h-4 w-4 text-gray-500" />
+          Mediation volume
         </CardTitle>
-        <CardDescription>Reports in scope — category mix and moderation throughput</CardDescription>
+        <CardDescription>Reports in scope — category mix and throughput</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3 text-sm">
@@ -67,7 +67,7 @@ export const MediationIndexCard = memo(function MediationIndexCard({ data, isPen
           <div className="text-xs font-medium text-muted-foreground mb-1">
             Estimated Admin Hours Saved (Estimate)
           </div>
-          <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-300 tabular-nums">
+          <div className="text-2xl font-semibold tabular-nums tracking-tight">
             {isPending ? '—' : (data?.estimatedAdminHoursSaved ?? 0).toLocaleString()}
           </div>
           <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
@@ -100,7 +100,7 @@ export const MediationIndexCard = memo(function MediationIndexCard({ data, isPen
             </ResponsiveContainer>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">{isPending ? 'Loading…' : 'No Reports For This Cohort.'}</p>
+          <p className="text-sm text-muted-foreground">{isPending ? 'Loading…' : 'No reports for this cohort.'}</p>
         )}
       </CardContent>
     </Card>

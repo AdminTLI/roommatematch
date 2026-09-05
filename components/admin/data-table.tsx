@@ -11,8 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ChevronLeft, ChevronRight, Download, Info } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Info, SearchX } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { AdminEmptyState } from '@/components/admin/empty-state'
+import { ADMIN_FIELD_CLASS, ADMIN_HELPER_TEXT } from '@/lib/admin/ui'
 
 interface Column<T> {
   header: string | React.ReactNode
@@ -43,7 +45,7 @@ export function DataTable<T extends Record<string, any>>({
 
   const filteredData = useMemo(() => {
     if (!search || !searchKey) return data
-    
+
     return data.filter((row) => {
       const value = row[searchKey]
       return value?.toString().toLowerCase().includes(search.toLowerCase())
@@ -68,7 +70,7 @@ export function DataTable<T extends Record<string, any>>({
   return (
     <div className="space-y-4">
       {/* Search and Export */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         {searchKey && (
           <Input
             placeholder={searchPlaceholder}
@@ -77,12 +79,12 @@ export function DataTable<T extends Record<string, any>>({
               setSearch(e.target.value)
               setCurrentPage(1)
             }}
-            className="max-w-sm"
+            className={`max-w-sm ${ADMIN_FIELD_CLASS}`}
           />
         )}
         {onExport && (
           <Button variant="outline" size="sm" onClick={onExport}>
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
         )}
@@ -103,10 +105,10 @@ export function DataTable<T extends Record<string, any>>({
                           <TooltipTrigger asChild>
                             <button
                               type="button"
-                              className="inline-flex items-center justify-center p-0.5 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                              className="inline-flex items-center justify-center rounded-sm p-0.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
                               aria-label={`Information about ${column.header} column`}
                             >
-                              <Info className="h-4 w-4 min-w-[16px] min-h-[16px] text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 cursor-help transition-colors" />
+                              <Info className="h-4 w-4 min-h-[16px] min-w-[16px] cursor-help text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" />
                             </button>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -125,7 +127,7 @@ export function DataTable<T extends Record<string, any>>({
               paginatedData.map((row, rowIdx) => (
                 <TableRow key={rowIdx}>
                   {columns.map((column, colIdx) => (
-                    <TableCell key={colIdx}>
+                    <TableCell key={colIdx} className="px-4 py-4">
                       {getCellValue(row, column)}
                     </TableCell>
                   ))}
@@ -133,8 +135,13 @@ export function DataTable<T extends Record<string, any>>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                <TableCell colSpan={columns.length} className="p-0">
+                  <AdminEmptyState
+                    icon={SearchX}
+                    title="No results"
+                    description="Try adjusting your search or filters to find what you need."
+                    className="py-12"
+                  />
                 </TableCell>
               </TableRow>
             )}
@@ -143,34 +150,35 @@ export function DataTable<T extends Record<string, any>>({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-600 dark:text-slate-300">
-          Showing {(currentPage - 1) * pageSize + 1} to{' '}
-          {Math.min(currentPage * pageSize, filteredData.length)} of{' '}
-          {filteredData.length} results
+      {filteredData.length > 0 && (
+        <div className="flex items-center justify-between">
+          <div className={ADMIN_HELPER_TEXT}>
+            Showing {(currentPage - 1) * pageSize + 1} to{' '}
+            {Math.min(currentPage * pageSize, filteredData.length)} of{' '}
+            {filteredData.length} results
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage >= totalPages}
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   )
 }
-

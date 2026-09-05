@@ -33,7 +33,6 @@ export function getAnalyticsEndpointsForTab(tab: MetricsTabId): string[] {
       return ['/executive-summary', '/at-risk', '/mediation-index', '/housing-friction', '/wellness']
     case 'engagement':
       return [
-        '',
         '/realtime',
         '/traffic-sources',
         '/user-flows',
@@ -44,7 +43,7 @@ export function getAnalyticsEndpointsForTab(tab: MetricsTabId): string[] {
     case 'marketplace':
       return ['/conversion-funnel']
     case 'retention':
-      return ['/cohort-retention', '/coverage', '/wellness']
+      return ['/cohort-retention', '/coverage']
     case 'footprint':
       return ['']
     case 'questionnaire':
@@ -54,24 +53,8 @@ export function getAnalyticsEndpointsForTab(tab: MetricsTabId): string[] {
   }
 }
 
-export function tabIncludesExecutive(tab: MetricsTabId): boolean {
-  return tab === 'metrics' || tab === 'executive'
-}
-
-export function tabIncludesEngagement(tab: MetricsTabId): boolean {
-  return tab === 'metrics' || tab === 'engagement'
-}
-
-export function tabIncludesMarketplace(tab: MetricsTabId): boolean {
-  return tab === 'metrics' || tab === 'marketplace'
-}
-
-export function tabIncludesFootprint(tab: MetricsTabId): boolean {
+export function tabNeedsBaseMetrics(tab: MetricsTabId): boolean {
   return tab === 'metrics' || tab === 'footprint'
-}
-
-export function tabIncludesRetention(tab: MetricsTabId): boolean {
-  return tab === 'retention'
 }
 
 export function tabIsQuestionnaire(tab: MetricsTabId): boolean {

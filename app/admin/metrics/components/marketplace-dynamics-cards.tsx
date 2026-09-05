@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { AlertTriangle, MessageSquare, Users } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 
 interface SupplyDemandMetrics {
   haveRoomCount: number
@@ -68,16 +68,11 @@ export function MarketplaceDynamicsCards({ analyticsQuery = '' }: Props) {
   }, [analyticsQuery])
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-            <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span>Marketplace Balance (Have vs. Need)</span>
-          </CardTitle>
-          <CardDescription>
-            Measures our supply deficit.
-          </CardDescription>
+          <CardTitle className="text-lg font-medium">Marketplace balance</CardTitle>
+          <CardDescription>Have a room vs need a room</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {isLoading && (
@@ -96,12 +91,11 @@ export function MarketplaceDynamicsCards({ analyticsQuery = '' }: Props) {
             <>
               <div className="flex items-baseline justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-blue-700 dark:text-blue-300 font-semibold">
-                    Have vs. Need ratio
+                  <p className="text-2xl font-semibold tabular-nums tracking-tight">
+                    {data.supplyDemand.needRoomPercentage.toFixed(1)}%
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {data.supplyDemand.haveRoomPercentage.toFixed(1)}% Have Room ·{' '}
-                    {data.supplyDemand.needRoomPercentage.toFixed(1)}% Need Room
+                    Need a room · {data.supplyDemand.haveRoomPercentage.toFixed(1)}% have a room
                   </p>
                 </div>
                 <div className="text-right text-xs text-muted-foreground">
@@ -136,13 +130,8 @@ export function MarketplaceDynamicsCards({ analyticsQuery = '' }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-            <MessageSquare className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Group Liquidity (Squads vs Duos)</span>
-          </CardTitle>
-          <CardDescription>
-            Measures collaborative housing hunts.
-          </CardDescription>
+          <CardTitle className="text-lg font-medium">Group vs 1-on-1 chats</CardTitle>
+          <CardDescription>Share of active chats that are squads</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {isLoading && (
@@ -161,12 +150,10 @@ export function MarketplaceDynamicsCards({ analyticsQuery = '' }: Props) {
             <>
               <div className="flex items-baseline justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-300 font-semibold">
-                    Squad formation rate
+                  <p className="text-2xl font-semibold tabular-nums tracking-tight">
+                    {data.squadFormation.groupChatPercentage.toFixed(1)}%
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    {data.squadFormation.groupChatPercentage.toFixed(1)}% of active chats are squads
-                  </p>
+                  <p className="text-sm text-muted-foreground">of active chats are squads</p>
                 </div>
                 <div className="text-right text-xs text-muted-foreground">
                   <div>

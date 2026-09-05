@@ -7,6 +7,11 @@ import {
   resolveAdminHub,
   type AdminHubId,
 } from '@/lib/admin/navigation'
+import {
+  ADMIN_HELPER_TEXT,
+  ADMIN_PAGE_STACK,
+  ADMIN_PAGE_TITLE,
+} from '@/lib/admin/ui'
 import { AdminSectionTabs, type TabBadgeCounts } from './admin-section-tabs'
 import { AdminComplianceStrip, type CompliancePurpose } from './admin-compliance-strip'
 
@@ -40,13 +45,11 @@ export function AdminHubShell({
   const displayDescription = description ?? hubDef.description
 
   return (
-    <div className="admin-console mx-auto max-w-7xl space-y-8">
+    <div className={`admin-console mx-auto max-w-7xl ${ADMIN_PAGE_STACK}`}>
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            {displayTitle}
-          </h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <h1 className={ADMIN_PAGE_TITLE}>{displayTitle}</h1>
+          <p className={`max-w-2xl leading-relaxed ${ADMIN_HELPER_TEXT}`}>
             {displayDescription}
           </p>
         </div>
@@ -64,7 +67,7 @@ export function AdminHubShell({
         />
       )}
 
-      <div>{children}</div>
+      <div className={ADMIN_PAGE_STACK}>{children}</div>
     </div>
   )
 }

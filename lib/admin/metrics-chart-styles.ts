@@ -23,3 +23,20 @@ export const chartTooltipProps = {
 }
 
 export const chartContainerClass = 'rounded-xl border border-border/60 bg-muted/20 p-3 md:p-4 shadow-sm'
+
+export const METRICS_CHART_COLORS = [
+  '#334155',
+  '#0f766e',
+  '#1d4ed8',
+  '#b45309',
+  '#7c3aed',
+  '#be123c',
+] as const
+
+export const formatChartNumber = (value: unknown): string =>
+  typeof value === 'number' ? value.toLocaleString() : typeof value === 'string' ? value : ''
+
+export const formatChartNumberPair = (value: unknown, label: string): [string, string] => [
+  formatChartNumber(value),
+  label,
+]

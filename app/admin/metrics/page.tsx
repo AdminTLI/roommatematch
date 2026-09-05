@@ -47,7 +47,11 @@ export default async function AdminMetricsPage() {
   }
 
   return (
-    <AdminPageWrapper hub="insights" title="Institutional Metrics" description="Retention, wellbeing, and operational signals by institution.">
+    <AdminPageWrapper
+      hub="insights"
+      title="Institutional Metrics"
+      description="A high-level snapshot of the selected institution. Use the tabs to explore each area in detail."
+    >
       <AdminMetricsContent
         isPlatformSuper={isPlatformSuper}
         initialUniversityId={initialUniversityId}
