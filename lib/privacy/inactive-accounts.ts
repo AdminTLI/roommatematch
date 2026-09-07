@@ -247,8 +247,31 @@ export async function processInactiveAccounts(
           is_visible: false,
           profile_picture_url: null,
           avatar_id: null,
+          budget_min: null,
+          budget_max: null,
+          budget_unknown: false,
         })
         .eq('user_id', userId)
+
+      // Anonymise Domu Lab wish content — title/body are user-authored personal data.
+      // ON DELETE CASCADE only fires on hard account deletion; inactive anonymisation
+      // keeps the auth.users row alive, so we must scrub the content manually
+      // (GDPR Art. 5(1)(e) storage limitation).
+      await supabase
+        .from('lab_wishes')
+        .update({
+          title: '[Anonymized]',
+          body: '[Anonymized]',
+          focus_group_opt_in: false,
+        })
+        .eq('user_id', userId)
+
+      // Remove vote records (personal linkage) and prompt dismissals
+      await supabase.from('lab_wish_votes').delete().eq('user_id', userId)
+      await supabase.from('lab_prompt_dismissals').delete().eq('user_id', userId)
+
+      // Remove co-creator badge — wish_title is a verbatim copy of user-authored text
+      await supabase.from('lab_co_creator_badges').delete().eq('user_id', userId)
 
       await supabase
         .from('users')
