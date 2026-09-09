@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'overnight-guest-rules-dutch-student-houses',
+        title: 'Overnight Guest Rules in Dutch Student Houses',
+        excerpt:
+          'Provider house rules and housemate consent are different layers. SSH, campus providers, and informal flats set overnight guest norms in incompatible ways until someone writes them down.',
+        readTime: '8 min read',
+        date: '2026-09-09',
+        category: 'Boundaries',
+        icon: BookOpen,
+      },
+      {
         slug: 'roommate-chore-fairness-netherlands',
         title: 'Roommate Chore Fairness in Dutch Student Houses',
         excerpt:
@@ -282,6 +292,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'overnight-guest-rules-dutch-student-houses',
+        title: 'Overnachtingsregels in Nederlandse studentenhuizen',
+        excerpt:
+          'Huisregels van aanbieders en toestemming van huisgenoten zijn verschillende lagen. SSH, campusaanbieders en informele flats zetten overnachtingsnormen op onverenigbare manieren tot iemand ze opschrijft.',
+        readTime: '8 min lezen',
+        date: '2026-09-09',
+        category: 'Grenzen',
+        icon: BookOpen,
+      },
       {
         slug: 'roommate-chore-fairness-netherlands',
         title: 'Eerlijke klusjesverdeling in Nederlandse studentenhuizen',

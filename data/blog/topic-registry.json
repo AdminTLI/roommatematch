@@ -2,6 +2,14 @@
   "description": "Tracks published blog topics to reduce week-to-week repetition. Append one entry per new post.",
   "entries": [
     {
+      "slug": "overnight-guest-rules-dutch-student-houses",
+      "date": "2026-09-09",
+      "category": "Boundaries",
+      "primaryKeyword": "overnight guest rules Dutch student houses",
+      "pillar": "House norms",
+      "angle": "Dual-layer overnight guest policy: provider/landlord huisreglement vs housemate consent; SSH ban vs College Campus night limits vs informal flats; quiet hours as stress test; not shortage-led; distinct from third-wheel emotional frame"
+    },
+    {
       "slug": "roommate-chore-fairness-netherlands",
       "date": "2026-09-02",
       "category": "Compatibility",

@@ -43,7 +43,8 @@ export const BLOG_HERO_IMAGES = {
   },
   /** Quiet home - introverts, boundaries, wellbeing */
   quietRoommate: {
-    src: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1200&q=80',
+    // Calm living room with sofa (Appendix F). Previous Unsplash ID remapped to unrelated film slate.
+    src: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&q=80',
     width: 1200,
     height: 630,
   },

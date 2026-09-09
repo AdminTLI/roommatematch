@@ -2,6 +2,21 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "overnight-guest-rules-dutch-student-houses",
+      "date": "2026-09-09",
+      "primarySourceUrls": [
+        "https://help.sshxl.nl/nl/articles/368429-house-rules",
+        "https://collegecampus.nl/faq/",
+        "https://www.clavix.nl/post/onderhuur-en-inwoning-wat-mag-wel-en-wat-mag-niet-als-huurder",
+        "https://dutchstudenthousing.nl/papers/roommate-agreement-template"
+      ],
+      "statsUsed": [
+        "College Campus: up to 3 overnight nights before caretaker discussion",
+        "College Campus quiet hours 23:00 Sun-Thu / 00:00 Fri-Sat",
+        "SSH Short Stay: overnight guests not allowed"
+      ]
+    },
+    {
       "slug": "roommate-chore-fairness-netherlands",
       "date": "2026-09-02",
       "primarySourceUrls": [
