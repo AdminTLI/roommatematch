@@ -247,8 +247,21 @@ export async function processInactiveAccounts(
           is_visible: false,
           profile_picture_url: null,
           avatar_id: null,
+          budget_min: null,
+          budget_max: null,
+          budget_unknown: false,
         })
         .eq('user_id', userId)
+
+      // Scrub Domu Lab PII: anonymise authored wishes, remove votes/dismissals/badges/reports
+      await supabase
+        .from('lab_wishes')
+        .update({ title: '[Anonymized]', body: '[Anonymized]', focus_group_opt_in: false })
+        .eq('user_id', userId)
+      await supabase.from('lab_wish_votes').delete().eq('user_id', userId)
+      await supabase.from('lab_prompt_dismissals').delete().eq('user_id', userId)
+      await supabase.from('lab_co_creator_badges').delete().eq('user_id', userId)
+      await supabase.from('lab_wish_reports').delete().eq('reporter_id', userId)
 
       await supabase
         .from('users')
