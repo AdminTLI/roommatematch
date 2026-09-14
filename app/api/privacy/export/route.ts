@@ -471,6 +471,18 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // 19. Domu Lab wish reports (GDPR Art. 15 — reporter_id and reason are personal data)
+      const { data: labWishReports } = await adminForLab
+        .from('lab_wish_reports')
+        .select('id, wish_id, reason, created_at')
+        .eq('reporter_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(500)
+
+      if (labWishReports && labWishReports.length > 0) {
+        exportData.lab_wish_reports = labWishReports
+      }
+
       // Convert to JSON string
       const jsonData = JSON.stringify(exportData, null, 2)
       const blob = new Blob([jsonData], { type: 'application/json' })
