@@ -2,6 +2,14 @@
   "description": "Tracks published blog topics to reduce week-to-week repetition. Append one entry per new post.",
   "entries": [
     {
+      "slug": "exam-week-house-rules-netherlands",
+      "date": "2026-09-16",
+      "category": "Wellbeing",
+      "primaryKeyword": "exam week house rules Netherlands",
+      "pillar": "Student wellbeing",
+      "angle": "Temporary tentamenweek systems (quiet calendar, kitchen windows, guest opt-out) grounded in MMMS-2025 study stress/prestatiedruk; not shortage-led and not emotional-support sequel"
+    },
+    {
       "slug": "roommate-chore-fairness-netherlands",
       "date": "2026-09-02",
       "category": "Compatibility",

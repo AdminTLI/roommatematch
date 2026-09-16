@@ -13,25 +13,25 @@ export const BLOG_HERO_IMAGES = {
   },
   /** Residential / city housing - shortage, retention, rent */
   housingCityscape: {
-    src: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80',
+    src: 'https://images.unsplash.com/photo-1460317442991-0ec209397118?w=1200&q=80',
     width: 1200,
     height: 630,
   },
   /** Kitchen / shared living - chores, conflict, household norms */
   sharedKitchen: {
-    src: 'https://images.unsplash.com/photo-1486591978090-58e619d37fe7?w=1200&q=80',
+    src: 'https://images.unsplash.com/photo-1556912173-3bb406ef7e77?w=1200&q=80',
     width: 1200,
     height: 630,
   },
   /** Late-night study - sleep schedules, exams, winter blues */
   studyLateNight: {
-    src: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=1200&q=80',
+    src: 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&q=80',
     width: 1200,
     height: 630,
   },
   /** Campus / friends - international students, social integration */
   internationalCampus: {
-    src: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?w=1200&q=80',
+    src: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80',
     width: 1200,
     height: 630,
   },
@@ -43,13 +43,13 @@ export const BLOG_HERO_IMAGES = {
   },
   /** Quiet home - introverts, boundaries, wellbeing */
   quietRoommate: {
-    src: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1200&q=80',
+    src: 'https://images.unsplash.com/photo-1515362778563-6a8d0e44bc0b?w=1200&q=80',
     width: 1200,
     height: 630,
   },
   /** City / move-in - Dutch student cities, logistics */
   cityBikeStudent: {
-    src: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200&q=80',
+    src: 'https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=1200&q=80',
     width: 1200,
     height: 630,
   },
