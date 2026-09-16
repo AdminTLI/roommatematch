@@ -2,6 +2,23 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "exam-week-house-rules-netherlands",
+      "date": "2026-09-16",
+      "primarySourceUrls": [
+        "https://www.trimbos.nl/actueel/nieuws/mentale-gezondheid-hbo-en-wo-studenten-is-licht-verbeterd/",
+        "https://www.rivm.nl/bibliotheek/rapporten/2025-0106.pdf",
+        "https://www.trimbos.nl/wp-content/uploads/2025/10/AF2084-Harder-Better-Faster-Stronger.pdf",
+        "https://www.vtwonen.nl/studentenkamer/ergernissen-studentenhuis-met-oplossingen~2c43d48"
+      ],
+      "statsUsed": [
+        "MMMS-2025 53% (very) high stress past 4 weeks",
+        "MMMS-2025 41% often performance pressure",
+        "MMMS-2025 56% emotional exhaustion",
+        "MMMS-2025 58% of stressed students cite study as (very) high stress source",
+        "MMMS-2025 27,000+ HBO/WO respondents"
+      ]
+    },
+    {
       "slug": "roommate-chore-fairness-netherlands",
       "date": "2026-09-02",
       "primarySourceUrls": [

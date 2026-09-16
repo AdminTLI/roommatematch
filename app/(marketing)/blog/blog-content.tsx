@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'exam-week-house-rules-netherlands',
+        title: 'Exam Week House Rules for Dutch Housemates',
+        excerpt:
+          'MMMS-2025 shows most HBO and university students still report heavy study stress. Shared houses need temporary quiet, kitchen, and guest norms when tentamenweek arrives.',
+        readTime: '8 min read',
+        date: '2026-09-16',
+        category: 'Wellbeing',
+        icon: Shield,
+      },
+      {
         slug: 'roommate-chore-fairness-netherlands',
         title: 'Roommate Chore Fairness in Dutch Student Houses',
         excerpt:
@@ -282,6 +292,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'exam-week-house-rules-netherlands',
+        title: 'Tentamenweek-huisregels voor Nederlandse huisgenoten',
+        excerpt:
+          'MMMS-2025 laat zien dat veel hbo- en wo-studenten nog steeds hoge studiestress melden. Gedeelde huizen hebben tijdelijke stilte-, keuken- en bezoeknormen nodig in de tentamenweek.',
+        readTime: '8 min lezen',
+        date: '2026-09-16',
+        category: 'Welzijn',
+        icon: Shield,
+      },
       {
         slug: 'roommate-chore-fairness-netherlands',
         title: 'Eerlijke klusjesverdeling in Nederlandse studentenhuizen',

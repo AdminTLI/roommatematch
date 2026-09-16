@@ -55,6 +55,11 @@
       "slug": "roommate-chore-fairness-netherlands",
       "imageKey": "sharedKitchen",
       "date": "2026-09-02"
+    },
+    {
+      "slug": "exam-week-house-rules-netherlands",
+      "imageKey": "studyLateNight",
+      "date": "2026-09-16"
     }
   ]
 }
