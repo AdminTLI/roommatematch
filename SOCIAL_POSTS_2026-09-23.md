@@ -1,4 +1,4 @@
-# Social posts — 2026-09-23
+# Social posts - 2026-09-23
 
 ## LinkedIn
 
