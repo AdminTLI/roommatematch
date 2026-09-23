@@ -247,6 +247,11 @@ export async function processInactiveAccounts(
           is_visible: false,
           profile_picture_url: null,
           avatar_id: null,
+          // Financial preference data is personal data and must be anonymised
+          // along with other profile fields (GDPR Art. 5(1)(e) storage limitation).
+          budget_min: null,
+          budget_max: null,
+          budget_unknown: false,
         })
         .eq('user_id', userId)
 
