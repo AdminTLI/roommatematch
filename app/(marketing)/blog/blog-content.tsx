@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'dutch-study-choice-gamma-fields',
+        title: 'Dutch Study Choice: Why Gamma Fields Dominate',
+        excerpt:
+          'Rathenau data show most Dutch bachelor students enrol in gamma fields. That concentration shapes programme choice, fixus deadlines, and early switches.',
+        readTime: '9 min read',
+        date: '2026-09-23',
+        category: 'Technology',
+        icon: Brain,
+      },
+      {
         slug: 'roommate-chore-fairness-netherlands',
         title: 'Roommate Chore Fairness in Dutch Student Houses',
         excerpt:
@@ -282,6 +292,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'dutch-study-choice-gamma-fields',
+        title: 'Studiekeuze in Nederland: waarom gamma zo dominant is',
+        excerpt:
+          'Rathenau-cijfers laten zien dat de meeste bachelorstudenten in gamma-richtingen zitten. Die concentratie kleurt programma-keuze, fixusdeadlines en vroege switches.',
+        readTime: '9 min lezen',
+        date: '2026-09-23',
+        category: 'Technologie',
+        icon: Brain,
+      },
       {
         slug: 'roommate-chore-fairness-netherlands',
         title: 'Eerlijke klusjesverdeling in Nederlandse studentenhuizen',
