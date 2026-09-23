@@ -1,0 +1,11 @@
+{
+  "name": "Domu Match",
+  "install": "bash .cursor/install.sh",
+  "terminals": [
+    {
+      "name": "next-dev",
+      "command": "npm run dev"
+    }
+  ],
+  "ports": [3000]
+}
