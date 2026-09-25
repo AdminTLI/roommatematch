@@ -175,17 +175,18 @@ export async function processNotificationsWithPrivacy(
             !namePart.includes('user') &&
             namePart.length > 0
         }
-        genericMessage = 'You have matched with someone! Check out your matches to see who.'
+        genericMessage = 'We found a potential roommate for you. Check your matches to see who.'
       } else if (
         notif.type === 'match_accepted' &&
         notif.message &&
-        notif.message.includes('accepted your match request')
+        (notif.message.includes('accepted your match request') ||
+          notif.message.includes('wants to match'))
       ) {
         hasName =
           !notif.message.includes('Someone') &&
           !notif.message.includes('someone') &&
-          !notif.message.includes('Someone accepted your match request')
-        genericMessage = 'Someone accepted your match request!'
+          !notif.message.toLowerCase().startsWith('someone wants to match')
+        genericMessage = 'Someone wants to match with you. Check your matches to respond.'
       }
 
       if (hasName && notif.metadata?.match_id) {

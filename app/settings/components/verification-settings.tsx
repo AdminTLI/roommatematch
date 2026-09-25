@@ -71,7 +71,7 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
       if (data.redirectUrl) {
         window.location.href = data.redirectUrl
       } else {
-        router.push('/verify')
+        router.push('/verify?from=settings&redirect=/settings')
       }
     } catch (error) {
       console.error('Failed to start verification:', error)
@@ -164,7 +164,7 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
                 <p>Started on: {new Date(verification.createdAt).toLocaleDateString()}</p>
               </div>
             )}
-            <Button variant="outline" onClick={() => router.push('/verify')}>
+            <Button variant="outline" onClick={() => router.push('/verify?from=settings&redirect=/settings')}>
               View Status
             </Button>
           </div>

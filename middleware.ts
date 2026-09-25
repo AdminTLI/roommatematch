@@ -581,11 +581,13 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Enforce verification for authenticated users accessing protected routes
-  // Institution admins skip student Persona/onboarding verification gates.
+  // Enforce email verification for protected routes. Persona is required only for chat
+  // (and for accepting matches, enforced in the accept API / UI — not as a route wall).
+  // Institution admins skip student onboarding verification gates.
   if (user && isProtectedRoute && !isAllowedRoute && !isInstitutionRoute) {
     const verificationStatus = await checkUserVerificationStatus(user)
-    const redirectUrl = getVerificationRedirectUrl(verificationStatus)
+    const requirePersona = pathname.startsWith('/chat')
+    const redirectUrl = getVerificationRedirectUrl(verificationStatus, { requirePersona })
 
     if (redirectUrl) {
       const url = req.nextUrl.clone()
@@ -600,7 +602,7 @@ export async function middleware(req: NextRequest) {
           : 'verification_required')
       }
       
-      // Preserve redirect path for after verification
+      // Preserve redirect path for after Persona (chat and similar)
       if (redirectUrl === '/verify') {
         url.searchParams.set('redirect', pathname)
         url.searchParams.set('reason', verificationStatus.needsPersonaVerification 
@@ -636,7 +638,7 @@ export async function middleware(req: NextRequest) {
       url.pathname =
         intended && intended.startsWith('/') && !intended.startsWith('//') && intended !== '/verify'
           ? intended
-          : '/onboarding/welcome'
+          : '/dashboard'
       url.search = ''
       return redirect(url)
     }

@@ -226,14 +226,8 @@ export function SignInForm() {
             return
           }
           
-          if (verificationStatus.needsPersonaVerification) {
-            console.log('[SignIn] Email verified, redirecting to Persona verification')
-            window.location.href = '/verify?redirect=%2Fonboarding%2Fwelcome&reason=persona_verification_required'
-            return
-          }
-          
-          // Both verifications complete, proceed to matches
-          console.log('[SignIn] Both verifications complete, redirecting to matches')
+          // Persona is deferred until match accept; email-verified users go to the app
+          console.log('[SignIn] Email verified, redirecting to matches')
           window.location.href = '/matches'
         } else {
           // If API fails, don't assume - redirect to email verification to be safe

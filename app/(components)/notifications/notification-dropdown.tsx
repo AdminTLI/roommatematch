@@ -263,7 +263,7 @@ export function NotificationDropdown({
           router.push('/forum')
           break
         case 'verification_status':
-          router.push('/verify')
+          router.push('/verify?from=settings&redirect=/settings')
           break
         case 'housing_update':
           router.push('/housing')

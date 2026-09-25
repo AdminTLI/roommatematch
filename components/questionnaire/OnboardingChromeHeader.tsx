@@ -17,6 +17,8 @@ interface OnboardingChromeHeaderProps {
    */
   titleOverride?: string
   exitHref?: string
+  /** When false, hides the top-right exit (X) control. Default true. */
+  showExit?: boolean
   /** Optional row rendered under the progress bar (e.g. module stepper) */
   belowProgress?: React.ReactNode
   className?: string
@@ -32,6 +34,7 @@ export function OnboardingChromeHeader({
   moduleLabel,
   titleOverride,
   exitHref = '/dashboard',
+  showExit = true,
   belowProgress,
   className,
 }: OnboardingChromeHeaderProps) {
@@ -54,7 +57,7 @@ export function OnboardingChromeHeader({
   const centerTitle =
     titleOverride ??
     `Module ${moduleIndex} of ${moduleTotal}`
-  const centerSubtitle = titleOverride ? null : moduleLabel
+  const centerSubtitle = moduleLabel || null
 
   return (
     <header
@@ -96,14 +99,16 @@ export function OnboardingChromeHeader({
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
               <span className="max-w-[7rem] truncate sm:max-w-none">{autosaveLabel}</span>
             </span>
-            <button
-              type="button"
-              onClick={() => router.push(exitHref)}
-              aria-label="Exit onboarding"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-slate-200/70 transition hover:bg-slate-50 hover:text-[#0F172A] dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-50"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            {showExit ? (
+              <button
+                type="button"
+                onClick={() => router.push(exitHref)}
+                aria-label="Exit onboarding"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-slate-200/70 transition hover:bg-slate-50 hover:text-[#0F172A] dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-50"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
           </div>
         </div>
 

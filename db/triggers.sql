@@ -723,12 +723,12 @@ BEGIN
       jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.a_user)
     );
   ELSE
-    -- Not both accepted yet - use anonymous message
+    -- Suggestion only — not a mutual match yet
     PERFORM create_notification(
       NEW.a_user,
       'match_created',
       'New Match Found!',
-      'You have matched with someone! Check out your matches to see who.',
+      'We found a potential roommate for you. Check your matches to see who.',
       jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.b_user)
     );
     
@@ -736,7 +736,7 @@ BEGIN
       NEW.b_user,
       'match_created', 
       'New Match Found!',
-      'You have matched with someone! Check out your matches to see who.',
+      'We found a potential roommate for you. Check your matches to see who.',
       jsonb_build_object('match_id', NEW.id, 'chat_id', chat_id, 'other_user_id', NEW.a_user)
     );
   END IF;
@@ -758,7 +758,6 @@ RETURNS TRIGGER AS $$
 DECLARE
   user_a_name TEXT;
   user_b_name TEXT;
-  other_user_id UUID;
 BEGIN
   -- Only proceed if status actually changed
   IF OLD.status = NEW.status THEN
@@ -771,24 +770,9 @@ BEGIN
   FROM profiles p1, profiles p2
   WHERE p1.user_id = NEW.a_user AND p2.user_id = NEW.b_user;
   
-  -- Handle different status changes
-  IF NEW.status = 'accepted' THEN
-    -- Notify the other user that their match was accepted
-    -- IMPORTANT: Only one user has accepted so far, so don't show names - use "someone"
-    other_user_id := CASE 
-      WHEN NEW.a_user = OLD.a_user THEN NEW.b_user 
-      ELSE NEW.a_user 
-    END;
-    
-    PERFORM create_notification(
-      other_user_id,
-      'match_accepted',
-      'Match Accepted!',
-      'Someone accepted your match request!',
-      jsonb_build_object('match_id', NEW.id, 'other_user_id', NEW.a_user)
-    );
-    
-  ELSIF NEW.status = 'confirmed' THEN
+  -- Only notify on mutual confirmation. One-sided accepts must not create
+  -- "Match Accepted!" notifications for either user.
+  IF NEW.status = 'confirmed' THEN
     -- Notify both users that match is confirmed
     PERFORM create_notification(
       NEW.a_user,

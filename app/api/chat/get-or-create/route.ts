@@ -134,6 +134,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!isAdmin) {
+      const { assertBothUsersPersonaVerified } = await import('@/lib/chat/persona-chat-gate')
+      const personaGate = await assertBothUsersPersonaVerified(admin, user.id, targetUserId)
+      if (!personaGate.ok) {
+        return NextResponse.json(
+          {
+            error:
+              'Chat opens after both people complete identity verification. You can wait until they verify.',
+            requiresPersonaVerification: true,
+            unverifiedUserIds: personaGate.unverifiedUserIds,
+          },
+          { status: 403 }
+        )
+      }
+    }
+
     const { chatId } = await ensureDirectChat(admin, user.id, targetUserId, {
       createdBy: user.id,
     })

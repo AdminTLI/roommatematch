@@ -89,13 +89,16 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
                      !namePart.includes('user') &&
                      namePart.length > 0
           }
-          genericMessage = 'You have matched with someone! Check out your matches to see who.'
-        } else if (notif.type === 'match_accepted' && notif.message && notif.message.includes('accepted your match request')) {
+          genericMessage = 'We found a potential roommate for you. Check your matches to see who.'
+        } else if (notif.type === 'match_accepted' && notif.message && (
+          notif.message.includes('accepted your match request') ||
+          notif.message.includes('wants to match')
+        )) {
           // Check if message contains a name (not just "Someone")
           hasName = !notif.message.includes('Someone') && 
                    !notif.message.includes('someone') &&
-                   !notif.message.includes('Someone accepted your match request')
-          genericMessage = 'Someone accepted your match request!'
+                   !notif.message.toLowerCase().startsWith('someone wants to match')
+          genericMessage = 'Someone wants to match with you. Check your matches to respond.'
         }
         
         // Only verify if we detected a name (optimization)
@@ -287,7 +290,7 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
         router.push('/matches')
         break
       case 'verification_status':
-        router.push('/verify')
+        router.push('/verify?from=settings&redirect=/settings')
         break
       case 'housing_update':
         router.push('/housing')
@@ -425,7 +428,7 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="match_created">New Matches</SelectItem>
-                <SelectItem value="match_accepted">Match Accepted</SelectItem>
+                <SelectItem value="match_accepted">Match Request</SelectItem>
                 <SelectItem value="match_confirmed">Match Confirmed</SelectItem>
                 <SelectItem value="chat_message">Messages</SelectItem>
                 <SelectItem value="chat_message_reaction">Message reactions</SelectItem>

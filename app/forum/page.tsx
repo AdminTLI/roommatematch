@@ -26,7 +26,7 @@ export default async function ForumPage() {
     .single()
 
   if (!profile || profile.verification_status !== 'verified') {
-    redirect('/verify')
+    redirect('/verify?redirect=/forum&reason=persona_verification_required')
   }
 
   return (

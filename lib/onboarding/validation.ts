@@ -182,18 +182,24 @@ export async function checkQuestionnaireCompletion(
   options?: { userType?: 'student' | 'professional' | null }
 ): Promise<{
   isComplete: boolean;
+  isFullComplete: boolean;
+  isContextComplete: boolean;
+  completionStage: 'context' | 'full' | null;
   missingKeys: string[];
   responseCount: number;
   hasSubmission: boolean;
 }> {
   const { createClient } = await import('@/lib/supabase/server');
   const { V2_SECTION_KEYS } = await import('@/types/questionnaire');
+  const { isFullQuestionnaireComplete, hasDashboardAccess } = await import(
+    '@/lib/onboarding/completion-stage'
+  );
   const supabase = await createClient();
 
   // Check if submission exists and optionally match cohort (student vs professional)
   const { data: submission } = await supabase
     .from('onboarding_submissions')
-    .select('id, user_type')
+    .select('id, user_type, completion_stage')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -206,6 +212,13 @@ export async function checkQuestionnaireCompletion(
         ? (submission.user_type === 'student' || submission.user_type == null)
         : hasSubmission
   );
+
+  const completionStage =
+    submission?.completion_stage === 'context' || submission?.completion_stage === 'full'
+      ? submission.completion_stage
+      : hasSubmission
+        ? 'full'
+        : null;
 
   // v2-only: require all five module sections to have at least one answer
   const { data: v2Sections } = await supabase
@@ -221,10 +234,20 @@ export async function checkQuestionnaireCompletion(
   );
   const missingKeys = V2_SECTION_KEYS.filter((key) => !answeredV2Sections.has(key));
   const hasAllV2Sections = missingKeys.length === 0;
+  const hasContextSection = answeredV2Sections.has('logistics-context');
 
-  const isComplete =
+  const isContextComplete =
+    !!submissionMatchesCohort &&
+    hasDashboardAccess(completionStage, true) &&
+    (hasContextSection || hasAllV2Sections || completionStage === 'context' || completionStage === 'full');
+
+  const isFullComplete =
     hasAllV2Sections &&
-    (userType != null ? !!submissionMatchesCohort : hasSubmission);
+    !!submissionMatchesCohort &&
+    isFullQuestionnaireComplete(completionStage);
+
+  // Back-compat: isComplete means full harmony questionnaire for accept / score unlock
+  const isComplete = isFullComplete;
 
   // responseCount: answered v2 items (fallback to legacy responses table count)
   let responseCount = 0;
@@ -243,6 +266,9 @@ export async function checkQuestionnaireCompletion(
 
   return {
     isComplete: isComplete ?? false,
+    isFullComplete,
+    isContextComplete,
+    completionStage,
     missingKeys,
     responseCount,
     hasSubmission: !!submission

@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { ThemeProvider } from '@/lib/theme/theme-provider'
 import Link from 'next/link'
-import { Users, AlertCircle, Mail, Shield, ArrowRight } from 'lucide-react'
+import { Users, AlertCircle, Mail, ArrowRight } from 'lucide-react'
 import { MessageNotificationPopup } from '@/app/(components)/notifications/message-notification-popup'
 import { BugReportWidget } from '@/components/bugs/bug-report-widget'
 import { usePathname } from 'next/navigation'
@@ -142,13 +142,9 @@ export function AppShell({
     router.push('/auth/verify-email')
   }
 
-  const handleCompletePersonaVerification = () => {
-    router.push('/verify')
-  }
-
   const needsEmailVerification = verificationStatus?.needsEmailVerification ?? false
-  const needsPersonaVerification = verificationStatus?.needsPersonaVerification ?? false
-  const showVerificationBanner = !hideVerificationBanner && !isVerifyPage && !isLoadingVerification && (needsEmailVerification || needsPersonaVerification)
+  // Persona is deferred until match accept — do not block the shell with a Persona banner
+  const showVerificationBanner = !hideVerificationBanner && !isVerifyPage && !isLoadingVerification && needsEmailVerification
 
   // Framer Motion's translateY creates a containing block: `position:fixed` (chat composer) would
   // anchor to this wrapper instead of the viewport, hiding the input under mobile browser chrome.
@@ -174,31 +170,18 @@ export function AppShell({
                     <AlertDescription className="text-amber-900 dark:text-amber-200">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold mb-1">
-                            {needsEmailVerification ? 'Email verification required' : 'Identity verification required'}
-                          </p>
+                          <p className="font-semibold mb-1">Email verification required</p>
                           <p className="text-sm">
-                            {needsEmailVerification
-                              ? 'Please verify your email address to access all features.'
-                              : 'Please complete identity verification to access all features.'}
+                            Please verify your email address to access all features.
                           </p>
                         </div>
                         <Button
-                          onClick={needsEmailVerification ? handleCompleteEmailVerification : handleCompletePersonaVerification}
+                          onClick={handleCompleteEmailVerification}
                           className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 min-h-[44px] w-full sm:w-auto"
                           size="sm"
                         >
-                          {needsEmailVerification ? (
-                            <>
-                              <Mail className="mr-2 h-4 w-4" />
-                              Verify Email
-                            </>
-                          ) : (
-                            <>
-                              <Shield className="mr-2 h-4 w-4" />
-                              Verify Identity
-                            </>
-                          )}
+                          <Mail className="mr-2 h-4 w-4" />
+                          Verify Email
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>

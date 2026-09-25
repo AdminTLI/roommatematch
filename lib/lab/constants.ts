@@ -56,8 +56,8 @@ export const LAB_PROMPT_COPY: Record<
     cta: 'Tell us what’s missing',
   },
   empty_matches: {
-    title: 'Still no matches?',
-    description: 'What would make it easier to find the right roommate?',
-    cta: 'Suggest an idea',
+    title: 'Share your thoughts',
+    description: 'What would help you find a better roommate match?',
+    cta: 'Leave feedback',
   },
 }

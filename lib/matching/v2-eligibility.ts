@@ -40,6 +40,21 @@ export function hasAllV2Sections(sections: OnboardingSectionRow[]): boolean {
   return V2_SECTION_KEYS.every((key) => answered.has(key))
 }
 
+/** Context stage: logistics-context module has answers (enough for dashboard + context matching). */
+export function hasContextV2Section(sections: OnboardingSectionRow[]): boolean {
+  return sections.some(
+    (row) =>
+      row.section === 'logistics-context' &&
+      Array.isArray(row.answers) &&
+      row.answers.length > 0
+  )
+}
+
 export function isV2QuestionnaireComplete(sections: OnboardingSectionRow[]): boolean {
   return hasAllV2Sections(sections)
+}
+
+/** Eligible for suggestion pool with at least context answers. */
+export function isV2ContextComplete(sections: OnboardingSectionRow[]): boolean {
+  return hasContextV2Section(sections) || hasAllV2Sections(sections)
 }

@@ -22,14 +22,12 @@ export default async function MatchesPage() {
     redirect(onboardingRedirect)
   }
 
-  // Check verification status (backup check - middleware also enforces this)
+  // Email verification only — Persona is deferred until match accept
   const verificationStatus = await checkUserVerificationStatus(user)
   const redirectUrl = getVerificationRedirectUrl(verificationStatus)
   if (redirectUrl) {
     if (redirectUrl === '/auth/verify-email' && user.email) {
       redirect(`/auth/verify-email?email=${encodeURIComponent(user.email)}&auto=1`)
-    } else if (redirectUrl === '/verify') {
-      redirect('/verify?redirect=/matches')
     } else {
       redirect(redirectUrl)
     }

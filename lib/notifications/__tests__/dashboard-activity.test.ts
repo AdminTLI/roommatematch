@@ -9,7 +9,7 @@ describe('isDashboardActivityNotification', () => {
     expect(
       isDashboardActivityNotification({
         type: 'match_accepted',
-        title: 'Match Accepted!',
+        title: 'Someone wants to match',
       })
     ).toBe(true)
 

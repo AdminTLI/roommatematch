@@ -79,6 +79,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Accept requires full questionnaire + Persona (decline does not)
+    if (action === 'accept') {
+      const adminForGates = await createAdminClient()
+      const { checkUserVerificationStatus } = await import('@/lib/auth/verification-check')
+      const { isFullQuestionnaireComplete } = await import('@/lib/onboarding/completion-stage')
+      const verificationStatus = await checkUserVerificationStatus(user)
+      if (verificationStatus.needsPersonaVerification) {
+        return NextResponse.json(
+          {
+            error: 'Identity verification required before accepting a match.',
+            requiresPersonaVerification: true,
+          },
+          { status: 403 }
+        )
+      }
+      const { data: submission } = await adminForGates
+        .from('onboarding_submissions')
+        .select('completion_stage')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (!submission || !isFullQuestionnaireComplete(submission.completion_stage)) {
+        return NextResponse.json(
+          {
+            error: 'Complete the full questionnaire before accepting a match.',
+            requiresFullQuestionnaire: true,
+          },
+          { status: 403 }
+        )
+      }
+    }
+
     let repo
     try {
       repo = await getMatchRepo()
@@ -520,6 +551,14 @@ export async function POST(request: NextRequest) {
             }
           }
           
+          const { assertBothUsersPersonaVerified } = await import('@/lib/chat/persona-chat-gate')
+          const personaGate = await assertBothUsersPersonaVerified(admin, userA, userB)
+          if (!personaGate.ok) {
+            safeLogger.info('[Match Respond] Skipping chat creation until both users are Persona-verified', {
+              suggestionId: suggestion.id,
+              unverifiedUserIds: personaGate.unverifiedUserIds,
+            })
+          } else {
           const ensured = await ensureDirectChat(admin, userA, userB, { createdBy: userA })
           chatId = ensured.chatId
           safeLogger.info(
@@ -533,6 +572,7 @@ export async function POST(request: NextRequest) {
               suggestionId: suggestion.id,
             }
           )
+          }
         } catch (chatError) {
           safeLogger.error('Failed to create chat on confirmation', {
             error: chatError,
@@ -662,6 +702,14 @@ export async function POST(request: NextRequest) {
               }
             }
             
+            const { assertBothUsersPersonaVerified } = await import('@/lib/chat/persona-chat-gate')
+            const personaGate = await assertBothUsersPersonaVerified(admin, userA, userB)
+            if (!personaGate.ok) {
+              safeLogger.info('[Match Respond] Skipping chat creation (re-check) until both users are Persona-verified', {
+                suggestionId: suggestion.id,
+                unverifiedUserIds: personaGate.unverifiedUserIds,
+              })
+            } else {
             const ensured = await ensureDirectChat(admin, userA, userB, { createdBy: userA })
             chatId = ensured.chatId
             safeLogger.info(
@@ -675,6 +723,7 @@ export async function POST(request: NextRequest) {
                 suggestionId: suggestion.id,
               }
             )
+            }
             
             // Create notifications
             try {
@@ -705,24 +754,21 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: true, suggestion: { ...suggestion, status: 'confirmed' }, match })
       }
 
-      // Create notification for match acceptance
+      // One-sided accept: notify only the other user that someone wants to match
       try {
-        if (suggestion.kind === 'pair') {
-          if (otherId) {
-            await createMatchNotification(
-              user.id,
-              otherId,
-              'match_accepted',
-              suggestion.id,
-              undefined
-            )
-          }
+        if (suggestion.kind === 'pair' && otherId) {
+          await createMatchNotification(
+            user.id,
+            otherId,
+            'match_accepted',
+            suggestion.id,
+            undefined
+          )
         }
       } catch (notificationError) {
-        safeLogger.error('Failed to create acceptance notification', notificationError)
-        // Don't fail the entire request if notifications fail
+        safeLogger.error('Failed to create match request notification', notificationError)
       }
-      
+
       return NextResponse.json({ ok: true, suggestion })
     }
     

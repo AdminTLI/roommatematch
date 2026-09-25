@@ -1,13 +1,16 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { showErrorToast } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 
 type WfhStatus = 'fully_remote' | 'hybrid' | 'fully_office'
@@ -24,16 +27,11 @@ export default function ProfessionalContextClient() {
 
   const isEditMode = searchParams.get('mode') === 'edit'
 
-  const nextRoute = useMemo(() => {
-    return isEditMode
-      ? '/onboarding-professional/personality-values?mode=edit'
-      : '/onboarding-professional/personality-values'
-  }, [isEditMode])
-
   const [wfhStatus, setWfhStatus] = useState<WfhStatus | ''>('')
   const [age, setAge] = useState<number | ''>('')
   const [preservedAnswers, setPreservedAnswers] = useState<Array<{ itemId: string; value: unknown }>>([])
   const [isSaving, setIsSaving] = useState(false)
+  const [agreed, setAgreed] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -80,6 +78,9 @@ export default function ProfessionalContextClient() {
     if (age === '' || age == null) return 'Please enter your age.'
     if (!Number.isFinite(age)) return 'Age must be a number.'
     if (age < 18 || age > 99) return 'Age must be between 18 and 99.'
+    if (!isEditMode && !agreed) {
+      return 'Please agree to the Beta Terms to continue.'
+    }
     return null
   }
 
@@ -108,7 +109,26 @@ export default function ProfessionalContextClient() {
         }),
       })
 
-      router.push(nextRoute)
+      if (isEditMode) {
+        router.push('/onboarding-professional/personality-values?mode=edit')
+        return
+      }
+
+      const response = await fetchWithCSRF('/api/onboarding/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          beta_terms_consent: true,
+          beta_user_type_confirmed: 'professional',
+          completion_stage: 'context',
+        }),
+      })
+      const result = await response.json()
+      if (!response.ok) {
+        showErrorToast(result.title || 'Submission Failed', result.error || 'Unknown error')
+        return
+      }
+      window.location.href = '/dashboard'
     } catch (e) {
       setFormError(e instanceof Error ? e.message : 'Failed to save. Please try again.')
     } finally {
@@ -209,6 +229,33 @@ export default function ProfessionalContextClient() {
               </CardContent>
             </Card>
 
+            {!isEditMode ? (
+              <Card className="rounded-3xl border-border-subtle/25 bg-bg-surface-alt/40 backdrop-blur-xl">
+                <CardContent className="space-y-4 p-5 sm:p-6 lg:p-7">
+                  <div className="space-y-2">
+                    <h2 className="text-lg font-semibold text-text-primary sm:text-xl">
+                      Head to your dashboard
+                    </h2>
+                    <p className="text-sm leading-relaxed text-text-secondary">
+                      Your context answers are enough to start exploring matches. Complete the remaining
+                      questionnaire from Matches to unlock harmony scores.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3 rounded-xl bg-bg-surface/60 p-4">
+                    <Checkbox
+                      id="beta-terms-pro-context-inline"
+                      checked={agreed}
+                      onCheckedChange={(v) => setAgreed(v === true)}
+                      className="mt-0.5"
+                    />
+                    <Label htmlFor="beta-terms-pro-context-inline" className="text-sm leading-relaxed">
+                      I agree to the Beta Terms and confirm I am a young professional using Domu Match.
+                    </Label>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+
             {formError && (
               <div
                 role="alert"
@@ -220,19 +267,35 @@ export default function ProfessionalContextClient() {
 
             <div className="flex flex-col gap-6 rounded-3xl border border-border-subtle/25 bg-bg-surface-alt/50 p-6 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:gap-10 sm:p-8 lg:p-10">
               <p className="max-w-3xl text-sm leading-relaxed text-text-primary/95 sm:text-base">
-                Next up: personality and values. You can always come back and edit this section later.
+                {isEditMode
+                  ? 'Next up: personality and values. You can always come back and edit this section later.'
+                  : 'Agree to the Beta Terms above, then continue to your dashboard.'}
               </p>
               <Button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSaving}
+                disabled={isSaving || (!isEditMode && !agreed)}
                 className={cn(
-                  'inline-flex min-h-[48px] shrink-0 items-center justify-center rounded-2xl px-8 text-sm font-semibold tracking-tight sm:min-w-[11rem]',
+                  'inline-flex min-h-[48px] shrink-0 items-center justify-center gap-2 rounded-2xl px-8 text-sm font-semibold tracking-tight sm:min-w-[11rem]',
                   'bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 text-white',
-                  isSaving ? 'cursor-not-allowed opacity-50' : 'hover:brightness-110'
+                  isSaving || (!isEditMode && !agreed)
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'hover:brightness-110'
                 )}
               >
-                {isSaving ? 'Saving...' : 'Continue'}
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {isEditMode ? 'Saving...' : 'Submitting…'}
+                  </>
+                ) : isEditMode ? (
+                  'Continue'
+                ) : (
+                  <>
+                    Go to dashboard
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </div>
           </div>

@@ -20,10 +20,16 @@ export async function POST(request: Request) {
   // Beta terms consent is required proof that the user agreed & confirmed status.
   // We require it server-side so it cannot be bypassed via UI tampering.
   const requestBody = await request.json().catch(() => null) as
-    | { beta_terms_consent?: unknown; beta_user_type_confirmed?: unknown }
+    | {
+        beta_terms_consent?: unknown
+        beta_user_type_confirmed?: unknown
+        completion_stage?: unknown
+      }
     | null
   const betaTermsConsent = requestBody?.beta_terms_consent
   const betaUserTypeConfirmed = requestBody?.beta_user_type_confirmed
+  const requestedStage =
+    requestBody?.completion_stage === 'context' ? 'context' : 'full'
   
   safeLogger.debug('[Submit] User:', sanitizeUserId(user?.id), 'isDemo:', !user, 'isEditMode:', isEditMode)
   
@@ -68,13 +74,6 @@ export async function POST(request: Request) {
       safeLogger.debug('[Submit] User email not verified:', sanitizeEmail(user.email))
       return NextResponse.json({ 
         error: 'Please verify your email before submitting the questionnaire. Check your email for a verification link or go to Settings to resend verification email.' 
-      }, { status: 403 })
-    }
-
-    if (verificationStatus.needsPersonaVerification) {
-      safeLogger.debug('[Submit] User Persona not verified:', sanitizeEmail(user.email))
-      return NextResponse.json({ 
-        error: 'Please complete identity verification before submitting the questionnaire. Go to Settings to complete verification.' 
       }, { status: 403 })
     }
 
@@ -162,11 +161,36 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: sectionsError.message }, { status: 500 })
       }
 
-      safeLogger.debug('[Submit] Fetched sections:', sections?.length || 0)
-
       // 2. Find intro + location sections for later processing
       const introSection = sections?.find((s: any) => s.section === 'intro')
       const locationSection = sections?.find((s: any) => s.section === 'location-commute')
+
+      // Context-stage submit: require intro + logistics-context (students) or professional-context
+      if (requestedStage === 'context') {
+        if (isProfessionalSubmission) {
+          const proContext = sections?.find((s: any) => s.section === 'professional-context')
+          if (!proContext?.answers?.length) {
+            return NextResponse.json({
+              error: 'Please complete your professional context before continuing to the dashboard.',
+              title: 'Context Incomplete',
+            }, { status: 400 })
+          }
+        } else {
+          const logistics = sections?.find((s: any) => s.section === 'logistics-context')
+          if (!introSection?.answers?.length) {
+            return NextResponse.json({
+              error: 'Please complete your academic introduction before continuing.',
+              title: 'Context Incomplete',
+            }, { status: 400 })
+          }
+          if (!logistics?.answers?.length) {
+            return NextResponse.json({
+              error: 'Please complete the Logistics and Context module before continuing to the dashboard.',
+              title: 'Context Incomplete',
+            }, { status: 400 })
+          }
+        }
+      }
 
       // 3. Extract submission data and transform responses
       let submissionData = null
@@ -506,6 +530,7 @@ export async function POST(request: Request) {
         const submissionPayload = {
           user_id: userId,
           user_type: submissionUserType,
+          completion_stage: requestedStage,
           snapshot: {
             raw_sections: sections ?? [], // Raw sections with untransformed answers for audit
             transformed_responses: deduplicatedResponses, // Normalized question_key/value pairs for easy analysis
@@ -522,11 +547,25 @@ export async function POST(request: Request) {
                   : null,
               confirmed_user_type_from_server: submissionUserType,
               agreed_at: submittedAt,
-              source: 'onboarding_review_checkbox'
+              source: requestedStage === 'context' ? 'onboarding_context_submit' : 'onboarding_review_checkbox',
+              completion_stage: requestedStage,
             }
           },
           submitted_at: submittedAt,
           preferred_cities: preferredCitiesForSnapshot,
+        }
+
+        // Never downgrade a full submission back to context-only
+        const { data: existingSubmission } = await serviceSupabase
+          .from('onboarding_submissions')
+          .select('completion_stage')
+          .eq('user_id', userId)
+          .maybeSingle()
+        if (
+          existingSubmission?.completion_stage === 'full' &&
+          requestedStage === 'context'
+        ) {
+          submissionPayload.completion_stage = 'full'
         }
 
         const { error: submissionError } = await supabase

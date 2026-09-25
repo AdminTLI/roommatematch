@@ -1,10 +1,15 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check, Loader2 } from 'lucide-react'
 import { OnboardingChromeHeader } from '@/components/questionnaire/OnboardingChromeHeader'
 import { ModuleTracker } from '@/components/questionnaire/ModuleTracker'
+import { CenterBurstConfetti } from '@/components/celebration/center-burst-confetti'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { showErrorToast } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 
 const SHORT_LABELS = [
@@ -20,8 +25,8 @@ const MODULE_INTROS: Record<
   { next: string | null; intro: string }
 > = {
   0: {
-    next: 'Environment and Rhythms',
-    intro: 'How you sleep, study/work, and share space.',
+    next: null,
+    intro: 'You can explore matches on context scores now. Harmony unlocks after four more modules.',
   },
   1: {
     next: 'Cleanliness and Operations',
@@ -41,12 +46,27 @@ const MODULE_INTROS: Record<
   },
 }
 
+export type ContextSubmitConfig = {
+  userType: 'student' | 'professional'
+}
+
 interface ModuleCompletionScreenProps {
   moduleIndex: number
   moduleLabel: string
   nextUrl: string
   answeredCount: number
   totalCount: number
+  chrome?: {
+    titleOverride: string
+    moduleIndex: number
+    moduleTotal: number
+    hideModuleTracker?: boolean
+    showExit?: boolean
+  }
+  /** When set, show terms + submit-to-dashboard inline (skips a separate context-submit page). */
+  contextSubmit?: ContextSubmitConfig
+  /** Return to the last questionnaire card without remounting the flow. */
+  onBack?: () => void
 }
 
 export function ModuleCompletionScreen({
@@ -55,132 +75,57 @@ export function ModuleCompletionScreen({
   nextUrl,
   answeredCount,
   totalCount,
+  chrome,
+  contextSubmit,
+  onBack,
 }: ModuleCompletionScreenProps) {
   const router = useRouter()
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
   const { next, intro } = MODULE_INTROS[moduleIndex] ?? { next: null, intro: '' }
   const isLast = moduleIndex === 4
   const displayModule = moduleIndex + 1
   const headerLabel = SHORT_LABELS[moduleIndex] ?? moduleLabel
+  const isContextStep = Boolean(chrome)
+  const headerModuleIndex = chrome?.moduleIndex ?? displayModule
+  const headerTotal = chrome?.moduleTotal ?? 5
+  const doneTitle = isContextStep
+    ? 'Head to your dashboard'
+    : `Module ${displayModule} of 5 done`
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    const card = cardRef.current
-    if (!canvas || !card) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+  const [agreed, setAgreed] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-    let animId = 0
-    let startId = 0
-    let cancelled = false
-
-    const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      canvas.width = Math.floor(window.innerWidth * dpr)
-      canvas.height = Math.floor(window.innerHeight * dpr)
-      canvas.style.width = `${window.innerWidth}px`
-      canvas.style.height = `${window.innerHeight}px`
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    }
-
-    const colors = [
-      '#6366F1',
-      '#6366F1',
-      '#818CF8',
-      '#A5B4FC',
-      '#C7D2FE',
-      '#34D399',
-      '#6EE7B7',
-      '#F59E0B',
-      '#FBBF24',
-      '#F472B6',
-    ]
-
-    const spawn = () => {
-      if (cancelled) return
-      resize()
-
-      const rect = card.getBoundingClientRect()
-      const originX = rect.left + rect.width / 2
-      const originY = rect.top + rect.height / 2
-      const isMobile =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(max-width: 1023px)').matches
-
-      // Desktop: wide celebratory burst. Mobile: tighter upward cone that lingers longer.
-      const duration = isMobile ? 250 : 110
-      const fadeStart = isMobile ? 140 : 45
-      const particleCount = isMobile ? 80 : 180
-
-      const particles = Array.from({ length: particleCount }, () => {
-        let angle: number
-        let speed: number
-        if (isMobile) {
-          // Upward cone (~±55°) so pieces stay on the small screen longer
-          angle = -Math.PI / 2 + (Math.random() - 0.5) * (Math.PI * 0.7)
-          speed = 4 + Math.random() * 7
-        } else {
-          angle = Math.random() * Math.PI * 2
-          speed = 12 + Math.random() * 18
-        }
-        const w = Math.random() * 8 + 4
-        const h = Math.random() * 5 + 2.5
-        return {
-          x: originX + (Math.random() - 0.5) * (isMobile ? 40 : 72),
-          y: originY + (Math.random() - 0.5) * (isMobile ? 28 : 48),
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - (isMobile ? 0.8 : 1.5),
-          color: colors[Math.floor(Math.random() * colors.length)],
-          w: isMobile ? w * 0.85 : w,
-          h: isMobile ? h * 0.85 : h,
-          rotation: Math.random() * Math.PI * 2,
-          rotSpeed: (Math.random() - 0.5) * (isMobile ? 0.18 : 0.28),
-          gravity: isMobile ? 0.055 + Math.random() * 0.04 : 0.12 + Math.random() * 0.08,
-          drag: isMobile ? 0.988 + Math.random() * 0.008 : 0.985 + Math.random() * 0.01,
-          alpha: 1,
-        }
+  const submitContext = async () => {
+    if (!contextSubmit || !agreed || isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      const response = await fetchWithCSRF('/api/onboarding/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          beta_terms_consent: true,
+          beta_user_type_confirmed: contextSubmit.userType,
+          completion_stage: 'context',
+        }),
       })
-
-      let frame = 0
-      const animate = () => {
-        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
-        particles.forEach((p) => {
-          p.vx *= p.drag
-          p.vy = p.vy * p.drag + p.gravity
-          p.x += p.vx
-          p.y += p.vy
-          p.rotation += p.rotSpeed
-          p.alpha =
-            frame < fadeStart
-              ? 1
-              : Math.max(0, 1 - (frame - fadeStart) / (duration - fadeStart))
-          ctx.save()
-          ctx.globalAlpha = p.alpha
-          ctx.fillStyle = p.color
-          ctx.translate(p.x, p.y)
-          ctx.rotate(p.rotation)
-          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h)
-          ctx.restore()
-        })
-        frame++
-        if (frame < duration) animId = requestAnimationFrame(animate)
+      const result = await response.json()
+      if (!response.ok) {
+        showErrorToast(result.title || 'Submission Failed', result.error || 'Unknown error')
+        return
       }
-      animId = requestAnimationFrame(animate)
+      window.location.href = '/dashboard'
+    } catch (error) {
+      console.error('Context submit error:', error)
+      showErrorToast('Network Error', 'Unable to submit. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
+  }
 
-    startId = requestAnimationFrame(() => {
-      startId = requestAnimationFrame(spawn)
-    })
-
-    window.addEventListener('resize', resize)
-    return () => {
-      cancelled = true
-      cancelAnimationFrame(startId)
-      cancelAnimationFrame(animId)
-      window.removeEventListener('resize', resize)
-    }
-  }, [])
+  const termsLabel =
+    contextSubmit?.userType === 'professional'
+      ? 'I agree to the Beta Terms and confirm I am a young professional using Domu Match.'
+      : 'I agree to the Beta Terms and confirm I am a student using Domu Match.'
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0F172A] dark:text-slate-50">
@@ -189,40 +134,57 @@ export function ModuleCompletionScreen({
         <div className="absolute -bottom-32 -right-24 h-72 w-72 rounded-full bg-emerald-100/40 blur-3xl dark:bg-emerald-500/10" />
       </div>
 
-      <canvas
-        ref={canvasRef}
-        className="pointer-events-none absolute inset-0 z-[5]"
-        aria-hidden
-      />
+      <CenterBurstConfetti originRef={cardRef} />
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <OnboardingChromeHeader
-          moduleIndex={displayModule}
-          moduleTotal={5}
-          moduleLabel={headerLabel}
+          moduleIndex={headerModuleIndex}
+          moduleTotal={headerTotal}
+          moduleLabel={contextSubmit ? 'Ready' : headerLabel}
+          titleOverride={contextSubmit ? 'Almost done' : chrome?.titleOverride}
+          showExit={chrome?.showExit ?? true}
           belowProgress={
-            <ModuleTracker
-              currentModuleIndex={isLast ? moduleIndex : Math.min(moduleIndex + 1, 4)}
-              answeredInCurrent={isLast ? totalCount : 0}
-              totalInCurrent={totalCount}
-            />
+            chrome?.hideModuleTracker ? undefined : (
+              <ModuleTracker
+                currentModuleIndex={isLast ? moduleIndex : Math.min(moduleIndex + 1, 4)}
+                answeredInCurrent={isLast ? totalCount : 0}
+                totalInCurrent={totalCount}
+              />
+            )
           }
         />
 
         <main className="flex flex-1 items-center justify-center px-4 py-6 sm:py-8">
           <div
             ref={cardRef}
-            className="relative z-20 w-full max-w-[560px] rounded-2xl bg-white p-8 text-center shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/70 dark:bg-slate-800 dark:shadow-black/40 dark:ring-slate-700/80 sm:p-10"
+            className={cn(
+              'relative z-20 w-full max-w-[560px] rounded-2xl bg-white p-8 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/70 dark:bg-slate-800 dark:shadow-black/40 dark:ring-slate-700/80 sm:p-10',
+              contextSubmit ? 'text-left' : 'text-center'
+            )}
           >
-            <div className="mx-auto mb-5 flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500 text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500">
-              <Check className="h-5 w-5" strokeWidth={2.75} aria-hidden />
-            </div>
+            {!contextSubmit ? (
+              <div className="mx-auto mb-5 flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500 text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500">
+                <Check className="h-5 w-5" strokeWidth={2.75} aria-hidden />
+              </div>
+            ) : null}
 
             <h2 className="text-[1.45rem] font-extrabold leading-tight tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-[1.75rem]">
-              Module {displayModule} of 5 done
+              {contextSubmit ? (
+                <>
+                  Head to your <span className="text-indigo-500">dashboard</span>
+                </>
+              ) : (
+                doneTitle
+              )}
             </h2>
 
-            {!isLast && next ? (
+            {contextSubmit ? (
+              <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                You have finished the context questions. You can already see potential matches based on
+                university and logistics. Harmony scores unlock after you complete the remaining four
+                modules on the Matches page.
+              </p>
+            ) : !isLast && next && !isContextStep ? (
               <div className="mt-5 rounded-xl bg-[#F8FAFC] px-4 py-3.5 text-left ring-1 ring-slate-200/70 dark:bg-slate-900/60 dark:ring-slate-700/80">
                 <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400">
                   Up next
@@ -236,21 +198,73 @@ export function ModuleCompletionScreen({
               </div>
             ) : (
               <p className="mt-5 text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300">
-                {intro}
+                {isContextStep
+                  ? 'Next you can head to your dashboard and start browsing matches.'
+                  : intro}
               </p>
             )}
 
-            <button
-              type="button"
-              onClick={() => router.push(nextUrl)}
-              className={cn(
-                'mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
-                'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
-              )}
-            >
-              {isLast ? 'Review your answers' : 'Continue'}
-              <ArrowRight className="h-4 w-4" strokeWidth={2.25} aria-hidden />
-            </button>
+            {contextSubmit ? (
+              <>
+                <div className="mt-6 flex items-start gap-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200/80 dark:bg-slate-900/50 dark:ring-slate-700">
+                  <Checkbox
+                    id="beta-terms-context-inline"
+                    checked={agreed}
+                    onCheckedChange={(v) => setAgreed(v === true)}
+                    className="mt-0.5"
+                  />
+                  <Label
+                    htmlFor="beta-terms-context-inline"
+                    className="text-sm leading-relaxed text-slate-700 dark:text-slate-200"
+                  >
+                    {termsLabel}
+                  </Label>
+                </div>
+
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  {onBack ? (
+                    <button
+                      type="button"
+                      onClick={onBack}
+                      disabled={isSubmitting}
+                      className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-slate-100 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
+                    >
+                      Back
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    disabled={!agreed || isSubmitting}
+                    onClick={submitContext}
+                    className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-500 px-4 text-sm font-semibold text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Submitting…
+                      </>
+                    ) : (
+                      <>
+                        Go to dashboard
+                        <ArrowRight className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => router.push(nextUrl)}
+                className={cn(
+                  'mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
+                  'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] dark:bg-indigo-500 dark:hover:bg-indigo-400'
+                )}
+              >
+                {isLast ? 'Review your answers' : isContextStep ? 'Continue to dashboard' : 'Continue'}
+                <ArrowRight className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+              </button>
+            )}
           </div>
         </main>
       </div>

@@ -65,6 +65,7 @@ import { SuccessNpsWidget } from '@/app/(components)/success-nps-widget'
 import { LabPromptCard } from '@/app/(components)/lab-prompt-card'
 import type { LabPromptKey } from '@/lib/lab/types'
 import { isDashboardActivityNotification } from '@/lib/notifications/dashboard-activity'
+import { isSuggestedForUser } from '@/lib/matching/suggestion-tabs'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -507,12 +508,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             return false
           }
 
-          // Must be pending status
-          if (s.status !== 'pending') {
-            return false
-          }
-          // User must not have already accepted (accepted matches go to pending tab)
-          if (s.acceptedBy?.includes(user.id)) {
+          // Keep visible if I haven't accepted yet — including when the other
+          // person already accepted (status=accepted, I'm not in acceptedBy).
+          if (!isSuggestedForUser(s, user.id)) {
             return false
           }
           return true
@@ -1038,12 +1036,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                   !namePart.includes('user') &&
                   namePart.length > 0
               }
-              genericMessage = 'You have matched with someone! Check out your matches to see who.'
-            } else if (notif.type === 'match_accepted' && notif.message && notif.message.includes('accepted your match request')) {
+              genericMessage = 'We found a potential roommate for you. Check your matches to see who.'
+            } else if (notif.type === 'match_accepted' && notif.message && (
+              notif.message.includes('accepted your match request') ||
+              notif.message.includes('wants to match')
+            )) {
               hasName = !notif.message.includes('Someone') &&
                 !notif.message.includes('someone') &&
-                !notif.message.includes('Someone accepted your match request')
-              genericMessage = 'Someone accepted your match request!'
+                !notif.message.toLowerCase().startsWith('someone wants to match')
+              genericMessage = 'Someone wants to match with you. Check your matches to respond.'
             }
 
             if (hasName && notif.metadata?.match_id) {
@@ -1299,7 +1300,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           animate="animate"
           className="md:hidden"
         >
-          <DiscoveryFeedMobileCarousel matches={recentMatches} />
+          <DiscoveryFeedMobileCarousel
+            matches={recentMatches}
+            viewerHasFullQuestionnaire={hasCompletedQuestionnaire}
+          />
         </motion.div>
       )}
 
@@ -1345,6 +1349,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     contextScore: match.contextScore,
                     dimensionScores: match.dimensionScores || null,
                   }}
+                  viewerHasFullQuestionnaire={hasCompletedQuestionnaire}
                 />
               </div>
             )

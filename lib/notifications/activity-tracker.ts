@@ -54,7 +54,7 @@ export class ActivityTracker {
       questionnaire_submitted: 'Questionnaire Submitted',
       match_created: 'New Match Found',
       message_received: 'New Message',
-      match_accepted: 'Match Accepted',
+      match_accepted: 'Match Request',
       match_rejected: 'Match Declined'
     }
     return titles[type]

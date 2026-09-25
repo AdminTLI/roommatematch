@@ -129,6 +129,15 @@ export default function PathSelectionClient({ preview = false }: { preview?: boo
     router.push('/onboarding/welcome')
   }
 
+  const handleStudentSkipUniversityEmail = () => {
+    if (preview) {
+      setShowStudentGate(false)
+      showSuccessToast('Preview', 'Skip would continue to /onboarding/welcome without verifying university email.')
+      return
+    }
+    router.push('/onboarding/welcome')
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0F172A] dark:text-slate-50">
       <div className="pointer-events-none absolute inset-0">
@@ -155,6 +164,7 @@ export default function PathSelectionClient({ preview = false }: { preview?: boo
               <AcademicVerificationGate
                 preview={preview}
                 onVerified={handleStudentVerified}
+                onSkip={handleStudentSkipUniversityEmail}
                 onBack={() => setShowStudentGate(false)}
               />
             ) : (

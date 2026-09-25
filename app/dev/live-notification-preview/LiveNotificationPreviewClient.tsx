@@ -28,9 +28,9 @@ const SAMPLES: LiveNotificationCardModel[] = [
   {
     id: 'match-accepted-1',
     type: 'match_accepted',
-    title: 'Match Accepted!',
-    message: 'Alex accepted your match request.',
-    eyebrow: 'Match Accepted',
+    title: 'Someone wants to match',
+    message: 'Someone wants to match with you. Check your matches to respond.',
+    eyebrow: 'Match Request',
     createdAtLabel: 'Just now',
   },
   {

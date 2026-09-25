@@ -703,14 +703,14 @@ export async function runMatchingAsSuggestions({
       }
     }
 
-    // 5) Persist suggestions
+    // 5) Persist suggestions (only newly inserted pairs count as "created")
     safeLogger.debug(`[Suggestions] Creating ${suggestions.length} suggestions`)
-    await repo.createSuggestions(suggestions)
+    const { inserted, insertedCount } = await repo.createSuggestions(suggestions)
 
     return {
       runId,
-      created: suggestions.length,
-      suggestions
+      created: insertedCount,
+      suggestions: inserted,
     }
 
   } catch (error) {

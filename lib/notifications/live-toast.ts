@@ -105,6 +105,18 @@ export function displayTitleForNotification(notification: Notification): string 
     return 'You connected!'
   }
 
+  if (notification.type === 'match_accepted') {
+    // One-sided roommate requests use this copy; group pairwise keeps its stored title.
+    if (
+      notification.title === 'Match Accepted!' ||
+      notification.title === 'Someone wants to match' ||
+      /accepted your match request/i.test(notification.message || '') ||
+      /wants to match with you/i.test(notification.message || '')
+    ) {
+      return 'Someone wants to match'
+    }
+  }
+
   if (notification.type === 'match_created') {
     const pct =
       typeof metadata.compatibility_pct === 'number'
@@ -144,6 +156,24 @@ export function displayMessageForNotification(notification: Notification): strin
       .trim()
     if (!body) body = 'Tap to start chatting with an icebreaker.'
     return ensureSentencePunctuation(truncateText(normalizeDashes(body), 180))
+  }
+
+  if (notification.type === 'match_accepted') {
+    if (
+      notification.title === 'Match Accepted!' ||
+      notification.title === 'Someone wants to match' ||
+      /accepted your match request/i.test(message) ||
+      /wants to match with you/i.test(message)
+    ) {
+      return ensureSentencePunctuation(
+        truncateText(
+          normalizeDashes(
+            'Someone wants to match with you. Check your matches to respond.'
+          ),
+          180
+        )
+      )
+    }
   }
 
   return ensureSentencePunctuation(truncateText(normalizeDashes(message.trim()), 180))

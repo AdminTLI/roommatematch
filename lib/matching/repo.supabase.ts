@@ -19,6 +19,7 @@ import type { MatchSuggestion } from './types'
 import { isEligibleForMatching } from './completeness'
 import {
   extractV2ItemAnswers,
+  isV2ContextComplete,
   isV2QuestionnaireComplete,
   type OnboardingSectionRow,
 } from './v2-eligibility'
@@ -175,7 +176,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     })
 
     const eligible = await isEligibleForMatching(answers)
-    if (!eligible && !isV2QuestionnaireComplete(sectionRows)) {
+    if (!eligible && !isV2ContextComplete(sectionRows)) {
       const { getMissingFields } = await import('./completeness')
       const missing = getMissingFields(answers)
       safeLogger.debug('[DEBUG] User not eligible - missing fields', {
@@ -306,8 +307,9 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     if (filter.onlyActive) {
-      query = query.eq('profiles.verification_status', 'verified')
-      safeLogger.debug('[DEBUG] loadCandidates - Applied onlyActive filter (verified only)')
+      // onlyActive historically meant Persona-verified; unverified users are now eligible
+      // for suggestions. Keep the flag for call-site compatibility but do not filter on verification.
+      safeLogger.debug('[DEBUG] loadCandidates - onlyActive is set; including unverified users (Persona deferred)')
     } else {
       safeLogger.debug('[DEBUG] loadCandidates - onlyActive is false, including unverified users')
     }
@@ -548,7 +550,7 @@ export class SupabaseMatchRepo implements MatchRepo {
     const eligibleCandidates = transformedCandidates.filter(candidate => {
       const sectionRows = v2SectionsByUser.get(candidate.id) || []
       const eligible =
-        isEligibleForMatching(candidate.answers) || isV2QuestionnaireComplete(sectionRows)
+        isEligibleForMatching(candidate.answers) || isV2ContextComplete(sectionRows)
       if (!eligible) {
         const { getMissingFields } = require('./completeness')
         const missing = getMissingFields(candidate.answers)
@@ -557,6 +559,7 @@ export class SupabaseMatchRepo implements MatchRepo {
           missingFields: missing,
           hasVector: !!candidate.vector,
           hasAllV2Sections: isV2QuestionnaireComplete(sectionRows),
+          hasContextSection: isV2ContextComplete(sectionRows),
         })
         return false
       }
@@ -609,10 +612,11 @@ export class SupabaseMatchRepo implements MatchRepo {
       }
     }
 
-    // Filter: v2-complete users do not require legacy user_vectors (scores come from SQL v2 RPC).
+    // Filter: v2 context/full users score via SQL RPCs and do not need legacy user_vectors.
+    // Legacy (non-v2) candidates still require a vector after auto-generation.
     const candidatesWithVectors = eligibleCandidates.filter(candidate => {
       const sectionRows = v2SectionsByUser.get(candidate.id) || []
-      if (isV2QuestionnaireComplete(sectionRows)) {
+      if (isV2ContextComplete(sectionRows) || isV2QuestionnaireComplete(sectionRows)) {
         return true
       }
       if (!candidate.vector) {
@@ -995,50 +999,168 @@ export class SupabaseMatchRepo implements MatchRepo {
   }
 
   // Suggestions (student flow)
-  async createSuggestions(sugs: MatchSuggestion[]): Promise<void> {
+  async createSuggestions(
+    sugs: MatchSuggestion[]
+  ): Promise<{ inserted: MatchSuggestion[]; insertedCount: number }> {
     if (sugs.length === 0) {
       safeLogger.debug('[DEBUG] createSuggestions - No suggestions to create')
-      return
+      return { inserted: [], insertedCount: 0 }
     }
 
-    const records = sugs.map(sug => ({
-      id: sug.id,
-      run_id: sug.runId,
-      kind: sug.kind,
-      member_ids: sug.memberIds,
-      fit_score: sug.fitIndex / 100,
-      fit_index: sug.fitIndex,
-      section_scores: sug.sectionScores,
-      reasons: sug.reasons,
-      personalized_explanation: sug.personalizedExplanation,
-      expires_at: sug.expiresAt,
-      status: sug.status,
-      accepted_by: sug.acceptedBy,
-      created_at: sug.createdAt
-    }))
+    const canonicalPair = (memberIds: string[]): [string, string] => {
+      const sorted = [...memberIds].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      return [sorted[0], sorted[1]]
+    }
+    const pairKey = (memberIds: string[]) => {
+      const [low, high] = canonicalPair(memberIds)
+      return `${low}:${high}`
+    }
 
-    safeLogger.debug(`[DEBUG] createSuggestions - Inserting ${records.length} suggestions`, {
-      count: records.length
-    })
+    // Deduplicate by canonical pair key so a single batch never violates
+    // uq_match_suggestions_pair (user_low_id, user_high_id).
+    const byPair = new Map<string, MatchSuggestion>()
+    for (const sug of sugs) {
+      if (sug.kind === 'pair' && sug.memberIds.length >= 2) {
+        byPair.set(pairKey(sug.memberIds), sug)
+      } else {
+        byPair.set(sug.id, sug)
+      }
+    }
+
+    const uniqueSugs = Array.from(byPair.values())
+    const pairSugs = uniqueSugs.filter(s => s.kind === 'pair' && s.memberIds.length >= 2)
 
     const supabase = await this.getSupabase()
-    const { data, error } = await supabase
-      .from('match_suggestions')
-      .insert(records)
-      .select()
 
-    if (error) {
+    // Skip pairs that already have a suggestion row (any status), so refresh can
+    // add newly-eligible pairs without failing on uq_match_suggestions_pair and
+    // without counting already-accepted matches as "new".
+    // Note: uq_match_suggestions_pair is a PARTIAL unique index (WHERE kind = 'pair'),
+    // so PostgREST upsert onConflict cannot target it reliably — check-then-insert instead.
+    let existingKeys = new Set<string>()
+    if (pairSugs.length > 0) {
+      const lows = [...new Set(pairSugs.map(s => canonicalPair(s.memberIds)[0]))]
+      const highs = [...new Set(pairSugs.map(s => canonicalPair(s.memberIds)[1]))]
+
+      const { data: existing, error: existingError } = await supabase
+        .from('match_suggestions')
+        .select('user_low_id, user_high_id')
+        .eq('kind', 'pair')
+        .in('user_low_id', lows)
+        .in('user_high_id', highs)
+
+      if (existingError) {
+        throw new Error(`Failed to create suggestions: ${existingError.message}`)
+      }
+
+      existingKeys = new Set(
+        (existing || [])
+          .filter(e => e.user_low_id && e.user_high_id)
+          .map(e => `${e.user_low_id}:${e.user_high_id}`)
+      )
+    }
+
+    const toInsertSugs = uniqueSugs.filter(sug => {
+      if (sug.kind !== 'pair' || sug.memberIds.length < 2) return true
+      return !existingKeys.has(pairKey(sug.memberIds))
+    })
+
+    if (toInsertSugs.length === 0) {
+      safeLogger.debug('[DEBUG] createSuggestions - All pairs already exist; nothing to insert')
+      return { inserted: [], insertedCount: 0 }
+    }
+
+    const toRecord = (sug: MatchSuggestion): Record<string, unknown> => {
+      const sorted =
+        sug.kind === 'pair' && sug.memberIds.length >= 2
+          ? [...sug.memberIds].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+          : sug.memberIds
+
+      const record: Record<string, unknown> = {
+        id: sug.id,
+        run_id: sug.runId,
+        kind: sug.kind,
+        member_ids: sorted,
+        fit_score: sug.fitIndex / 100,
+        fit_index: sug.fitIndex,
+        section_scores: sug.sectionScores,
+        reasons: sug.reasons,
+        personalized_explanation: sug.personalizedExplanation,
+        expires_at: sug.expiresAt,
+        status: sug.status,
+        accepted_by: sug.acceptedBy,
+        created_at: sug.createdAt,
+      }
+
+      if (sug.kind === 'pair') {
+        record.user_low_id = sorted[0]
+        record.user_high_id = sorted[1]
+        if ((sug.sectionScores as { algo?: string } | undefined)?.algo === 'v2') {
+          record.algorithm_version = 'v2'
+        }
+      }
+
+      return record
+    }
+
+    const isUniqueViolation = (error: { code?: string; message?: string }) =>
+      error.code === '23505' ||
+      !!error.message?.includes('uq_match_suggestions_pair') ||
+      !!error.message?.includes('duplicate')
+
+    safeLogger.debug(`[DEBUG] createSuggestions - Inserting ${toInsertSugs.length} new suggestions`, {
+      count: toInsertSugs.length,
+      skippedExisting: uniqueSugs.length - toInsertSugs.length,
+    })
+
+    const { error } = await supabase.from('match_suggestions').insert(toInsertSugs.map(toRecord))
+
+    if (!error) {
+      safeLogger.debug(`[DEBUG] createSuggestions - Successfully inserted ${toInsertSugs.length} suggestions`)
+      return { inserted: toInsertSugs, insertedCount: toInsertSugs.length }
+    }
+
+    // Race / missed existing row: never fail refresh on the pair unique index.
+    // Insert remaining rows one-by-one so one conflict doesn't block new pairs.
+    if (!isUniqueViolation(error)) {
       safeLogger.error('[DEBUG] createSuggestions - Error details', {
         error: error.message,
         code: error.code,
         details: error.details,
         hint: error.hint,
-        records: records.map(r => ({ id: r.id, member_ids: r.member_ids }))
+        records: toInsertSugs.map(r => ({ id: r.id, member_ids: r.memberIds })),
       })
       throw new Error(`Failed to create suggestions: ${error.message}`)
     }
 
-    safeLogger.debug(`[DEBUG] createSuggestions - Successfully created ${data?.length || 0} suggestions`)
+    safeLogger.warn('[DEBUG] createSuggestions - Unique conflict on batch insert; inserting individually', {
+      error: error.message,
+      attempted: toInsertSugs.length,
+    })
+
+    const inserted: MatchSuggestion[] = []
+    for (const sug of toInsertSugs) {
+      const { error: rowError } = await supabase.from('match_suggestions').insert(toRecord(sug))
+      if (!rowError) {
+        inserted.push(sug)
+        continue
+      }
+      if (isUniqueViolation(rowError)) {
+        safeLogger.debug('[DEBUG] createSuggestions - Skipping existing pair', {
+          memberIds: sug.memberIds,
+        })
+        continue
+      }
+      safeLogger.error('[DEBUG] createSuggestions - Row insert failed', {
+        error: rowError.message,
+        code: rowError.code,
+        memberIds: sug.memberIds,
+      })
+      throw new Error(`Failed to create suggestions: ${rowError.message}`)
+    }
+
+    safeLogger.debug(`[DEBUG] createSuggestions - Inserted ${inserted.length} after conflict recovery`)
+    return { inserted, insertedCount: inserted.length }
   }
 
   async listSuggestionsForUser(userId: string, includeExpired = false, limit?: number, offset?: number): Promise<MatchSuggestion[]> {

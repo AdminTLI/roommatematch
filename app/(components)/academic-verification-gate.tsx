@@ -19,6 +19,8 @@ type Step = 'email' | 'otp' | 'in-use' | 'lost-access'
 export interface AcademicVerificationGateProps {
   onVerified?: () => void
   onBack?: () => void
+  /** Optional: skip university email during beta (does not set is_verified_student). */
+  onSkip?: () => void
   className?: string
   /** Skip real email/OTP APIs so the UI can be reviewed without auth. */
   preview?: boolean
@@ -41,6 +43,7 @@ function isPreviewTakenEmail(email: string) {
 export function AcademicVerificationGate({
   onVerified,
   onBack,
+  onSkip,
   className,
   preview = false,
 }: AcademicVerificationGateProps) {
@@ -412,33 +415,44 @@ export function AcademicVerificationGate({
               autoComplete="email"
               aria-label="University email"
             />
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleBack}
-                className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700"
-              >
-                <ArrowLeft className="h-4 w-4" strokeWidth={2.25} />
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={sendCode}
-                disabled={sendLoading}
-                className={primaryButtonClass}
-              >
-                {sendLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Sending…
-                  </>
-                ) : (
-                  <>
-                    Send code
-                    <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
-                  </>
-                )}
-              </button>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700"
+                >
+                  <ArrowLeft className="h-4 w-4" strokeWidth={2.25} />
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={sendCode}
+                  disabled={sendLoading}
+                  className={primaryButtonClass}
+                >
+                  {sendLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Sending…
+                    </>
+                  ) : (
+                    <>
+                      Send code
+                      <ArrowRight className="h-4 w-4" strokeWidth={2.25} />
+                    </>
+                  )}
+                </button>
+              </div>
+              {onSkip && (
+                <button
+                  type="button"
+                  onClick={onSkip}
+                  className="text-sm font-semibold text-slate-500 underline-offset-2 transition hover:text-slate-700 hover:underline dark:text-slate-400 dark:hover:text-slate-200"
+                >
+                  Skip for now
+                </button>
+              )}
             </div>
           </motion.div>
         ) : step === 'in-use' ? (

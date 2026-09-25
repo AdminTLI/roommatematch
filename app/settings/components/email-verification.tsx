@@ -100,7 +100,7 @@ export function EmailVerification({ user }: EmailVerificationProps) {
   }
 
   const handleCompletePersonaVerification = () => {
-    router.push('/verify')
+    router.push('/verify?from=settings&redirect=/settings')
   }
 
   return (

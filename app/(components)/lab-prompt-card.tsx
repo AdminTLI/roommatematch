@@ -8,15 +8,19 @@ import { Lightbulb, X } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { LAB_PROMPT_COPY } from '@/lib/lab/constants'
 import type { LabPromptKey } from '@/lib/lab/types'
+import { cn } from '@/lib/utils'
 
 interface LabPromptCardProps {
   /** Milestone keys the user has reached (parent computes). */
   eligibleKeys: LabPromptKey[]
+  /** `centered` keeps the card and centers copy + actions. */
+  variant?: 'card' | 'centered'
 }
 
-export function LabPromptCard({ eligibleKeys }: LabPromptCardProps) {
+export function LabPromptCard({ eligibleKeys, variant = 'card' }: LabPromptCardProps) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [loaded, setLoaded] = useState(false)
+  const isCentered = variant === 'centered'
 
   useEffect(() => {
     if (eligibleKeys.length === 0) {
@@ -57,36 +61,59 @@ export function LabPromptCard({ eligibleKeys }: LabPromptCardProps) {
   }
 
   return (
-    <Card className="border-indigo-200/80 dark:border-indigo-800/60 bg-gradient-to-br from-indigo-50/80 to-white dark:from-indigo-950/30 dark:to-zinc-900">
-      <CardContent className="pt-5 pb-5">
-        <div className="flex items-start gap-3">
-          <div className="rounded-xl bg-indigo-100 dark:bg-indigo-900/50 p-2 shrink-0">
+    <Card
+      className={cn(
+        'border-indigo-200/80 bg-gradient-to-br from-indigo-50/80 to-white',
+        'dark:border-indigo-800/60 dark:from-indigo-950/30 dark:to-zinc-900',
+      )}
+    >
+      <CardContent className="relative px-4 py-5 sm:px-6 sm:py-6">
+        <button
+          type="button"
+          onClick={dismiss}
+          className={cn(
+            'absolute right-3 top-3 rounded-md p-1.5 text-zinc-400 transition-colors sm:right-4 sm:top-4',
+            'hover:bg-zinc-200/60 hover:text-zinc-600 dark:hover:bg-zinc-700/60 dark:hover:text-zinc-300',
+          )}
+          aria-label="Dismiss"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <div
+          className={cn(
+            'flex gap-3',
+            isCentered
+              ? 'flex-col items-center text-center'
+              : 'items-start text-left',
+          )}
+        >
+          <div className="shrink-0 rounded-xl bg-indigo-100 p-2 dark:bg-indigo-900/50">
             <Lightbulb className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <div className="flex-1 min-w-0">
+
+          <div className={cn('min-w-0 flex-1', isCentered ? 'w-full max-w-sm' : 'pr-6')}>
             <p className="text-sm font-semibold text-zinc-900 dark:text-white">
               {copy.title}
             </p>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+            <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
               {copy.description}
             </p>
-            <div className="flex flex-wrap gap-2 mt-3">
-              <Button size="sm" asChild>
+            <div
+              className={cn(
+                'mt-3.5 flex gap-2',
+                isCentered && 'w-full justify-center',
+              )}
+            >
+              <Button
+                size="sm"
+                className={cn(isCentered && 'w-full max-w-[220px] sm:w-auto')}
+                asChild
+              >
                 <Link href="/forum?compose=1">{copy.cta}</Link>
-              </Button>
-              <Button size="sm" variant="ghost" asChild>
-                <Link href="/forum">See what others posted</Link>
               </Button>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={dismiss}
-            className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 p-1"
-            aria-label="Dismiss"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </div>
       </CardContent>
     </Card>

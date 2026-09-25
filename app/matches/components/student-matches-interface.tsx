@@ -20,6 +20,17 @@ import {
   type LiveCompatibilitySnapshot,
 } from '@/lib/matching/live-compatibility'
 import { generateDiscussionNotes } from '@/lib/matching/discussion-notes'
+import { PersonaTrustDialog } from '@/components/verification/persona-trust-dialog'
+import { PersonaSuccessDialog } from '@/components/verification/persona-success-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { isPendingForUser, isSuggestedForUser } from '@/lib/matching/suggestion-tabs'
 
 /** Shown per page in the UI (desktop grid + mobile pager). API fetches in multiples of this. */
 const MATCHES_CARDS_PER_PAGE = 12
@@ -48,8 +59,12 @@ function DiscoveryCardWrapper({
   otherUserId, 
   liveCompatibility,
   liveCompatLoading,
+  viewerHasFullQuestionnaire,
+  otherUserUnverified,
+  otherUserHarmonyIncomplete,
   onSkip,
   onConnect,
+  onUnlockQuestionnaire,
   connectButtonText,
   connectButtonIcon
 }: { 
@@ -57,8 +72,12 @@ function DiscoveryCardWrapper({
   otherUserId: string
   liveCompatibility?: LiveCompatibilitySnapshot | null
   liveCompatLoading?: boolean
+  viewerHasFullQuestionnaire: boolean
+  otherUserUnverified?: boolean
+  otherUserHarmonyIncomplete?: boolean
   onSkip?: () => void
   onConnect?: () => void
+  onUnlockQuestionnaire?: () => void
   connectButtonText?: string
   connectButtonIcon?: LucideIcon
 }) {
@@ -146,9 +165,13 @@ function DiscoveryCardWrapper({
           otherUserHasIncompleteAcademic: false,
           gateConflicts: compatibilityData.gate_conflicts,
           softGateOverride: compatibilityData.soft_gate_override,
+          otherUserUnverified,
+          otherUserHarmonyIncomplete,
         }}
+        viewerHasFullQuestionnaire={viewerHasFullQuestionnaire}
         onSkip={onSkip}
         onConnect={onConnect}
+        onUnlockQuestionnaire={onUnlockQuestionnaire}
         connectButtonText={connectButtonText}
         connectButtonIcon={connectButtonIcon}
       />
@@ -193,6 +216,36 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const [isCreatingChat, setIsCreatingChat] = useState(false)
   const [pagination, setPagination] = useState<{ limit: number; offset: number; total: number; has_more: boolean } | null>(null)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [viewerHasFullQuestionnaire, setViewerHasFullQuestionnaire] = useState(true)
+  const [viewerPersonaVerified, setViewerPersonaVerified] = useState(true)
+  const [viewerUserType, setViewerUserType] = useState<'student' | 'professional' | null>('student')
+  const [peerVerification, setPeerVerification] = useState<Record<string, boolean>>({})
+  const [peerHarmonyComplete, setPeerHarmonyComplete] = useState<Record<string, boolean>>({})
+  const [personaDialogOpen, setPersonaDialogOpen] = useState(false)
+  const [personaSuccessOpen, setPersonaSuccessOpen] = useState(false)
+  const [personaCelebrationSeen, setPersonaCelebrationSeen] = useState(true)
+  const [pendingAcceptSuggestion, setPendingAcceptSuggestion] = useState<MatchWithStatus | null>(null)
+  const [unverifiedPeerDialogOpen, setUnverifiedPeerDialogOpen] = useState(false)
+  const [harmonyPromptOpen, setHarmonyPromptOpen] = useState(false)
+
+  const harmonyContinueUrl =
+    viewerUserType === 'professional'
+      ? '/onboarding-professional/personality-values'
+      : '/onboarding/environment-rhythms'
+  const pendingHarmonyNavRef = useRef(false)
+
+  const clearDialogBodyLock = useCallback(() => {
+    const body = document.body
+    const html = document.documentElement
+    body.style.removeProperty('pointer-events')
+    if (body.style.overflow === 'hidden' || body.style.overflow === 'clip') {
+      body.style.overflow = ''
+    }
+    body.removeAttribute('data-scroll-locked')
+    body.removeAttribute('data-radix-scroll-lock')
+    html.style.removeProperty('pointer-events')
+    html.removeAttribute('data-scroll-locked')
+  }, [])
 
   /** UI pagination (12 cards per page); separate from API offset/load-more. */
   const [matchesPageIndex, setMatchesPageIndex] = useState(0)
@@ -294,6 +347,30 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         const rawSuggestions = data.suggestions || []
         const paginationData = data.pagination || { limit, offset, total: rawSuggestions.length, has_more: false }
 
+        if (data.viewerGates) {
+          setViewerHasFullQuestionnaire(Boolean(data.viewerGates.hasFullQuestionnaire))
+          setViewerPersonaVerified(Boolean(data.viewerGates.personaVerified))
+          setPersonaCelebrationSeen(Boolean(data.viewerGates.personaCelebrationSeen))
+          if (
+            data.viewerGates.personaVerified &&
+            !data.viewerGates.personaCelebrationSeen
+          ) {
+            setPersonaSuccessOpen(true)
+          }
+          if (
+            data.viewerGates.userType === 'student' ||
+            data.viewerGates.userType === 'professional'
+          ) {
+            setViewerUserType(data.viewerGates.userType)
+          }
+        }
+        if (data.peerMeta?.verification) {
+          setPeerVerification((prev) => ({ ...prev, ...data.peerMeta.verification }))
+        }
+        if (data.peerMeta?.harmonyComplete) {
+          setPeerHarmonyComplete((prev) => ({ ...prev, ...data.peerMeta.harmonyComplete }))
+        }
+
         setPagination(paginationData)
 
         // Client-side dedupe guard: keep only latest suggestion per otherId
@@ -385,18 +462,10 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             return false
           }
 
-          // Must be pending status (this excludes declined, accepted, and confirmed)
-          if (s.status !== 'pending') {
-            console.log('[Filter] Excluding from suggested - wrong status:', {
-              id: s.id,
-              status: s.status,
-              acceptedBy: s.acceptedBy
-            })
-            return false
-          }
-          // User must not have already accepted (accepted matches go to pending tab)
-          if (s.acceptedBy?.includes(user.id)) {
-            console.log('[Filter] Excluding from suggested - user already accepted:', {
+          // Keep visible if I haven't accepted yet — including when the other
+          // person already accepted (status=accepted, I'm not in acceptedBy).
+          if (!isSuggestedForUser(s, user.id)) {
+            console.log('[Filter] Excluding from suggested - not actionable for viewer:', {
               id: s.id,
               status: s.status,
               acceptedBy: s.acceptedBy
@@ -405,7 +474,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           }
           return true
         })
-        const pending = allSuggestions.filter(s => s.status === 'accepted' && s.acceptedBy?.includes(user.id) && s.acceptedBy.length < s.memberIds.length)
+        const pending = allSuggestions.filter(s => isPendingForUser(s, user.id))
         // Confirmed: Must have all members accepted (current user must be in acceptedBy AND all members must have accepted)
         // Include matches with status 'confirmed' OR status 'accepted' where all members have accepted
         // (fallback for cases where status wasn't updated to 'confirmed' yet)
@@ -453,8 +522,8 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
                 })
                 continue
               }
-              if (sug.status !== 'pending' || sug.acceptedBy?.includes(user.id)) {
-                console.log('[Filter] Skipping non-pending match in loadMore:', {
+              if (!isSuggestedForUser(sug, user.id)) {
+                console.log('[Filter] Skipping non-actionable match in loadMore:', {
                   id: sug.id,
                   status: sug.status,
                   acceptedBy: sug.acceptedBy
@@ -500,7 +569,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
               })
               return false
             }
-            const isValid = s.status === 'pending' && !s.acceptedBy?.includes(user.id)
+            const isValid = isSuggestedForUser(s, user.id)
             if (!isValid) {
               console.warn('[Filter] Removed invalid match from suggested tab:', {
                 id: s.id,
@@ -725,10 +794,44 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
     action: 'accept' | 'decline',
     suggestion?: MatchWithStatus,
   ) => {
+    if (action === 'accept') {
+      if (!viewerHasFullQuestionnaire) {
+        setPendingAcceptSuggestion(suggestion || null)
+        setHarmonyPromptOpen(true)
+        return
+      }
+      if (!viewerPersonaVerified) {
+        setPendingAcceptSuggestion(suggestion || null)
+        setPersonaDialogOpen(true)
+        return
+      }
+      const otherId = suggestion?.memberIds?.find((id) => id !== user.id)
+      if (otherId && peerVerification[otherId] === false) {
+        setPendingAcceptSuggestion(suggestion || null)
+        setUnverifiedPeerDialogOpen(true)
+        return
+      }
+    }
     try {
       await respondMutation.mutateAsync({ suggestionId, action, suggestion })
     } catch (error) {
       // Error handling is done in onError
+    }
+  }
+
+  const confirmAcceptAfterGates = async (suggestion: MatchWithStatus | null) => {
+    if (!suggestion) return
+    setUnverifiedPeerDialogOpen(false)
+    try {
+      await respondMutation.mutateAsync({
+        suggestionId: suggestion.id,
+        action: 'accept',
+        suggestion,
+      })
+    } catch {
+      // Error handling is done in onError
+    } finally {
+      setPendingAcceptSuggestion(null)
     }
   }
 
@@ -745,19 +848,20 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         const data = await response.json()
 
         // Check for diagnostic information if no suggestions
-        if (data.diagnostic && data.suggestions?.length === 0) {
+        if (data.diagnostic && (!data.suggestions || data.suggestions.length === 0) && !data.created) {
           toast.info('No matches available right now.', {
             duration: 6000,
             description: 'Please try again later.'
           })
-        } else if (data.suggestions && data.suggestions.length > 0) {
-          // Only show success message if we actually have suggestions for this user
-          // The count should now be accurate (only includes user's suggestions)
-          toast.success(`Found ${data.suggestions.length} new suggestion${data.suggestions.length !== 1 ? 's' : ''}`, {
-            duration: 3000,
-          })
-        } else if (data.created !== undefined && data.created === 0) {
-          // If created is 0, no new suggestions were found
+        } else if (typeof data.created === 'number' && data.created > 0) {
+          // Only count newly inserted suggestions — not already-accepted/pending pairs.
+          toast.success(
+            `Found ${data.created} new suggested match${data.created !== 1 ? 'es' : ''}`,
+            { duration: 3000 }
+          )
+        } else if (data.message === 'Using recent suggestions') {
+          // Cached recent suggestions — do not celebrate as new.
+        } else if (data.created === 0) {
           toast.info('No new suggestions found. Try again later or check your preferences.', {
             duration: 5000,
           })
@@ -1051,8 +1155,21 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         otherUserId={otherUserId}
         liveCompatibility={otherUserId ? liveCompatByPeer?.get(otherUserId) : undefined}
         liveCompatLoading={liveCompatLoading}
+        viewerHasFullQuestionnaire={viewerHasFullQuestionnaire}
+        otherUserUnverified={
+          viewerPersonaVerified && otherUserId
+            ? peerVerification[otherUserId] === false
+            : false
+        }
+        otherUserHarmonyIncomplete={
+          otherUserId ? peerHarmonyComplete[otherUserId] === false : false
+        }
         onSkip={onSkip}
         onConnect={onConnect}
+        onUnlockQuestionnaire={() => {
+          clearDialogBodyLock()
+          window.location.assign(harmonyContinueUrl)
+        }}
         connectButtonText={activeTab === 'confirmed' ? 'Chat' : undefined}
         connectButtonIcon={activeTab === 'confirmed' ? MessageCircle : undefined}
       />
@@ -1331,6 +1448,108 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           )}
         </>
       )}
+
+      <PersonaTrustDialog
+        open={personaDialogOpen}
+        onOpenChange={setPersonaDialogOpen}
+        userId={user.id}
+        onVerified={() => {
+          setViewerPersonaVerified(true)
+          setPersonaDialogOpen(false)
+          if (!personaCelebrationSeen) {
+            setPersonaSuccessOpen(true)
+            return
+          }
+          const suggestion = pendingAcceptSuggestion
+          if (suggestion) {
+            const otherId = suggestion.memberIds.find((id) => id !== user.id)
+            if (otherId && peerVerification[otherId] === false) {
+              setUnverifiedPeerDialogOpen(true)
+              return
+            }
+            void confirmAcceptAfterGates(suggestion)
+          }
+        }}
+      />
+
+      <PersonaSuccessDialog
+        open={personaSuccessOpen}
+        onOpenChange={setPersonaSuccessOpen}
+        onConfirmed={() => {
+          setPersonaCelebrationSeen(true)
+          const suggestion = pendingAcceptSuggestion
+          if (suggestion) {
+            const otherId = suggestion.memberIds.find((id) => id !== user.id)
+            if (otherId && peerVerification[otherId] === false) {
+              setUnverifiedPeerDialogOpen(true)
+              return
+            }
+            void confirmAcceptAfterGates(suggestion)
+          }
+        }}
+      />
+
+      <Dialog
+        open={harmonyPromptOpen}
+        onOpenChange={(open) => {
+          setHarmonyPromptOpen(open)
+          if (!open && pendingHarmonyNavRef.current) {
+            pendingHarmonyNavRef.current = false
+            clearDialogBodyLock()
+            // Full navigation avoids a stuck Radix body lock after soft client routing.
+            window.location.assign(harmonyContinueUrl)
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader className="space-y-3">
+            <DialogTitle>Complete your questionnaire</DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed">
+              Finish the remaining harmony questions before you can accept a match. You will unlock
+              harmony scores, dimensions, and concerns for everyone you see.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-2 sm:flex-col sm:justify-stretch">
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() => {
+                pendingHarmonyNavRef.current = true
+                setHarmonyPromptOpen(false)
+              }}
+            >
+              Continue questionnaire
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={unverifiedPeerDialogOpen} onOpenChange={setUnverifiedPeerDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>This person is not identity-verified yet</DialogTitle>
+            <DialogDescription>
+              You can still accept the match. Chat stays closed until they complete Persona
+              verification — this keeps everyone safer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setUnverifiedPeerDialogOpen(false)
+                setPendingAcceptSuggestion(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={() => void confirmAcceptAfterGates(pendingAcceptSuggestion)}>
+              Accept anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

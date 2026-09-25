@@ -147,8 +147,85 @@ export async function GET(request: NextRequest) {
         ? (offset + limit) < totalCount && filteredSuggestions.length === limit
         : false
       
+      // Viewer gates + peer verification / questionnaire stage for cards and accept UI
+      const admin = await createAdminClient()
+      const otherIds = Array.from(
+        new Set(
+          filteredSuggestions
+            .map((s) => s.memberIds?.find((id) => id !== user.id))
+            .filter((id): id is string => Boolean(id))
+        )
+      )
+
+      const [{ data: submission }, { data: viewerUser }, verificationStatusResult, peerProfiles, peerSubs] =
+        await Promise.all([
+          admin
+            .from('onboarding_submissions')
+            .select('completion_stage')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+          admin
+            .from('users')
+            .select('identity_verified_at, persona_celebration_seen_at')
+            .eq('id', user.id)
+            .maybeSingle(),
+          (async () => {
+            const { checkUserVerificationStatus } = await import('@/lib/auth/verification-check')
+            return checkUserVerificationStatus(user)
+          })(),
+          otherIds.length
+            ? admin
+                .from('profiles')
+                .select('user_id, verification_status')
+                .in('user_id', otherIds)
+            : Promise.resolve({ data: [] as { user_id: string; verification_status: string }[] }),
+          otherIds.length
+            ? admin
+                .from('onboarding_submissions')
+                .select('user_id, completion_stage')
+                .in('user_id', otherIds)
+            : Promise.resolve({ data: [] as { user_id: string; completion_stage: string | null }[] }),
+        ])
+
+      const { isFullQuestionnaireComplete } = await import('@/lib/onboarding/completion-stage')
+      const peerVerification: Record<string, boolean> = {}
+      for (const row of peerProfiles.data || []) {
+        peerVerification[row.user_id] = row.verification_status === 'verified'
+      }
+      // Also treat durable users.identity_verified_at as verified when profile lags
+      if (otherIds.length) {
+        const { data: peerUsers } = await admin
+          .from('users')
+          .select('id, identity_verified_at')
+          .in('id', otherIds)
+        for (const u of peerUsers || []) {
+          if (u.identity_verified_at) peerVerification[u.id] = true
+        }
+      }
+
+      const peerHarmonyComplete: Record<string, boolean> = {}
+      for (const row of peerSubs.data || []) {
+        peerHarmonyComplete[row.user_id] = isFullQuestionnaireComplete(row.completion_stage)
+      }
+
+      const viewerHasFullQuestionnaire = isFullQuestionnaireComplete(submission?.completion_stage)
+      const viewerPersonaVerified =
+        verificationStatusResult.personaVerified || Boolean(viewerUser?.identity_verified_at)
+      const personaCelebrationSeen = Boolean(viewerUser?.persona_celebration_seen_at)
+
       return NextResponse.json({ 
         suggestions: filteredSuggestions,
+        viewerGates: {
+          hasFullQuestionnaire: viewerHasFullQuestionnaire,
+          personaVerified: viewerPersonaVerified,
+          personaCelebrationSeen,
+          completionStage: submission?.completion_stage ?? (submission ? 'full' : null),
+          userType: profile.user_type,
+        },
+        peerMeta: {
+          verification: peerVerification,
+          harmonyComplete: peerHarmonyComplete,
+        },
         pagination: {
           limit: limit || filteredSuggestions.length,
           offset: offset || 0,

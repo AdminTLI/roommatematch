@@ -176,18 +176,26 @@ export async function markIdentityVerified(
   clearVerificationCache(userId)
 }
 
+export type VerificationRedirectOptions = {
+  /**
+   * When true (default false for app access), also redirect unverified users to /verify.
+   * Persona is no longer a route wall for dashboard/matches; use this for chat and similar.
+   */
+  requirePersona?: boolean
+}
+
 /**
- * Get the redirect URL based on verification status
- * @param status - Verification status object
- * @returns Redirect URL or null if verified
+ * Get the redirect URL based on verification status.
+ * By default only email verification blocks app access; Persona is opt-in via requirePersona.
  */
 export function getVerificationRedirectUrl(
-  status: VerificationStatus
+  status: VerificationStatus,
+  options: VerificationRedirectOptions = {}
 ): string | null {
   if (status.needsEmailVerification) {
     return '/auth/verify-email'
   }
-  if (status.needsPersonaVerification) {
+  if (options.requirePersona && status.needsPersonaVerification) {
     return '/verify'
   }
   return null

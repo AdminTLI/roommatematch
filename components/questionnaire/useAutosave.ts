@@ -2,8 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { SectionKey } from '@/types/questionnaire'
-import { useOnboardingStore, type Answer } from '@/store/onboarding'
+import {
+  useOnboardingStore,
+  waitForOnboardingStoreHydration,
+  type Answer,
+} from '@/store/onboarding'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { createClient } from '@/lib/supabase/client'
 
 function toArrayRecord(record: Record<string, Answer>): Answer[] {
   return Object.values(record)
@@ -54,6 +59,8 @@ export function useAutosave(section: SectionKey) {
   const setAnswer = useOnboardingStore((s) => s.setAnswer)
   const setLastSavedAt = useOnboardingStore((s) => s.setLastSavedAt)
   const clearSections = useOnboardingStore((s) => s.clearSections)
+  const bindToUser = useOnboardingStore((s) => s.bindToUser)
+  const ownerUserId = useOnboardingStore((s) => s.ownerUserId)
   const [isSaving, setIsSaving] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [hasLoaded, setHasLoaded] = useState(false)
@@ -63,20 +70,59 @@ export function useAutosave(section: SectionKey) {
   const isInitialLoadRef = useRef(true)
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const loadedSectionRef = useRef<SectionKey | null>(null)
+  const loadedOwnerRef = useRef<string | null | undefined>(undefined)
   const answersArrayRef = useRef<Answer[]>([])
   const sectionRef = useRef(section)
   sectionRef.current = section
 
-  // Load existing answers on mount / section change
+  // Load existing answers on mount / section change / account change.
+  // Module switches must NOT freeze the UI: the store is already bound to this user,
+  // so answers stay clickable while the section fetch runs in the background.
   useEffect(() => {
-    if (loadedSectionRef.current === section) return
+    const prevOwner = loadedOwnerRef.current
+    const ownerChanged = prevOwner !== undefined && prevOwner !== ownerUserId
+    if (loadedSectionRef.current === section && prevOwner === ownerUserId) return
+
+    const sectionChangedOnly =
+      loadedSectionRef.current != null &&
+      loadedSectionRef.current !== section &&
+      !ownerChanged &&
+      prevOwner === ownerUserId
+
     loadedSectionRef.current = section
+    loadedOwnerRef.current = ownerUserId
     isInitialLoadRef.current = true
-    setHasLoaded(false)
+    lastSavedAnswersRef.current = []
+
+    // Freeze UI only on first bind or account switch — never when advancing modules.
+    if (!sectionChangedOnly) {
+      const storeReady =
+        useOnboardingStore.persist.hasHydrated() && Boolean(ownerUserId)
+      if (ownerChanged || !storeReady) {
+        setHasLoaded(false)
+      } else {
+        setHasLoaded(true)
+      }
+    }
 
     let cancelled = false
     ;(async () => {
       try {
+        await waitForOnboardingStoreHydration()
+        if (cancelled) return
+
+        const supabase = createClient()
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (cancelled) return
+
+        // Only bind when we know the user — never bind(null) over a hydrated owner
+        // (that cleared drafts and retriggered this effect forever).
+        if (user?.id) {
+          bindToUser(user.id)
+        }
+
         const progressRes = await fetch('/api/onboarding/progress')
         let hasAnyProgress = false
 
@@ -96,16 +142,7 @@ export function useAutosave(section: SectionKey) {
         const hasSectionAnswers =
           answers.length > 0 && answers.some((a) => a && a.itemId && a.value)
 
-        if (!hasAnyProgress && !hasSectionAnswers) {
-          // Only wipe when local store is also empty. Otherwise we destroy
-          // sibling-module answers that haven't reached the DB yet.
-          if (countLocalAnswers() === 0) {
-            clearSections()
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem('onboarding-storage')
-            }
-          }
-        } else if (hasSectionAnswers) {
+        if (hasSectionAnswers) {
           for (const a of answers) {
             if (a && a.itemId && a.value) {
               const existing = useOnboardingStore.getState().sections[section]?.[a.itemId]
@@ -116,9 +153,11 @@ export function useAutosave(section: SectionKey) {
           }
           if (data.lastSavedAt) setLastSavedAt(data.lastSavedAt)
           lastSavedAnswersRef.current = answers
+        } else if (!hasAnyProgress && countLocalAnswers() === 0) {
+          clearSections()
         }
       } catch {
-        // Offline or error — keep any local answers
+        // Offline or error — keep any local answers already bound to this user
       } finally {
         if (!cancelled) {
           setHasLoaded(true)
@@ -128,7 +167,7 @@ export function useAutosave(section: SectionKey) {
     return () => {
       cancelled = true
     }
-  }, [section, setAnswer, setLastSavedAt, clearSections])
+  }, [section, ownerUserId, setAnswer, setLastSavedAt, clearSections, bindToUser])
 
   const answersArray = useMemo(
     () => (sectionAnswers ? toArrayRecord(sectionAnswers) : []),

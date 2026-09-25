@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Users, RefreshCw, Lightbulb } from 'lucide-react'
+import { Users, RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { LabPromptCard } from '@/app/(components)/lab-prompt-card'
 import { cn } from '@/lib/utils'
@@ -24,115 +24,79 @@ export function EmptyMatchesState({
   }, [])
 
   return (
-    <div className="relative mx-auto max-w-2xl overflow-hidden">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-20 -top-20 h-48 w-48 rounded-full bg-indigo-200/20 blur-3xl dark:bg-indigo-500/10" />
-        <div className="absolute -bottom-16 -right-16 h-40 w-40 rounded-full bg-purple-200/25 blur-3xl dark:bg-purple-500/10" />
-      </div>
-
-      <div
-        className={cn(
-          'relative rounded-2xl bg-white p-8 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.05)] ring-1 ring-slate-200/70 transition-all duration-500',
-          'dark:bg-slate-800 dark:shadow-black/40 dark:ring-slate-700/80',
-          'sm:p-10',
-          mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0',
-        )}
-      >
-        <div className="flex flex-col items-center text-center">
-          <div className="relative mb-6">
-            <div className="absolute inset-0 animate-pulse rounded-2xl bg-gradient-to-br from-indigo-400/20 to-purple-400/20 blur-md" />
-            <div className="relative rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 p-[2px] shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[14px] bg-white dark:bg-slate-800 sm:h-20 sm:w-20">
-                <Users
-                  className="h-8 w-8 text-indigo-600 dark:text-indigo-400 sm:h-9 sm:w-9"
-                  strokeWidth={2}
-                  aria-hidden
-                />
-              </div>
+    <div
+      className={cn(
+        'mx-auto w-full max-w-md px-1 sm:max-w-lg sm:px-0 lg:max-w-xl xl:max-w-2xl',
+        'py-6 sm:py-8 lg:py-10',
+        'transition-all duration-500',
+        mounted ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0',
+      )}
+    >
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-5 sm:mb-6">
+          <div className="relative rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 p-[2px] shadow-[0_0_20px_-5px_rgba(99,102,241,0.45)]">
+            <div className="flex h-14 w-14 items-center justify-center rounded-[14px] bg-white dark:bg-slate-900 sm:h-16 sm:w-16 lg:h-[4.5rem] lg:w-[4.5rem]">
+              <Users
+                className="h-7 w-7 text-indigo-600 dark:text-indigo-400 sm:h-8 sm:w-8"
+                strokeWidth={2}
+                aria-hidden
+              />
             </div>
           </div>
-
-          <h3 className="mb-2 text-xl font-extrabold tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-2xl">
-            No matches yet
-          </h3>
-
-          {hasCompletedQuestionnaire ? (
-            <>
-              <p className="mb-6 max-w-md text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-[15px]">
-                We&apos;re working on finding your perfect roommate matches. This can take a few
-                hours after completing your questionnaire.
-              </p>
-
-              <div className="mb-6 inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/80 dark:bg-slate-900/60 dark:text-slate-200 dark:ring-slate-700 sm:text-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                </span>
-                Scanning for compatible roommates
-              </div>
-
-              <Button
-                onClick={onRefresh}
-                className={cn(
-                  'inline-flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
-                  'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
-                  'hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
-                  'active:scale-[0.98]',
-                )}
-              >
-                <RefreshCw className="h-4 w-4" strokeWidth={2.25} aria-hidden />
-                Refresh Matches
-              </Button>
-
-              <div className="mt-6 flex w-full max-w-md items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2.5 ring-1 ring-amber-200/80 dark:bg-amber-950/50 dark:ring-amber-800/70">
-                <Lightbulb
-                  className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-300"
-                  strokeWidth={2.25}
-                  aria-hidden
-                />
-                <p className="text-left text-xs font-medium leading-relaxed text-amber-950 dark:text-amber-100 sm:text-[13px]">
-                  We only surface matches when there&apos;s a strong compatibility fit. Quality
-                  over quantity.
-                </p>
-              </div>
-
-              <div className="mt-6 w-full max-w-md">
-                <LabPromptCard eligibleKeys={['empty_matches']} />
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="mb-6 max-w-md text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:text-[15px]">
-                Complete your questionnaire to start finding compatible roommates. The more
-                questions you answer, the better your matches will be.
-              </p>
-
-              <Button
-                onClick={() => router.push('/onboarding')}
-                className={cn(
-                  'inline-flex h-11 min-w-[200px] items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all',
-                  'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
-                  'hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
-                  'active:scale-[0.98]',
-                )}
-              >
-                Complete Questionnaire
-              </Button>
-
-              <div className="mt-6 flex w-full max-w-md items-start gap-2 rounded-xl bg-amber-50 px-3.5 py-2.5 ring-1 ring-amber-200/80 dark:bg-amber-950/50 dark:ring-amber-800/70">
-                <Lightbulb
-                  className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-300"
-                  strokeWidth={2.25}
-                  aria-hidden
-                />
-                <p className="text-left text-xs font-medium leading-relaxed text-amber-950 dark:text-amber-100 sm:text-[13px]">
-                  It only takes a few minutes to complete, and you can always update your answers
-                  later.
-                </p>
-              </div>
-            </>
-          )}
         </div>
+
+        <h3 className="text-xl font-extrabold tracking-tight text-[#0F172A] dark:text-slate-50 sm:text-2xl">
+          No matches yet
+        </h3>
+
+        {hasCompletedQuestionnaire ? (
+          <>
+            <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:mt-3 sm:text-[15px]">
+              Matching can take a few hours after your questionnaire. We only surface strong
+              compatibility fits. Quality over quantity.
+            </p>
+
+            <Button
+              onClick={onRefresh}
+              className={cn(
+                'mt-6 inline-flex h-11 w-full max-w-xs items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all sm:mt-7 sm:w-auto sm:min-w-[180px]',
+                'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
+                'hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
+                'active:scale-[0.98]',
+              )}
+            >
+              <RefreshCw className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+              Refresh Matches
+            </Button>
+
+            <div className="mt-8 w-full sm:mt-10">
+              <LabPromptCard eligibleKeys={['empty_matches']} variant="centered" />
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:mt-3 sm:text-[15px]">
+              Complete your questionnaire to start finding compatible roommates. The more you
+              answer, the better your matches.
+            </p>
+
+            <Button
+              onClick={() => router.push('/onboarding')}
+              className={cn(
+                'mt-6 inline-flex h-11 w-full max-w-xs items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all sm:mt-7 sm:w-auto sm:min-w-[200px]',
+                'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
+                'hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
+                'active:scale-[0.98]',
+              )}
+            >
+              Complete Questionnaire
+            </Button>
+
+            <p className="mt-4 max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400 sm:mt-5 sm:text-[13px]">
+              It only takes a few minutes, and you can update your answers anytime.
+            </p>
+          </>
+        )}
       </div>
     </div>
   )

@@ -1,10 +1,14 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import {
+  hasDashboardAccess,
+  isFullQuestionnaireComplete,
+} from '@/lib/onboarding/completion-stage'
 
 /**
- * Returns the onboarding URL to redirect to if the user has not completed their cohort questionnaire, or null if complete.
- * Use on dashboard, matches, chat, etc. to send professionals to /onboarding-professional and students to /onboarding.
+ * Returns the onboarding URL to redirect to if the user has not completed at least
+ * the context questionnaire stage, or null if they can access dashboard/matches.
  */
 export async function getOnboardingRedirectUrlIfIncomplete(userId: string): Promise<string | null> {
   const service = createServiceClient()
@@ -19,14 +23,16 @@ export async function getOnboardingRedirectUrlIfIncomplete(userId: string): Prom
   if (!userType) return '/onboarding/path'
   const { data: submission } = await service
     .from('onboarding_submissions')
-    .select('user_type')
+    .select('user_type, completion_stage')
     .eq('user_id', userId)
     .maybeSingle()
-  const complete =
+  const cohortOk =
     userType === 'professional'
       ? submission?.user_type === 'professional'
       : submission && (submission.user_type === 'student' || submission.user_type == null)
-  if (complete) return null
+  if (cohortOk && hasDashboardAccess(submission?.completion_stage, true)) {
+    return null
+  }
   return userType === 'professional' ? '/onboarding-professional/welcome' : '/onboarding/welcome'
 }
 
@@ -41,7 +47,8 @@ export type CheckOnboardingRedirectOptions = {
 
 /**
  * Server-side redirect helper for onboarding pages
- * Checks if user is authenticated, has selected cohort (user_type), and if they already have a submission
+ * Checks if user is authenticated, has selected cohort (user_type), and if they already have a FULL submission.
+ * Context-only submissions may continue into harmony modules.
  */
 export async function checkOnboardingRedirect(
   searchParams?: { mode?: string; edit?: string },
@@ -101,7 +108,7 @@ export async function checkOnboardingRedirect(
   if (!isEditMode) {
     const { data: submission, error: submissionFetchError } = await service
       .from('onboarding_submissions')
-      .select('id, user_type')
+      .select('id, user_type, completion_stage')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -121,7 +128,8 @@ export async function checkOnboardingRedirect(
           ? (submission.user_type === 'student' || submission.user_type == null)
           : false)
     
-    if (submissionMatchesCohort) {
+    // Only bounce fully-complete users to the dashboard. Context-only users may continue harmony modules.
+    if (submissionMatchesCohort && isFullQuestionnaireComplete(submission?.completion_stage)) {
       redirect('/dashboard')
     }
   }

@@ -11,6 +11,8 @@ interface OnboardingModuleShellProps {
   moduleIndex: number
   moduleTotal?: number
   moduleLabel?: string
+  /** Replaces "Module X of Y" (e.g. "Step 1 of 2" for context onboarding) */
+  titleOverride?: string
   onBack?: () => void
   onContinue?: () => void
   continueDisabled?: boolean
@@ -19,6 +21,8 @@ interface OnboardingModuleShellProps {
   title: string
   subtitle?: string
   exitHref?: string
+  /** When false, hides the top-right exit (X) control. Default true. */
+  showExit?: boolean
   /** Max width of the content card */
   maxWidthClassName?: string
 }
@@ -28,6 +32,7 @@ export function OnboardingModuleShell({
   moduleIndex,
   moduleTotal = 5,
   moduleLabel,
+  titleOverride,
   onBack,
   onContinue,
   continueDisabled,
@@ -36,6 +41,7 @@ export function OnboardingModuleShell({
   title,
   subtitle,
   exitHref = '/dashboard',
+  showExit = true,
   maxWidthClassName = 'max-w-[540px]',
 }: OnboardingModuleShellProps) {
   const resolvedLabel =
@@ -53,7 +59,9 @@ export function OnboardingModuleShell({
           moduleIndex={moduleIndex}
           moduleTotal={moduleTotal}
           moduleLabel={resolvedLabel}
+          titleOverride={titleOverride}
           exitHref={exitHref}
+          showExit={showExit}
         />
 
         <main className="flex flex-1 justify-center px-4 py-6 sm:py-8">

@@ -10,6 +10,7 @@ import { calculateSectionProgress } from '@/lib/onboarding/sections'
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import matchModeConfig from '@/config/match-mode.json'
+import { isSuggestedForUser } from '@/lib/matching/suggestion-tabs'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -35,7 +36,7 @@ export default async function DashboardPage() {
     redirect('/auth/sign-in')
   }
 
-  // Check verification status (backup check - middleware also enforces this)
+  // Email verification only — Persona is deferred until match accept
   const verificationStatus = await checkUserVerificationStatus(user)
   const redirectUrl = getVerificationRedirectUrl(verificationStatus)
   if (redirectUrl) {
@@ -46,7 +47,13 @@ export default async function DashboardPage() {
     }
   }
 
-  // Cohort questionnaire gate: professionals must complete young professionals flow before dashboard
+  // Require at least context-stage questionnaire before dashboard
+  const { getOnboardingRedirectUrlIfIncomplete } = await import('@/lib/onboarding/server-redirect')
+  const onboardingRedirect = await getOnboardingRedirectUrlIfIncomplete(user.id)
+  if (onboardingRedirect) {
+    redirect(onboardingRedirect)
+  }
+
   const { data: userRow } = await service
     .from('users')
     .select('user_type')
@@ -54,20 +61,6 @@ export default async function DashboardPage() {
     .maybeSingle()
   const userType =
     userRow?.user_type === 'student' || userRow?.user_type === 'professional' ? userRow.user_type : null
-  if (userType === 'professional') {
-    const { data: submission } = await service
-      .from('onboarding_submissions')
-      .select('id, user_type')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    const hasProfessionalSubmission = submission?.user_type === 'professional'
-    if (!hasProfessionalSubmission) {
-      redirect('/onboarding-professional/welcome')
-    }
-  }
-  if (!userType) {
-    redirect('/onboarding/path')
-  }
 
   // Check questionnaire completion status using the helper (cohort-aware)
   const completionStatus = await checkQuestionnaireCompletion(user.id, { userType })
@@ -320,11 +313,9 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 
   try {
-    // Fetch recent pending match suggestions (ordered by created_at, most recent first)
-    // Only show pending suggestions (not yet responded to)
-    // IMPORTANT: We must filter out matches where the user has already accepted
-    // These should appear in the "pending" tab (waiting for other user), not on the dashboard
-    // Also filter by minFitIndex to match the API endpoint behavior (config/match-mode.json)
+    // Fetch recent open suggestions (pending, or accepted by the other person only).
+    // IMPORTANT: filter out matches where *this* user has already accepted — those
+    // belong on the Pending tab, not the dashboard discovery strip.
     const now = new Date().toISOString()
     const minFitIndex = matchModeConfig.minFitIndex || 0
     const { data: suggestions, error: suggestionsError } = await supabase
@@ -341,7 +332,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       `)
       .eq('kind', 'pair')
       .contains('member_ids', [userId])
-      .eq('status', 'pending') // Only show pending suggestions (not yet responded to)
+      .in('status', ['pending', 'accepted'])
       .gte('expires_at', now) // Only non-expired suggestions
       .gte('fit_index', minFitIndex) // Filter by minFitIndex to match API endpoint behavior
       .order('created_at', { ascending: false }) // Most recent first
@@ -370,29 +361,25 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
         // CRITICAL FILTER: Skip if user has already accepted this suggestion
         // These matches should appear in the "pending" tab (waiting for other user's response),
         // NOT in the dashboard or "suggested" tab
-        const acceptedBy = s.accepted_by || []
-        if (Array.isArray(acceptedBy) && acceptedBy.includes(userId)) {
+        if (
+          !isSuggestedForUser(
+            {
+              status: s.status,
+              acceptedBy: s.accepted_by || [],
+              memberIds,
+            },
+            userId
+          )
+        ) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('[Dashboard] Filtering out accepted suggestion:', {
+            console.log('[Dashboard] Filtering out non-suggested suggestion:', {
               suggestionId: s.id,
               userId,
-              acceptedBy,
+              acceptedBy: s.accepted_by,
               status: s.status
             })
           }
           filteredCount++
-          return
-        }
-        
-        // Additional safety check: if status is not pending, skip it
-        if (s.status !== 'pending') {
-          if (process.env.NODE_ENV === 'development') {
-            console.warn('[Dashboard] Unexpected non-pending status in query results:', {
-              suggestionId: s.id,
-              status: s.status,
-              userId
-            })
-          }
           return
         }
         

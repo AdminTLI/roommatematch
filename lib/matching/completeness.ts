@@ -105,14 +105,22 @@ export function hasCompleteResponses(answers: Record<string, any>): boolean {
   return REQUIRED_QUESTION_KEYS_V2.every((key) => hasAnswerValue(answers[key]))
 }
 
+/** Context-only eligibility: all M1 logistics-context items answered. */
+export function hasContextResponses(answers: Record<string, any>): boolean {
+  return REQUIRED_QUESTION_KEYS_V2.filter((k) => k.startsWith('M1_')).every((key) =>
+    hasAnswerValue(answers[key])
+  )
+}
+
 /**
  * v2 users often store answers only in onboarding_sections (itemId keys),
  * while legacy submit paths map to question_key names in `responses`.
+ * Context-only (M1) is enough to enter the suggestion pool; harmony unlock is separate.
  */
 export function isEligibleForMatching(answers: Record<string, any>): boolean {
   const hasV2ItemKeys = Object.keys(answers).some((k) => /^M[1-5]_Q\d+$/.test(k))
   if (hasV2ItemKeys) {
-    return hasCompleteResponses(answers)
+    return hasContextResponses(answers) || hasCompleteResponses(answers)
   }
   // Legacy flat responses cannot satisfy v2-only matching anymore.
   return false

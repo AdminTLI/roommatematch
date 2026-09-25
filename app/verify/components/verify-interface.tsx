@@ -55,7 +55,7 @@ interface VerifyInterfaceProps {
 
 type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'failed'
 
-export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: VerifyInterfaceProps) {
+export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInterfaceProps) {
   const router = useRouter()
   const supabase = createClient()
   const personaClientRef = useRef<any>(null)
@@ -556,7 +556,8 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
                   'Your identity has been confirmed. You can continue to profile setup when you are ready.'}
                 {status === 'pending' && 'We are processing your verification. This usually takes a few minutes.'}
                 {status === 'failed' && 'Something did not pass the check. You can try again below.'}
-                {status === 'unverified' && 'Start verification to unlock onboarding and matching.'}
+                {status === 'unverified' &&
+                  'Complete a quick identity check to unlock chat and accept matches.'}
               </CardDescription>
             </CardHeader>
 
@@ -635,10 +636,12 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
-                        Start verification
+                        Verify with Persona
                       </h3>
-                      <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                        Most people finish in a few minutes. You will need your ID and a quick selfie.
+                      <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-sm">
+                        Persona is a trusted identity check used by OpenAI, LinkedIn, Reddit, DoorDash,
+                        and Coursera. Domu Match does not keep your ID photos after the check — we only
+                        store that you passed.
                       </p>
                     </div>
                   </div>
@@ -656,7 +659,7 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
                           const res = await fetch('/api/verification/sync', { method: 'POST', headers })
                           const data = await res.json()
                           if (data.synced) {
-                            window.location.href = '/onboarding/welcome'
+                            window.location.href = '/dashboard'
                           } else {
                             setError(data.message || 'No verified record found.')
                           }
@@ -669,17 +672,6 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
                       Sync my verification status
                     </button>
                   </p>
-
-                  <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 dark:bg-indigo-500/10 p-5 text-left">
-                    <h4 className="font-semibold text-zinc-900 dark:text-white mb-3">
-                      What you will need
-                    </h4>
-                    <ul className="text-sm text-zinc-600 dark:text-zinc-300 space-y-2 list-disc list-inside marker:text-indigo-500">
-                      <li>Government-issued photo ID (passport, driver&apos;s license, or national ID)</li>
-                      <li>A device with a camera for a selfie</li>
-                      <li>Good lighting</li>
-                    </ul>
-                  </div>
 
                   <Button
                     onClick={startVerification}
@@ -698,7 +690,7 @@ export function VerifyInterface({ user, redirectTo = '/onboarding/welcome' }: Ve
                         Preparing verification...
                       </>
                     ) : (
-                      'Start verification'
+                      'Continue with Persona'
                     )}
                   </Button>
                 </div>

@@ -18,6 +18,8 @@ export interface DiscoveryFeedMatch {
 interface DiscoveryFeedMobileCarouselProps {
   matches: DiscoveryFeedMatch[]
   className?: string
+  /** When false, lock harmony / dimensions until the viewer finishes the full questionnaire */
+  viewerHasFullQuestionnaire?: boolean
 }
 
 /** One full-width slide per viewport; slight peek of the next card encourages horizontal scroll. */
@@ -44,6 +46,7 @@ function matchProfile(match: DiscoveryFeedMatch) {
 export function DiscoveryFeedMobileCarousel({
   matches,
   className,
+  viewerHasFullQuestionnaire = true,
 }: DiscoveryFeedMobileCarouselProps) {
   const router = useRouter()
   const previewMatches = matches.slice(0, 3)
@@ -62,7 +65,10 @@ export function DiscoveryFeedMobileCarousel({
       >
         {previewMatches.map((match) => (
           <div key={match.id} className={SLIDE_CLASS}>
-            <DiscoveryCard profile={matchProfile(match)} />
+            <DiscoveryCard
+              profile={matchProfile(match)}
+              viewerHasFullQuestionnaire={viewerHasFullQuestionnaire}
+            />
           </div>
         ))}
 

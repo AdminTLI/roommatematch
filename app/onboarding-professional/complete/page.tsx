@@ -1,16 +1,6 @@
-import { checkOnboardingRedirect } from '@/lib/onboarding/server-redirect'
-import CompletePage from '@/app/onboarding/complete/page'
+import { redirect } from 'next/navigation'
 
-interface PageProps {
-  searchParams: Promise<{ mode?: string }>
+/** Legacy route: questionnaire submit now goes straight to the dashboard. */
+export default function CompletePage() {
+  redirect('/dashboard')
 }
-
-export default async function Page({ searchParams }: PageProps) {
-  const params = await searchParams
-  await checkOnboardingRedirect(params, {
-    requiredUserType: 'professional',
-    mismatchRedirectTo: '/onboarding/complete',
-  })
-  return <CompletePage />
-}
-

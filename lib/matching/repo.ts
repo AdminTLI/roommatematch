@@ -87,7 +87,7 @@ export interface MatchRepo {
   isUserMatched(userId: string): Promise<boolean>;
 
   // Suggestions (student flow)
-  createSuggestions(sugs: MatchSuggestion[]): Promise<void>;
+  createSuggestions(sugs: MatchSuggestion[]): Promise<{ inserted: MatchSuggestion[]; insertedCount: number }>;
   listSuggestionsForUser(userId: string, includeExpired?: boolean, limit?: number, offset?: number): Promise<MatchSuggestion[]>;
   countSuggestionsForUser(userId: string, includeExpired?: boolean): Promise<number>;
   listSuggestionsByRun(runId: string): Promise<MatchSuggestion[]>;

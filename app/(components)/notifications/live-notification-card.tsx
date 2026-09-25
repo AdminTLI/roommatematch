@@ -163,7 +163,7 @@ function defaultEyebrow(type: Notification['type'], tone: LiveNotificationTone):
     case 'match_created':
       return 'New Match'
     case 'match_accepted':
-      return 'Match Accepted'
+      return 'Match Request'
     case 'group_invitation':
       return 'Group Invite'
     case 'profile_updated':

@@ -173,6 +173,34 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
+    // Both participants must be Persona-verified to send messages
+    {
+      const admin = await createAdminClient()
+      const { data: members } = await admin
+        .from('chat_members')
+        .select('user_id')
+        .eq('chat_id', chat_id)
+      const memberIds = (members || []).map((m) => m.user_id as string)
+      if (memberIds.length >= 2) {
+        const { assertBothUsersPersonaVerified } = await import('@/lib/chat/persona-chat-gate')
+        // For direct chats, check the pair including current user and the other
+        const otherIds = memberIds.filter((id) => id !== user.id)
+        for (const otherId of otherIds) {
+          const personaGate = await assertBothUsersPersonaVerified(admin, user.id, otherId)
+          if (!personaGate.ok) {
+            return NextResponse.json(
+              {
+                error:
+                  'Messages unlock after both people complete identity verification.',
+                requiresPersonaVerification: true,
+              },
+              { status: 403 }
+            )
+          }
+        }
+      }
+    }
+
     let validatedReplyToId: string | null = null
     if (replyToIdRaw != null && replyToIdRaw !== '') {
       const rid = typeof replyToIdRaw === 'string' ? replyToIdRaw.trim() : String(replyToIdRaw)

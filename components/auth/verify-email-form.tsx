@@ -177,10 +177,10 @@ export function VerifyEmailForm() {
           return
         }
         
-        // Redirect to identity verification (Persona) after email verification
+        // After email OTP, continue onboarding (Persona is deferred until match accept)
         // Use window.location for full page reload to ensure session is properly established
         setTimeout(() => {
-          window.location.href = '/verify'
+          window.location.href = '/onboarding/path'
         }, 1500)
       }
     } catch (err) {
@@ -247,7 +247,7 @@ export function VerifyEmailForm() {
   }
 
   const handleContinue = () => {
-    router.push('/verify')
+    window.location.href = '/onboarding/path'
   }
 
   if (isVerified) {
@@ -264,13 +264,13 @@ export function VerifyEmailForm() {
         </CardHeader>
         <CardContent className="space-y-4 px-4 sm:px-6 pb-6 sm:pb-6">
           <p className="text-xs sm:text-sm text-muted-foreground text-center">
-            Redirecting you to complete your profile setup...
+            Redirecting you to set up your profile...
           </p>
           <Button 
             onClick={handleContinue} 
             className="w-full min-h-[44px] text-base"
           >
-            Continue to Identity Verification
+            Continue to profile setup
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </CardContent>

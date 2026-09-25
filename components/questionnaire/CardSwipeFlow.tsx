@@ -27,6 +27,21 @@ interface CardSwipeFlowProps {
   moduleIndex: number // 0-based (0 = M1 … 4 = M5)
   moduleLabel: string
   nextUrl: string
+  /**
+   * Context-first onboarding: logistics is "Step 2 of 2" without the 5-module tracker.
+   * Harmony modules leave this unset.
+   */
+  chrome?: {
+    titleOverride: string
+    moduleIndex: number
+    moduleTotal: number
+    hideModuleTracker?: boolean
+    showExit?: boolean
+  }
+  /** Inline terms + dashboard submit on the logistics completion screen. */
+  contextSubmit?: {
+    userType: 'student' | 'professional'
+  }
 }
 
 const SHORT_MODULE_LABELS = [
@@ -72,6 +87,8 @@ function CardSwipeFlowInner({
   moduleIndex,
   moduleLabel,
   nextUrl,
+  chrome,
+  contextSubmit,
 }: CardSwipeFlowProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -110,20 +127,40 @@ function CardSwipeFlowInner({
 
   const [gateOverrides, setGateOverrides] = useState<Record<string, boolean>>({})
 
-  const { showToast: autosaveToast } = useAutosave(sectionKey)
+  const { showToast: autosaveToast, hasLoaded } = useAutosave(sectionKey)
 
   const item = items[currentIndex]
+  // Prefer live store answers so module switches stay interactive while section fetch settles.
   const currentAnswer = item ? answers[item.id] : undefined
   const answeredCount = items.filter((i) => answers[i.id]).length
-  const headerModuleIndex = moduleIndex + 1 // Module 1–5 (intro is 0)
+  const headerModuleIndex = chrome?.moduleIndex ?? moduleIndex + 1 // Module 1–5 (intro is 0)
+  const headerTotal = chrome?.moduleTotal ?? 5
   const headerLabel = SHORT_MODULE_LABELS[moduleIndex] ?? moduleLabel
+  const headerTitleOverride = chrome?.titleOverride
+  const showModuleTracker = !chrome?.hideModuleTracker
 
-  const questionnaireComplete = isV2QuestionnaireComplete(allSections, {
-    currentSectionKey: sectionKey,
-    answeredInCurrent: answeredCount,
-    totalInCurrent: items.length,
-  })
+  const questionnaireComplete =
+    isV2QuestionnaireComplete(allSections, {
+      currentSectionKey: sectionKey,
+      answeredInCurrent: answeredCount,
+      totalInCurrent: items.length,
+    })
   const canJumpToReview = fromReview || questionnaireComplete
+
+  // Clear leftover Radix dialog body locks (e.g. navigating here from the
+  // "Continue questionnaire" modal on /matches) so answer buttons stay clickable.
+  useEffect(() => {
+    const body = document.body
+    const html = document.documentElement
+    body.style.removeProperty('pointer-events')
+    if (body.style.overflow === 'hidden' || body.style.overflow === 'clip') {
+      body.style.overflow = ''
+    }
+    body.removeAttribute('data-scroll-locked')
+    body.removeAttribute('data-radix-scroll-lock')
+    html.style.removeProperty('pointer-events')
+    html.removeAttribute('data-scroll-locked')
+  }, [])
 
   const showSavedToast = useCallback(() => {
     // Local acknowledgment only — header "Autosaved" time comes from a real API save
@@ -135,6 +172,19 @@ function CardSwipeFlowInner({
   useEffect(() => {
     if (autosaveToast) showSavedToast()
   }, [autosaveToast, showSavedToast])
+
+  // After server/local bind settles, jump to the first unanswered question (unless deep-linked).
+  // Context modules that are already fully answered open the completion/submit screen instead
+  // of dumping the user on Q1 with a non-interactive load gate.
+  useEffect(() => {
+    if (!hasLoaded || deepLinkQ || fromReview) return
+    const allAnswered = items.length > 0 && items.every((it) => Boolean(answers[it.id]))
+    if (contextSubmit && allAnswered && !returnEditMode) {
+      setShowCompletion(true)
+      return
+    }
+    setCurrentIndex(initialQuestionIndex(items, answers, null))
+  }, [hasLoaded]) // eslint-disable-line react-hooks/exhaustive-deps -- only re-seek once load completes
 
   const returnToReview = useCallback(() => {
     router.push(returnEditMode ? '/onboarding/review?mode=edit' : '/onboarding/review')
@@ -171,6 +221,12 @@ function CardSwipeFlowInner({
       returnToReview()
     }
   }, [currentIndex, canJumpToReview, returnToReview])
+
+  const backFromCompletion = useCallback(() => {
+    setShowCompletion(false)
+    setDirection(-1)
+    setCurrentIndex(Math.max(0, items.length - 1))
+  }, [items.length])
 
   const hardGateItems = items.filter((i) => i.hardGate)
   const hardGateIndex = item?.hardGate
@@ -229,6 +285,9 @@ function CardSwipeFlowInner({
         nextUrl={nextUrl}
         answeredCount={answeredCount}
         totalCount={items.length}
+        chrome={chrome}
+        contextSubmit={contextSubmit}
+        onBack={contextSubmit ? backFromCompletion : undefined}
       />
     )
   }
@@ -255,14 +314,18 @@ function CardSwipeFlowInner({
       <div className="relative z-10 flex min-h-screen flex-col">
         <OnboardingChromeHeader
           moduleIndex={headerModuleIndex}
-          moduleTotal={5}
+          moduleTotal={headerTotal}
           moduleLabel={headerLabel}
+          titleOverride={headerTitleOverride}
+          showExit={chrome?.showExit ?? true}
           belowProgress={
-            <ModuleTracker
-              currentModuleIndex={moduleIndex}
-              answeredInCurrent={answeredCount}
-              totalInCurrent={items.length}
-            />
+            showModuleTracker ? (
+              <ModuleTracker
+                currentModuleIndex={moduleIndex}
+                answeredInCurrent={answeredCount}
+                totalInCurrent={items.length}
+              />
+            ) : undefined
           }
         />
 
@@ -300,14 +363,16 @@ function CardSwipeFlowInner({
                   {item.label}
                 </h2>
 
-                <div className="w-full">
+                <div className="relative w-full">
                   {item.kind === 'likert' && (
                     <LikertScale
                       id={item.id}
                       label=""
                       scaleType={item.scale ?? 'agreement'}
                       value={likertVal}
-                      onChange={(v) => handleAnswer({ kind: 'likert', value: v }, true)}
+                      onChange={(v) => {
+                        handleAnswer({ kind: 'likert', value: v }, true)
+                      }}
                     />
                   )}
                   {item.kind === 'bipolar' && item.bipolarLabels && (
@@ -318,7 +383,9 @@ function CardSwipeFlowInner({
                       softLeftLabel={item.bipolarLabels.softLeft}
                       softRightLabel={item.bipolarLabels.softRight}
                       value={bipolarVal}
-                      onChange={(v) => handleAnswer({ kind: 'bipolar', value: v }, true)}
+                      onChange={(v) => {
+                        handleAnswer({ kind: 'bipolar', value: v }, true)
+                      }}
                     />
                   )}
                   {item.kind === 'mcq' && item.options && (
@@ -327,7 +394,9 @@ function CardSwipeFlowInner({
                       label=""
                       options={item.options}
                       value={mcqVal}
-                      onChange={(v) => handleAnswer({ kind: 'mcq', value: v }, true)}
+                      onChange={(v) => {
+                        handleAnswer({ kind: 'mcq', value: v }, true)
+                      }}
                     />
                   )}
                   {item.kind === 'toggle' && (
@@ -337,7 +406,9 @@ function CardSwipeFlowInner({
                       checked={toggleVal}
                       yesLabel="Yes, I agree"
                       noLabel="No, I don't agree"
-                      onChange={(v) => handleAnswer({ kind: 'toggle', value: v }, true)}
+                      onChange={(v) => {
+                        handleAnswer({ kind: 'toggle', value: v }, true)
+                      }}
                     />
                   )}
                   {item.kind === 'timeRange' && (

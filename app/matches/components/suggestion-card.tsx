@@ -26,6 +26,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import type { MatchSuggestion } from '@/lib/matching/types'
 import { scoreInfoIconTriggerBaseClass } from '@/components/compatibility/score-info-popover'
 import { cn } from '@/lib/utils'
+import { isSuggestedForUser } from '@/lib/matching/suggestion-tabs'
 
 interface SuggestionCardProps {
   suggestion: MatchSuggestion
@@ -644,7 +645,7 @@ export function SuggestionCard({
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-          {suggestion.status === 'pending' && (
+          {isSuggestedForUser(suggestion, currentUserId) && (
             <>
               <Button
                 onClick={(e) => {

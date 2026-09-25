@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { X, UserPlus, Heart, Users, MessageCircle, LucideIcon, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles, GraduationCap, ClipboardList, AlertTriangle } from 'lucide-react'
+import { X, UserPlus, Heart, Users, MessageCircle, LucideIcon, Droplets, Volume2, Moon, Coffee, BookOpen, Home, Sparkles, GraduationCap, ClipboardList, AlertTriangle, ShieldAlert, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ScoreInfoPopover, scoreInfoIconTriggerBaseClass } from '@/components/compatibility/score-info-popover'
@@ -32,18 +32,25 @@ interface DiscoveryCardProps {
         gateConflicts?: string[]
         /** v2: one gate conflict overridden because overall score is strong */
         softGateOverride?: boolean
+        /** Other user has not completed Persona identity verification */
+        otherUserUnverified?: boolean
+        /** Other user has only completed context questionnaire (harmony incomplete) */
+        otherUserHarmonyIncomplete?: boolean
     }
+    /** When false, blur harmony %, dimensions, and concerns until the viewer finishes the full questionnaire */
+    viewerHasFullQuestionnaire?: boolean
     onSkip?: (id: string) => void
     onConnect?: (id: string) => void
     connectButtonText?: string
     connectButtonIcon?: LucideIcon
+    onUnlockQuestionnaire?: () => void
 }
 
 const HARMONY_SCORE_DESCRIPTION =
   'Measures day-to-day living alignment across environment, cleanliness, communication, and social life.'
 
 const CONTEXT_SCORE_DESCRIPTION =
-  'Measures how well your practical and academic context align — university, programme, study year, and logistics like move-in timing and stay length.'
+  'Measures how well your practical and academic context align: university, programme, study year, and logistics like move-in timing and stay length.'
 
 // v2 questionnaire modules (display order)
 const V2_DIMENSION_CONFIG: {
@@ -217,9 +224,130 @@ function DimensionScoresList({
   )
 }
 
-export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 'Connect', connectButtonIcon = UserPlus }: DiscoveryCardProps) {
+/** Locked score row: intentional placeholder, not a smear over real values. */
+function LockedHarmonyScoreRow({
+  onUnlock,
+  compact = false,
+}: {
+  onUnlock: () => void
+  compact?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onUnlock}
+      className={cn(
+        'group w-full rounded-xl border border-dashed border-slate-300/90 bg-slate-50/90 text-left transition',
+        'hover:border-indigo-300 hover:bg-indigo-50/60',
+        'dark:border-slate-600 dark:bg-slate-900/40 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-950/30',
+        compact ? 'space-y-1.5 p-2.5' : 'space-y-2 p-3',
+      )}
+      aria-label="Harmony score locked. Finish the questionnaire to unlock."
+    >
+      <div className="flex items-center justify-between gap-3 min-w-0">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5">
+          <span
+            className={cn(
+              'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md',
+              'bg-slate-200/90 text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-600',
+              'dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-indigo-950 dark:group-hover:text-indigo-300',
+            )}
+          >
+            <Lock className="h-3 w-3" aria-hidden />
+          </span>
+          <span className="min-w-0 truncate text-sm font-medium text-slate-600 dark:text-slate-300">
+            Harmony
+          </span>
+        </div>
+        <span className="flex-shrink-0 rounded-full bg-slate-200/90 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          Locked
+        </span>
+      </div>
+      <div
+        className={cn(
+          'overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700',
+          compact ? 'h-1.5' : 'h-2',
+        )}
+        aria-hidden
+      >
+        <div className="h-full w-[42%] rounded-full bg-gradient-to-r from-slate-300 via-slate-200 to-slate-300 dark:from-slate-600 dark:via-slate-500 dark:to-slate-600" />
+      </div>
+      {!compact && (
+        <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+          Finish your living-style questions to unlock this score
+        </p>
+      )}
+    </button>
+  )
+}
+
+function LockedDimensionsPanel({ onUnlock }: { onUnlock: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onUnlock}
+      className={cn(
+        'flex w-full flex-col items-center gap-2 rounded-xl border border-dashed border-slate-300/90 bg-slate-50/90 px-4 py-5 text-center transition',
+        'hover:border-indigo-300 hover:bg-indigo-50/50',
+        'dark:border-slate-600 dark:bg-slate-900/40 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/20',
+      )}
+      aria-label="Dimension scores locked. Finish the questionnaire to unlock."
+    >
+      <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
+        <Lock className="h-4 w-4" aria-hidden />
+      </span>
+      <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        Dimensions locked
+      </span>
+      <span className="max-w-[16rem] text-xs leading-snug text-slate-500 dark:text-slate-400">
+        Complete your remaining questionnaire to compare living-style fit.
+      </span>
+    </button>
+  )
+}
+
+function LockedHighlightsTeaser({
+  onUnlock,
+  title,
+  body,
+}: {
+  onUnlock: () => void
+  title: string
+  body: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onUnlock}
+      className="flex w-full items-start gap-3 rounded-xl border border-dashed border-slate-300/90 bg-slate-50/90 px-3 py-3 text-left transition hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-slate-600 dark:bg-slate-900/40 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-950/20"
+    >
+      <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-200/90 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+        <Lock className="h-3.5 w-3.5" aria-hidden />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          {title}
+        </span>
+        <span className="mt-1 block text-sm leading-snug text-slate-600 dark:text-slate-300">
+          {body}
+        </span>
+      </span>
+    </button>
+  )
+}
+
+export function DiscoveryCard({
+  profile,
+  viewerHasFullQuestionnaire = true,
+  onSkip,
+  onConnect,
+  connectButtonText = 'Connect',
+  connectButtonIcon = UserPlus,
+  onUnlockQuestionnaire,
+}: DiscoveryCardProps) {
     const router = useRouter()
     const [isFlipped, setIsFlipped] = useState(false)
+    const harmonyLocked = !viewerHasFullQuestionnaire
     const matchScore = Math.round(profile.matchPercentage || 0)
     // Convert scores from 0-1 range to 0-100, default to 0 if not provided
     const harmonyScore = profile.harmonyScore != null && profile.harmonyScore !== undefined 
@@ -251,6 +379,15 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
         } else {
             router.push(`/chat?userId=${profile.id}`)
         }
+    }
+
+    const goUnlock = () => {
+      if (onUnlockQuestionnaire) {
+        onUnlockQuestionnaire()
+        return
+      }
+      // Full navigation avoids leftover dialog body locks from /matches soft routing.
+      window.location.assign('/onboarding/environment-rhythms')
     }
 
     // Fixed rem height (not dvh) so cards stay consistent on scroll; back face scrolls overflow.
@@ -307,12 +444,29 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                             {discoveryMatchTierLabel(matchScore)} Match
                         </span>
                     </div>
+                    {harmonyLocked && matchScore < 55 && (
+                      <p className="mx-auto mt-3 flex max-w-[16rem] items-start justify-center gap-1.5 text-[11px] leading-snug text-amber-800/90 dark:text-amber-200/90">
+                        <Lock className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
+                        <span>
+                          Score is incomplete without your Harmony answers.
+                        </span>
+                      </p>
+                    )}
                 </div>
             </div>
 
             {/* Score Breakdown Section */}
             <div className="shrink-0 space-y-4 px-6 py-4">
-                {/* Harmony Score */}
+                {profile.otherUserUnverified && (
+                  <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-100">
+                    <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
+                    Identity unverified
+                  </div>
+                )}
+                {/* Harmony Score: locked until viewer finishes living-style questionnaire */}
+                {harmonyLocked ? (
+                  <LockedHarmonyScoreRow onUnlock={goUnlock} />
+                ) : (
                 <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3 min-w-0">
                         <div className="flex min-w-0 flex-1 items-center gap-1">
@@ -346,6 +500,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                         />
                     </div>
                 </div>
+                )}
 
                 {/* Context Score */}
                 <div className="space-y-2">
@@ -386,7 +541,9 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                   softGateOverride={profile.softGateOverride}
                 />
                 <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-500">
-                  Tap the heart or clipboard icons for an explanation of each score. Tap outside the popup to close it.
+                  {harmonyLocked
+                    ? 'Context is based on your logistics and academic fit. Tap the clipboard icon for details.'
+                    : 'Tap the heart or clipboard icons for an explanation of each score. Tap outside the popup to close it.'}
                 </p>
             </div>
 
@@ -400,36 +557,54 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
               </Button>
             </div>
 
-            {/* Highlights — dimension scores live on the back face only */}
-            <div className="shrink-0 px-6 py-4 pb-5">
-                <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Why you match
-                </h4>
-                <ul className="space-y-2">
-                    {highlights.slice(0, 3).map((highlight, index) => (
-                        <li key={index} className="grid grid-cols-[auto_1fr] gap-x-2">
+            {/* Highlights / locked teasers (dimension scores live on the back face only) */}
+            <div className="shrink-0 space-y-3 px-6 py-4 pb-5">
+                {harmonyLocked ? (
+                  <>
+                    <LockedHighlightsTeaser
+                      onUnlock={goUnlock}
+                      title="Why you match"
+                      body="Finish your living-style questions to unlock shared strengths for this match."
+                    />
+                    <LockedHighlightsTeaser
+                      onUnlock={goUnlock}
+                      title="Worth discussing"
+                      body="We will surface topics worth comparing once your harmony scores unlock."
+                    />
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Why you match
+                      </h4>
+                      <ul className="space-y-2">
+                        {highlights.slice(0, 3).map((highlight, index) => (
+                          <li key={index} className="grid grid-cols-[auto_1fr] gap-x-2">
                             <span className="text-sm leading-tight text-emerald-600 dark:text-emerald-400" aria-hidden>✓</span>
                             <span className="text-sm leading-tight text-slate-700 dark:text-slate-300">{highlight}</span>
-                        </li>
-                    ))}
-                </ul>
-
-                {discussionNotes.length > 0 && (
-                  <div className="mt-4">
-                    <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      Worth discussing
-                    </h4>
-                    <ul className="space-y-2">
-                      {discussionNotes.map((note, index) => (
-                        <li key={index} className="grid grid-cols-[auto_1fr] gap-x-2">
-                          <span className="text-sm leading-tight text-slate-400 dark:text-slate-500" aria-hidden>
-                            •
-                          </span>
-                          <span className="text-sm leading-tight text-slate-600 dark:text-slate-400">{note}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    {discussionNotes.length > 0 && (
+                      <div className="mt-1">
+                        <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Worth discussing
+                        </h4>
+                        <ul className="space-y-2">
+                          {discussionNotes.map((note, index) => (
+                            <li key={index} className="grid grid-cols-[auto_1fr] gap-x-2">
+                              <span className="text-sm leading-tight text-slate-400 dark:text-slate-500" aria-hidden>
+                                •
+                              </span>
+                              <span className="text-sm leading-tight text-slate-600 dark:text-slate-400">{note}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
                 )}
             </div>
 
@@ -479,7 +654,7 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                   'flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:shadow-xl',
                 )}
               >
-                {/* User Details — fixed while the rest of the back scrolls */}
+                {/* User Details: fixed while the rest of the back scrolls */}
                 <div className="shrink-0 border-b border-slate-200/90 px-5 pb-4 pt-5 dark:border-slate-700/50 sm:px-6 sm:pt-6">
                   <h3 className="mb-1 text-xl font-semibold text-slate-900 dark:text-slate-100">User Details</h3>
                   {profile.name && (
@@ -513,37 +688,73 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                     softGateOverride={profile.softGateOverride}
                   />
 
+                  {harmonyLocked ? (
+                    <div className="mb-3 space-y-4 border-b border-slate-200/90 pb-5 dark:border-slate-700/50">
+                      <LockedHarmonyScoreRow onUnlock={goUnlock} />
+                      <div className="min-w-0 space-y-2">
+                        <div className="flex min-w-0 items-center justify-between gap-1.5">
+                          <div className="flex min-w-0 flex-1 items-center gap-1">
+                            <ScoreInfoPopover
+                              title="Context score"
+                              description={CONTEXT_SCORE_DESCRIPTION}
+                            >
+                              <button
+                                type="button"
+                                className={cn(
+                                  scoreInfoIconTriggerBaseClass,
+                                  'text-blue-600 transition-colors hover:bg-indigo-50 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-slate-700/50 dark:hover:text-blue-300',
+                                )}
+                                aria-label="What is the Context score? Opens explanation."
+                              >
+                                <ClipboardList className="h-3.5 w-3.5" aria-hidden />
+                              </button>
+                            </ScoreInfoPopover>
+                            <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Context</span>
+                          </div>
+                          <span className={`flex-shrink-0 text-sm font-semibold tabular-nums ${discoveryScoreTextClass(contextScore)}`}>
+                            {contextScore}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                          <div
+                            className={`h-full rounded-full ${discoveryScoreBarClass(contextScore)} transition-all duration-500`}
+                            style={{ width: `${contextScore}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="mb-3 grid grid-cols-2 gap-4 border-b border-slate-200/90 pb-5 dark:border-slate-700/50">
                     <div className="min-w-0 space-y-2">
-                      <div className="flex min-w-0 items-center justify-between gap-1.5">
-                        <div className="flex min-w-0 flex-1 items-center gap-1">
-                          <ScoreInfoPopover
-                            title="Harmony score"
-                            description={HARMONY_SCORE_DESCRIPTION}
-                          >
-                            <button
-                              type="button"
-                              className={cn(
-                                scoreInfoIconTriggerBaseClass,
-                                'text-pink-600 transition-colors hover:bg-violet-100/90 hover:text-pink-700 dark:text-pink-400 dark:hover:bg-slate-700/50 dark:hover:text-pink-300',
-                              )}
-                              aria-label="What is the Harmony score? Opens explanation."
-                            >
-                              <Heart className="h-3.5 w-3.5" aria-hidden />
-                            </button>
-                          </ScoreInfoPopover>
-                          <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Harmony</span>
-                        </div>
-                        <span className={`flex-shrink-0 text-sm font-semibold tabular-nums ${discoveryScoreTextClass(harmonyScore)}`}>
-                          {harmonyScore}%
-                        </span>
-                      </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                        <div
-                          className={`h-full rounded-full ${discoveryScoreBarClass(harmonyScore)} transition-all duration-500`}
-                          style={{ width: `${harmonyScore}%` }}
-                        />
-                      </div>
+                          <div className="flex min-w-0 items-center justify-between gap-1.5">
+                            <div className="flex min-w-0 flex-1 items-center gap-1">
+                              <ScoreInfoPopover
+                                title="Harmony score"
+                                description={HARMONY_SCORE_DESCRIPTION}
+                              >
+                                <button
+                                  type="button"
+                                  className={cn(
+                                    scoreInfoIconTriggerBaseClass,
+                                    'text-pink-600 transition-colors hover:bg-violet-100/90 hover:text-pink-700 dark:text-pink-400 dark:hover:bg-slate-700/50 dark:hover:text-pink-300',
+                                  )}
+                                  aria-label="What is the Harmony score? Opens explanation."
+                                >
+                                  <Heart className="h-3.5 w-3.5" aria-hidden />
+                                </button>
+                              </ScoreInfoPopover>
+                              <span className="min-w-0 truncate pl-0.5 text-sm font-medium text-slate-700 dark:text-slate-300">Harmony</span>
+                            </div>
+                            <span className={`flex-shrink-0 text-sm font-semibold tabular-nums ${discoveryScoreTextClass(harmonyScore)}`}>
+                              {harmonyScore}%
+                            </span>
+                          </div>
+                          <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                            <div
+                              className={`h-full rounded-full ${discoveryScoreBarClass(harmonyScore)} transition-all duration-500`}
+                              style={{ width: `${harmonyScore}%` }}
+                            />
+                          </div>
                     </div>
 
                     <div className="min-w-0 space-y-2">
@@ -578,16 +789,31 @@ export function DiscoveryCard({ profile, onSkip, onConnect, connectButtonText = 
                       </div>
                     </div>
                   </div>
+                  )}
 
-                  <div className="pb-4">
+                  <div className="relative pb-4">
                     <h4 className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-300">
                       <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                       Detailed Dimension Scores
                     </h4>
-                    <p className="mb-3 text-[11px] leading-snug text-slate-500 dark:text-slate-500">
-                      Tap each row&apos;s icon for what that dimension measures.
-                    </p>
-                    <DimensionScoresList dimensionScores={profile.dimensionScores} />
+                    {harmonyLocked ? (
+                      <div className="mt-3">
+                        <LockedDimensionsPanel onUnlock={goUnlock} />
+                      </div>
+                    ) : (
+                      <>
+                        <p className="mb-3 text-[11px] leading-snug text-slate-500 dark:text-slate-500">
+                          Tap each row&apos;s icon for what that dimension measures.
+                        </p>
+                        {profile.otherUserHarmonyIncomplete ? (
+                          <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300">
+                            This person has not finished the full questionnaire yet, so harmony dimensions are not available.
+                          </p>
+                        ) : (
+                          <DimensionScoresList dimensionScores={profile.dimensionScores} />
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
 

@@ -86,11 +86,51 @@ export async function createMatchNotification(
     return
   }
   const supabase = await createAdminClient();
+
+  // One-sided accept: notify only the other user (not the acceptor).
+  // Callers pass (acceptorId, recipientId, 'match_accepted', ...).
+  if (type === 'match_accepted') {
+    const title = 'Someone wants to match'
+    const message = 'Someone wants to match with you. Check your matches to respond.'
+    const metadata = {
+      match_id: matchId,
+      other_user_id: userAId,
+      ...(chatId ? { chat_id: chatId } : {}),
+    }
+
+    const { data: existing } = await supabase
+      .from('notifications')
+      .select('id')
+      .eq('user_id', userBId)
+      .eq('type', 'match_accepted')
+      .eq('metadata->>match_id', matchId)
+      .limit(1)
+
+    if (existing && existing.length > 0) {
+      return
+    }
+
+    try {
+      await createNotification({
+        user_id: userBId,
+        type: 'match_accepted',
+        title,
+        message,
+        metadata,
+      })
+    } catch (error: any) {
+      if (error?.code === '23505' || error?.message?.includes('unique')) {
+        return
+      }
+      throw error
+    }
+    return
+  }
   
   // STRICT RULE: Only show names if BOTH users have explicitly accepted (status = 'confirmed')
   // Only match_confirmed should always show names (since it only happens when both accepted)
   let bothUsersAccepted = false;
-  if (type === 'match_created' || type === 'match_accepted') {
+  if (type === 'match_created') {
     // Check match_suggestions table to see if both users have accepted
     const { data: suggestion } = await supabase
       .from('match_suggestions')
@@ -143,24 +183,11 @@ export async function createMatchNotification(
         messageA = `You have a new match with ${userBName}! Check out their profile.`;
         messageB = `You have a new match with ${userAName}! Check out their profile.`;
       } else {
-        // Not both accepted yet - use generic message without names
-        messageA = 'You have matched with someone! Check out your matches to see who.';
-        messageB = 'You have matched with someone! Check out your matches to see who.';
+        // Suggestion only — not a mutual match yet
+        messageA = 'We found a potential roommate for you. Check your matches to see who.';
+        messageB = 'We found a potential roommate for you. Check your matches to see who.';
       }
       metadata = { match_id: matchId, chat_id: chatId };
-      break;
-    case 'match_accepted':
-      title = 'Match Accepted!';
-      if (bothUsersAccepted) {
-        // Both users accepted - show names
-        messageA = `${userBName} accepted your match request!`;
-        messageB = `${userAName} accepted your match request!`;
-      } else {
-        // Only one user accepted - use generic message without names
-        messageA = 'Someone accepted your match request!';
-        messageB = 'Someone accepted your match request!';
-      }
-      metadata = { match_id: matchId };
       break;
     case 'match_confirmed':
       title = 'Mutual Match!';
@@ -312,25 +339,6 @@ export async function createMatchNotification(
         icebreaker: icebreakerB,
       },
     })
-  } else {
-    // match_accepted: create normally then personalize B's message
-    await createNotificationsForUsers(
-      [userAId, userBId],
-      type,
-      title,
-      messageA,
-      metadata
-    );
-
-    await supabase
-      .from('notifications')
-      .update({
-        message: messageB,
-        metadata,
-      })
-      .eq('user_id', userBId)
-      .eq('type', type)
-      .eq('metadata->match_id', matchId)
   }
 }
 

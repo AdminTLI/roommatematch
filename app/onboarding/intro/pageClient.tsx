@@ -351,8 +351,11 @@ function IntroClientContent() {
     return (
       <ErrorBoundary>
         <OnboardingModuleShell
-          moduleIndex={0}
-          moduleLabel="Setup"
+          moduleIndex={1}
+          moduleTotal={2}
+          moduleLabel="Studies"
+          titleOverride="Step 1 of 2"
+          showExit={false}
           title={isEditMode ? 'Edit your studies' : 'Tell us about your studies'}
           subtitle="We use this to match you with students at a similar stage."
           onBack={handlePrev}
@@ -371,8 +374,11 @@ function IntroClientContent() {
   return (
     <ErrorBoundary>
       <OnboardingModuleShell
-        moduleIndex={0}
-        moduleLabel="Setup"
+        moduleIndex={1}
+        moduleTotal={2}
+        moduleLabel="Studies"
+        titleOverride="Step 1 of 2"
+        showExit={false}
         title={isEditMode ? 'Edit your studies' : 'Tell us about your studies'}
         subtitle="A few details so we can place you with compatible classmates."
         onBack={handlePrev}

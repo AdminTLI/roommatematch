@@ -30,6 +30,8 @@ type SectionAnswers = Record<string, Answer>
 
 export interface OnboardingState {
   version: 'rmq-v2'
+  /** Auth user that owns the persisted answers. Prevents cross-account localStorage leaks. */
+  ownerUserId: string | null
   sections: Record<SectionKey, SectionAnswers>
   lastSavedAt?: string
   setAnswer: (section: SectionKey, a: Answer) => void
@@ -39,6 +41,12 @@ export interface OnboardingState {
   computeProgress: () => number
   countAnsweredInSection: (section: SectionKey) => number
   clearSections: () => void
+  /**
+   * Bind local draft answers to the signed-in user.
+   * Clears the store when the account changes, on sign-out, or when legacy
+   * storage has no owner (so a new account never inherits another user's answers).
+   */
+  bindToUser: (userId: string | null) => void
   isV2User: () => boolean
 }
 
@@ -71,6 +79,7 @@ export const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set, get) => ({
       version: 'rmq-v2',
+      ownerUserId: null,
       sections: createEmptySections(),
       lastSavedAt: undefined,
       setAnswer: (section, a) =>
@@ -125,7 +134,23 @@ export const useOnboardingStore = create<OnboardingState>()(
           }
         }),
       setLastSavedAt: (iso) => set(() => ({ lastSavedAt: iso })),
-      clearSections: () => set(() => ({ sections: createEmptySections(), lastSavedAt: undefined })),
+      clearSections: () =>
+        set(() => ({
+          sections: createEmptySections(),
+          lastSavedAt: undefined,
+        })),
+      bindToUser: (userId) => {
+        const current = get().ownerUserId
+        // No-op when already bound to this account (or already signed out).
+        if (current === userId) return
+
+        // Account switch, sign-out, or legacy unscoped drafts → start empty for this session.
+        set(() => ({
+          ownerUserId: userId,
+          sections: createEmptySections(),
+          lastSavedAt: undefined,
+        }))
+      },
       countAnsweredInSection: (section) => {
         const answers = get().sections[section] ?? {}
         return Object.values(answers).filter((a) => {
@@ -185,9 +210,27 @@ export const useOnboardingStore = create<OnboardingState>()(
       partialize: (state) => ({
         sections: state.sections,
         version: state.version,
+        ownerUserId: state.ownerUserId,
       }),
     }
   )
 )
+
+/** Resolves after zustand persist has rehydrated from localStorage (or immediately if already done). */
+export function waitForOnboardingStoreHydration(): Promise<void> {
+  const api = useOnboardingStore.persist
+  if (api.hasHydrated()) return Promise.resolve()
+  return new Promise((resolve) => {
+    const unsub = api.onFinishHydration(() => {
+      unsub()
+      resolve()
+    })
+    // Hydration may finish between the hasHydrated() check and the subscription.
+    if (api.hasHydrated()) {
+      unsub()
+      resolve()
+    }
+  })
+}
 
 

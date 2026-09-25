@@ -337,8 +337,23 @@ export async function POST(request: NextRequest) {
         diagnosticKeys: result.diagnostic ? Object.keys(result.diagnostic) : []
       })
       
-      // If no suggestions found for this user, provide diagnostic information
+      // If no *new* suggestions for this user, prefer returning existing ones.
+      // Rematch often rediscovers pairs that already exist (uq_match_suggestions_pair);
+      // that is success, not an empty match pool.
       if (userSuggestions.length === 0) {
+        const existingForUser = await repo.listSuggestionsForUser(user.id, false)
+        if (existingForUser.length > 0) {
+          safeLogger.info('[Matching] No new pairs inserted; returning existing suggestions', {
+            existingCount: existingForUser.length,
+          })
+          return NextResponse.json({
+            runId: result.runId,
+            created: 0,
+            suggestions: existingForUser.slice(0, 10),
+            message: 'No new suggestions found; showing your current matches.',
+          })
+        }
+
         safeLogger.debug('[Matching] No suggestions for user, gathering diagnostic info', {
           resultDiagnostic: result.diagnostic,
           resultDiagnosticType: typeof result.diagnostic,
@@ -446,10 +461,11 @@ export async function POST(request: NextRequest) {
         })
       }
       
-      // Return only suggestions for the current user
+      // Return only newly created suggestions for the current user
       return NextResponse.json({
         ...result,
         suggestions: userSuggestions,
+        // Per-user new count (orchestrator.created is cohort-wide)
         created: userSuggestions.length
       })
     } finally {

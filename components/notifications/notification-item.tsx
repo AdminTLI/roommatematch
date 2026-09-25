@@ -135,6 +135,18 @@ function headlineForEntry(entry: NotificationListEntry): HeadlineParts {
   }
 
   if (n.type === 'match_accepted') {
+    if (
+      n.title === 'Match Accepted!' ||
+      n.title === 'Someone wants to match' ||
+      /accepted your match request/i.test(n.message || '') ||
+      /wants to match with you/i.test(n.message || '')
+    ) {
+      return {
+        primary: 'Someone wants to match',
+        body: 'Someone wants to match with you. Check your matches to respond.',
+        time,
+      }
+    }
     return {
       primary: n.title,
       body: `${n.message.slice(0, 80)}${n.message.length > 80 ? '…' : ''}`,

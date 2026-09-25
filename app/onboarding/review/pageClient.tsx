@@ -8,7 +8,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { OnboardingChromeHeader } from '@/components/questionnaire/OnboardingChromeHeader'
 import { ModuleTracker } from '@/components/questionnaire/ModuleTracker'
 import { SuspenseWrapper } from '@/components/questionnaire/SuspenseWrapper'
-import { useOnboardingStore } from '@/store/onboarding'
+import { useOnboardingStore, waitForOnboardingStoreHydration } from '@/store/onboarding'
+import { createClient } from '@/lib/supabase/client'
 import v1ItemsJson from '@/data/item-bank.v1.json'
 import v2ItemsJson from '@/data/item-bank.v2.json'
 import type { Item, SectionKey } from '@/types/questionnaire'
@@ -102,6 +103,16 @@ function ReviewClientContent() {
     let cancelled = false
     ;(async () => {
       try {
+        await waitForOnboardingStoreHydration()
+        if (cancelled) return
+
+        const supabase = createClient()
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (cancelled) return
+        useOnboardingStore.getState().bindToUser(user?.id ?? null)
+
         const res = await fetch('/api/onboarding/load-all')
         if (!res.ok) throw new Error('Failed to load sections')
         const data = (await res.json()) as {
@@ -243,6 +254,7 @@ function ReviewClientContent() {
         body: JSON.stringify({
           beta_terms_consent: true,
           beta_user_type_confirmed: betaUserTypeConfirmed,
+          completion_stage: 'full',
         }),
       })
       const result = await response.json()
@@ -275,9 +287,7 @@ function ReviewClientContent() {
       if (isEditMode) {
         window.location.href = '/settings'
       } else {
-        window.location.href = isProfessionalPath
-          ? '/onboarding-professional/complete'
-          : '/onboarding/complete'
+        window.location.href = '/dashboard'
       }
     } catch (error) {
       console.error('Submit error:', error)

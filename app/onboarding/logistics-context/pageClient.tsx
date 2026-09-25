@@ -17,7 +17,15 @@ export default function LogisticsContextClient() {
       items={items}
       moduleIndex={0}
       moduleLabel="Logistics and Context"
-      nextUrl="/onboarding/environment-rhythms"
+      nextUrl="/dashboard"
+      contextSubmit={{ userType: 'student' }}
+      chrome={{
+        titleOverride: 'Step 2 of 2',
+        moduleIndex: 2,
+        moduleTotal: 2,
+        hideModuleTracker: true,
+        showExit: false,
+      }}
     />
   )
 }
