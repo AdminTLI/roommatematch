@@ -145,7 +145,9 @@ export function FloatingDock() {
   return (
     <div className="fixed bottom-4 inset-x-0 z-40 flex w-full justify-center px-2 sm:px-4 pb-[env(safe-area-inset-bottom,0px)] pointer-events-none">
       <motion.div
-        initial={{ y: 100, opacity: 0 }}
+        // Keep first paint identical on server and client — entrance offsets here were a
+        // hydration mismatch vector under AppShell (esp. /verify redirects).
+        initial={false}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className="pointer-events-auto bg-white/25 dark:bg-slate-900/25 backdrop-blur-2xl backdrop-saturate-150 border border-white/40 dark:border-white/20 rounded-full p-2 sm:p-2.5 flex items-center justify-center shadow-[0_0_28px_rgba(15,23,42,0.08)] dark:shadow-[0_0_32px_rgba(0,0,0,0.4)] max-w-full"

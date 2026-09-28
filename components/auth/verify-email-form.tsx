@@ -280,7 +280,10 @@ export function VerifyEmailForm() {
 
   return (
     <>
-      <VerificationFeedback />
+      <VerificationFeedback
+        reason={searchParams.get('reason')}
+        redirect={searchParams.get('redirect')}
+      />
       <Card className="w-full glass">
       <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">

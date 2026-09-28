@@ -51,11 +51,17 @@ declare global {
 interface VerifyInterfaceProps {
   user: User
   redirectTo?: string
+  /** From the Server Component searchParams — avoid client useSearchParams on this route. */
+  feedbackReason?: string | null
 }
 
 type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'failed'
 
-export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInterfaceProps) {
+export function VerifyInterface({
+  user,
+  redirectTo = '/dashboard',
+  feedbackReason = null,
+}: VerifyInterfaceProps) {
   const router = useRouter()
   const supabase = createClient()
   const personaClientRef = useRef<any>(null)
@@ -495,8 +501,8 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
 
   return (
     <>
-      <VerificationFeedback />
-      <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6">
+      <VerificationFeedback reason={feedbackReason} redirect={redirectTo} />
+      <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6 notranslate" translate="no">
         <motion.div {...fadeInUp} className="flex flex-col gap-2">
           <div className="flex items-center gap-2 text-indigo-400 mb-1">
             <Sparkles className="w-5 h-5" aria-hidden />

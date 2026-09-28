@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { VerifyInterface } from './components/verify-interface'
 import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
@@ -5,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { checkUserVerificationStatus } from '@/lib/auth/verification-check'
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { getOnboardingRedirectUrlIfIncomplete } from '@/lib/onboarding/server-redirect'
+import { Loader2 } from 'lucide-react'
 
 function safeInternalRedirect(redirectParam: string | undefined): string {
   // Default after Persona: dashboard (Persona is no longer required before onboarding)
@@ -32,6 +34,19 @@ function isIntentionalPersonaVisit(
     redirectParam.startsWith('/matches') ||
     redirectParam.startsWith('/settings') ||
     redirectParam.startsWith('/forum')
+  )
+}
+
+function VerifyInterfaceFallback() {
+  return (
+    <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6">
+      <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+        <Loader2 className="h-10 w-10 animate-spin text-indigo-500" aria-hidden />
+        <p className="text-zinc-600 dark:text-zinc-400 font-medium">
+          Loading verification service...
+        </p>
+      </div>
+    </div>
   )
 }
 
@@ -118,7 +133,13 @@ export default async function VerifyPage({
 
   return (
     <AppShell user={userProfile} hideVerificationBanner={true}>
-      <VerifyInterface user={user} redirectTo={destination} />
+      <Suspense fallback={<VerifyInterfaceFallback />}>
+        <VerifyInterface
+          user={user}
+          redirectTo={destination}
+          feedbackReason={reason ?? null}
+        />
+      </Suspense>
     </AppShell>
   )
 }

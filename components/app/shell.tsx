@@ -1,6 +1,5 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
 import { TopNav } from './TopNav'
 import { FloatingDock } from './navigation/floating-dock'
 import { useState } from 'react'
@@ -10,9 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { ThemeProvider } from '@/lib/theme/theme-provider'
-import Link from 'next/link'
-import { Users, AlertCircle, Mail, ArrowRight } from 'lucide-react'
+import { AlertCircle, Mail, ArrowRight } from 'lucide-react'
 import { MessageNotificationPopup } from '@/app/(components)/notifications/message-notification-popup'
 import { BugReportWidget } from '@/components/bugs/bug-report-widget'
 import { usePathname } from 'next/navigation'
@@ -146,112 +143,111 @@ export function AppShell({
   // Persona is deferred until match accept — do not block the shell with a Persona banner
   const showVerificationBanner = !hideVerificationBanner && !isVerifyPage && !isLoadingVerification && needsEmailVerification
 
-  // Framer Motion's translateY creates a containing block: `position:fixed` (chat composer) would
-  // anchor to this wrapper instead of the viewport, hiding the input under mobile browser chrome.
+  // Avoid Framer Motion wrappers here: translateY creates a containing block so
+  // `position:fixed` (chat composer) anchors incorrectly, and entrance motion on the
+  // shell is a common SSR/client style mismatch source for hydration errors.
   const isChatRoute = pathname === '/chat' || Boolean(pathname?.startsWith('/chat/'))
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <div className="min-h-screen bg-transparent safe-area-inset">
-          <div className="flex min-h-screen flex-col">
-            {/* Main content area */}
-            <div className="flex-1 flex flex-col overflow-hidden relative z-0">
-              <TopNav user={user} context={context} />
+      {/*
+        translate="no" / notranslate: the authenticated shell has first-party en/nl i18n.
+        Browser auto-translate (common in Opera with non-en OS locales) mutates React text
+        nodes before/during hydration and shows up as Sentry replay_hydration_error.
+      */}
+      <div
+        className="min-h-screen bg-transparent safe-area-inset notranslate"
+        translate="no"
+      >
+        <div className="flex min-h-screen flex-col">
+          {/* Main content area */}
+          <div className="flex-1 flex flex-col overflow-hidden relative z-0">
+            <TopNav user={user} context={context} />
 
-              {/* Floating Dock Navigation */}
-              <FloatingDock />
+            {/* Floating Dock Navigation */}
+            <FloatingDock />
 
-              {/* Verification Banner */}
-              {showVerificationBanner && (
-                <div className="px-4 pt-4 pb-0 w-full max-w-full overflow-hidden relative z-10">
-                  <Alert variant="destructive" className="w-full border-amber-300 bg-amber-50 dark:bg-amber-900/20">
-                    <AlertCircle className="h-4 w-4 text-amber-600" />
-                    <AlertDescription className="text-amber-900 dark:text-amber-200">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold mb-1">Email verification required</p>
-                          <p className="text-sm">
-                            Please verify your email address to access all features.
-                          </p>
-                        </div>
-                        <Button
-                          onClick={handleCompleteEmailVerification}
-                          className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 min-h-[44px] w-full sm:w-auto"
-                          size="sm"
-                        >
-                          <Mail className="mr-2 h-4 w-4" />
-                          Verify Email
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
+            {/* Verification Banner */}
+            {showVerificationBanner && (
+              <div className="px-4 pt-4 pb-0 w-full max-w-full overflow-hidden relative z-10">
+                <Alert variant="destructive" className="w-full border-amber-300 bg-amber-50 dark:bg-amber-900/20">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-amber-900 dark:text-amber-200">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold mb-1">Email verification required</p>
+                        <p className="text-sm">
+                          Please verify your email address to access all features.
+                        </p>
                       </div>
-                    </AlertDescription>
-                  </Alert>
-                </div>
-              )}
-              <div className="flex-1 flex flex-col overflow-hidden relative">
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-40 chat-page-main">
-                  {isChatRoute ? (
-                    <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col">
-                      {children}
-                      <div className="mt-6 sm:mt-8">
-                        <AppFooter />
-                      </div>
+                      <Button
+                        onClick={handleCompleteEmailVerification}
+                        className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 min-h-[44px] w-full sm:w-auto"
+                        size="sm"
+                      >
+                        <Mail className="mr-2 h-4 w-4" />
+                        Verify Email
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
                     </div>
-                  ) : (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-                      className="max-w-7xl mx-auto h-full"
-                    >
-                      {children}
-                      <div className="mt-6 sm:mt-8">
-                        <AppFooter />
-                      </div>
-                    </motion.div>
-                  )}
-                </main>
+                  </AlertDescription>
+                </Alert>
               </div>
+            )}
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+              <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-40 chat-page-main">
+                <div
+                  className={
+                    isChatRoute
+                      ? 'mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col'
+                      : 'max-w-7xl mx-auto h-full'
+                  }
+                >
+                  {children}
+                  <div className="mt-6 sm:mt-8">
+                    <AppFooter />
+                  </div>
+                </div>
+              </main>
             </div>
           </div>
-
-          {user.id !== 'demo-user-id' && <ActivityHeartbeat />}
-
-          {/* Message Notification Popup */}
-          <MessageNotificationPopup userId={user.id} />
-
-          {context === 'user' && user.id !== 'demo-user-id' && <BugReportWidget />}
-
-          {/* Questionnaire modal - gated by auth + only if never filled */}
-          <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Complete your compatibility profile</DialogTitle>
-                <DialogDescription>
-                  Answer a few questions to enable accurate matching. You can update answers later.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                <Button
-                  variant="primary"
-                  onClick={() => { window.location.href = '/onboarding' }}
-                  className="w-full sm:w-auto"
-                >
-                  Start now
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowQuestionnaire(false)}
-                  className="w-full sm:w-auto"
-                >
-                  Later
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
-      </ThemeProvider>
+
+        {user.id !== 'demo-user-id' && <ActivityHeartbeat />}
+
+        {/* Message Notification Popup */}
+        <MessageNotificationPopup userId={user.id} />
+
+        {context === 'user' && user.id !== 'demo-user-id' && <BugReportWidget />}
+
+        {/* Questionnaire modal - gated by auth + only if never filled */}
+        <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Complete your compatibility profile</DialogTitle>
+              <DialogDescription>
+                Answer a few questions to enable accurate matching. You can update answers later.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="primary"
+                onClick={() => { window.location.href = '/onboarding' }}
+                className="w-full sm:w-auto"
+              >
+                Start now
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowQuestionnaire(false)}
+                className="w-full sm:w-auto"
+              >
+                Later
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </QueryClientProvider>
   )
 }

@@ -234,7 +234,8 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
 
   return (
     <motion.header
-      initial={{ opacity: 0, y: -20 }}
+      // Stable first paint: entrance offsets on sticky chrome mismatch SSR vs client styles.
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       className={cn(
