@@ -133,6 +133,18 @@ export async function createMatchNotification(
   let messageA: string;
   let messageB: string;
   let metadata: Record<string, any>;
+  let userAName = 'Someone';
+  let userBName = 'Someone';
+
+  if (type === 'match_confirmed') {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, first_name')
+      .in('user_id', [userAId, userBId]);
+
+    userAName = profiles?.find(p => p.user_id === userAId)?.first_name || 'Someone';
+    userBName = profiles?.find(p => p.user_id === userBId)?.first_name || 'Someone';
+  }
 
   switch (type) {
     case 'match_created':
@@ -141,21 +153,12 @@ export async function createMatchNotification(
       messageB = 'We found a potential roommate for you. Check your matches to see who.';
       metadata = { match_id: matchId, chat_id: chatId };
       break;
-    case 'match_confirmed': {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, first_name')
-        .in('user_id', [userAId, userBId]);
-
-      const userAName = profiles?.find(p => p.user_id === userAId)?.first_name || 'Someone';
-      const userBName = profiles?.find(p => p.user_id === userBId)?.first_name || 'Someone';
-
+    case 'match_confirmed':
       title = 'Mutual Match!';
       messageA = `You & ${userBName} connected. Tap to start chatting with an icebreaker.`;
       messageB = `You & ${userAName} connected. Tap to start chatting with an icebreaker.`;
       metadata = { match_id: matchId, chat_id: chatId };
       break;
-    }
   }
 
   // For match_created type, check if notifications already exist for this user pair
