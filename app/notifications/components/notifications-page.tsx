@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 // ScrollArea not available, using div with overflow styling
 import { NotificationItem } from '@/app/(components)/notifications/notification-item'
 import { Notification, NotificationType, NotificationCounts } from '@/lib/notifications/types'
-import { createClient } from '@/lib/supabase/client'
+import { anonymizeMatchNotificationMessage } from '@/lib/notifications/anonymize-match-message'
 import { queryKeys, queryClient } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { 
@@ -41,7 +41,6 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
   const [selectedTab, setSelectedTab] = useState<'all' | 'unread'>('all')
   const [page, setPage] = useState(0)
   const router = useRouter()
-  const supabase = createClient()
 
   const limit = 20
 
@@ -64,93 +63,23 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
     if (!response.ok) {
       throw new Error('Failed to fetch notifications')
     }
-    
+
     const data = await response.json()
-    const notifications = data.notifications || []
-    
-    // Process notifications to check acceptance status for match_created and match_accepted types
-    const processedNotifications = await Promise.all(notifications.map(async (notif: Notification) => {
-      // Safety check: For match_created and match_accepted notifications, verify both users accepted
-      if (notif.type === 'match_created' || notif.type === 'match_accepted') {
-        let bothUsersAccepted = false
-        
-        // First, check if message contains a name that needs sanitization
-        let hasName = false
-        let genericMessage = ''
-        
-        if (notif.type === 'match_created' && notif.message && notif.message.includes('match with')) {
-          // Check if message contains a name - if it has text between "with" and "!" that's not generic, it's a name
-          const matchWithPattern = /match with ([^!]+)!/i
-          const match = notif.message.match(matchWithPattern)
-          if (match) {
-            const namePart = match[1].toLowerCase().trim()
-            hasName = !namePart.includes('someone') && 
-                     !namePart.includes('a potential roommate') &&
-                     !namePart.includes('user') &&
-                     namePart.length > 0
-          }
-          genericMessage = 'We found a potential roommate for you. Check your matches to see who.'
-        } else if (notif.type === 'match_accepted' && notif.message && (
-          notif.message.includes('accepted your match request') ||
-          notif.message.includes('wants to match')
-        )) {
-          // Check if message contains a name (not just "Someone")
-          hasName = !notif.message.includes('Someone') && 
-                   !notif.message.includes('someone') &&
-                   !notif.message.toLowerCase().startsWith('someone wants to match')
-          genericMessage = 'Someone wants to match with you. Check your matches to respond.'
-        }
-        
-        // Only verify if we detected a name (optimization)
-        if (hasName && notif.metadata?.match_id) {
-          try {
-            // First try match_suggestions table (new system)
-            const { data: suggestion } = await supabase
-              .from('match_suggestions')
-              .select('status, accepted_by, member_ids')
-              .eq('id', notif.metadata.match_id)
-              .single()
-            
-            if (suggestion) {
-              const acceptedBy = suggestion.accepted_by || []
-              const memberIds = suggestion.member_ids || []
-              bothUsersAccepted = suggestion.status === 'confirmed' || 
-                (memberIds.length === 2 && memberIds.every((id: string) => acceptedBy.includes(id)))
-            } else {
-              // If not found in match_suggestions, try old matches table
-              const { data: match } = await supabase
-                .from('matches')
-                .select('status, a_user, b_user')
-                .eq('id', notif.metadata.match_id)
-                .single()
-              
-              if (match) {
-                // In old matches table, status 'confirmed' means both accepted
-                bothUsersAccepted = match.status === 'confirmed'
-              }
-            }
-          } catch (error) {
-            // If we can't verify, assume not both accepted (safer for privacy)
-            console.warn('Failed to verify match acceptance status, assuming not both accepted', error)
-            bothUsersAccepted = false
-          }
-        }
-        
-        // If name detected AND (both users haven't accepted OR we couldn't verify), sanitize
-        // Also sanitize if no match_id but name detected (fallback for edge cases)
-        if (hasName && (!bothUsersAccepted || !notif.metadata?.match_id)) {
-          notif.message = genericMessage
-        }
+    const notifications = (data.notifications || []).map((notif: Notification) => {
+      if (notif.type !== 'match_created' && notif.type !== 'match_accepted') {
+        return notif
       }
-      
-      return notif
-    }))
-    
+      return {
+        ...notif,
+        message: anonymizeMatchNotificationMessage(notif.type, notif.message),
+      }
+    })
+
     return {
-      notifications: processedNotifications,
+      notifications,
       hasMore: data.pagination?.has_more || false,
     }
-  }, [page, selectedType, selectedTab, supabase])
+  }, [page, selectedType, selectedTab])
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['notifications', 'list', user.id, page, selectedType, selectedTab],
@@ -244,7 +173,14 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
       })
       if (response.ok) {
         const data = await response.json()
-        if (typeof data?.href === 'string' && data.href.length > 0) return data.href
+        const meta = { ...(notification.metadata || {}) }
+        if (typeof data?.chatId === 'string' && data.chatId.length > 0) {
+          meta.chat_id = data.chatId
+        }
+        if (typeof data?.senderId === 'string' && data.senderId.length > 0) {
+          meta.sender_id = data.senderId
+        }
+        return chatHrefFromMetadata(meta)
       }
     } catch (error) {
       console.warn('Failed to resolve chat href from notification:', error)

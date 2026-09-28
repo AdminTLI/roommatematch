@@ -65,6 +65,7 @@ import { SuccessNpsWidget } from '@/app/(components)/success-nps-widget'
 import { LabPromptCard } from '@/app/(components)/lab-prompt-card'
 import type { LabPromptKey } from '@/lib/lab/types'
 import { isDashboardActivityNotification } from '@/lib/notifications/dashboard-activity'
+import { anonymizeMatchNotificationMessage } from '@/lib/notifications/anonymize-match-message'
 import { isSuggestedForUser } from '@/lib/matching/suggestion-tabs'
 
 const fadeInUp = {
@@ -1017,82 +1018,25 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           }
         }
 
-        // For match_created / match_accepted, verify both users accepted before showing names
-        const processedNotifications = await Promise.all(notifications.map(async (notif: any) => {
+        // Match suggestion / one-sided-accept copy never includes peer names
+        const processedNotifications = notifications.map((notif: any) => {
           const timeAgo = formatTimeAgo(notif.created_at)
-
-          if (notif.type === 'match_created' || notif.type === 'match_accepted') {
-            let bothUsersAccepted = false
-            let hasName = false
-            let genericMessage = ''
-
-            if (notif.type === 'match_created' && notif.message && notif.message.includes('match with')) {
-              const matchWithPattern = /match with ([^!]+)!/i
-              const match = notif.message.match(matchWithPattern)
-              if (match) {
-                const namePart = match[1].toLowerCase().trim()
-                hasName = !namePart.includes('someone') &&
-                  !namePart.includes('a potential roommate') &&
-                  !namePart.includes('user') &&
-                  namePart.length > 0
-              }
-              genericMessage = 'We found a potential roommate for you. Check your matches to see who.'
-            } else if (notif.type === 'match_accepted' && notif.message && (
-              notif.message.includes('accepted your match request') ||
-              notif.message.includes('wants to match')
-            )) {
-              hasName = !notif.message.includes('Someone') &&
-                !notif.message.includes('someone') &&
-                !notif.message.toLowerCase().startsWith('someone wants to match')
-              genericMessage = 'Someone wants to match with you. Check your matches to respond.'
-            }
-
-            if (hasName && notif.metadata?.match_id) {
-              try {
-                const { data: suggestion } = await supabase
-                  .from('match_suggestions')
-                  .select('status, accepted_by, member_ids')
-                  .eq('id', notif.metadata.match_id)
-                  .single()
-
-                if (suggestion) {
-                  const acceptedBy = suggestion.accepted_by || []
-                  const memberIds = suggestion.member_ids || []
-                  bothUsersAccepted = suggestion.status === 'confirmed' ||
-                    (memberIds.length === 2 && memberIds.every((id: string) => acceptedBy.includes(id)))
-                } else {
-                  const { data: match } = await supabase
-                    .from('matches')
-                    .select('status, a_user, b_user')
-                    .eq('id', notif.metadata.match_id)
-                    .single()
-
-                  if (match) {
-                    bothUsersAccepted = match.status === 'confirmed'
-                  }
-                }
-              } catch (error: any) {
-                logger.warn('Failed to verify match acceptance status, assuming not both accepted', error)
-                bothUsersAccepted = false
-              }
-            }
-
-            if (hasName && !bothUsersAccepted) {
-              notif.message = genericMessage
-            }
-          }
+          const message =
+            notif.type === 'match_created' || notif.type === 'match_accepted'
+              ? anonymizeMatchNotificationMessage(notif.type, notif.message)
+              : notif.message
 
           return {
             id: notif.id,
             type: notif.type,
             title: notif.title,
-            message: notif.message,
+            message,
             timeAgo,
             createdAt: notif.created_at,
             isRead: notif.is_read,
             metadata: notif.metadata || {}
           }
-        }))
+        })
 
         // Prefer notification rows for chat messages; only add raw messages that aren't already represented.
         const seenMessageIds = new Set<string>()

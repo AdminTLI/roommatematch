@@ -1,12 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Notification, NotificationCounts } from '@/lib/notifications/types'
+import { anonymizeMatchNotificationMessage } from '@/lib/notifications/anonymize-match-message'
 import {
   type NotificationFilterCategory,
   type NotificationListEntry,
   CATEGORY_TYPES,
   type NotificationViewModel,
 } from '@/types/notification'
-import { logger } from '@/lib/utils/logger'
 
 export const NOTIFICATIONS_PAGE_SIZE = 30
 
@@ -148,86 +148,21 @@ export async function attachSenderAvatars(
 }
 
 /**
- * Privacy sanitization for match notifications (same rules as the previous dropdown).
+ * Privacy sanitization for match suggestion / one-sided-accept notifications.
+ * Peer names are never shown for these types (no DB verification).
  */
-export async function processNotificationsWithPrivacy(
-  supabase: SupabaseClient,
+export function processNotificationsWithPrivacy(
   notifications: Notification[]
-): Promise<Notification[]> {
-  return Promise.all(
-    notifications.map(async (notif) => {
-      if (notif.type !== 'match_created' && notif.type !== 'match_accepted') {
-        return notif
-      }
-
-      let bothUsersAccepted = false
-      let hasName = false
-      let genericMessage = ''
-
-      if (notif.type === 'match_created' && notif.message && notif.message.includes('match with')) {
-        const matchWithPattern = /match with ([^!]+)!/i
-        const match = notif.message.match(matchWithPattern)
-        if (match) {
-          const namePart = match[1].toLowerCase().trim()
-          hasName =
-            !namePart.includes('someone') &&
-            !namePart.includes('a potential roommate') &&
-            !namePart.includes('user') &&
-            namePart.length > 0
-        }
-        genericMessage = 'We found a potential roommate for you. Check your matches to see who.'
-      } else if (
-        notif.type === 'match_accepted' &&
-        notif.message &&
-        (notif.message.includes('accepted your match request') ||
-          notif.message.includes('wants to match'))
-      ) {
-        hasName =
-          !notif.message.includes('Someone') &&
-          !notif.message.includes('someone') &&
-          !notif.message.toLowerCase().startsWith('someone wants to match')
-        genericMessage = 'Someone wants to match with you. Check your matches to respond.'
-      }
-
-      if (hasName && notif.metadata?.match_id) {
-        try {
-          const { data: suggestion } = await supabase
-            .from('match_suggestions')
-            .select('status, accepted_by, member_ids')
-            .eq('id', notif.metadata.match_id)
-            .single()
-
-          if (suggestion) {
-            const acceptedBy = suggestion.accepted_by || []
-            const memberIds = suggestion.member_ids || []
-            bothUsersAccepted =
-              suggestion.status === 'confirmed' ||
-              (memberIds.length === 2 && memberIds.every((id: string) => acceptedBy.includes(id)))
-          } else {
-            const { data: match } = await supabase
-              .from('matches')
-              .select('status, a_user, b_user')
-              .eq('id', notif.metadata.match_id)
-              .single()
-
-            if (match) {
-              bothUsersAccepted = match.status === 'confirmed'
-            }
-          }
-        } catch (error) {
-          logger.warn('Failed to verify match acceptance status, assuming not both accepted', {
-            detail: error instanceof Error ? error.message : String(error),
-          })
-          bothUsersAccepted = false
-        }
-      }
-
-      if (hasName && (!bothUsersAccepted || !notif.metadata?.match_id)) {
-        return { ...notif, message: genericMessage }
-      }
+): Notification[] {
+  return notifications.map((notif) => {
+    if (notif.type !== 'match_created' && notif.type !== 'match_accepted') {
       return notif
-    })
-  )
+    }
+    return {
+      ...notif,
+      message: anonymizeMatchNotificationMessage(notif.type, notif.message),
+    }
+  })
 }
 
 export type TimeGroupKey = 'new' | 'yesterday' | 'earlier'
