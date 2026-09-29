@@ -48,7 +48,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="quietRoommate"
-            alt="Student looking out of a window on a dark winter day"
+            alt="Quiet living room with a large window — winter blues hit harder in socially thin shared houses"
           />
           <figcaption>
             In winter, isolation hits harder - the people you live with have a direct impact on how heavy it

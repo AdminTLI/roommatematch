@@ -48,7 +48,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="quietRoommate"
-            alt="Three housemates talking on a sofa in a shared living room"
+            alt="Shared living room with sofa and armchair — overnight partners reshape common-space norms"
           />
           <figcaption>
             Without a shared guest policy, partners can accidentally turn your home into a place you feel
@@ -247,7 +247,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="quietRoommate"
-            alt="Drie huisgenoten pratend op een bank in een gedeelde woonkamer"
+            alt="Gedeelde woonkamer met bank en fauteuil — overnight partners veranderen de huisnormen"
           />
           <figcaption>
             Zonder heldere afspraken kan een partner langzaam de rol van onzichtbare huisgenoot krijgen.

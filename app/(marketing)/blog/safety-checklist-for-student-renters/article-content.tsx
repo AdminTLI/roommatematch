@@ -101,7 +101,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="housingCityscape"
-            alt="Bright apartment living room for an in-person rental viewing"
+            alt="Modern apartment building facade — always verify the address with an in-person viewing"
           />
           <figcaption>Always review rental contracts carefully and seek legal advice if something seems unclear.</figcaption>
         </figure>
@@ -247,7 +247,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="housingCityscape"
-            alt="Lichte woonkamer van een appartement voor een bezichtiging"
+            alt="Gevel van een modern appartementencomplex — verifieer het adres altijd met een bezichtiging"
           />
           <figcaption>Lees huurcontracten zorgvuldig door en vraag juridisch advies als iets onduidelijk is.</figcaption>
         </figure>

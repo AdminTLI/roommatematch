@@ -112,8 +112,8 @@ const content = {
 
         <figure>
           <BlogHeroImage
-            imageKey="contractSigning"
-            alt="Hands washing dishes in a shared kitchen sink"
+            imageKey="sharedKitchen"
+            alt="Shared kitchen counters and cookware where dish disputes often start"
           />
           <figcaption>
             You do not need identical standards - just a shared sense of fairness and a system that everyone

@@ -48,7 +48,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="cityBikeStudent"
-            alt="Person sitting among cardboard boxes while moving out"
+            alt="Amsterdam canal at twilight — the cost of a bad roommate often ends in another move across a Dutch student city"
           />
           <figcaption>
             Moving out of a bad living situation costs more than just time and stress - it often comes with a

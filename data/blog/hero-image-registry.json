@@ -47,6 +47,11 @@
       "date": "2026-08-12"
     },
     {
+      "slug": "student-housing-search-abandonment-netherlands",
+      "imageKey": "housingCityscape",
+      "date": "2026-08-19"
+    },
+    {
       "slug": "housemate-support-living-away-from-home",
       "imageKey": "studentsCollaborating",
       "date": "2026-08-26"
@@ -55,6 +60,21 @@
       "slug": "roommate-chore-fairness-netherlands",
       "imageKey": "sharedKitchen",
       "date": "2026-09-02"
+    },
+    {
+      "slug": "overnight-guest-rules-dutch-student-houses",
+      "imageKey": "quietRoommate",
+      "date": "2026-09-09"
+    },
+    {
+      "slug": "exam-week-house-rules-netherlands",
+      "imageKey": "studyLateNight",
+      "date": "2026-09-16"
+    },
+    {
+      "slug": "dutch-study-choice-gamma-fields",
+      "imageKey": "internationalCampus",
+      "date": "2026-09-23"
     }
   ]
 }

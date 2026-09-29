@@ -16,6 +16,37 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'dutch-study-choice-gamma-fields',
+        title: 'Dutch Study Choice: Why Gamma Fields Dominate',
+        excerpt:
+          'Rathenau data show most Dutch bachelor students enrol in gamma fields. That concentration shapes programme choice, fixus deadlines, and early switches.',
+        readTime: '9 min read',
+        date: '2026-09-23',
+        category: 'Technology',
+        icon: Brain,
+      },
+{
+        slug: 'exam-week-house-rules-netherlands',
+        title: 'Exam Week House Rules for Dutch Housemates',
+        excerpt:
+          'MMMS-2025 shows most HBO and university students still report heavy study stress. Shared houses need temporary quiet, kitchen, and guest norms when tentamenweek arrives.',
+        readTime: '8 min read',
+        date: '2026-09-16',
+        category: 'Wellbeing',
+        icon: Shield,
+      },
+{
+        slug: 'overnight-guest-rules-dutch-student-houses',
+        title: 'Overnight Guest Rules in Dutch Student Houses',
+        excerpt:
+          'Provider house rules and housemate consent are different layers. SSH, campus providers, and informal flats set overnight guest norms in incompatible ways until someone writes them down.',
+        readTime: '8 min read',
+        date: '2026-09-09',
+        category: 'Boundaries',
+        icon: BookOpen,
+      },
+
+      {
         slug: 'roommate-chore-fairness-netherlands',
         title: 'Roommate Chore Fairness in Dutch Student Houses',
         excerpt:
@@ -34,6 +65,16 @@ const content = {
         date: '2026-08-26',
         category: 'Wellbeing',
         icon: Shield,
+      },
+      {
+        slug: 'student-housing-search-abandonment-netherlands',
+        title: 'Student Housing Search Abandonment in the Netherlands',
+        excerpt:
+          'Kences reports fewer Dutch students even try to find a room. When 44% live away but only 49% still want to, official shortage figures understate lived scarcity.',
+        readTime: '9 min read',
+        date: '2026-08-19',
+        category: 'Housing',
+        icon: TrendingUp,
       },
       {
         slug: 'graduate-holdover-student-housing-netherlands',
@@ -283,6 +324,37 @@ const content = {
     readArticle: 'Lees artikel',
     posts: [
       {
+        slug: 'dutch-study-choice-gamma-fields',
+        title: 'Studiekeuze in Nederland: waarom gamma zo dominant is',
+        excerpt:
+          'Rathenau-cijfers laten zien dat de meeste bachelorstudenten in gamma-richtingen zitten. Die concentratie kleurt programma-keuze, fixusdeadlines en vroege switches.',
+        readTime: '9 min lezen',
+        date: '2026-09-23',
+        category: 'Technologie',
+        icon: Brain,
+      },
+{
+        slug: 'exam-week-house-rules-netherlands',
+        title: 'Tentamenweek-huisregels voor Nederlandse huisgenoten',
+        excerpt:
+          'MMMS-2025 laat zien dat veel hbo- en wo-studenten nog steeds hoge studiestress melden. Gedeelde huizen hebben tijdelijke stilte-, keuken- en bezoeknormen nodig in de tentamenweek.',
+        readTime: '8 min lezen',
+        date: '2026-09-16',
+        category: 'Welzijn',
+        icon: Shield,
+      },
+{
+        slug: 'overnight-guest-rules-dutch-student-houses',
+        title: 'Overnachtingsregels in Nederlandse studentenhuizen',
+        excerpt:
+          'Huisregels van aanbieders en toestemming van huisgenoten zijn verschillende lagen. SSH, campusaanbieders en informele flats zetten overnachtingsnormen op onverenigbare manieren tot iemand ze opschrijft.',
+        readTime: '8 min lezen',
+        date: '2026-09-09',
+        category: 'Grenzen',
+        icon: BookOpen,
+      },
+
+      {
         slug: 'roommate-chore-fairness-netherlands',
         title: 'Eerlijke klusjesverdeling in Nederlandse studentenhuizen',
         excerpt:
@@ -301,6 +373,16 @@ const content = {
         date: '2026-08-26',
         category: 'Welzijn',
         icon: Shield,
+      },
+      {
+        slug: 'student-housing-search-abandonment-netherlands',
+        title: 'Studenten die stoppen met kamer zoeken: wat de cijfers missen',
+        excerpt:
+          'Kences ziet dat minder studenten nog op kamers zoeken. 44 procent woont uit, 49 procent wil dat nog - het tekort in de praktijk is groter dan het officiële cijfer.',
+        readTime: '9 min lezen',
+        date: '2026-08-19',
+        category: 'Huisvesting',
+        icon: TrendingUp,
       },
       {
         slug: 'graduate-holdover-student-housing-netherlands',

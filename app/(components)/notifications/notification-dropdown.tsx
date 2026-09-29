@@ -131,7 +131,7 @@ export function NotificationDropdown({
         category,
         isRead: unreadOnly ? false : undefined,
       })
-      const processed = await processNotificationsWithPrivacy(supabase, raw)
+      const processed = processNotificationsWithPrivacy(raw)
       const items = await attachSenderAvatars(supabase, processed)
       return { items, hasMore }
     },

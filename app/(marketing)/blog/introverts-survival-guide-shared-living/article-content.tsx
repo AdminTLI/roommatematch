@@ -47,7 +47,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="quietRoommate"
-            alt="Student reading quietly with headphones in a shared living space"
+            alt="Bright quiet living room — introverts need recoverable shared space, not constant company"
           />
           <figcaption>
             For many introverts, a quiet evening alone is not antisocial - it is basic maintenance.

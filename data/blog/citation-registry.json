@@ -2,6 +2,21 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "dutch-study-choice-gamma-fields",
+      "date": "2026-09-23",
+      "primarySourceUrls": [
+        "https://www.rathenau.nl/nl/werking-van-het-wetenschapssysteem/meeste-studenten-hoger-onderwijs-kiezen-gammarichting",
+        "https://www.rijksoverheid.nl/themas/onderwijs/hoger-onderwijs/studiekeuze-en-toelating",
+        "https://www.studiekeuze123.nl/wat-ga-jij-kiezen/artikel/twijfels-in-het-eerste-jaar"
+      ],
+      "statsUsed": [
+        "Rathenau 2022/2023 bachelor: gamma 56%, beta/tech 20%, medical 17%, alfa 8%",
+        "Rathenau 2022/2023 ~680000 bachelor enrolments",
+        "Rathenau master: gamma 47%, beta/tech 33%, medical 13%, alfa 8%",
+        "Rijksoverheid fixus 15 January / general 1 May"
+      ]
+    },
+    {
       "slug": "roommate-chore-fairness-netherlands",
       "date": "2026-09-02",
       "primarySourceUrls": [
@@ -36,7 +51,10 @@
         "https://nos.nl/artikel/2581086-steeds-meer-studenten-geven-de-hoop-om-een-kamer-te-vinden-op",
         "https://www.cbs.nl/en-gb/news/2026/17/fewer-young-people-entering-the-housing-market"
       ],
-      "statsUsed": ["57% graduate holdover", "Kences lived vs wanted shares"]
+      "statsUsed": [
+        "57% graduate holdover",
+        "Kences lived vs wanted shares"
+      ]
     },
     {
       "slug": "private-landlords-student-housing-netherlands",
@@ -45,7 +63,9 @@
         "https://nos.nl/artikel/2589051-particulieren-verkopen-steeds-vaker-hun-studentenwoningen",
         "https://nos.nl/artikel/2581086-steeds-meer-studenten-geven-de-hoop-om-een-kamer-te-vinden-op"
       ],
-      "statsUsed": ["Amsterdam 2000 / Rotterdam 1025 / Utrecht 810 / Eindhoven 695"]
+      "statsUsed": [
+        "Amsterdam 2000 / Rotterdam 1025 / Utrecht 810 / Eindhoven 695"
+      ]
     },
     {
       "slug": "thuiswonend-studenten-nederland-cbs-data",
@@ -54,7 +74,9 @@
         "https://www.cbs.nl/nl-nl/nieuws/2026/06/steeds-meer-studenten-wonen-hun-hele-studie-thuis",
         "https://nos.nl/artikel/2601121-meer-studenten-bleven-na-invoering-leenstelsel-gehele-studententijd-thuis-wonen"
       ],
-      "statsUsed": ["43% thuiswonend 2023 cohort"]
+      "statsUsed": [
+        "43% thuiswonend 2023 cohort"
+      ]
     },
     {
       "slug": "student-housing-loneliness-netherlands",
@@ -63,13 +85,18 @@
         "https://nos.nl/artikel/2581086-steeds-meer-studenten-geven-de-hoop-om-een-kamer-te-vinden-op",
         "https://nos.nl/artikel/2601121-meer-studenten-bleven-na-invoering-leenstelsel-gehele-studententijd-thuis-wonen"
       ],
-      "statsUsed": ["Kences wish/reality gap", "37% Nuffic housing leave"]
+      "statsUsed": [
+        "Kences wish/reality gap",
+        "37% Nuffic housing leave"
+      ]
     },
     {
       "slug": "international-student-housing-rights-netherlands",
       "date": "2026-07-08",
       "primarySourceUrls": [],
-      "statsUsed": ["263 LSVb cases"]
+      "statsUsed": [
+        "263 LSVb cases"
+      ]
     },
     {
       "slug": "student-housing-co-living-rules-netherlands",
@@ -86,7 +113,77 @@
         "https://advalvas.vu.nl/en/student-society/your-roommate-cant-read-your-mind/",
         "https://www.rivm.nl/nieuws/blijvende-zorgen-over-mentale-gezondheid-jongvolwassenen-ondanks-lichte-verbetering"
       ],
-      "statsUsed": ["GMJV 2024 mental health share"]
+      "statsUsed": [
+        "GMJV 2024 mental health share"
+      ]
+    },
+    {
+      "slug": "exam-week-house-rules-netherlands",
+      "date": "2026-09-16",
+      "primarySourceUrls": [
+        "https://www.trimbos.nl/actueel/nieuws/mentale-gezondheid-hbo-en-wo-studenten-is-licht-verbeterd/",
+        "https://www.rivm.nl/bibliotheek/rapporten/2025-0106.pdf",
+        "https://www.trimbos.nl/wp-content/uploads/2025/10/AF2084-Harder-Better-Faster-Stronger.pdf",
+        "https://www.vtwonen.nl/studentenkamer/ergernissen-studentenhuis-met-oplossingen~2c43d48"
+      ],
+      "statsUsed": [
+        "MMMS-2025 53% (very) high stress past 4 weeks",
+        "MMMS-2025 41% often performance pressure",
+        "MMMS-2025 56% emotional exhaustion",
+        "MMMS-2025 58% of stressed students cite study as (very) high stress source",
+        "MMMS-2025 27,000+ HBO/WO respondents"
+      ]
+    },
+    {
+      "slug": "overnight-guest-rules-dutch-student-houses",
+      "date": "2026-09-09",
+      "primarySourceUrls": [
+        "https://help.sshxl.nl/nl/articles/368429-house-rules",
+        "https://collegecampus.nl/faq/",
+        "https://www.clavix.nl/post/onderhuur-en-inwoning-wat-mag-wel-en-wat-mag-niet-als-huurder",
+        "https://dutchstudenthousing.nl/papers/roommate-agreement-template"
+      ],
+      "statsUsed": [
+        "College Campus: up to 3 overnight nights before caretaker discussion",
+        "College Campus quiet hours 23:00 Sun-Thu / 00:00 Fri-Sat",
+        "SSH Short Stay: overnight guests not allowed"
+      ]
+    },
+    {
+      "slug": "student-housing-search-abandonment-netherlands",
+      "url": "https://nos.nl/artikel/2581086-steeds-meer-studenten-geven-de-hoop-om-een-kamer-te-vinden-op",
+      "date": "2026-08-19",
+      "note": "External source cited in search-abandonment editorial"
+    },
+    {
+      "slug": "student-housing-search-abandonment-netherlands",
+      "url": "https://nos.nl/artikel/2611199-kabinet-wil-sneller-bouwen-met-prefabwoningen-en-versoepelt-de-huurwet",
+      "date": "2026-08-19",
+      "note": "External source cited in search-abandonment editorial"
+    },
+    {
+      "slug": "student-housing-search-abandonment-netherlands",
+      "url": "https://nos.nl/regio/utrecht/artikel/750805-in-strijd-tegen-kamertekort-wil-studentenbond-dat-woningdelen-makkelijker-wordt",
+      "date": "2026-08-19",
+      "note": "External source cited in search-abandonment editorial"
+    },
+    {
+      "slug": "student-housing-search-abandonment-netherlands",
+      "url": "https://www.kences.nl/nieuws/student-geeft-kamerzoektocht-op/",
+      "date": "2026-08-19",
+      "note": "External source cited in search-abandonment editorial"
+    },
+    {
+      "slug": "student-housing-search-abandonment-netherlands",
+      "url": "https://www.kences.nl/publicaties/landelijke-monitor-studentenhuisvesting-2024/",
+      "date": "2026-08-19",
+      "note": "External source cited in search-abandonment editorial"
+    },
+    {
+      "slug": "student-housing-search-abandonment-netherlands",
+      "url": "https://www.kences.nl/publicaties/steeds-minder-studentenkamers-in-de-grote-steden/",
+      "date": "2026-08-19",
+      "note": "External source cited in search-abandonment editorial"
     }
   ]
 }

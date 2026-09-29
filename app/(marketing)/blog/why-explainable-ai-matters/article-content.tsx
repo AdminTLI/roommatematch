@@ -55,7 +55,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="studyLateNight"
-            alt="Abstract visualization of connected data and decision paths"
+            alt="Hands writing in a planner beside a laptop — explainable decisions need clear, inspectable steps"
           />
           <figcaption>
             Explainability turns “because the model said so” into reasons you can evaluate and challenge.
@@ -142,7 +142,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="studentsCollaborating"
-            alt="Data dashboard showing simplified decision signals"
+            alt="Students collaborating at laptops — matching signals should be discussable in plain language"
           />
           <figcaption>
             In a healthy system, data is not a mystery ingredient. You can see what is used and why it
@@ -291,7 +291,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="studyLateNight"
-            alt="Abstracte visualisatie van verbonden data en beslispaden"
+            alt="Handen die in een planner schrijven naast een laptop — uitlegbare beslissingen vragen inspecteerbare stappen"
           />
           <figcaption>
             Uitlegbaarheid maakt van “omdat het model het zegt” redenen die je kunt beoordelen en bevragen.
@@ -371,7 +371,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="studentsCollaborating"
-            alt="Dashboard met vereenvoudigde signalen die een beslissing beïnvloeden"
+            alt="Studenten die samenwerken achter laptops — matchesignalen moeten in gewone taal bespreekbaar zijn"
           />
           <figcaption>
             In een gezond systeem zijn data geen geheim ingrediënt. Je ziet wat gebruikt wordt en waarom.

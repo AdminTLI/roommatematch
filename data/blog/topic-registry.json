@@ -2,6 +2,30 @@
   "description": "Tracks published blog topics to reduce week-to-week repetition. Append one entry per new post.",
   "entries": [
     {
+      "slug": "dutch-study-choice-gamma-fields",
+      "date": "2026-09-23",
+      "category": "Technology",
+      "primaryKeyword": "Dutch study choice gamma fields",
+      "pillar": "Study landscape",
+      "angle": "Rathenau gamma bachelor dominance (56%) vs beta/tech/medical/alfa; fixus/1 May calendar; Studiekeuze123 first-year switch; SKDB OFF; not housing-led"
+    },
+    {
+      "slug": "exam-week-house-rules-netherlands",
+      "date": "2026-09-16",
+      "category": "Wellbeing",
+      "primaryKeyword": "exam week house rules Netherlands",
+      "pillar": "Student wellbeing",
+      "angle": "Temporary tentamenweek systems (quiet calendar, kitchen windows, guest opt-out) grounded in MMMS-2025 study stress/prestatiedruk; not shortage-led and not emotional-support sequel"
+    },
+    {
+      "slug": "overnight-guest-rules-dutch-student-houses",
+      "date": "2026-09-09",
+      "category": "Boundaries",
+      "primaryKeyword": "overnight guest rules Dutch student houses",
+      "pillar": "House norms",
+      "angle": "Dual-layer overnight guest policy: provider/landlord huisreglement vs housemate consent; SSH ban vs College Campus night limits vs informal flats; quiet hours as stress test; not shortage-led; distinct from third-wheel emotional frame"
+    },
+    {
       "slug": "roommate-chore-fairness-netherlands",
       "date": "2026-09-02",
       "category": "Compatibility",
@@ -16,6 +40,14 @@
       "primaryKeyword": "housemate support living away from home",
       "pillar": "Student wellbeing",
       "angle": "Emotional support boundaries between housemates for students living away from parents; Inholland/RIVM/SCP, not shortage-led"
+    },
+    {
+      "slug": "student-housing-search-abandonment-netherlands",
+      "date": "2026-08-19",
+      "category": "Housing",
+      "primaryKeyword": "student housing search abandonment Netherlands",
+      "pillar": "Housing policy (data)",
+      "angle": "Kences LMS 2025 demand suppression: students stop searching for rooms"
     },
     {
       "slug": "graduate-holdover-student-housing-netherlands",

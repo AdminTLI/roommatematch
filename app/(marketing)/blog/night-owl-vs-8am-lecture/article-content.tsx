@@ -117,7 +117,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="quietRoommate"
-            alt="Student yawning in a lecture hall"
+            alt="Quiet living room after late study — sleep schedule clashes hit shared houses hardest"
           />
           <figcaption>
             Chronic 2 a.m. bedtimes plus 8 a.m. lectures is not a personality quirk - it is an academic risk

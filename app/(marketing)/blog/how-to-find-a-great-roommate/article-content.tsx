@@ -128,7 +128,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="quietRoommate"
-            alt="Two people having a conversation on a sofa in a living room"
+            alt="Calm shared living room — compatibility talks work better in a settled home base"
           />
           <figcaption>
             A 20-minute conversation about routines can prevent a semester of passive-aggressive tension.
@@ -297,7 +297,7 @@ const content = {
         <figure>
           <BlogHeroImage
             imageKey="quietRoommate"
-            alt="Twee studenten in gesprek in een moderne woonkamer"
+            alt="Rustige gedeelde woonkamer — compatibiliteitsgesprekken werken beter vanuit een stabiele thuisbasis"
           />
           <figcaption>
             Twintig minuten praten over routines voorkomt vaak maanden aan stille irritatie.

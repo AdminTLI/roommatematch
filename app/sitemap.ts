@@ -128,8 +128,38 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     // Blog posts
     {
+      url: `${baseUrl}/blog/dutch-study-choice-gamma-fields`,
+      lastModified: new Date('2026-09-23'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/exam-week-house-rules-netherlands`,
+      lastModified: new Date('2026-09-16'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/overnight-guest-rules-dutch-student-houses`,
+      lastModified: new Date('2026-09-09'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/roommate-chore-fairness-netherlands`,
+      lastModified: new Date('2026-09-02'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/blog/housemate-support-living-away-from-home`,
       lastModified: new Date('2026-08-26'),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/student-housing-search-abandonment-netherlands`,
+      lastModified: new Date('2026-08-19'),
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     },

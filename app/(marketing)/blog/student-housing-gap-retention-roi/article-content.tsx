@@ -47,8 +47,8 @@ const content = {
 
         <figure>
           <Image
-            src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80"
-            alt="City skyline and residential buildings at dusk"
+            src="https://images.unsplash.com/photo-1460317442991-0ec209397118?w=1200&q=80"
+            alt="Modern residential apartment building — student housing scarcity and retention pressure"
             width={1200}
             height={630}
             className="w-full rounded-2xl"
@@ -298,8 +298,8 @@ const content = {
 
         <figure>
           <Image
-            src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80"
-            alt="Stadsgezicht met woongebouwen bij schemering"
+            src="https://images.unsplash.com/photo-1460317442991-0ec209397118?w=1200&q=80"
+            alt="Modern appartementencomplex — kamertekort en retentiedruk in studentensteden"
             width={1200}
             height={630}
             className="w-full rounded-2xl"

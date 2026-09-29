@@ -127,66 +127,30 @@ export async function createMatchNotification(
     return
   }
   
-  // STRICT RULE: Only show names if BOTH users have explicitly accepted (status = 'confirmed')
-  // Only match_confirmed should always show names (since it only happens when both accepted)
-  let bothUsersAccepted = false;
-  if (type === 'match_created') {
-    // Check match_suggestions table to see if both users have accepted
-    const { data: suggestion } = await supabase
-      .from('match_suggestions')
-      .select('status, accepted_by, member_ids')
-      .eq('id', matchId)
-      .single();
-    
-    if (suggestion) {
-      // STRICT: Only show names if status is 'confirmed' AND both users are in accepted_by
-      // Default to false (don't show names) unless we're absolutely certain
-      const acceptedBy = suggestion.accepted_by || [];
-      const memberIds = suggestion.member_ids || [];
-      
-      // Only show names if:
-      // 1. Status is 'confirmed' (both users accepted)
-      // 2. Both member IDs are in accepted_by array
-      // 3. At least 2 users have accepted
-      if (suggestion.status === 'confirmed' && 
-          memberIds.length === 2 && 
-          acceptedBy.length >= 2 &&
-          memberIds.every((id: string) => acceptedBy.includes(id))) {
-        bothUsersAccepted = true;
-      }
-      // Otherwise, default to false (don't show names)
-    }
-  } else if (type === 'match_confirmed') {
-    // match_confirmed only happens when both users accepted, so always true
-    bothUsersAccepted = true;
-  }
-  
-  // Get user names for personalized messages (only if both users accepted)
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('user_id, first_name')
-    .in('user_id', [userAId, userBId]);
-
-  const userAName = profiles?.find(p => p.user_id === userAId)?.first_name || 'Someone';
-  const userBName = profiles?.find(p => p.user_id === userBId)?.first_name || 'Someone';
-
+  // Peer names are never included for match_created / match_accepted.
+  // match_confirmed (mutual) may include names since both users have accepted.
   let title: string;
   let messageA: string;
   let messageB: string;
   let metadata: Record<string, any>;
+  let userAName = 'Someone';
+  let userBName = 'Someone';
+
+  if (type === 'match_confirmed') {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, first_name')
+      .in('user_id', [userAId, userBId]);
+
+    userAName = profiles?.find(p => p.user_id === userAId)?.first_name || 'Someone';
+    userBName = profiles?.find(p => p.user_id === userBId)?.first_name || 'Someone';
+  }
 
   switch (type) {
     case 'match_created':
       title = 'New Match Found!';
-      if (bothUsersAccepted) {
-        // Both users accepted - show names
-        messageA = `You have a new match with ${userBName}! Check out their profile.`;
-        messageB = `You have a new match with ${userAName}! Check out their profile.`;
-      } else {
-        // Suggestion only — not a mutual match yet
-        messageA = 'We found a potential roommate for you. Check your matches to see who.';
-        messageB = 'We found a potential roommate for you. Check your matches to see who.';
-      }
+      messageA = 'We found a potential roommate for you. Check your matches to see who.';
+      messageB = 'We found a potential roommate for you. Check your matches to see who.';
       metadata = { match_id: matchId, chat_id: chatId };
       break;
     case 'match_confirmed':

@@ -116,8 +116,8 @@ const content = {
 
         <figure>
           <BlogHeroImage
-            imageKey="quietRoommate"
-            alt="Clean kitchen with dishes and cooking supplies on the counter"
+            imageKey="sharedKitchen"
+            alt="Clean shared kitchen counters with cookware and towels"
           />
           <figcaption>
             A shared system for dishes and cleaning is less about perfection and more about fairness.
@@ -269,8 +269,8 @@ const content = {
 
         <figure>
           <BlogHeroImage
-            imageKey="quietRoommate"
-            alt="Opgeruimde keuken met enkele spullen op het aanrecht"
+            imageKey="sharedKitchen"
+            alt="Opgeruimde gedeelde keuken met pannen en handdoeken"
           />
           <figcaption>
             Een gedeeld systeem voor afwas en schoonmaak gaat minder over perfectie en meer over eerlijkheid.

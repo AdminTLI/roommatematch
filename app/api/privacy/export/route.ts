@@ -90,7 +90,9 @@ export async function GET(req: NextRequest) {
         preferences: {},
         activity: {},
         consents: {},
-        bug_reports: {}
+        bug_reports: {},
+        lab_prompt_dismissals: {},
+        lab_wish_reports: {}
       }
 
       // 1. Account information (from auth.users)
@@ -469,6 +471,30 @@ export async function GET(req: NextRequest) {
           votes: labVotes ?? [],
           co_creator_badge: labBadge ?? null,
         }
+      }
+
+      // 19. Domu Lab prompt dismissals (GDPR Art. 15)
+      const { data: labDismissals } = await adminForLab
+        .from('lab_prompt_dismissals')
+        .select('id, prompt_key, dismissed_at')
+        .eq('user_id', user.id)
+        .order('dismissed_at', { ascending: false })
+        .limit(500)
+
+      if (labDismissals && labDismissals.length > 0) {
+        exportData.lab_prompt_dismissals = labDismissals
+      }
+
+      // 20. Domu Lab wish reports (GDPR Art. 15)
+      const { data: labWishReports } = await adminForLab
+        .from('lab_wish_reports')
+        .select('id, wish_id, reason, created_at')
+        .eq('reporter_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(500)
+
+      if (labWishReports && labWishReports.length > 0) {
+        exportData.lab_wish_reports = labWishReports
       }
 
       // Convert to JSON string
