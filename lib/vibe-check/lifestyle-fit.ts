@@ -3,7 +3,8 @@ import { VIBE_MODULE_WEIGHTS, type VibeModule } from './questions'
 import { VIBE_CHECK_QUESTIONS } from './questions'
 
 export const LIFESTYLE_FIT_THRESHOLD = 0.6
-export const LIFESTYLE_FIT_COUNT_OFFSET = 10
+/** Floor shown as "at least X potential students" before counting vibe-check submissions. */
+export const LIFESTYLE_FIT_COUNT_OFFSET = 100
 
 export type ModuleScores = {
   environment: number
@@ -206,11 +207,14 @@ export function computeOverallLifestyleFit(a: ModuleScores, b: ModuleScores): nu
 export type LifestyleFitResult = {
   /** Display percentage (e.g. 72 for "72%+"), average fit among matches, floored, min 60 when any match. */
   lifestyleFitPercent: number
-  /** Users with fit >= 60%, plus offset. */
+  /**
+   * Display count for "at least X potential students":
+   * offset (100) + vibe-check submissions (grows every form completion).
+   */
   matchCount: number
   /** Real users compared (had enough vibe answers). */
   comparedUsers: number
-  /** Real users clearing the 60% threshold (before +10). */
+  /** Real users clearing the 60% threshold (cohort only; not used in display count). */
   realMatches: number
   /** Mean module scores (0–100) across compared peers - for UI average markers. */
   cohortAverages: {
@@ -224,11 +228,18 @@ export type LifestyleFitResult = {
 export function summarizeLifestyleFit(
   visitorScores: ModuleScores,
   peerAnswerMaps: Map<string, Record<string, number>>,
-  options?: { offset?: number; threshold?: number; minItems?: number }
+  options?: {
+    offset?: number
+    threshold?: number
+    minItems?: number
+    /** Completed vibe-check responses; each form fill increments the displayed count. */
+    submissionCount?: number
+  }
 ): LifestyleFitResult {
   const offset = options?.offset ?? LIFESTYLE_FIT_COUNT_OFFSET
   const threshold = options?.threshold ?? LIFESTYLE_FIT_THRESHOLD
   const minItems = options?.minItems ?? 4
+  const submissionCount = Math.max(0, options?.submissionCount ?? 0)
 
   const matchFits: number[] = []
   let comparedUsers = 0
@@ -252,7 +263,8 @@ export function summarizeLifestyleFit(
   }
 
   const realMatches = matchFits.length
-  const matchCount = realMatches + offset
+  // Marketing counter: floor + every vibe-check completion (not onboarding cohort size).
+  const matchCount = offset + submissionCount
 
   let lifestyleFitPercent = Math.round(threshold * 100)
   if (matchFits.length > 0) {

@@ -267,7 +267,7 @@ export function generateVibeCheckPassportHtml(data: VibeCheckPdfData): string {
         Meet your next roommate in ${escapeHtml(city)}
       </div>
       <div style="font-size: 12px; color: #64748b; margin-bottom: 10px;">
-        You share a ${lifestyleFitPercent}%+ lifestyle fit with ${matchCount} students in ${escapeHtml(city)}. Connect with people also looking for roommates.
+        You share a ${lifestyleFitPercent}% lifestyle fit with at least ${matchCount} potential students. Connect with people also looking for roommates.
       </div>
       <div style="font-size: 12px; font-weight: 700; color: #0f172a;">
         Sign up: <span style="color: #6366f1;">${escapeHtml(joinUrl)}</span>

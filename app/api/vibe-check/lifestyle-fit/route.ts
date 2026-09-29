@@ -66,6 +66,21 @@ async function loadPeerAnswerMaps(): Promise<Map<string, Record<string, number>>
   return maps
 }
 
+/** Count completed vibe-check forms so the student counter increments on each submit. */
+async function countVibeCheckSubmissions(): Promise<number> {
+  const supabase = createServiceClient()
+  const { count, error } = await supabase
+    .from('vibe_check_responses')
+    .select('id', { count: 'exact', head: true })
+
+  if (error) {
+    safeLogger.error('[vibe-check/lifestyle-fit] vibe responses count failed', error)
+    return 0
+  }
+
+  return count ?? 0
+}
+
 export async function POST(req: NextRequest) {
   try {
     const isProduction = process.env.NODE_ENV === 'production'
@@ -105,6 +120,7 @@ export async function POST(req: NextRequest) {
     }
 
     const visitorScores = calculateModuleScores(answers)
+    const submissionCount = await countVibeCheckSubmissions()
 
     let peerMaps: Map<string, Record<string, number>>
     try {
@@ -112,7 +128,7 @@ export async function POST(req: NextRequest) {
     } catch {
       return NextResponse.json({
         lifestyleFitPercent: Math.round(LIFESTYLE_FIT_THRESHOLD * 100),
-        matchCount: LIFESTYLE_FIT_COUNT_OFFSET,
+        matchCount: LIFESTYLE_FIT_COUNT_OFFSET + submissionCount,
         comparedUsers: 0,
         realMatches: 0,
         cohortAverages: null,
@@ -120,7 +136,9 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const summary = summarizeLifestyleFit(visitorScores, peerMaps)
+    const summary = summarizeLifestyleFit(visitorScores, peerMaps, {
+      submissionCount,
+    })
 
     return NextResponse.json({
       lifestyleFitPercent: summary.lifestyleFitPercent,
@@ -142,15 +160,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/** Keep GET for backwards compatibility: submissions count + 10 (no personalization). */
-export async function GET(req: NextRequest) {
+/** Keep GET for backwards compatibility: vibe-check submissions + offset (no personalization). */
+export async function GET(_req: NextRequest) {
   try {
-    const supabase = createServiceClient()
-    const { count } = await supabase
-      .from('onboarding_submissions')
-      .select('user_id', { count: 'exact', head: true })
+    const submissionCount = await countVibeCheckSubmissions()
     return NextResponse.json({
-      matchCount: (count ?? 0) + LIFESTYLE_FIT_COUNT_OFFSET,
+      matchCount: submissionCount + LIFESTYLE_FIT_COUNT_OFFSET,
       lifestyleFitPercent: Math.round(LIFESTYLE_FIT_THRESHOLD * 100),
     })
   } catch {

@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { university, city, answers, matchCount = 10, lifestyleFitPercent = 60 } = parsed.data
+    const { university, city, answers, matchCount = 100, lifestyleFitPercent = 60 } = parsed.data
 
     const missing = VIBE_CHECK_QUESTIONS.filter((q) => typeof answers[q.id] !== 'number')
     if (missing.length > 0) {

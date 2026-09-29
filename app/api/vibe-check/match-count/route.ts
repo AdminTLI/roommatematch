@@ -7,14 +7,14 @@ import {
   buildRateLimitHeaders,
 } from '@/lib/rate-limit'
 import { safeLogger } from '@/lib/utils/logger'
+import { LIFESTYLE_FIT_COUNT_OFFSET } from '@/lib/vibe-check/lifestyle-fit'
 
 export const runtime = 'nodejs'
 
-/** In-memory cache: submissions count + 10, refreshed every 60s. */
+/** In-memory cache: vibe-check submissions + offset, refreshed every 5s. */
 let cachedCount: number | null = null
 let cachedAt = 0
-const CACHE_TTL_MS = 60_000
-const MATCH_COUNT_OFFSET = 10
+const CACHE_TTL_MS = 5_000
 
 async function fetchMatchCount(): Promise<number> {
   const now = Date.now()
@@ -24,17 +24,17 @@ async function fetchMatchCount(): Promise<number> {
 
   const supabase = createServiceClient()
   const { count, error } = await supabase
-    .from('onboarding_submissions')
-    .select('user_id', { count: 'exact', head: true })
+    .from('vibe_check_responses')
+    .select('id', { count: 'exact', head: true })
 
   if (error) {
     safeLogger.error('[vibe-check/match-count] query failed', error)
-    // Fall back to cached value or a sensible floor so the UI still reveals.
+    // Fall back to cached value or the floor so the UI still reveals.
     if (cachedCount !== null) return cachedCount
-    return MATCH_COUNT_OFFSET
+    return LIFESTYLE_FIT_COUNT_OFFSET
   }
 
-  const total = (count ?? 0) + MATCH_COUNT_OFFSET
+  const total = (count ?? 0) + LIFESTYLE_FIT_COUNT_OFFSET
   cachedCount = total
   cachedAt = now
   return total
@@ -65,14 +65,14 @@ export async function GET(req: NextRequest) {
       { matchCount },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=15',
         },
       }
     )
   } catch (err) {
     safeLogger.error('[vibe-check/match-count] unexpected', err)
     return NextResponse.json(
-      { matchCount: MATCH_COUNT_OFFSET, error: 'unavailable' },
+      { matchCount: LIFESTYLE_FIT_COUNT_OFFSET, error: 'unavailable' },
       { status: 200 }
     )
   }

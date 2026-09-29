@@ -10,7 +10,6 @@ import {
   Download,
   Loader2,
   Mail,
-  MessageCircle,
   Share2,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -18,6 +17,12 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import {
+  DiscordIcon,
+  FacebookIcon,
+  WhatsAppIcon,
+  XIcon,
+} from '@/components/icons/social'
 import { cn } from '@/lib/utils'
 import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import { openBlobInNewTab } from '@/lib/pdf/download-blob'
@@ -201,7 +206,7 @@ export function VibeCheckClient() {
         lifestyleFitPercent?: number
         cohortAverages?: CohortAverages | null
       }
-      const nextMatch = typeof data.matchCount === 'number' ? data.matchCount : 10
+      const nextMatch = typeof data.matchCount === 'number' ? data.matchCount : 100
       const nextFit =
         typeof data.lifestyleFitPercent === 'number' ? data.lifestyleFitPercent : 60
       setMatchCount(nextMatch)
@@ -209,10 +214,10 @@ export function VibeCheckClient() {
       setCohortAverages(data.cohortAverages ?? null)
       return { matchCount: nextMatch, lifestyleFitPercent: nextFit }
     } catch {
-      setMatchCount(10)
+      setMatchCount(100)
       setLifestyleFitPercent(60)
       setCohortAverages(null)
-      return { matchCount: 10, lifestyleFitPercent: 60 }
+      return { matchCount: 100, lifestyleFitPercent: 60 }
     } finally {
       setFitLoading(false)
     }
@@ -259,7 +264,7 @@ export function VibeCheckClient() {
       city,
       answers,
       archetype,
-      matchCount: matchCount ?? 10,
+      matchCount: matchCount ?? 100,
       lifestyleFitPercent: lifestyleFitPercent ?? 60,
       email: emailValue,
       completedAt: new Date().toISOString(),
@@ -278,7 +283,7 @@ export function VibeCheckClient() {
           university: universityLabel,
           city,
           answers,
-          matchCount: matchCount ?? 10,
+          matchCount: matchCount ?? 100,
           lifestyleFitPercent: lifestyleFitPercent ?? 60,
         }),
       })
@@ -350,6 +355,16 @@ export function VibeCheckClient() {
     try {
       await navigator.clipboard.writeText(shareText)
       showSuccessToast('Copied', 'Share text is on your clipboard.')
+    } catch {
+      showErrorToast('Copy failed', 'Could not copy to clipboard.')
+    }
+  }
+
+  const shareToDiscord = async () => {
+    handleShareChannel('discord')
+    try {
+      await navigator.clipboard.writeText(shareText)
+      showSuccessToast('Copied for Discord', 'Paste it in a channel or DM.')
     } catch {
       showErrorToast('Copy failed', 'Could not copy to clipboard.')
     }
@@ -545,13 +560,13 @@ export function VibeCheckClient() {
                   <p className="text-center text-base font-semibold leading-snug text-slate-900 sm:text-lg">
                     You share a{' '}
                     <span className="tabular-nums text-indigo-600">
-                      {fitLoading || lifestyleFitPercent == null ? '…' : `${lifestyleFitPercent}%+`}
+                      {fitLoading || lifestyleFitPercent == null ? '…' : `${lifestyleFitPercent}%`}
                     </span>{' '}
-                    lifestyle fit with{' '}
+                    lifestyle fit with at least{' '}
                     <span className="tabular-nums text-indigo-600">
                       {fitLoading || matchCount == null ? '…' : matchCount}
                     </span>{' '}
-                    students in {city}!
+                    potential students.
                   </p>
                   <p className="mt-2 text-center text-sm text-slate-600">
                     Based on how similarly you approach day-to-day living - sleep, cleanliness,
@@ -654,49 +669,75 @@ export function VibeCheckClient() {
                   <p className="mb-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Share your results
                   </p>
-                  <div className="flex flex-wrap items-center justify-center gap-2">
+                  <div className="flex flex-nowrap items-center justify-center gap-1.5 sm:gap-2">
                     <button
                       type="button"
                       onClick={handleNativeShare}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-800 hover:border-indigo-300 hover:bg-indigo-50"
+                      aria-label="Share"
+                      title="Share"
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
                     >
-                      <Share2 className="h-4 w-4" />
-                      Share
+                      <Share2 className="h-5 w-5" />
                     </button>
                     <a
                       href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => handleShareChannel('whatsapp')}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-800 hover:border-indigo-300 hover:bg-indigo-50"
+                      aria-label="Share on WhatsApp"
+                      title="WhatsApp"
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-[#25D366] hover:border-emerald-300 hover:bg-emerald-50"
                     >
-                      <MessageCircle className="h-4 w-4 text-emerald-600" />
-                      WhatsApp
+                      <WhatsAppIcon className="h-5 w-5" />
                     </a>
+                    <a
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => handleShareChannel('facebook')}
+                      aria-label="Share on Facebook"
+                      title="Facebook"
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-[#1877F2] hover:border-blue-300 hover:bg-blue-50"
+                    >
+                      <FacebookIcon className="h-5 w-5" />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={shareToDiscord}
+                      aria-label="Share on Discord"
+                      title="Discord"
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-[#5865F2] hover:border-indigo-300 hover:bg-indigo-50"
+                    >
+                      <DiscordIcon className="h-5 w-5" />
+                    </button>
                     <a
                       href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => handleShareChannel('x')}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-800 hover:border-indigo-300 hover:bg-indigo-50"
+                      aria-label="Share on X"
+                      title="X"
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-400 hover:bg-slate-100"
                     >
-                      X
+                      <XIcon className="h-5 w-5" />
                     </a>
                     <a
                       href={`mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareText)}`}
                       onClick={() => handleShareChannel('email')}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-800 hover:border-indigo-300 hover:bg-indigo-50"
+                      aria-label="Share by email"
+                      title="Email"
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
                     >
-                      <Mail className="h-4 w-4" />
-                      Email
+                      <Mail className="h-5 w-5" />
                     </a>
                     <button
                       type="button"
                       onClick={copyShareLink}
-                      className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-800 hover:border-indigo-300 hover:bg-indigo-50"
+                      aria-label="Copy share text"
+                      title="Copy"
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
                     >
-                      <Copy className="h-4 w-4" />
-                      Copy
+                      <Copy className="h-5 w-5" />
                     </button>
                   </div>
                   <p className="mt-2 text-center text-[11px] text-slate-500">

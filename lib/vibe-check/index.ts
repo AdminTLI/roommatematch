@@ -1,6 +1,6 @@
 export { VIBE_CHECK_QUESTIONS, VIBE_MODULE_WEIGHTS, VIBE_MODULE_LABELS } from './questions'
 export type { VibeQuestion, VibeModule } from './questions'
-export { calculateArchetype, calculateModuleScores } from './archetype'
+export { calculateArchetype, calculateModuleScores, selectArchetypeKey } from './archetype'
 export type { ArchetypeResult } from './archetype'
 export {
   VIBE_CHECK_SESSION_KEY,
