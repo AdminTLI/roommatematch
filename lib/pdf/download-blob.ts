@@ -18,7 +18,7 @@ export async function downloadBlob(blob: Blob, filename: string): Promise<void> 
       await navigator.share({ files: [file], title: filename })
       return
     } catch (err) {
-      // User cancelled share — treat as done; other errors fall through.
+      // User cancelled share - treat as done; other errors fall through.
       if (err instanceof DOMException && err.name === 'AbortError') return
     }
   }
@@ -32,9 +32,9 @@ export async function downloadBlob(blob: Blob, filename: string): Promise<void> 
 
     if (isIos) {
       // iOS ignores download attribute for blobs; open so the user can share/save.
-      const opened = window.open(url, '_blank')
+      const opened = window.open(url, '_blank', 'noopener,noreferrer')
       if (!opened) {
-        // Popup blocked — navigate current tab as last resort.
+        // Popup blocked - navigate current tab as last resort.
         window.location.href = url
       }
       // Delay revoke so the new tab can read the blob.
@@ -54,4 +54,18 @@ export async function downloadBlob(blob: Blob, filename: string): Promise<void> 
     URL.revokeObjectURL(url)
     throw new Error('Unable to save the PDF on this device.')
   }
+}
+
+/**
+ * Always open a PDF blob in a new browser tab (does not navigate the current page).
+ */
+export function openBlobInNewTab(blob: Blob): void {
+  const url = URL.createObjectURL(blob)
+  const opened = window.open(url, '_blank', 'noopener,noreferrer')
+  if (!opened) {
+    URL.revokeObjectURL(url)
+    throw new Error('Popup blocked - allow popups to view your PDF.')
+  }
+  // Keep the blob URL alive so the new tab can load it.
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }

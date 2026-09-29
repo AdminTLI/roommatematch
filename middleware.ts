@@ -196,6 +196,10 @@ export async function middleware(req: NextRequest) {
         '/api/universities/request-demo',
         '/api/analytics/track-event',
         '/api/admin/sync-updates', // Admin endpoint for syncing deployment updates
+        '/api/pdf/vibe-check', // Public marketing vibe-check passport download
+        '/api/vibe-check/lifestyle-fit', // Public vibe-check lifestyle fit vs cohort
+        '/api/vibe-check/complete', // Public vibe-check answer logging
+        '/api/vibe-check/track', // Public vibe-check funnel events
         '/api/auth/resend-verification', // Resend verification email (users may not be authenticated)
         '/api/domu/chat', // Domu AI chat (dashboard widget; protected by auth + same-origin)
         '/api/settings/hide-profile', // Internal settings action; low-risk to skip CSRF
