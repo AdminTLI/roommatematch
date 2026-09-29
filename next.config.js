@@ -4,6 +4,12 @@
 const nextConfig = {
   // Keep Chromium/Puppeteer out of the webpack bundle (required for Vercel PDF generation).
   serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core', 'puppeteer'],
+  // Ensure Chromium brotli binaries are traced into PDF serverless functions.
+  outputFileTracingIncludes: {
+    '/api/pdf/vibe-check': ['./node_modules/@sparticuz/chromium/**'],
+    '/api/pdf/generate': ['./node_modules/@sparticuz/chromium/**'],
+    '/api/pdf/generate-onboarding-preview': ['./node_modules/@sparticuz/chromium/**'],
+  },
   async redirects() {
     return [
       { source: '/features', destination: '/students', permanent: true },

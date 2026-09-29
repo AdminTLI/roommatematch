@@ -320,10 +320,18 @@ export function VibeCheckClient() {
     handleShareChannel('native')
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
-        await navigator.share({
+        // Prefer url so the OS share sheet can show Domu Match OG preview / favicon
+        // instead of grabbing random page images.
+        const sharePayload: ShareData = {
           title: shareSubject,
-          text: shareText,
-        })
+          text: `Let's see if we'd actually survive living together. Take the Domu Match vibe check with me!`,
+          url: shareUrl,
+        }
+        if (navigator.canShare && !navigator.canShare(sharePayload)) {
+          await navigator.share({ title: shareSubject, text: shareText })
+        } else {
+          await navigator.share(sharePayload)
+        }
         return
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') return

@@ -7,19 +7,30 @@ type RenderPdfOptions = {
 function useServerlessChromium(): boolean {
   if (process.env.PDF_USE_SERVERLESS_CHROMIUM === '1') return true
   if (process.env.PDF_USE_SERVERLESS_CHROMIUM === '0') return false
-  // Vercel / Lambda only — local `next start` keeps full Puppeteer.
+  // Vercel / Lambda only - local `next start` keeps full Puppeteer.
   return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
 }
 
 async function launchBrowser(): Promise<Browser> {
   if (useServerlessChromium()) {
-    const chromium = (await import('@sparticuz/chromium')).default
+    const chromiumMod = await import('@sparticuz/chromium')
+    const chromium = chromiumMod.default ?? chromiumMod
     const puppeteer = await import('puppeteer-core')
-    return puppeteer.default.launch({
+
+    // PDF does not need WebGL; disable to reduce memory pressure on Vercel.
+    chromium.setGraphicsMode = false
+
+    const executablePath = await chromium.executablePath()
+    const args = await puppeteer.default.defaultArgs({
       args: chromium.args,
+      headless: 'shell',
+    })
+
+    return puppeteer.default.launch({
+      args,
       defaultViewport: { width: 794, height: 1123, deviceScaleFactor: 1 },
-      executablePath: await chromium.executablePath(),
-      headless: true,
+      executablePath,
+      headless: 'shell',
     })
   }
 
@@ -62,8 +73,9 @@ export async function renderPdf(html: string, options: RenderPdfOptions = {}): P
     })
 
     const work = (async () => {
+      // Self-contained HTML - prefer `load` over networkidle0 so missing fonts/CDN never hang.
       await page.setContent(html, {
-        waitUntil: 'networkidle0' as 'load',
+        waitUntil: 'load',
         timeout: timeoutMs,
       })
 

@@ -15,6 +15,7 @@ import {
 import { safeLogger } from '@/lib/utils/logger'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 
 const BodySchema = z.object({
   university: z.string().min(1).max(200),
@@ -135,6 +136,12 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     safeLogger.error('[api/pdf/vibe-check] failed', err)
-    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Failed to generate PDF',
+        details: err instanceof Error ? err.message : 'Unknown error',
+      },
+      { status: 500 }
+    )
   }
 }
