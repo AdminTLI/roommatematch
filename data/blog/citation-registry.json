@@ -2,6 +2,24 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "international-students-dutch-housemates-language",
+      "date": "2026-09-30",
+      "primarySourceUrls": [
+        "https://www.nuffic.nl/en/research-facts-and-figures/research/international-students-in-the-netherlands-2026",
+        "https://www.researchned.nl/publicatie/leven-en-leren-als-internationale-student-in-het-nederlandse-hoger-onderwijs/",
+        "https://iso.nl/2026/03/niet-alleen-aantrekken-maar-ook-goed-ontvangen-internationale-studenten-verdienen-goede-ondersteuning/",
+        "https://www.scp.nl/publicaties-scp/2025/04/migratie-als-spiegel-van-maatschappijbeelden",
+        "https://www.nuffic.nl/nieuws/hoe-verbeteren-we-het-welzijn-van-internationale-studenten"
+      ],
+      "statsUsed": [
+        "Nuffic 2025-26: 129764 international degree students, 17% of student population",
+        "Nuffic/ResearchNed: 76% (very) satisfied with studies; just over half satisfied with social life",
+        "ResearchNed AISS via ISO: 60% difficulty interacting with Dutch students; 76% dissatisfied with student association accessibility; n=698",
+        "Nuffic/UNL 2025-26 RU: 53% bachelor Dutch-taught, 32% English, 71% master English-only",
+        "SCP 2025: Dutch language as civic belonging criterion"
+      ]
+    },
+    {
       "slug": "dutch-study-choice-gamma-fields",
       "date": "2026-09-23",
       "primarySourceUrls": [
