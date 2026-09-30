@@ -46,7 +46,7 @@ export const termsContent: Record<'en' | 'nl', TermsDocument> = {
           rows: [
             {
               left: 'What is Domu Match?',
-              right: 'A roommate-matching platform for students (17+) and young professionals in the Netherlands.',
+              right: 'A roommate-matching platform for students (18+) and young professionals in the Netherlands.',
             },
             {
               left: 'Is this a finished product?',
@@ -56,7 +56,7 @@ export const termsContent: Record<'en' | 'nl', TermsDocument> = {
             {
               left: 'Who can use it?',
               right:
-                'Students (17+) and young professionals who complete mandatory identity verification via Persona.',
+                'Students (18+) and young professionals who complete mandatory identity verification via Persona.',
             },
             {
               left: 'Is it free?',
@@ -112,7 +112,7 @@ export const termsContent: Record<'en' | 'nl', TermsDocument> = {
         id: 'eligibility',
         title: '2. Eligibility',
         bullets: [
-          'You must be at least 17 years old.',
+          'You must be at least 18 years old.',
           'You must accurately represent your life stage: student (university, hogeschool, MBO, or similar) or young professional.',
           'Students and young professionals are matched within their own separate pools.',
           'Proof of life stage may be requested. Misrepresentation is a material breach and grounds for immediate termination.',
@@ -383,8 +383,8 @@ export const termsContent: Record<'en' | 'nl', TermsDocument> = {
         description:
           'Dit is een vriendelijke samenvatting van de belangrijkste punten. Alleen de uitgebreide tekst hieronder is juridisch bindend.',
         bullets: [
-          'Domu Match helpt studenten (17+) en young professionals compatibele huisgenoten te vinden. Studenten en young professionals worden in aparte pools gematcht. Harmony- en Context-scores en WWS-calculator ondersteunen je keuze.',
-          'Je moet minimaal 17 jaar zijn, je levensfase (student of young professional) correct weergeven en verplichte Persona-ID-verificatie doorlopen. Geen nep-, ghost- of AI-gegenereerde profielen.',
+          'Domu Match helpt studenten (18+) en young professionals compatibele huisgenoten te vinden. Studenten en young professionals worden in aparte pools gematcht. Harmony- en Context-scores en WWS-calculator ondersteunen je keuze.',
+          'Je moet minimaal 18 jaar zijn, je levensfase (student of young professional) correct weergeven en verplichte Persona-ID-verificatie doorlopen. Geen nep-, ghost- of AI-gegenereerde profielen.',
           'De matchinglogica weegt Harmony (~75%) en Context (~25%) voor suggesties, maar jij maakt altijd zelf de uiteindelijke keuze met wie je chat of gaat samenwonen.',
           'Je bent zelf verantwoordelijk voor wat je plaatst (profiel, foto’s, chat). Geen discriminatie, intimidatie, scams of commercieel gebruik.',
           'De WWS-calculator is bedoeld ter informatie/empowerment en is geen juridisch advies of besluit van de Huurcommissie.',
@@ -407,9 +407,9 @@ export const termsContent: Record<'en' | 'nl', TermsDocument> = {
       {
         id: 'eligibility',
         title: '2. Toegang (studenten en young professionals)',
-        description: 'Domu Match is voor studenten (17+) en young professionals. Elke groep wordt alleen met dezelfde groep gematcht.',
+        description: 'Domu Match is voor studenten (18+) en young professionals. Elke groep wordt alleen met dezelfde groep gematcht.',
         bullets: [
-          'Je bent minimaal 17 jaar.',
+          'Je bent minimaal 18 jaar.',
           'Je geeft je levensfase correct weer: actuele student (bijv. universiteit, hogeschool, MBO) of young professional. Bewijs kan worden gevraagd. Foutieve weergave is een materiële schending (zie Beta-voorwaarden).',
           'Gebruik buiten Nederland: je blijft zelf verantwoordelijk voor lokaal recht.',
         ],
@@ -431,7 +431,7 @@ export const termsContent: Record<'en' | 'nl', TermsDocument> = {
           'ID-verificatie is verplicht. Domu Match gebruikt een derde partij (nu Persona) voor documentcontrole en liveness-checks.',
           'Domu Match bewaart geen ruwe ID-documenten of biometrische templates; we ontvangen alleen verificatieresultaten/attributen. Persona kan ruwe documenten bewaren als onze verwerker.',
           'Verificatie kan overheids-ID, selfie/video en (voor studenten) bewijs van studentstatus omvatten. Weigering of mislukking kan functies beperken of leiden tot opschorting/beëindiging.',
-          'Gegevens worden verwerkt onder de AVG en ons Privacybeleid. Doel: leeftijd (17+), identiteit en (waar van toepassing) levensfase (student of young professional) bevestigen en koppelen aan je account.',
+          'Gegevens worden verwerkt onder de AVG en ons Privacybeleid. Doel: leeftijd (18+), identiteit en (waar van toepassing) levensfase (student of young professional) bevestigen en koppelen aan je account.',
           'Geen ghost- of AI-profielen: je mag geen AI-gezichten, avatars of geleende identiteiten gebruiken om verificatie te doorstaan of misleidende accounts aan te maken.',
         ],
       },

@@ -13,7 +13,7 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
       {
         question: 'Who can use Domu Match?',
         answer:
-          'Students enrolled at Dutch universities or hogescholen sign up with an institutional email and complete identity verification. Young professionals in the Netherlands sign up with their own email and complete the same ID verification. You must be at least 17. Everyone is verified before they can use core matching and chat features.',
+          'Students enrolled at Dutch universities or hogescholen sign up with an institutional email and complete identity verification. Young professionals in the Netherlands sign up with their own email and complete the same ID verification. You must be at least 18. Everyone is verified before they can use core matching and chat features.',
       },
       {
         question: 'How long does signup and onboarding take?',

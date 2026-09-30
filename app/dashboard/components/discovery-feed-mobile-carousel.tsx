@@ -2,17 +2,20 @@
 
 import { useRouter } from 'next/navigation'
 import { ArrowRight, Users } from 'lucide-react'
-import { DiscoveryCard } from './discovery-card'
+import { DiscoveryCard, DISCOVERY_CARD_SHELL_HEIGHT_CLASS } from './discovery-card'
 import { cn } from '@/lib/utils'
 
 export interface DiscoveryFeedMatch {
   id: string
   userId?: string
+  suggestionId?: string
   name?: string
   score?: number
   harmonyScore?: number
   contextScore?: number
   dimensionScores?: { [key: string]: number } | null
+  otherUserUnverified?: boolean
+  otherUserHarmonyIncomplete?: boolean
 }
 
 interface DiscoveryFeedMobileCarouselProps {
@@ -20,6 +23,9 @@ interface DiscoveryFeedMobileCarouselProps {
   className?: string
   /** When false, lock harmony / dimensions until the viewer finishes the full questionnaire */
   viewerHasFullQuestionnaire?: boolean
+  onSkip?: (match: DiscoveryFeedMatch) => void
+  onConnect?: (match: DiscoveryFeedMatch) => void
+  onUnlockQuestionnaire?: () => void
 }
 
 /** One full-width slide per viewport; slight peek of the next card encourages horizontal scroll. */
@@ -40,6 +46,8 @@ function matchProfile(match: DiscoveryFeedMatch) {
     harmonyScore: match.harmonyScore,
     contextScore: match.contextScore,
     dimensionScores: match.dimensionScores || null,
+    otherUserUnverified: match.otherUserUnverified,
+    otherUserHarmonyIncomplete: match.otherUserHarmonyIncomplete,
   }
 }
 
@@ -47,6 +55,9 @@ export function DiscoveryFeedMobileCarousel({
   matches,
   className,
   viewerHasFullQuestionnaire = true,
+  onSkip,
+  onConnect,
+  onUnlockQuestionnaire,
 }: DiscoveryFeedMobileCarouselProps) {
   const router = useRouter()
   const previewMatches = matches.slice(0, 3)
@@ -68,6 +79,9 @@ export function DiscoveryFeedMobileCarousel({
             <DiscoveryCard
               profile={matchProfile(match)}
               viewerHasFullQuestionnaire={viewerHasFullQuestionnaire}
+              onSkip={onSkip ? () => onSkip(match) : undefined}
+              onConnect={onConnect ? () => onConnect(match) : undefined}
+              onUnlockQuestionnaire={onUnlockQuestionnaire}
             />
           </div>
         ))}
@@ -77,7 +91,8 @@ export function DiscoveryFeedMobileCarousel({
           onClick={() => router.push('/matches')}
           className={cn(
             SLIDE_CLASS,
-            'group flex min-h-[20rem] flex-col items-center justify-center rounded-2xl',
+            DISCOVERY_CARD_SHELL_HEIGHT_CLASS,
+            'group flex flex-col items-center justify-center rounded-2xl',
             'border border-slate-700 bg-slate-800 p-8 text-left shadow-xl',
             'transition-colors hover:border-violet-500/50 active:scale-[0.99]',
           )}

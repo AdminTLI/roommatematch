@@ -20,7 +20,7 @@ export default async function SignUpPage() {
   }
 
   return (
-    <AuthWrapperLight>
+    <AuthWrapperLight footer>
       <Suspense
         fallback={
           <div className="min-h-[40vh] flex items-center justify-center text-slate-600">

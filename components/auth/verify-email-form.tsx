@@ -177,8 +177,9 @@ export function VerifyEmailForm() {
           return
         }
         
-        // After email OTP, continue onboarding (Persona is deferred until match accept)
-        // Use window.location for full page reload to ensure session is properly established
+        // After email OTP, continue onboarding.
+        // /onboarding/path skips "Which best describes you?" when user_type was
+        // saved at sign-up, and shows the academic gate (or redirects) next.
         setTimeout(() => {
           window.location.href = '/onboarding/path'
         }, 1500)

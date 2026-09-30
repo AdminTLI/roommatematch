@@ -368,11 +368,16 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'ban') {
-      // Suspend user account
-      await admin
-        .from('users')
-        .update({ is_active: false })
-        .eq('id', targetUserId)
+      const { hardBanUser } = await import('@/lib/auth/account-ban')
+      const banResult = await hardBanUser(admin, {
+        userId: targetUserId,
+        bannedBy: user!.id,
+        reason: message || 'report_ban',
+      })
+
+      if (!banResult.ok) {
+        return NextResponse.json({ error: 'Failed to ban user' }, { status: 500 })
+      }
 
       // Send notification
       await createNotificationsForUsers(

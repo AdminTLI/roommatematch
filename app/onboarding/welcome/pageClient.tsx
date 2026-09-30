@@ -161,7 +161,10 @@ export default function OnboardingWelcomePage() {
       </div>
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <OnboardingHeader statusMode="welcome" />
+        <OnboardingHeader
+          statusMode="welcome"
+          exitHref={isEditMode ? '/settings?tab=questionnaire' : '/dashboard'}
+        />
 
         <main className="flex flex-1 items-center justify-center px-4 py-8 sm:py-10">
           <div

@@ -18,7 +18,12 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2, Mail, Lock, Eye, EyeOff, CheckCircle, Calendar } from 'lucide-react'
-import { validateDateOfBirth, getAgeVerificationError } from '@/lib/auth/age-verification'
+import { validateDateOfBirth, getAgeVerificationError, MINIMUM_AGE } from '@/lib/auth/age-verification'
+import {
+  formatAuthPasswordError,
+  getPasswordStrength,
+} from '@/lib/auth/password-strength'
+import { PasswordStrengthIndicator } from '@/components/auth/password-strength-indicator'
 
 export function SignUpForm() {
   const [email, setEmail] = useState('')
@@ -39,23 +44,7 @@ export function SignUpForm() {
   const searchParams = useSearchParams()
   const userType = searchParams.get('type')
   const supabase = createClient()
-
-  const validatePassword = (password: string) => {
-    const minLength = password.length >= 8
-    const hasUpperCase = /[A-Z]/.test(password)
-    const hasLowerCase = /[a-z]/.test(password)
-    const hasNumbers = /\d/.test(password)
-    
-    return {
-      minLength,
-      hasUpperCase,
-      hasLowerCase,
-      hasNumbers,
-      isValid: minLength && hasUpperCase && hasLowerCase && hasNumbers
-    }
-  }
-
-  const passwordValidation = validatePassword(password)
+  const passwordStrength = getPasswordStrength(password)
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,7 +83,7 @@ export function SignUpForm() {
     }
 
     if (!confirmAge) {
-      setError('Please confirm you are at least 17 years old.')
+      setError(`Please confirm you are at least ${MINIMUM_AGE} years old.`)
       setIsLoading(false)
       return
     }
@@ -111,8 +100,8 @@ export function SignUpForm() {
       return
     }
 
-    if (!passwordValidation.isValid) {
-      setError('Password does not meet requirements')
+    if (!passwordStrength.isValid) {
+      setError(passwordStrength.missingSummary ?? 'Password does not meet requirements')
       setIsLoading(false)
       return
     }
@@ -126,13 +115,16 @@ export function SignUpForm() {
           data: {
             date_of_birth: dateOfBirth,
             // Comes from URLs like: /auth/sign-up?type=professional
-            ...(userType ? { user_type: userType } : {})
+            // Persisted to public.users.user_type via handle_new_user trigger
+            ...(userType === 'student' || userType === 'professional'
+              ? { user_type: userType }
+              : {}),
           }
         }
       })
 
       if (authError) {
-        setError(authError.message)
+        setError(formatAuthPasswordError(authError.message) ?? authError.message)
       } else if (authData.user) {
         // Store date of birth in profile when user is created
         // This will be done via profile creation trigger or onboarding flow
@@ -205,10 +197,14 @@ export function SignUpForm() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Create a strong password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    setError('')
+                  }}
                   className="pl-10 pr-10"
                   required
                   autoComplete="new-password"
+                  aria-describedby="password-strength"
                 />
                 <button
                   type="button"
@@ -219,25 +215,8 @@ export function SignUpForm() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              
-              {/* Password Requirements */}
-              <div className="space-y-1 text-xs">
-                <div className={`flex items-center gap-2 ${passwordValidation.minLength ? 'text-green-600' : 'text-gray-500'}`}>
-                  <div className={`w-1.5 h-1.5 rounded-full ${passwordValidation.minLength ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  At least 8 characters
-                </div>
-                <div className={`flex items-center gap-2 ${passwordValidation.hasUpperCase ? 'text-green-600' : 'text-gray-500'}`}>
-                  <div className={`w-1.5 h-1.5 rounded-full ${passwordValidation.hasUpperCase ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  One uppercase letter
-                </div>
-                <div className={`flex items-center gap-2 ${passwordValidation.hasLowerCase ? 'text-green-600' : 'text-gray-500'}`}>
-                  <div className={`w-1.5 h-1.5 rounded-full ${passwordValidation.hasLowerCase ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  One lowercase letter
-                </div>
-                <div className={`flex items-center gap-2 ${passwordValidation.hasNumbers ? 'text-green-600' : 'text-gray-500'}`}>
-                  <div className={`w-1.5 h-1.5 rounded-full ${passwordValidation.hasNumbers ? 'bg-green-500' : 'bg-gray-300'}`} />
-                  One number
-                </div>
+              <div id="password-strength">
+                <PasswordStrengthIndicator password={password} />
               </div>
             </div>
 
@@ -291,7 +270,7 @@ export function SignUpForm() {
                   }}
                   className="pl-10"
                   required
-                  max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() - MINIMUM_AGE)).toISOString().split('T')[0]}
                   aria-describedby={ageError ? 'age-error' : undefined}
                 />
               </div>
@@ -299,7 +278,7 @@ export function SignUpForm() {
                 <p id="age-error" className="text-xs text-red-600">{ageError}</p>
               )}
               <p className="text-xs text-gray-500">
-                You must be at least 17 years old to use this platform
+                You must be at least {MINIMUM_AGE} years old to use this platform
               </p>
             </div>
 
@@ -316,9 +295,9 @@ export function SignUpForm() {
                 />
                 <div className="space-y-1">
                   <Label htmlFor="confirmAge" className="text-sm font-medium">
-                    I confirm that I am at least 17 years old.
+                    I confirm that I am at least {MINIMUM_AGE} years old.
                   </Label>
-                  {!confirmAge && error?.toLowerCase().includes('17') && (
+                  {!confirmAge && error?.toLowerCase().includes(String(MINIMUM_AGE)) && (
                     <p id="age-confirm-error" className="text-xs text-red-600">
                       Please confirm you meet the minimum age requirement.
                     </p>
@@ -360,7 +339,7 @@ export function SignUpForm() {
             disabled={
               isLoading ||
               !email ||
-              !passwordValidation.isValid ||
+              !passwordStrength.isValid ||
               password !== confirmPassword ||
               !dateOfBirth ||
               !!ageError ||
@@ -391,7 +370,7 @@ export function SignUpForm() {
           <DialogHeader>
             <DialogTitle>Minimum age requirement</DialogTitle>
             <DialogDescription>
-              You must be at least 17 years old to create an account. Please come back when you meet the minimum age requirement.
+              You must be at least {MINIMUM_AGE} years old to create an account. Please come back when you meet the minimum age requirement.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

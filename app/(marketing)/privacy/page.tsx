@@ -139,7 +139,7 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                 </p>
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">Who this policy applies to</h3>
                 <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
-                  <li>Students (17+) and young professionals using Domu Match to find roommates.</li>
+                  <li>Students (18+) and young professionals using Domu Match to find roommates.</li>
                   <li>Visitors to our website or app.</li>
                   <li>Beta testers who registered via domumatch.com/beta or an invite link.</li>
                   <li>Users connected through Pilot Universities.</li>
@@ -207,7 +207,10 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                   <li>Domu Match does not store raw ID images or biometric templates.</li>
                   <li>
                     We receive only: verification status (verified / not verified), full name, date of birth, and
-                    issuing country.
+                    issuing country (when available from the ID). We use name and date of birth to confirm they
+                    match what you provided at signup and that you are 18 or older. Raw ID images and biometric
+                    templates stay with Persona and are not stored by Domu Match. After retention, detailed
+                    verification payloads are scrubbed; we keep a confirmation that verification succeeded.
                   </li>
                 </ul>
 
@@ -519,14 +522,17 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
               {/* 11. Minors */}
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-                  11. Minors (Age 17–18)
+                  11. Minors (Under 18)
                 </h2>
                 <p className="text-slate-700">
-                  Domu Match is open to users aged 17 and above. Users under 18 are permitted, but we encourage
-                  parents or guardians to review this policy. If you are under 18 and based in the Netherlands, you
-                  may use our platform without parental consent under Dutch law, as Domu Match is a practical
-                  housing service. We do not use data of under-18 users for any purpose other than operating the
-                  service.
+                  Domu Match is only open to users aged 18 and above. We do not knowingly collect personal data from
+                  anyone under 18. If we learn that an account belongs to someone under 18, we will close the account
+                  and delete the related personal data in line with this policy. If you believe a minor has provided
+                  us with personal data, contact us at{' '}
+                  <a href="mailto:domumatch@gmail.com" className="text-violet-600 underline">
+                    domumatch@gmail.com
+                  </a>
+                  .
                 </p>
               </section>
 

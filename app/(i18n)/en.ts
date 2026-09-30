@@ -102,7 +102,7 @@ export const en = {
       confirmPasswordPlaceholder: 'Confirm your password',
       dateOfBirth: 'Date of birth',
       dateOfBirthPlaceholder: 'YYYY-MM-DD',
-      ageConfirmation: 'I confirm that I am at least 17 years old.',
+      ageConfirmation: 'I confirm that I am at least 18 years old.',
       termsConfirmation: 'I agree to the Terms of Service and Privacy Policy.',
       agreeToTerms: 'I agree to the',
       termsOfService: 'Terms of Service',
@@ -125,8 +125,8 @@ export const en = {
         universityEmailRequired: 'Please use your university email address',
         dobRequired: 'Date of birth is required',
         dobInvalid: 'Enter a valid date of birth',
-        dobUnderage: 'You must be at least 17 years old to use this platform.',
-        ageConfirmationRequired: 'Please confirm you are at least 17 years old.',
+        dobUnderage: 'You must be at least 18 years old to use this platform.',
+        ageConfirmationRequired: 'Please confirm you are at least 18 years old.',
         termsConfirmationRequired: 'You must accept the terms and conditions.'
       }
     },

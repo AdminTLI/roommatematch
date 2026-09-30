@@ -1440,9 +1440,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
                 {isLoading ? 'Loading...' : 'Refresh Suggestions'}
               </button>
               <p className="text-xs sm:text-sm text-text-secondary mt-3 text-center leading-relaxed">
-                Suggestions are automatically generated once every 6 hours. To get fresh matches instantly, click the Refresh Suggestions button above.
-
-                If you've recently completed or updated your questionnaire, our algorithm may need up to an hour to process your responses. To find your best potential roommates we'll need to analyze compatibility values, calculate match scores, and run our sophisticated matching algorithms.
+                Suggestions refresh automatically every 6 hours, or instantly via Refresh Suggestions. After you update your questionnaire, matching can take up to an hour.
               </p>
             </div>
           )}

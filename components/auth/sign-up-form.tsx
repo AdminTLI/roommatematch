@@ -19,7 +19,18 @@ import {
 import { Loader2, Mail, Lock, User, Calendar } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useApp } from '@/app/providers'
-import { validateDateOfBirth, getAgeVerificationError } from '@/lib/auth/age-verification'
+import {
+  MINIMUM_AGE,
+  validateDateOfBirth,
+  getAgeVerificationError,
+} from '@/lib/auth/age-verification'
+import {
+  formatAuthPasswordError,
+  getPasswordStrength,
+} from '@/lib/auth/password-strength'
+import { PasswordStrengthIndicator } from '@/components/auth/password-strength-indicator'
+import { AccountBannedDialog } from '@/components/auth/account-banned-dialog'
+import { ACCOUNT_BANNED_CODE } from '@/lib/auth/banned-emails'
 import type { UserType } from '@/types/profile'
 
 const glassCardClass =
@@ -46,11 +57,13 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
   const [error, setError] = useState('')
   const [ageError, setAgeError] = useState('')
   const [showUnderageModal, setShowUnderageModal] = useState(false)
+  const [showBannedDialog, setShowBannedDialog] = useState(false)
   const router = useRouter()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+  const passwordStrength = getPasswordStrength(password)
 
   const validateForm = () => {
     if (!firstName.trim()) {
@@ -79,8 +92,12 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
       return false
     }
 
-    if (password.length < 8) {
-      setError(t.errors.passwordTooShort)
+    if (!password) {
+      setError(t.errors.passwordRequired)
+      return false
+    }
+    if (!passwordStrength.isValid) {
+      setError(passwordStrength.missingSummary ?? t.errors.passwordTooShort)
       return false
     }
     if (password !== confirmPassword) {
@@ -88,7 +105,7 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
       return false
     }
     if (!confirmAge) {
-      setError(t.errors.ageConfirmationRequired ?? 'Please confirm you are at least 17 years old.')
+      setError(`Please confirm you are at least ${MINIMUM_AGE} years old.`)
       return false
     }
     if (!acceptTerms) {
@@ -109,90 +126,77 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
     try {
       console.log('[SignUp] Attempting to sign up user with email:', email)
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-            full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
-            date_of_birth: dateOfBirth,
-          },
-          emailRedirectTo: `${window.location.origin}/auth/verify-email`,
-        },
+      const response = await fetch('/api/auth/sign-up', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          dateOfBirth,
+          userType: userType === 'student' || userType === 'professional' ? userType : null,
+          acceptTerms: true,
+          confirmAge: true,
+        }),
       })
 
-      console.log('[SignUp] Signup response:', {
-        data: data ? { user: data.user ? { id: data.user.id, email: data.user.email } : null, session: !!data.session } : null,
-        error
-      })
+      const result = await response.json().catch(() => ({}))
 
-      if (error) {
-        console.error('[SignUp] Signup error:', error)
-        // AuthApiError "Error sending confirmation email" = Supabase SMTP not configured (Dashboard → Auth → SMTP)
-        const isEmailSendError =
-          error.message?.toLowerCase().includes('confirmation email') ||
-          error.message?.toLowerCase().includes('sending email')
-        setError(
-          isEmailSendError
-            ? 'We couldn\'t send the confirmation email. This is usually a server configuration issue - please try again later or contact support.'
-            : error.message
-        )
+      if (!response.ok) {
+        if (result.code === ACCOUNT_BANNED_CODE || result.code === 'ACCOUNT_BANNED') {
+          setShowBannedDialog(true)
+          setIsLoading(false)
+          return
+        }
+        if (result.code === 'UNDERAGE') {
+          setShowUnderageModal(true)
+          setIsLoading(false)
+          return
+        }
+        const passwordPolicyError = formatAuthPasswordError(result.error)
+        setError(passwordPolicyError ?? result.error ?? 'Failed to create account. Please try again.')
         setIsLoading(false)
         return
       }
 
-      if (!data.user) {
-        console.error('[SignUp] No user returned from signup')
+      if (!result.userId) {
         setError('Failed to create account. Please try again.')
         setIsLoading(false)
         return
       }
 
       console.log('[SignUp] User created successfully:', {
-        userId: data.user.id,
-        email: data.user.email,
-        emailConfirmed: data.user.email_confirmed_at
+        userId: result.userId,
+        email: result.email,
       })
 
-      if (userType === 'student' || userType === 'professional') {
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({ user_type: userType, updated_at: new Date().toISOString() })
-          .eq('id', data.user.id)
-        if (updateError) {
-          console.error('[SignUp] Failed to save user_type:', updateError)
-        } else {
-          console.log('[SignUp] Saved user_type:', userType)
+      // Belt-and-suspenders: trigger should already set user_type from metadata.
+      // Client update only works when a session exists (e.g. confirm-email disabled).
+      if (
+        (userType === 'student' || userType === 'professional') &&
+        result.userId
+      ) {
+        try {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession()
+          if (session) {
+            await supabase
+              .from('users')
+              .update({ user_type: userType })
+              .eq('id', result.userId)
+          }
+        } catch {
+          // non-fatal
         }
       }
 
-      sessionStorage.setItem('verification-email', email)
-
-      console.log('[SignUp] Manually triggering verification email send as backup')
-      try {
-        const resendResponse = await fetch('/api/auth/resend-verification', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email }),
-        })
-        const resendResult = await resendResponse.json()
-        if (resendResponse.ok) {
-          console.log('[SignUp] Backup email send successful')
-        } else {
-          console.warn('[SignUp] Backup email send failed:', resendResult.error)
-        }
-      } catch (resendErr) {
-        console.error('[SignUp] Error sending backup email:', resendErr)
-      }
-
-      router.push(`/auth/verify-email?email=${encodeURIComponent(email)}&auto=1`)
+      sessionStorage.setItem('verification-email', email.trim())
+      router.push(`/auth/verify-email?email=${encodeURIComponent(email.trim())}&auto=1`)
     } catch (err) {
       console.error('[SignUp] Unexpected error:', err)
-      setError(t.unexpectedError || 'An unexpected error occurred. Please try again.')
+      setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -291,7 +295,7 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
                       }
                     }
                   }}
-                  max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() - MINIMUM_AGE)).toISOString().split('T')[0]}
                   className={inputClass}
                   required
                 />
@@ -310,14 +314,18 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
                   type="password"
                   placeholder={t.passwordPlaceholder}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    setError('')
+                  }}
                   className={inputClass}
                   required
+                  aria-describedby="password-strength"
                 />
               </div>
-              <p className="text-xs text-slate-600">
-                {t.passwordHint}
-              </p>
+              <div id="password-strength">
+                <PasswordStrengthIndicator password={password} className="pt-0.5" />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -355,7 +363,7 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
                     className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-900/30 bg-white/60 data-[state=checked]:bg-slate-900 data-[state=checked]:border-slate-900 focus-visible:ring-slate-900/20"
                   />
                   <span className="text-sm leading-snug text-slate-800">
-                    {t.ageConfirmation ?? 'I confirm that I am at least 17 years old.'}
+                    {`I confirm that I am at least ${MINIMUM_AGE} years old.`}
                   </span>
                 </label>
                 <label
@@ -414,7 +422,7 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
           <DialogHeader>
             <DialogTitle>{t?.modalTitle ?? 'Minimum age requirement'}</DialogTitle>
             <DialogDescription>
-              {t?.dobUnderage ?? 'You must be at least 17 years old to create an account.'}
+              {`You must be at least ${MINIMUM_AGE} years old to create an account.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -424,6 +432,12 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AccountBannedDialog
+        open={showBannedDialog}
+        onOpenChange={setShowBannedDialog}
+        goHomeOnClose
+      />
     </>
   )
 }

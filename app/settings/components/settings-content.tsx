@@ -41,15 +41,30 @@ interface SettingsContentProps {
   profilePicturePreviewUrl?: string | null
 }
 
+const SETTINGS_TABS = ['profile', 'questionnaire', 'account', 'privacy'] as const
+type SettingsTab = (typeof SETTINGS_TABS)[number]
+
+function tabFromSearchParams(tab: string | null): SettingsTab {
+  if (tab && (SETTINGS_TABS as readonly string[]).includes(tab)) {
+    return tab as SettingsTab
+  }
+  return 'profile'
+}
+
 export function SettingsContent({ user, profile, academic, professionalContext, progressData, userType, profilePicturePreviewUrl }: SettingsContentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const openReviewOnMount = searchParams.get('review') === '1'
-  const initialTab = searchParams.get('tab') === 'privacy' ? 'privacy' : 'profile'
-  const [activeTab, setActiveTab] = useState(initialTab)
+  const tabParam = searchParams.get('tab')
+  const [activeTab, setActiveTab] = useState<SettingsTab>(() => tabFromSearchParams(tabParam))
   const [mounted, setMounted] = useState(false)
   const [unhideLoading, setUnhideLoading] = useState(false)
   const isProfileHidden = profile?.is_visible === false
+
+  // Keep the active tab in sync when navigating back with ?tab= (e.g. exit edit questionnaire).
+  useEffect(() => {
+    setActiveTab(tabFromSearchParams(tabParam))
+  }, [tabParam])
 
   const handleMakeVisible = async () => {
     setUnhideLoading(true)

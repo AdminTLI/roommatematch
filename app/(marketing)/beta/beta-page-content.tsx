@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { PastelMeshBackground } from '@/components/site/pastel-mesh-background'
 import { MarketingNavbarLight } from '@/components/site/marketing-navbar-light'
 import { MarketingLayoutFixLight } from '../components/marketing-layout-fix-light'
@@ -10,9 +11,6 @@ import { ShieldCheck, Users, Sparkles, Rocket, FileCheck2, Wrench, Scale } from 
 import { useApp } from '@/app/providers'
 import type { LucideIcon } from 'lucide-react'
 import type { Locale } from '@/lib/i18n'
-
-const formUrl =
-  'https://docs.google.com/forms/d/e/1FAIpQLSddXhmGZ3dqlQRqkf-C3yOXXwYJHboiRsH0mVJQTp3m5UhtZQ/viewform?usp=dialog'
 
 type Perk = { icon: LucideIcon; title: string; description: string }
 type Expectation = { icon: LucideIcon; title: string; description: string }
@@ -43,7 +41,6 @@ const copy: Record<
     expectations: Expectation[]
     finalTitle: string
     finalBody: string
-    ctaSecondary: string
   }
 > = {
   en: {
@@ -117,7 +114,6 @@ const copy: Record<
     finalTitle: 'Ready to shape the future of shared living?',
     finalBody:
       'Become one of the earliest Domu Match testers and help define the product before everyone else arrives.',
-    ctaSecondary: 'Take me to the Application Form',
   },
   nl: {
     skipLink: 'Ga naar hoofdinhoud',
@@ -190,7 +186,6 @@ const copy: Record<
     finalTitle: 'Klaar om mee te bouwen aan de toekomst van samenwonen?',
     finalBody:
       'Word een van de eerste testers van Domu Match en help het product vorm te geven vóór iedereen meedoet.',
-    ctaSecondary: 'Naar het aanmeldformulier',
   },
 }
 
@@ -229,14 +224,12 @@ export function BetaPageContent() {
                 </h1>
                 <p className="mt-5 max-w-3xl text-slate-700 text-base sm:text-lg leading-relaxed">{t.heroLead}</p>
                 <div className="mt-8">
-                  <a
-                    href={formUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    href="/auth/sign-up"
                     className="inline-flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-full px-8 py-4 transition-colors"
                   >
                     {t.ctaPrimary}
-                  </a>
+                  </Link>
                 </div>
               </div>
 
@@ -330,14 +323,12 @@ export function BetaPageContent() {
                 <p className="mt-3 text-slate-700 leading-relaxed max-w-2xl">{t.finalBody}</p>
               </div>
               <div className="lg:col-span-4 lg:justify-self-end">
-                <a
-                  href={formUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/auth/sign-up"
                   className="inline-flex w-full lg:w-auto items-center justify-center bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-full px-8 py-4 transition-colors"
                 >
-                  {t.ctaSecondary}
-                </a>
+                  {t.ctaPrimary}
+                </Link>
               </div>
             </div>
           </Container>

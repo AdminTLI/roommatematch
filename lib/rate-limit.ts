@@ -526,6 +526,13 @@ export const RATE_LIMITS = {
     failClosed: true
   }, getSharedStore),
 
+  // Coming-soon / feature waitlist email capture
+  waitlist: new RateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 5,
+    failClosed: true
+  }, getSharedStore),
+
   // Data export (DSAR) - fail-closed to prevent abuse
   data_export: new RateLimiter({
     windowMs: 24 * 60 * 60 * 1000, // 24 hours

@@ -20,7 +20,9 @@ type PersonaClient = {
 
 type PersonaNamespace = {
   Client: new (config: {
-    templateId: string
+    templateId?: string
+    inquiryId?: string
+    sessionToken?: string
     environmentId: string
     referenceId?: string
     onReady: () => void
@@ -53,7 +55,7 @@ export function PersonaTrustDialog({
 }: PersonaTrustDialogProps) {
   const [starting, setStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const clientRef = useRef<{ open: () => void; close: () => void } | null>(null)
+  const clientRef = useRef<PersonaClient | null>(null)
   const scriptLoadedRef = useRef(false)
 
   const loadScript = useCallback(() => {
@@ -97,10 +99,32 @@ export function PersonaTrustDialog({
     setStarting(true)
     setError(null)
     try {
-      const templateId = process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID
       const environmentId = process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID
-      if (!templateId || !environmentId) {
+      if (!environmentId) {
         throw new Error('Verification is not configured')
+      }
+
+      const startRes = await fetchWithCSRF('/api/verification/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      const startData = await startRes.json().catch(() => ({}))
+      if (!startRes.ok) {
+        throw new Error(
+          startData?.error ||
+            'Could not start verification. Complete your name and date of birth first.'
+        )
+      }
+
+      if (startData.status === 'verified') {
+        onOpenChange(false)
+        onVerified()
+        return
+      }
+
+      const inquiryId = startData.inquiryId || startData.sessionId
+      if (!inquiryId) {
+        throw new Error('Could not create verification session')
       }
 
       await loadScript()
@@ -109,26 +133,37 @@ export function PersonaTrustDialog({
         throw new Error('Persona is unavailable')
       }
 
-      clientRef.current = new Persona.Client({
-        templateId,
+      let client: PersonaClient | null = null
+      client = new Persona.Client({
         environmentId,
+        inquiryId,
+        sessionToken: startData.clientToken,
         referenceId: userId,
         onReady: () => {
-          // Close our dialog first so its overlay/focus trap does not block Persona.
           setStarting(false)
           onOpenChange(false)
           window.setTimeout(() => {
-            clientRef.current?.open()
+            client?.open()
           }, 0)
         },
-        onComplete: async ({ inquiryId, status }) => {
+        onComplete: async ({ inquiryId: completedId, status }) => {
           const passed = status === 'approved' || status === 'completed'
           try {
-            await fetchWithCSRF('/api/verification/persona-complete', {
+            const completeRes = await fetchWithCSRF('/api/verification/persona-complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ inquiryId, status }),
+              body: JSON.stringify({ inquiryId: completedId, status }),
             })
+            const completeData = await completeRes.json().catch(() => ({}))
+            if (completeRes.ok && completeData.approved === false) {
+              setError(
+                completeData.reasons?.includes('name_mismatch')
+                  ? 'The name on your ID does not match your signup name.'
+                  : 'Identity verification could not be confirmed.'
+              )
+              setStarting(false)
+              return
+            }
           } catch {
             // webhook / sync may still confirm
           }
@@ -153,6 +188,7 @@ export function PersonaTrustDialog({
           setStarting(false)
         },
       })
+      clientRef.current = client
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not start verification')
       setStarting(false)
@@ -197,7 +233,9 @@ export function PersonaTrustDialog({
               <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400">
                 <IdCard className="h-3.5 w-3.5" aria-hidden />
               </span>
-              <span className="leading-snug pt-1">Show a government ID (passport, driver&apos;s licence, etc.)</span>
+              <span className="leading-snug pt-1">
+                Show a government ID (passport, driver&apos;s licence, etc.)
+              </span>
             </li>
           </ul>
         </div>

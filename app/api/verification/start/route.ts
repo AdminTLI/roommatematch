@@ -1,215 +1,135 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
+import { normalizeDateInput } from '@/lib/auth/age-verification'
+import { createPersonaInquiry } from '@/lib/verification/persona-client'
 
-// KYC Provider types
 type KYCProvider = 'veriff' | 'persona' | 'onfido'
 
-interface ProviderConfig {
-  apiKey: string
-  apiUrl: string
-  createSessionEndpoint: string
-}
-
-/**
- * Get provider configuration from environment
- */
-function getProviderConfig(provider: KYCProvider): ProviderConfig | null {
-  const providerUpper = provider.toUpperCase()
-  
-  switch (provider) {
-    case 'veriff':
-      return {
-        apiKey: process.env.VERIFF_API_KEY || '',
-        apiUrl: process.env.VERIFF_API_URL || 'https://station.veriff.com',
-        createSessionEndpoint: '/v1/sessions'
-      }
-    case 'persona':
-      return {
-        apiKey: process.env.PERSONA_API_KEY || '',
-        apiUrl: process.env.PERSONA_API_URL || 'https://withpersona.com/api/v1',
-        createSessionEndpoint: '/inquiries'
-      }
-    case 'onfido':
-      return {
-        apiKey: process.env.ONFIDO_API_KEY || '',
-        apiUrl: process.env.ONFIDO_API_URL || 'https://api.onfido.com/v3',
-        createSessionEndpoint: '/sdk_token'
-      }
-    default:
-      return null
-  }
-}
-
-/**
- * Create verification session with provider
- */
-async function createProviderSession(
-  provider: KYCProvider,
+async function resolveClaimedIdentity(
+  admin: ReturnType<typeof createAdminClient>,
   userId: string,
-  userEmail: string
-): Promise<{ sessionId: string; clientToken?: string; redirectUrl?: string } | null> {
-  const config = getProviderConfig(provider)
-  if (!config || !config.apiKey) {
-    safeLogger.error('[Verification] Provider config missing', { provider })
-    return null
-  }
+  authMeta: Record<string, unknown> | undefined
+) {
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('first_name, last_name, date_of_birth')
+    .eq('user_id', userId)
+    .maybeSingle()
 
-  try {
-    switch (provider) {
-      case 'veriff': {
-        // Veriff session creation
-        const response = await fetch(`${config.apiUrl}${config.createSessionEndpoint}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-AUTH-CLIENT': config.apiKey
-          },
-          body: JSON.stringify({
-            verification: {
-              callback: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/verification/provider-webhook`,
-              person: {
-                firstName: '', // Will be filled from profile
-                lastName: ''
-              }
-            }
-          })
-        })
+  const firstName =
+    (profile?.first_name as string | null)?.trim() ||
+    (typeof authMeta?.first_name === 'string' ? authMeta.first_name.trim() : '') ||
+    ''
+  const lastName =
+    (profile?.last_name as string | null)?.trim() ||
+    (typeof authMeta?.last_name === 'string' ? authMeta.last_name.trim() : '') ||
+    ''
+  const dateOfBirth =
+    normalizeDateInput(profile?.date_of_birth as string | null) ||
+    normalizeDateInput(
+      typeof authMeta?.date_of_birth === 'string' ? authMeta.date_of_birth : null
+    )
 
-        if (!response.ok) {
-          const error = await response.text()
-          safeLogger.error('[Verification] Veriff session creation failed', { error })
-          return null
-        }
-
-        const data = await response.json()
-        return {
-          sessionId: data.verification.id,
-          clientToken: data.verification.url // Veriff returns URL directly
-        }
-      }
-
-      case 'persona': {
-        // Persona inquiry creation
-        const response = await fetch(`${config.apiUrl}${config.createSessionEndpoint}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.apiKey}`
-          },
-          body: JSON.stringify({
-            data: {
-              type: 'inquiry',
-              attributes: {
-                reference_id: userId,
-                callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/verification/provider-webhook`
-              }
-            }
-          })
-        })
-
-        if (!response.ok) {
-          const error = await response.text()
-          safeLogger.error('[Verification] Persona session creation failed', { error })
-          return null
-        }
-
-        const data = await response.json()
-        return {
-          sessionId: data.data.id,
-          clientToken: data.data.attributes.session_token
-        }
-      }
-
-      case 'onfido': {
-        // Onfido SDK token creation
-        const response = await fetch(`${config.apiUrl}${config.createSessionEndpoint}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token token=${config.apiKey}`
-          },
-          body: JSON.stringify({
-            applicant_id: userId, // You'd need to create applicant first
-            referrer: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/verify`
-          })
-        })
-
-        if (!response.ok) {
-          const error = await response.text()
-          safeLogger.error('[Verification] Onfido session creation failed', { error })
-          return null
-        }
-
-        const data = await response.json()
-        return {
-          sessionId: data.token,
-          clientToken: data.token
-        }
-      }
-
-      default:
-        return null
-    }
-  } catch (error) {
-    safeLogger.error('[Verification] Provider session creation error', error)
-    return null
-  }
+  return { firstName, lastName, dateOfBirth }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile to check existing verification
-    const { data: profile } = await supabase
+    const admin = createAdminClient()
+
+    const { data: profile } = await admin
       .from('profiles')
       .select('verification_status')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
-    if (!profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-    }
-
-    // Check if already verified
-    if (profile.verification_status === 'verified') {
+    if (profile?.verification_status === 'verified') {
       return NextResponse.json({
         status: 'verified',
-        message: 'Already verified'
+        message: 'Already verified',
       })
     }
 
-    // Get provider from env (default to veriff)
-    const provider = (process.env.KYC_PROVIDER || 'veriff') as KYCProvider
+    // Durable verification also counts
+    const { data: userRow } = await admin
+      .from('users')
+      .select('identity_verified_at')
+      .eq('id', user.id)
+      .maybeSingle()
 
-    // Check for existing pending verification
-    const admin = await createAdminClient()
+    if (userRow?.identity_verified_at) {
+      return NextResponse.json({
+        status: 'verified',
+        message: 'Already verified',
+      })
+    }
+
+    const claimed = await resolveClaimedIdentity(
+      admin,
+      user.id,
+      user.user_metadata as Record<string, unknown> | undefined
+    )
+
+    if (!claimed.firstName || !claimed.lastName || !claimed.dateOfBirth) {
+      return NextResponse.json(
+        {
+          error:
+            'Complete your name and date of birth on your profile before starting identity verification.',
+          code: 'IDENTITY_FIELDS_REQUIRED',
+        },
+        { status: 400 }
+      )
+    }
+
+    const provider = (process.env.KYC_PROVIDER || 'persona') as KYCProvider
+
+    // Reuse pending Persona inquiry when possible
     const { data: existingVerification } = await admin
       .from('verifications')
-      .select('id, provider_session_id, status')
+      .select('id, provider_session_id, status, provider_data')
       .eq('user_id', user.id)
+      .eq('provider', provider)
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
 
-    if (existingVerification) {
-      // Return existing session
+    if (existingVerification?.provider_session_id) {
+      const clientToken =
+        (existingVerification.provider_data as { client_token?: string } | null)?.client_token
       return NextResponse.json({
         sessionId: existingVerification.provider_session_id,
+        inquiryId: existingVerification.provider_session_id,
+        clientToken,
         status: 'pending',
-        provider
+        provider,
       })
     }
 
-    // Create new verification session with provider
-    const sessionResult = await createProviderSession(provider, user.id, user.email || '')
+    if (provider !== 'persona') {
+      return NextResponse.json(
+        { error: 'Only Persona verification is supported for new sessions' },
+        { status: 400 }
+      )
+    }
+
+    const sessionResult = await createPersonaInquiry({
+      userId: user.id,
+      firstName: claimed.firstName,
+      lastName: claimed.lastName,
+      birthdate: claimed.dateOfBirth,
+    })
 
     if (!sessionResult) {
       return NextResponse.json(
@@ -218,19 +138,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Store verification record
-    const { error: insertError } = await admin
-      .from('verifications')
-      .insert({
-        user_id: user.id,
-        provider,
-        provider_session_id: sessionResult.sessionId,
-        status: 'pending',
-        provider_data: {
-          client_token: sessionResult.clientToken,
-          redirect_url: sessionResult.redirectUrl
-        }
-      })
+    const { error: insertError } = await admin.from('verifications').insert({
+      user_id: user.id,
+      provider: 'persona',
+      provider_session_id: sessionResult.sessionId,
+      status: 'pending',
+      provider_data: {
+        client_token: sessionResult.clientToken,
+        reference_id: user.id,
+        prefilled_name_first: claimed.firstName,
+        prefilled_name_last: claimed.lastName,
+        prefilled_birthdate: claimed.dateOfBirth,
+      },
+    })
 
     if (insertError) {
       safeLogger.error('[Verification] Failed to store verification record', insertError)
@@ -240,32 +160,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update profile status to pending
     await admin
       .from('profiles')
-      .update({ verification_status: 'pending' })
+      .update({ verification_status: 'pending', updated_at: new Date().toISOString() })
       .eq('user_id', user.id)
 
     return NextResponse.json({
       sessionId: sessionResult.sessionId,
+      inquiryId: sessionResult.sessionId,
       clientToken: sessionResult.clientToken,
-      redirectUrl: sessionResult.redirectUrl,
-      provider,
-      status: 'pending'
+      provider: 'persona',
+      status: 'pending',
     })
   } catch (error) {
     safeLogger.error('[Verification] Start verification error', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-
-
-
-
-
-
-
-

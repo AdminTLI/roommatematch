@@ -285,7 +285,7 @@ function ReviewClientContent() {
       }
 
       if (isEditMode) {
-        window.location.href = '/settings'
+        window.location.href = '/settings?tab=questionnaire'
       } else {
         window.location.href = '/dashboard'
       }
@@ -328,6 +328,7 @@ function ReviewClientContent() {
           moduleTotal={5}
           moduleLabel="Review"
           titleOverride="Review"
+          exitHref={isEditMode ? '/settings?tab=questionnaire' : '/dashboard'}
           belowProgress={
             <ModuleTracker
               currentModuleIndex={5}

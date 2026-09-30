@@ -1,22 +1,18 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase/service'
+import { ensureUserTypeFromAuthMetadata } from '@/lib/onboarding/ensure-user-type'
 
 export default async function OnboardingPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/sign-in')
 
-  const service = createServiceClient()
-  const { data: userRow } = await service
-    .from('users')
-    .select('user_type')
-    .eq('id', user.id)
-    .maybeSingle()
-  const hasUserType = userRow?.user_type === 'student' || userRow?.user_type === 'professional'
-  if (!hasUserType) redirect('/onboarding/path')
+  const cohort = await ensureUserTypeFromAuthMetadata(user)
 
-  if (userRow?.user_type === 'professional') {
+  // No cohort yet (legacy accounts): keep the path-selection fallback.
+  if (!cohort.user_type) redirect('/onboarding/path')
+
+  if (cohort.user_type === 'professional') {
     redirect('/onboarding-professional/welcome')
   }
 

@@ -72,7 +72,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
   const onboardingBase = isProfessional ? '/onboarding-professional' : '/onboarding'
 
   const handleEditAnswers = () => {
-    router.push(`${onboardingBase}/welcome?mode=edit`)
+    router.push(`${onboardingBase}/review?mode=edit`)
   }
 
   const handleRetakeQuestionnaire = async () => {
@@ -298,6 +298,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
                           ? 'bg-emerald-500/10'
                           : 'bg-zinc-200/80 dark:bg-white/5'
                       }`}
+                      aria-label={isComplete ? 'Completed' : 'Not completed'}
                     >
                       {isComplete ? (
                         <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -305,14 +306,9 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
                         <Clock className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
                       )}
                     </div>
-                    <div>
-                      <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                        {getSectionDisplayName(section)}
-                      </span>
-                      <span className="block text-sm text-zinc-600 dark:text-zinc-400">
-                        {isComplete ? 'Module completed' : 'Not completed yet'}
-                      </span>
-                    </div>
+                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                      {getSectionDisplayName(section)}
+                    </span>
                   </div>
                   <Edit className="w-4 h-4 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                 </button>
@@ -376,7 +372,7 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
 
           <div className="bg-zinc-50 dark:bg-zinc-900/60 p-4 rounded-xl border border-zinc-200 dark:border-white/5 space-y-3">
             <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
-              <strong className="text-zinc-900 dark:text-zinc-100">Edit Responses:</strong> Modify specific modules without clearing your progress. Your current matches will be updated automatically.
+              <strong className="text-zinc-900 dark:text-zinc-100">Edit Responses:</strong> Open the review page to see all your answers, then jump into any module to change one. Your current matches will be updated automatically.
             </p>
             <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
               <strong className="text-zinc-900 dark:text-zinc-100">Retake All:</strong> This will archive your current responses and start the matching process from scratch.

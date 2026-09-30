@@ -16,6 +16,7 @@ import {
   SESSION_TERMINATED_MESSAGE,
 } from '@/lib/auth/session-terminated'
 import { BETA_SIGNUP_GOOGLE_FORM_URL } from '@/lib/marketing/beta-signup'
+import { AccountBannedDialog } from '@/components/auth/account-banned-dialog'
 
 export function SignInForm({
   initialErrorCode,
@@ -29,6 +30,7 @@ export function SignInForm({
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showBannedDialog, setShowBannedDialog] = useState(false)
   const router = useRouter()
   const [supabaseInitError, setSupabaseInitError] = useState<string | null>(null)
   const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null)
@@ -170,11 +172,15 @@ export function SignInForm({
           return
         }
         
-        // Account disabled or locked
-        if (errorMsgLower.includes('disabled') || 
-            errorMsgLower.includes('locked') ||
-            errorMsgLower.includes('suspended')) {
-          setError('Your account has been disabled. Please contact support.')
+        // Account disabled, locked, banned
+        if (
+          errorMsgLower.includes('disabled') ||
+          errorMsgLower.includes('locked') ||
+          errorMsgLower.includes('suspended') ||
+          errorMsgLower.includes('banned') ||
+          errorMsgLower.includes('user is banned')
+        ) {
+          setShowBannedDialog(true)
           setIsLoading(false)
           return
         }
@@ -201,6 +207,21 @@ export function SignInForm({
 
       // Sign-in successful - check verification status as backup
       const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: userRow } = await supabase
+          .from('users')
+          .select('is_active')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        if (userRow && userRow.is_active === false) {
+          await supabase.auth.signOut()
+          setShowBannedDialog(true)
+          setIsLoading(false)
+          return
+        }
+      }
+
       if (user && !user.email_confirmed_at) {
         // This shouldn't happen with enable_confirmations = true, but handle it anyway
         sessionStorage.setItem('verification-email', trimmedEmail)
@@ -223,6 +244,7 @@ export function SignInForm({
   }
 
   return (
+    <>
     <div className="w-full">
       <div className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
         <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
@@ -324,5 +346,11 @@ export function SignInForm({
         </p>
       </div>
     </div>
+    <AccountBannedDialog
+      open={showBannedDialog}
+      onOpenChange={setShowBannedDialog}
+      goHomeOnClose
+    />
+    </>
   )
 }

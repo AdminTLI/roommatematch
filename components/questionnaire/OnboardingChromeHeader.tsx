@@ -103,7 +103,8 @@ export function OnboardingChromeHeader({
               <button
                 type="button"
                 onClick={() => router.push(exitHref)}
-                aria-label="Exit onboarding"
+                aria-label="Save and exit"
+                title="Save and exit"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-slate-200/70 transition hover:bg-slate-50 hover:text-[#0F172A] dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-50"
               >
                 <X className="h-4 w-4" />

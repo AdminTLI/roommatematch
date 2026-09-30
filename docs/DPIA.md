@@ -17,7 +17,7 @@ This Data Protection Impact Assessment (DPIA) evaluates the privacy risks associ
 - **Data Categories:** Email address, name, date of birth, university affiliation, academic program
 - **Purpose:** Create user accounts and build compatibility profiles
 - **Lawful Basis:** Contract (Article 6(1)(b) GDPR) - necessary for service provision
-- **Data Subjects:** University students aged 17+
+- **Data Subjects:** University students aged 18+
 
 #### 1.1.2 Identity Verification
 - **Data Categories:** Government-issued ID documents, selfie photos, biometric data

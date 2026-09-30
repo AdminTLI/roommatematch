@@ -94,11 +94,16 @@ export function useAutosave(section: SectionKey) {
     isInitialLoadRef.current = true
     lastSavedAnswersRef.current = []
 
-    // Freeze UI only on first bind or account switch — never when advancing modules.
+    // Freeze UI on first bind / account switch, or when this section has no local
+    // answers yet (edit-from-settings must wait for the server fetch). Keep the UI
+    // interactive when advancing modules with an already-bound store.
     if (!sectionChangedOnly) {
       const storeReady =
         useOnboardingStore.persist.hasHydrated() && Boolean(ownerUserId)
-      if (ownerChanged || !storeReady) {
+      const localSectionCount = Object.keys(
+        useOnboardingStore.getState().sections[section] ?? {}
+      ).length
+      if (ownerChanged || !storeReady || localSectionCount === 0) {
         setHasLoaded(false)
       } else {
         setHasLoaded(true)
@@ -135,20 +140,24 @@ export function useAutosave(section: SectionKey) {
             !!progress.submittedAt
         }
 
+        if (cancelled) return
+
         const res = await fetch(`/api/onboarding/load?section=${section}`)
         if (!res.ok) throw new Error('Failed to load')
+        if (cancelled) return
+
         const data = await res.json()
         const answers: Answer[] = Array.isArray(data.answers) ? data.answers : []
         const hasSectionAnswers =
           answers.length > 0 && answers.some((a) => a && a.itemId && a.value)
 
         if (hasSectionAnswers) {
+          // Server is source of truth when opening a section (edit mode / revisit).
+          // Local answers never carry `savedAt`, so a date comparison against the
+          // store would incorrectly skip applying saved responses.
           for (const a of answers) {
             if (a && a.itemId && a.value) {
-              const existing = useOnboardingStore.getState().sections[section]?.[a.itemId]
-              if (!existing || !data.lastSavedAt || data.lastSavedAt > (existing as any).savedAt) {
-                setAnswer(section, a)
-              }
+              setAnswer(section, a)
             }
           }
           if (data.lastSavedAt) setLastSavedAt(data.lastSavedAt)
@@ -166,6 +175,13 @@ export function useAutosave(section: SectionKey) {
     })()
     return () => {
       cancelled = true
+      // React Strict Mode runs effect → cleanup → effect on the same instance.
+      // Reset load guards so the remounted effect can fetch again; otherwise the
+      // cancelled in-flight load never applies and edit mode shows empty answers.
+      if (loadedSectionRef.current === section) {
+        loadedSectionRef.current = null
+        loadedOwnerRef.current = undefined
+      }
     }
   }, [section, ownerUserId, setAnswer, setLastSavedAt, clearSections, bindToUser])
 

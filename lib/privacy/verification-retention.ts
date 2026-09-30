@@ -184,6 +184,14 @@ export async function purgeExpiredVerificationsWithStorage(
     throw new Error(`purge_expired_verifications failed: ${purgeError.message}`)
   }
 
+  // Best-effort: scrub webhook payloads on the same schedule
+  const { error: webhookScrubError } = await supabase.rpc('purge_expired_verification_webhooks')
+  if (webhookScrubError) {
+    safeLogger.warn('[Retention] verification_webhooks scrub failed', {
+      message: webhookScrubError.message,
+    })
+  }
+
   return {
     dbDeleted: dbDeleted ?? 0,
     storageFilesDeleted,

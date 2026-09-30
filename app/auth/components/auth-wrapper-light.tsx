@@ -6,13 +6,18 @@ import { MarketingSubpageWrapperLight } from '@/app/(marketing)/components/marke
 type AuthWrapperLightProps = {
   children: ReactNode
   className?: string
+  /** Render the standard marketing footer */
+  footer?: boolean
 }
 
-export function AuthWrapperLight({ children, className = '' }: AuthWrapperLightProps) {
+export function AuthWrapperLight({
+  children,
+  className = '',
+  footer = false,
+}: AuthWrapperLightProps) {
   return (
-    <MarketingSubpageWrapperLight footer={false} className={`min-h-screen ${className}`}>
+    <MarketingSubpageWrapperLight footer={footer} className={className}>
       {children}
     </MarketingSubpageWrapperLight>
   )
 }
-

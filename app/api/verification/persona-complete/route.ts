@@ -1,120 +1,106 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
-import { normalizeDateInput } from '@/lib/auth/age-verification'
 import { clearVerificationCache, markIdentityVerified } from '@/lib/auth/verification-check'
+import { fetchPersonaIdentity, fetchPersonaInquiry } from '@/lib/verification/persona-client'
+import {
+  decidePersonaIdentity,
+  extractPersonaDob,
+  extractPersonaIssuingCountry,
+  extractPersonaName,
+} from '@/lib/verification/persona-decision'
+import { normalizeDateInput } from '@/lib/auth/age-verification'
 
-async function fetchPersonaInquiryDob(inquiryId: string): Promise<string | undefined> {
-  const apiKey = process.env.PERSONA_API_KEY
-  const apiUrl = process.env.PERSONA_API_URL || 'https://withpersona.com/api/v1'
-  if (!apiKey) return undefined
-
-  try {
-    const response = await fetch(`${apiUrl}/inquiries/${inquiryId}`, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      const body = await response.text()
-      safeLogger.warn('[Verification] Persona inquiry fetch failed', { inquiryId, status: response.status, body })
-      return undefined
-    }
-
-    const data = await response.json()
-    const candidate =
-      data?.data?.attributes?.birthdate ||
-      data?.data?.attributes?.dob ||
-      data?.data?.attributes?.['date-of-birth'] ||
-      data?.data?.attributes?.payload?.data?.attributes?.birthdate ||
-      data?.data?.attributes?.payload?.data?.attributes?.dob
-
-    if (typeof candidate === 'string' && candidate.trim()) return candidate
-  } catch (error) {
-    safeLogger.error('[Verification] Persona inquiry fetch error', { inquiryId, error })
-  }
-
-  return undefined
-}
-
-async function getExpectedDob(admin: ReturnType<typeof createAdminClient>, userId: string) {
+async function getExpectedIdentity(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string
+) {
   const { data: profile } = await admin
     .from('profiles')
-    .select('date_of_birth')
+    .select('first_name, last_name, date_of_birth')
     .eq('user_id', userId)
     .maybeSingle()
 
-  let authDob: string | null = null
+  let authMeta: Record<string, unknown> | undefined
   try {
     const { data: authUser } = await admin.auth.admin.getUserById(userId)
-    authDob = (authUser?.user?.user_metadata as Record<string, any> | undefined)?.date_of_birth ?? null
+    authMeta = authUser?.user?.user_metadata as Record<string, unknown> | undefined
   } catch (error) {
-    safeLogger.warn('[Verification] Unable to read auth metadata for DOB (client complete)', { userId, error })
+    safeLogger.warn('[Verification] Unable to read auth metadata', { userId, error })
   }
 
   return {
-    fromProfile: profile?.date_of_birth ?? null,
-    fromAuth: authDob
+    firstName:
+      (profile?.first_name as string | null)?.trim() ||
+      (typeof authMeta?.first_name === 'string' ? authMeta.first_name.trim() : '') ||
+      '',
+    lastName:
+      (profile?.last_name as string | null)?.trim() ||
+      (typeof authMeta?.last_name === 'string' ? authMeta.last_name.trim() : '') ||
+      '',
+    dateOfBirth:
+      normalizeDateInput(profile?.date_of_birth as string | null) ||
+      normalizeDateInput(
+        typeof authMeta?.date_of_birth === 'string' ? authMeta.date_of_birth : null
+      ),
   }
 }
 
 /**
  * Handle Persona Embedded Flow completion
- * Called when user completes verification in the embedded widget
  */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      safeLogger.warn('[Verification] Persona complete - unauthorized', { 
-        hasAuthError: !!authError,
-        authError: authError?.message 
-      })
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     let inquiryId: string
     let personaStatus: string
-    
+
     try {
       const body = await request.json()
       inquiryId = body.inquiryId
       personaStatus = body.status
-    } catch (parseError) {
-      safeLogger.error('[Verification] Persona complete - invalid JSON', parseError)
+    } catch {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
     if (!inquiryId) {
-      safeLogger.warn('[Verification] Persona complete - missing inquiryId', { userId: user.id })
       return NextResponse.json({ error: 'Missing inquiryId' }, { status: 400 })
     }
-    
-    safeLogger.info('[Verification] Persona complete - processing', {
-      userId: user.id,
-      inquiryId,
-      personaStatus
-    })
 
     const admin = createAdminClient()
-    const expected = await getExpectedDob(admin, user.id)
-    const expectedDob = expected.fromProfile || expected.fromAuth || null
-    const personaDob = await fetchPersonaInquiryDob(inquiryId)
+    const expected = await getExpectedIdentity(admin, user.id)
 
-    const normalizedExpectedDob = normalizeDateInput(expectedDob)
-    const normalizedPersonaDob = normalizeDateInput(personaDob)
-    const dobMismatch =
-      normalizedExpectedDob &&
-      normalizedPersonaDob &&
-      normalizedExpectedDob !== normalizedPersonaDob
+    const inquiryPayload = await fetchPersonaInquiry(inquiryId)
+    const personaIdentity = inquiryPayload
+      ? {
+          ...extractPersonaName(inquiryPayload),
+          dateOfBirth: extractPersonaDob(inquiryPayload),
+          issuingCountry: extractPersonaIssuingCountry(inquiryPayload),
+        }
+      : await fetchPersonaIdentity(inquiryId)
 
-    // Map Persona status to our status
+    const personaApproved =
+      personaStatus === 'approved' || personaStatus === 'completed'
+
+    const decision = decidePersonaIdentity({
+      personaApproved,
+      expected,
+      persona: personaIdentity,
+    })
+
     let verificationStatus: 'pending' | 'approved' | 'rejected' | 'expired' = 'pending'
-    if (personaStatus === 'approved' || personaStatus === 'completed') {
+    if (!decision.approved) {
+      verificationStatus = 'rejected'
+    } else if (personaApproved) {
       verificationStatus = 'approved'
     } else if (personaStatus === 'failed' || personaStatus === 'declined') {
       verificationStatus = 'rejected'
@@ -122,7 +108,12 @@ export async function POST(request: NextRequest) {
       verificationStatus = 'expired'
     }
 
-    // Check if verification record exists
+    const providerData = {
+      inquiry_id: inquiryId,
+      persona_status: personaStatus,
+      ...decision.providerData,
+    }
+
     const { data: existingVerification } = await admin
       .from('verifications')
       .select('id')
@@ -133,128 +124,62 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (existingVerification) {
-      // Update existing verification
       const { error: updateError } = await admin
         .from('verifications')
         .update({
           provider_session_id: inquiryId,
-          status: dobMismatch ? 'rejected' : verificationStatus,
+          status: verificationStatus,
+          review_reason: decision.reviewReason,
           updated_at: new Date().toISOString(),
-          provider_data: {
-            inquiry_id: inquiryId,
-            persona_status: personaStatus,
-            persona_birthdate: normalizedPersonaDob || personaDob || null,
-            expected_birthdate: normalizedExpectedDob || expectedDob || null,
-            dob_match: dobMismatch ? false : true
-          }
+          provider_data: providerData,
         })
         .eq('id', existingVerification.id)
 
       if (updateError) {
-        safeLogger.error('[Verification] Failed to update verification record', {
-          error: updateError,
-          errorMessage: updateError.message,
-          errorCode: updateError.code,
-          errorDetails: updateError.details,
-          errorHint: updateError.hint,
-          userId: user.id,
-          inquiryId,
-          verificationStatus
-        })
+        safeLogger.error('[Verification] Failed to update verification record', updateError)
         return NextResponse.json(
-          { 
-            error: 'Failed to update verification record',
-            details: updateError.message,
-            code: updateError.code
-          },
+          { error: 'Failed to update verification record', details: updateError.message },
           { status: 500 }
         )
       }
     } else {
-      // Create new verification record
-      const { error: insertError } = await admin
-        .from('verifications')
-        .insert({
-          user_id: user.id,
-          provider: 'persona',
-          provider_session_id: inquiryId,
-          status: dobMismatch ? 'rejected' : verificationStatus,
-          provider_data: {
-            inquiry_id: inquiryId,
-            persona_status: personaStatus,
-            persona_birthdate: normalizedPersonaDob || personaDob || null,
-            expected_birthdate: normalizedExpectedDob || expectedDob || null,
-            dob_match: dobMismatch ? false : true
-          }
-        })
+      const { error: insertError } = await admin.from('verifications').insert({
+        user_id: user.id,
+        provider: 'persona',
+        provider_session_id: inquiryId,
+        status: verificationStatus,
+        review_reason: decision.reviewReason,
+        provider_data: providerData,
+      })
 
       if (insertError) {
-        safeLogger.error('[Verification] Failed to create verification record', {
-          error: insertError,
-          errorMessage: insertError.message,
-          errorCode: insertError.code,
-          errorDetails: insertError.details,
-          errorHint: insertError.hint,
-          userId: user.id,
-          inquiryId,
-          verificationStatus,
-          dobMismatch
-        })
+        safeLogger.error('[Verification] Failed to create verification record', insertError)
         return NextResponse.json(
-          { 
-            error: 'Failed to create verification record',
-            details: insertError.message,
-            code: insertError.code
-          },
+          { error: 'Failed to create verification record', details: insertError.message },
           { status: 500 }
         )
-      } else {
-        safeLogger.info('[Verification] Successfully created verification record', {
-          userId: user.id,
-          inquiryId,
-          verificationStatus: dobMismatch ? 'rejected' : verificationStatus
-        })
       }
     }
 
-    // Update profile verification status if approved
-    if (dobMismatch) {
-      // Explicitly fail verification and profile if DOB does not match
+    if (!decision.approved || verificationStatus === 'rejected') {
       await admin
         .from('profiles')
         .update({ verification_status: 'failed', updated_at: new Date().toISOString() })
         .eq('user_id', user.id)
     } else if (verificationStatus === 'approved') {
-      // Durable confirmation on users (+ profile sync when profile exists).
-      // Critical: must not rely only on verifications rows (those are retention-scrubbed).
       await markIdentityVerified(user.id, 'persona', user.email)
-      safeLogger.info('[Verification] Durable identity confirmation stored', { userId: user.id })
     }
 
-    safeLogger.info('[Verification] Persona complete - success', {
-      userId: user.id,
-      inquiryId,
-      verificationStatus: dobMismatch ? 'rejected' : verificationStatus,
-      dobMismatch,
-      personaDob: normalizedPersonaDob,
-      expectedDob: normalizedExpectedDob
-    })
-
-    // Clear verification cache to ensure fresh data on next check
-    // This prevents stale cache from causing redirect loops after verification completes
     clearVerificationCache(user.id)
 
     return NextResponse.json({
       success: true,
-      status: dobMismatch ? 'rejected' : verificationStatus,
-      dobMismatch
+      status: verificationStatus,
+      approved: decision.approved,
+      reasons: decision.reasons,
     })
   } catch (error) {
     safeLogger.error('[Verification] Persona complete error', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-

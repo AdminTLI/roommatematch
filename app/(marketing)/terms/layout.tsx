@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     'roommate platform terms',
     'student housing terms',
     'DSA notice',
-    'eligibility 17+ students',
+    'eligibility 18+ students',
     'WWS calculator disclaimer',
   ],
   openGraph: {

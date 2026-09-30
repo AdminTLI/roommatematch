@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
 import { useApp } from '@/app/providers'
 import { cn } from '@/lib/utils'
-import { BETA_SIGNUP_GOOGLE_FORM_URL } from '@/lib/marketing/beta-signup'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -161,9 +160,9 @@ export function MarketingNavbarLight() {
                 className="h-9 max-sm:px-3 max-sm:text-sm rounded-full bg-indigo-500 text-white hover:bg-indigo-600 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
                 asChild
               >
-                <a href={BETA_SIGNUP_GOOGLE_FORM_URL}>
+                <Link href="/auth/sign-up">
                   <span suppressHydrationWarning>{buttons.getStarted}</span>
-                </a>
+                </Link>
               </Button>
               <button
                 type="button"
@@ -325,9 +324,9 @@ export function MarketingNavbarLight() {
                 className="h-10 shrink-0 rounded-full bg-indigo-500 text-white hover:bg-indigo-600 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
                 asChild
               >
-                <a href={BETA_SIGNUP_GOOGLE_FORM_URL}>
+                <Link href="/auth/sign-up">
                   <span suppressHydrationWarning>{buttons.getStarted}</span>
-                </a>
+                </Link>
               </Button>
             </div>
           </div>
@@ -441,8 +440,8 @@ export function MarketingNavbarLight() {
                 <span suppressHydrationWarning>{buttons.signIn}</span>
               </button>
 
-              <a
-                href={BETA_SIGNUP_GOOGLE_FORM_URL}
+              <Link
+                href="/auth/sign-up"
                 onClick={closeMobileMenu}
                 className={cn(
                   'inline-flex items-center justify-center rounded-2xl h-12 px-5 text-base font-semibold',
@@ -451,7 +450,7 @@ export function MarketingNavbarLight() {
                 )}
               >
                 <span suppressHydrationWarning>{buttons.getStarted}</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

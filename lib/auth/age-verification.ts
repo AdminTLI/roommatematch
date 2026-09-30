@@ -2,7 +2,7 @@
  * Shared helpers for age verification on both client and server.
  */
 
-export const MINIMUM_AGE = 17
+export const MINIMUM_AGE = 18
 const DEFAULT_MIN_AGE = MINIMUM_AGE
 
 export type AgeValidationReason = 'missing' | 'invalid' | 'future' | 'underage'

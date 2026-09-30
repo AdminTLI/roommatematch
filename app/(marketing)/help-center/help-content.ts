@@ -146,7 +146,7 @@ Remember: You're not obligated to accept any match. Take your time to review and
           title: 'What do I need to sign up?',
           content: `You need:
 - **Students:** A university email from a partner or supported institution. **Young professionals:** Your personal or work email.
-- To be at least 17 years old
+- To be at least 18 years old
 - A valid government ID for verification (required after signup)
 - About 5–8 minutes to complete the compatibility quiz
 
@@ -160,7 +160,7 @@ Students and young professionals are matched in separate pools. Both groups use 
         {
           id: 'faq-only-for-students',
           title: 'Is Domu Match only for students?',
-          content: `No. Domu Match serves both **students** (17+) and **young professionals**. Each group has its own matching pool - students are only matched with students, and young professionals with young professionals. Sign up with your university email if you're a student, or with your personal/work email if you're a young professional. Both get free access.`,
+          content: `No. Domu Match serves both **students** (18+) and **young professionals**. Each group has its own matching pool - students are only matched with students, and young professionals with young professionals. Sign up with your university email if you're a student, or with your personal/work email if you're a young professional. Both get free access.`,
           section: 'getting-started',
           tags: ['students', 'young professionals', 'who can use'],
           keywords: ['only students', 'young professionals', 'who can use', 'flatmate'],

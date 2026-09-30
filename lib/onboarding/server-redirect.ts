@@ -5,6 +5,10 @@ import {
   hasDashboardAccess,
   isFullQuestionnaireComplete,
 } from '@/lib/onboarding/completion-stage'
+import {
+  ensureUserTypeFromAuthMetadata,
+  getCohortOnboardingPath,
+} from '@/lib/onboarding/ensure-user-type'
 
 /**
  * Returns the onboarding URL to redirect to if the user has not completed at least
@@ -17,9 +21,20 @@ export async function getOnboardingRedirectUrlIfIncomplete(userId: string): Prom
     .select('user_type')
     .eq('id', userId)
     .maybeSingle()
-  const userType = (userRow?.user_type === 'student' || userRow?.user_type === 'professional')
+  let userType = (userRow?.user_type === 'student' || userRow?.user_type === 'professional')
     ? userRow.user_type
     : null
+
+  // Backfill from auth metadata when signup set user_type but the users row is still null
+  if (!userType) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user?.id === userId) {
+      const cohort = await ensureUserTypeFromAuthMetadata(user)
+      userType = cohort.user_type
+    }
+  }
+
   if (!userType) return '/onboarding/path'
   const { data: submission } = await service
     .from('onboarding_submissions')
@@ -33,7 +48,7 @@ export async function getOnboardingRedirectUrlIfIncomplete(userId: string): Prom
   if (cohortOk && hasDashboardAccess(submission?.completion_stage, true)) {
     return null
   }
-  return userType === 'professional' ? '/onboarding-professional/welcome' : '/onboarding/welcome'
+  return getCohortOnboardingPath(userType)
 }
 
 export type CheckOnboardingRedirectOptions = {
@@ -69,19 +84,8 @@ export async function checkOnboardingRedirect(
   // Cohort gate: must have user_type before any other onboarding step
   let userType: 'student' | 'professional' | null = null
   if (requireUserType || requiredUserType) {
-    const { data: userRow, error: userFetchError } = await service
-      .from('users')
-      .select('user_type')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    if (userFetchError) {
-      console.error('[checkOnboardingRedirect] users select error:', userFetchError.message ?? userFetchError)
-    }
-
-    userType = (userRow?.user_type === 'student' || userRow?.user_type === 'professional')
-      ? userRow.user_type
-      : null
+    const cohort = await ensureUserTypeFromAuthMetadata(user)
+    userType = cohort.user_type
   }
 
   if (requireUserType) {

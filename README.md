@@ -301,7 +301,7 @@ Domu Match is fully compliant with GDPR (General Data Protection Regulation) and
 - **DUO Licensing**: Education data usage compliance (`docs/DUO_LICENSING.md`)
 
 #### ✅ **Age Verification**
-- **Minimum Age**: 17 years (enforced at signup)
+- **Minimum Age**: 18 years (enforced at signup and ID verification)
 - **Date of Birth**: Required during registration
 - **Database Validation**: Age verification at database level
 

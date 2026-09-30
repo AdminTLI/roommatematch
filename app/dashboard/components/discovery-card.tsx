@@ -15,6 +15,10 @@ import {
 } from '@/lib/compatibility/discovery-score-visuals'
 import { cn } from '@/lib/utils'
 
+/** Fixed rem height so discovery cards stay consistent; also used by Find More CTAs. */
+export const DISCOVERY_CARD_SHELL_HEIGHT_CLASS =
+  'h-[34rem] min-h-[34rem] max-h-[34rem] shrink-0 sm:h-[36rem] sm:min-h-[36rem] sm:max-h-[36rem]'
+
 interface DiscoveryCardProps {
     profile: {
         id: string
@@ -390,13 +394,9 @@ export function DiscoveryCard({
       window.location.assign('/onboarding/environment-rhythms')
     }
 
-    // Fixed rem height (not dvh) so cards stay consistent on scroll; back face scrolls overflow.
-    const cardShellHeightClass =
-      'h-[34rem] min-h-[34rem] max-h-[34rem] shrink-0 sm:h-[36rem] sm:min-h-[36rem] sm:max-h-[36rem]'
-
     return (
         <div
-          className={cn('w-full', cardShellHeightClass)}
+          className={cn('w-full', DISCOVERY_CARD_SHELL_HEIGHT_CLASS)}
           style={{ perspective: '1200px', WebkitPerspective: '1200px' }}
         >
           {/*
@@ -405,7 +405,7 @@ export function DiscoveryCard({
             fails backface-visibility and shows a mirrored front instead of the back.
           */}
           <div
-            className={cn('relative h-full w-full', cardShellHeightClass)}
+            className={cn('relative h-full w-full', DISCOVERY_CARD_SHELL_HEIGHT_CLASS)}
             style={{
               transformStyle: 'preserve-3d',
               WebkitTransformStyle: 'preserve-3d',

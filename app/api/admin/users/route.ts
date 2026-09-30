@@ -274,34 +274,43 @@ export async function POST(request: NextRequest) {
     const admin = await createAdminClient()
 
     switch (action) {
-      case 'suspend':
-        const { error: suspendError } = await admin
-          .from('users')
-          .update({ is_active: false })
-          .in('id', userIds)
-        
-        if (suspendError) {
-          safeLogger.error('[Admin Users] Failed to suspend users', suspendError)
-          return NextResponse.json({ error: 'Failed to suspend users' }, { status: 500 })
+      case 'suspend': {
+        const { hardBanUser } = await import('@/lib/auth/account-ban')
+        for (const targetUserId of userIds as string[]) {
+          const result = await hardBanUser(admin, {
+            userId: targetUserId,
+            bannedBy: user!.id,
+            reason: 'admin_suspend',
+          })
+          if (!result.ok) {
+            safeLogger.error('[Admin Users] Failed to suspend user', {
+              targetUserId,
+              error: result.error,
+            })
+            return NextResponse.json({ error: 'Failed to suspend users' }, { status: 500 })
+          }
         }
         
         await logAdminAction(user!.id, 'suspend_users', 'user', null, { userIds })
         break
+      }
       
-      case 'activate':
-        const { error: activateError } = await admin
-          .from('users')
-          .update({ is_active: true })
-          .in('id', userIds)
-        
-        if (activateError) {
-          safeLogger.error('[Admin Users] Failed to activate users', activateError)
-          return NextResponse.json({ error: 'Failed to activate users' }, { status: 500 })
+      case 'activate': {
+        const { hardUnbanUser } = await import('@/lib/auth/account-ban')
+        for (const targetUserId of userIds as string[]) {
+          const result = await hardUnbanUser(admin, targetUserId)
+          if (!result.ok) {
+            safeLogger.error('[Admin Users] Failed to activate user', {
+              targetUserId,
+              error: result.error,
+            })
+            return NextResponse.json({ error: 'Failed to activate users' }, { status: 500 })
+          }
         }
         
         await logAdminAction(user!.id, 'activate_users', 'user', null, { userIds })
         break
-      
+      }
       case 'verify': {
         const now = new Date().toISOString()
         for (const targetUserId of userIds as string[]) {

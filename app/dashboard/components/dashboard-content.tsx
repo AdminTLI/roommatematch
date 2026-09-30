@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { useQuery, useQueries } from '@tanstack/react-query'
+import { useQuery, useQueries, useMutation } from '@tanstack/react-query'
 import { createPortal } from 'react-dom'
 import {
   TrendingUp,
@@ -35,7 +35,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { DiscoveryCard } from './discovery-card'
+import { DiscoveryCard, DISCOVERY_CARD_SHELL_HEIGHT_CLASS } from './discovery-card'
 import { DiscoveryFeedMobileCarousel } from './discovery-feed-mobile-carousel'
 import { MatchRightsInfoBanner } from '@/components/privacy/match-rights-info-banner'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -67,6 +67,10 @@ import type { LabPromptKey } from '@/lib/lab/types'
 import { isDashboardActivityNotification } from '@/lib/notifications/dashboard-activity'
 import { anonymizeMatchNotificationMessage } from '@/lib/notifications/anonymize-match-message'
 import { isSuggestedForUser } from '@/lib/matching/suggestion-tabs'
+import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { toast } from 'sonner'
+import { PersonaTrustDialog } from '@/components/verification/persona-trust-dialog'
+import { PersonaSuccessDialog } from '@/components/verification/persona-success-dialog'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -124,6 +128,63 @@ interface WarningNotification {
   message: string
   metadata?: Record<string, any>
   created_at?: string
+}
+
+interface DashboardRecentMatch {
+  id: string
+  userId: string
+  suggestionId: string
+  score: number
+  harmonyScore: number
+  contextScore: number
+  dimensionScores: { [key: string]: number } | null
+  avatar?: undefined
+  name?: string
+  program: string
+  university: string
+  otherUserUnverified?: boolean
+  otherUserHarmonyIncomplete?: boolean
+}
+
+interface DashboardRecentMatchesPayload {
+  matches: DashboardRecentMatch[]
+  viewerPersonaVerified: boolean
+  personaCelebrationSeen: boolean
+  peerVerification: Record<string, boolean>
+}
+
+function markProcessedSuggestion(
+  userId: string,
+  suggestionId: string,
+  status: 'declined' | 'accepted' | 'confirmed',
+) {
+  if (typeof window === 'undefined') return
+  const STORAGE_KEY = `processed_suggestions_${userId}`
+  try {
+    const existing: Record<string, { status: string; timestamp: number }> = {}
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      Object.assign(existing, JSON.parse(stored))
+    }
+    existing[suggestionId] = { status, timestamp: Date.now() }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing))
+  } catch (error) {
+    logger.warn('[Dashboard] Failed to mark processed suggestion in localStorage', { error })
+  }
+}
+
+function clearProcessedSuggestion(userId: string, suggestionId: string) {
+  if (typeof window === 'undefined') return
+  const STORAGE_KEY = `processed_suggestions_${userId}`
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (!stored) return
+    const data = JSON.parse(stored) as Record<string, { status: string; timestamp: number }>
+    delete data[suggestionId]
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  } catch (error) {
+    logger.warn('[Dashboard] Failed to clear processed suggestion in localStorage', { error })
+  }
 }
 
 
@@ -396,10 +457,17 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   }
 
   // Fetch recent matches with React Query
-  const fetchRecentMatches = useCallback(async () => {
+  const emptyRecentMatchesPayload = (): DashboardRecentMatchesPayload => ({
+    matches: [],
+    viewerPersonaVerified: true,
+    personaCelebrationSeen: true,
+    peerVerification: {},
+  })
+
+  const fetchRecentMatches = useCallback(async (): Promise<DashboardRecentMatchesPayload> => {
     if (!user?.id) {
       logger.log('[loadRecentMatches] No user ID provided')
-      return []
+      return emptyRecentMatchesPayload()
     }
 
     return monitorQuery('fetchRecentMatches', async () => {
@@ -431,11 +499,19 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         const response = await fetch('/api/match/suggestions/my?limit=20&offset=0')
         if (!response.ok) {
           logger.error('[loadRecentMatches] Error fetching suggestions from API:', response.statusText)
-          return []
+          return emptyRecentMatchesPayload()
         }
 
         const data = await response.json()
         const rawSuggestions = data.suggestions || []
+        const viewerPersonaVerified = data.viewerGates
+          ? Boolean(data.viewerGates.personaVerified)
+          : true
+        const personaCelebrationSeen = data.viewerGates
+          ? Boolean(data.viewerGates.personaCelebrationSeen)
+          : true
+        const peerVerification: Record<string, boolean> = data.peerMeta?.verification || {}
+        const peerHarmonyComplete: Record<string, boolean> = data.peerMeta?.harmonyComplete || {}
 
         logger.log('[loadRecentMatches] Raw suggestions from API:', {
           suggestionsCount: rawSuggestions.length,
@@ -443,7 +519,12 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         })
 
         if (rawSuggestions.length === 0) {
-          return []
+          return {
+            matches: [],
+            viewerPersonaVerified,
+            personaCelebrationSeen,
+            peerVerification,
+          }
         }
 
         // Client-side dedupe: keep only latest suggestion per otherId (same as matches page)
@@ -526,10 +607,15 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           .filter(m => m.userId) // Filter out any null userIds
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 3) // Take 3 most recent
-          .map(m => ({ userId: m.userId, created_at: m.createdAt }))
+          .map(m => ({ userId: m.userId as string, created_at: m.createdAt, suggestionId: m.suggestion.id }))
 
         if (recentMatches.length === 0) {
-          return []
+          return {
+            matches: [],
+            viewerPersonaVerified,
+            personaCelebrationSeen,
+            peerVerification,
+          }
         }
 
         const recentUserIds = recentMatches.map(m => m.userId)
@@ -599,9 +685,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         const dimensionScoresMap = new Map(compatibilityScores.map(m => [m.userId, m.dimensionScores]))
 
         // Maintain the order from recentMatches (most recent first) and add scores
-        const recentMatchEntries = recentMatches.map(({ userId, created_at }) => ({
+        const recentMatchEntries = recentMatches.map(({ userId, created_at, suggestionId }) => ({
           userId,
           created_at,
+          suggestionId,
           score: scoreMap.get(userId) || 0,
           harmonyScore: harmonyScoreMap.get(userId),
           contextScore: contextScoreMap.get(userId),
@@ -613,7 +700,12 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         // Add this check before querying profiles
         if (finalUserIds.length === 0) {
           logger.log('No user IDs to fetch profiles for')
-          return []
+          return {
+            matches: [],
+            viewerPersonaVerified,
+            personaCelebrationSeen,
+            peerVerification,
+          }
         }
 
         // Fetch profiles for matched users (without relying on nested relationships).
@@ -719,18 +811,25 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         }
 
         // Format matches maintaining the order from recentMatchEntries (most recent first)
-        const formattedMatches = recentMatchEntries.map(({ userId, score, harmonyScore, contextScore, dimensionScores }) => {
+        const formattedMatches: DashboardRecentMatch[] = recentMatchEntries.map(({ userId, suggestionId, score, harmonyScore, contextScore, dimensionScores }) => {
           const sug = suggestionByUserId.get(userId)
           const profile = profiles.find((p: { user_id: string }) => p.user_id === userId)
+          const resolvedSuggestionId = suggestionId || sug?.id || userId
 
-          const baseMatch = {
+          const baseMatch: DashboardRecentMatch = {
             id: userId,
             userId,
+            suggestionId: resolvedSuggestionId,
             score: normalizeMatchScore(score, sug),
             harmonyScore: extractScore(harmonyScore, 0),
             contextScore: extractScore(contextScore, 0),
             dimensionScores: dimensionScores || null,
-            avatar: undefined as undefined,
+            avatar: undefined,
+            program: '',
+            university: '',
+            otherUserUnverified:
+              viewerPersonaVerified ? peerVerification[userId] === false : false,
+            otherUserHarmonyIncomplete: peerHarmonyComplete[userId] === false,
           }
 
           if (!profile) {
@@ -777,15 +876,24 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
         logger.log('loadRecentMatches: Formatted', formattedMatches.length, 'recent matches from match_suggestions table')
 
-        return formattedMatches
+        return {
+          matches: formattedMatches,
+          viewerPersonaVerified,
+          personaCelebrationSeen,
+          peerVerification,
+        }
       } catch (error) {
         logger.error('Failed to load recent matches:', error)
-        return []
+        return emptyRecentMatchesPayload()
       }
     })
   }, [user?.id, supabase])
 
-  const { data: recentMatches = [], isLoading: isLoadingMatches, refetch: refetchRecentMatches } = useQuery({
+  const {
+    data: recentMatchesPayload,
+    isLoading: isLoadingMatches,
+    refetch: refetchRecentMatches,
+  } = useQuery({
     queryKey: queryKeys.matches.top(user?.id),
     queryFn: fetchRecentMatches,
     staleTime: 10_000, // 10 seconds - refresh more frequently to sync with localStorage changes
@@ -794,6 +902,173 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
     // Server-side data doesn't have access to localStorage, so it can't filter processed suggestions
     // Start with empty array and let the query populate with correctly filtered matches
   })
+
+  const recentMatches = recentMatchesPayload?.matches ?? []
+  const viewerPersonaVerified = recentMatchesPayload?.viewerPersonaVerified ?? true
+  const personaCelebrationSeenFromApi = recentMatchesPayload?.personaCelebrationSeen ?? true
+  const peerVerification = recentMatchesPayload?.peerVerification ?? {}
+
+  const [personaDialogOpen, setPersonaDialogOpen] = useState(false)
+  const [personaSuccessOpen, setPersonaSuccessOpen] = useState(false)
+  const [personaCelebrationSeen, setPersonaCelebrationSeen] = useState(true)
+  const [pendingAcceptMatch, setPendingAcceptMatch] = useState<DashboardRecentMatch | null>(null)
+  const [unverifiedPeerDialogOpen, setUnverifiedPeerDialogOpen] = useState(false)
+  const [harmonyPromptOpen, setHarmonyPromptOpen] = useState(false)
+  const pendingHarmonyNavRef = useRef(false)
+
+  useEffect(() => {
+    setPersonaCelebrationSeen(personaCelebrationSeenFromApi)
+    if (viewerPersonaVerified && !personaCelebrationSeenFromApi) {
+      setPersonaSuccessOpen(true)
+    }
+  }, [viewerPersonaVerified, personaCelebrationSeenFromApi])
+
+  const harmonyContinueUrl =
+    userType === 'professional'
+      ? '/onboarding-professional/personality-values'
+      : '/onboarding/environment-rhythms'
+
+  const clearDialogBodyLock = useCallback(() => {
+    const body = document.body
+    const html = document.documentElement
+    body.style.removeProperty('pointer-events')
+    if (body.style.overflow === 'hidden' || body.style.overflow === 'clip') {
+      body.style.overflow = ''
+    }
+    body.removeAttribute('data-scroll-locked')
+    body.removeAttribute('data-radix-scroll-lock')
+    html.style.removeProperty('pointer-events')
+    html.removeAttribute('data-scroll-locked')
+  }, [])
+
+  const respondMutation = useMutation({
+    mutationFn: async ({
+      suggestionId,
+      action,
+    }: {
+      suggestionId: string
+      action: 'accept' | 'decline'
+      match?: DashboardRecentMatch
+    }) => {
+      const response = await fetchWithCSRF('/api/match/suggestions/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ suggestionId, action }),
+      })
+
+      if (!response.ok) {
+        let errorData: { error?: string; details?: string; retryAfter?: number } = {}
+        try {
+          errorData = await response.json()
+        } catch {
+          errorData = {
+            error: `Failed to ${action} suggestion (${response.status}: ${response.statusText || 'Unknown error'})`,
+          }
+        }
+        const errorMessage = errorData.error || `Failed to ${action} suggestion`
+        const errorDetails = errorData.details ? ` - ${errorData.details}` : ''
+        const retryAfter = errorData.retryAfter
+          ? ` Please try again in ${Math.ceil(errorData.retryAfter / 60)} minutes.`
+          : ''
+        throw new Error(`${errorMessage}${errorDetails}${retryAfter}`)
+      }
+
+      return { suggestionId, action, result: await response.json() }
+    },
+    onMutate: async ({ suggestionId, action }) => {
+      if (!user?.id) return
+      await queryClient.cancelQueries({ queryKey: queryKeys.matches.top(user.id) })
+      markProcessedSuggestion(user.id, suggestionId, action === 'decline' ? 'declined' : 'accepted')
+      queryClient.setQueryData(
+        queryKeys.matches.top(user.id),
+        (old: DashboardRecentMatchesPayload | undefined) => {
+          if (!old) return old
+          return {
+            ...old,
+            matches: old.matches.filter((m) => m.suggestionId !== suggestionId),
+          }
+        },
+      )
+    },
+    onSuccess: ({ suggestionId, action, result }) => {
+      if (!user?.id) return
+      if (result?.suggestion?.status === 'confirmed') {
+        markProcessedSuggestion(user.id, suggestionId, 'confirmed')
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.matches.top(user.id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.matches.all(user.id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.matches.count(user.id) })
+      toast.success(action === 'accept' ? 'Match request sent' : 'Suggestion skipped')
+    },
+    onError: (error, { suggestionId }) => {
+      if (user?.id && suggestionId) {
+        clearProcessedSuggestion(user.id, suggestionId)
+      }
+      void refetchRecentMatches()
+      toast.error(error instanceof Error ? error.message : 'Failed to respond to suggestion')
+    },
+  })
+
+  const confirmAcceptAfterGates = async (match: DashboardRecentMatch | null) => {
+    if (!match?.suggestionId) return
+    setUnverifiedPeerDialogOpen(false)
+    try {
+      await respondMutation.mutateAsync({
+        suggestionId: match.suggestionId,
+        action: 'accept',
+        match,
+      })
+    } catch {
+      // Error handling is done in onError
+    } finally {
+      setPendingAcceptMatch(null)
+    }
+  }
+
+  const handleRespond = async (match: DashboardRecentMatch, action: 'accept' | 'decline') => {
+    if (!match.suggestionId) return
+
+    if (action === 'accept') {
+      if (!hasCompletedQuestionnaire) {
+        setPendingAcceptMatch(match)
+        setHarmonyPromptOpen(true)
+        return
+      }
+      if (!viewerPersonaVerified) {
+        setPendingAcceptMatch(match)
+        setPersonaDialogOpen(true)
+        return
+      }
+      if (peerVerification[match.userId] === false) {
+        setPendingAcceptMatch(match)
+        setUnverifiedPeerDialogOpen(true)
+        return
+      }
+    }
+
+    try {
+      await respondMutation.mutateAsync({
+        suggestionId: match.suggestionId,
+        action,
+        match,
+      })
+    } catch {
+      // Error handling is done in onError
+    }
+  }
+
+  const handleSkipMatch = (match: DashboardRecentMatch) => {
+    void handleRespond(match, 'decline')
+  }
+
+  const handleConnectMatch = (match: DashboardRecentMatch) => {
+    void handleRespond(match, 'accept')
+  }
+
+  const handleUnlockQuestionnaire = () => {
+    clearDialogBodyLock()
+    window.location.assign(harmonyContinueUrl)
+  }
 
   const labPromptKeys = useMemo((): LabPromptKey[] => {
     const keys: LabPromptKey[] = []
@@ -1247,6 +1522,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           <DiscoveryFeedMobileCarousel
             matches={recentMatches}
             viewerHasFullQuestionnaire={hasCompletedQuestionnaire}
+            onSkip={(match) => handleSkipMatch(match as DashboardRecentMatch)}
+            onConnect={(match) => handleConnectMatch(match as DashboardRecentMatch)}
+            onUnlockQuestionnaire={handleUnlockQuestionnaire}
           />
         </motion.div>
       )}
@@ -1292,8 +1570,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     harmonyScore: match.harmonyScore,
                     contextScore: match.contextScore,
                     dimensionScores: match.dimensionScores || null,
+                    otherUserUnverified: match.otherUserUnverified,
+                    otherUserHarmonyIncomplete: match.otherUserHarmonyIncomplete,
                   }}
                   viewerHasFullQuestionnaire={hasCompletedQuestionnaire}
+                  onSkip={() => handleSkipMatch(match)}
+                  onConnect={() => handleConnectMatch(match)}
+                  onUnlockQuestionnaire={handleUnlockQuestionnaire}
                 />
               </div>
             )
@@ -1357,7 +1640,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             variants={fadeInUp}
             whileHover={{ y: -4, scale: 1.01 }}
             transition={{ duration: 0.2 }}
-            className="group relative hidden md:flex flex-col items-center justify-center p-8 rounded-2xl bg-slate-800 border border-slate-700 shadow-xl transition-all duration-300 hover:border-violet-500/50 cursor-pointer h-full"
+            className={cn(
+              'group relative hidden md:flex flex-col items-center justify-center p-8 rounded-2xl bg-slate-800 border border-slate-700 shadow-xl transition-all duration-300 hover:border-violet-500/50 cursor-pointer w-full',
+              DISCOVERY_CARD_SHELL_HEIGHT_CLASS,
+            )}
             onClick={() => router.push('/settings')}
           >
             <div className="w-20 h-20 rounded-2xl bg-violet-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
@@ -1430,6 +1716,111 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           )}
         </div>
       </motion.div>
+
+      <PersonaTrustDialog
+        open={personaDialogOpen}
+        onOpenChange={setPersonaDialogOpen}
+        userId={user?.id || ''}
+        onVerified={() => {
+          if (user?.id) {
+            queryClient.setQueryData(
+              queryKeys.matches.top(user.id),
+              (old: DashboardRecentMatchesPayload | undefined) =>
+                old ? { ...old, viewerPersonaVerified: true } : old,
+            )
+          }
+          setPersonaDialogOpen(false)
+          if (!personaCelebrationSeen) {
+            setPersonaSuccessOpen(true)
+            return
+          }
+          const match = pendingAcceptMatch
+          if (match) {
+            if (peerVerification[match.userId] === false) {
+              setUnverifiedPeerDialogOpen(true)
+              return
+            }
+            void confirmAcceptAfterGates(match)
+          }
+        }}
+      />
+
+      <PersonaSuccessDialog
+        open={personaSuccessOpen}
+        onOpenChange={setPersonaSuccessOpen}
+        onConfirmed={() => {
+          setPersonaCelebrationSeen(true)
+          const match = pendingAcceptMatch
+          if (match) {
+            if (peerVerification[match.userId] === false) {
+              setUnverifiedPeerDialogOpen(true)
+              return
+            }
+            void confirmAcceptAfterGates(match)
+          }
+        }}
+      />
+
+      <Dialog
+        open={harmonyPromptOpen}
+        onOpenChange={(open) => {
+          setHarmonyPromptOpen(open)
+          if (!open && pendingHarmonyNavRef.current) {
+            pendingHarmonyNavRef.current = false
+            clearDialogBodyLock()
+            window.location.assign(harmonyContinueUrl)
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader className="space-y-3">
+            <DialogTitle>Complete your questionnaire</DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed">
+              Finish the remaining harmony questions before you can accept a match. You will unlock
+              harmony scores, dimensions, and concerns for everyone you see.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-2 sm:flex-col sm:justify-stretch">
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() => {
+                pendingHarmonyNavRef.current = true
+                setHarmonyPromptOpen(false)
+              }}
+            >
+              Continue questionnaire
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={unverifiedPeerDialogOpen} onOpenChange={setUnverifiedPeerDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>This person is not identity-verified yet</DialogTitle>
+            <DialogDescription>
+              You can still accept the match. Chat stays closed until they complete Persona
+              verification — this keeps everyone safer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setUnverifiedPeerDialogOpen(false)
+                setPendingAcceptMatch(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={() => void confirmAcceptAfterGates(pendingAcceptMatch)}>
+              Accept anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

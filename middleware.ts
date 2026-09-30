@@ -194,6 +194,7 @@ export async function middleware(req: NextRequest) {
         '/api/careers/apply',
         '/api/contact',
         '/api/universities/request-demo',
+        '/api/waitlist', // Public coming-soon email capture (unauthenticated)
         '/api/analytics/track-event',
         '/api/admin/sync-updates', // Admin endpoint for syncing deployment updates
         '/api/pdf/vibe-check', // Public marketing vibe-check passport download
@@ -201,6 +202,7 @@ export async function middleware(req: NextRequest) {
         '/api/vibe-check/complete', // Public vibe-check answer logging
         '/api/vibe-check/track', // Public vibe-check funnel events
         '/api/auth/resend-verification', // Resend verification email (users may not be authenticated)
+        '/api/auth/sign-up', // Public signup (rate-limited + denylist in route)
         '/api/domu/chat', // Domu AI chat (dashboard widget; protected by auth + same-origin)
         '/api/settings/hide-profile', // Internal settings action; low-risk to skip CSRF
         '/api/account/activity', // Session heartbeat; auth required in route
@@ -368,6 +370,7 @@ export async function middleware(req: NextRequest) {
     '/auth/accept-invitation',
     '/auth/reset-password', // Password reset pages (both initial and confirm)
     '/auth/inactive-account',
+    '/auth/suspended',
     '/verify', // Persona verification page (will check email verification internally)
   ]
 
@@ -567,20 +570,19 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Inactive accounts (1-year retention) — block app access after anonymization
-  if (user && isProtectedRoute && pathname !== '/auth/inactive-account') {
+  // Suspended / banned / inactivity-anonymized accounts — block app access
+  if (user && isProtectedRoute && pathname !== '/auth/inactive-account' && pathname !== '/auth/suspended') {
     const { data: inactiveRow } = await supabase
       .from('users')
       .select('is_active, inactivity_processed_at')
       .eq('id', user.id)
       .maybeSingle()
 
-    if (
-      inactiveRow?.inactivity_processed_at &&
-      inactiveRow.is_active === false
-    ) {
+    if (inactiveRow?.is_active === false) {
       const url = req.nextUrl.clone()
-      url.pathname = '/auth/inactive-account'
+      url.pathname = inactiveRow.inactivity_processed_at
+        ? '/auth/inactive-account'
+        : '/auth/suspended'
       return redirect(url)
     }
   }

@@ -34,8 +34,11 @@ declare global {
   interface Window {
     Persona: {
       Client: new (config: {
-        templateId: string
+        templateId?: string
+        inquiryId?: string
+        sessionToken?: string
         environmentId: string
+        referenceId?: string
         onReady: () => void
         onComplete: (data: { inquiryId: string; status: string; fields?: any }) => void
         onCancel?: () => void
@@ -172,11 +175,87 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
-  const initializePersona = () => {
-    const templateId = process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID
-    const environmentId = process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID
+  const handlePersonaComplete = async (inquiryId: string, personaStatus: string) => {
+    setIsStarting(false)
+    setIsPersonaActive(false)
+    hasOpenedPersonaRef.current = false
 
-    if (!templateId || !environmentId) {
+    try {
+      let csrfToken: string | null = null
+      try {
+        const tokenResponse = await fetch('/api/csrf-token', {
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        if (tokenResponse.ok) {
+          const tokenData = await tokenResponse.json()
+          csrfToken = tokenData.token
+        }
+      } catch (error) {
+        console.error('[Verify] Failed to fetch CSRF token:', error)
+      }
+
+      const headers: HeadersInit = { 'Content-Type': 'application/json' }
+      if (csrfToken) headers['x-csrf-token'] = csrfToken
+
+      const response = await fetch('/api/verification/persona-complete', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ inquiryId, status: personaStatus }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        await fetchStatus()
+
+        if (
+          personaStatus === 'approved' ||
+          personaStatus === 'completed' ||
+          data.status === 'approved'
+        ) {
+          setStatus('verified')
+        } else if (data.status === 'rejected' || !data.approved) {
+          setStatus('failed')
+          setError(
+            data.reasons?.includes('underage')
+              ? 'You must be at least 18 years old to use this platform.'
+              : data.reasons?.includes('name_mismatch')
+                ? 'The name on your ID does not match your signup name.'
+                : 'Identity verification could not be confirmed. Please try again or contact support.'
+          )
+        } else {
+          setStatus('pending')
+        }
+      } else {
+        let errorMessage = 'Failed to update verification status. Please contact support.'
+        try {
+          const errorData = await response.json()
+          if (errorData.error) {
+            errorMessage = `Failed to update verification status: ${errorData.error}`
+          }
+        } catch {
+          if (response.status === 403) {
+            errorMessage = 'Access denied. Please refresh the page and try again.'
+          } else if (response.status === 401) {
+            errorMessage = 'Session expired. Please refresh the page and try again.'
+          }
+        }
+        setError(errorMessage)
+      }
+    } catch (err) {
+      console.error('[Verification] Failed to update verification status:', err)
+      setError(
+        'Verification completed but failed to update status. Please refresh the page or contact support.'
+      )
+    }
+  }
+
+  const initializePersona = () => {
+    const environmentId = process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID
+    const templateId = process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID
+
+    if (!environmentId || !templateId) {
       setError(
         'Identity verification is not configured. Set NEXT_PUBLIC_PERSONA_TEMPLATE_ID and NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID.'
       )
@@ -190,173 +269,9 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
       return
     }
 
-    try {
-      const client = new window.Persona.Client({
-        templateId,
-        environmentId,
-        onReady: () => {
-          // Keep the intro on screen until the user starts verification.
-          personaClientRef.current = client
-          setIsPersonaReady(true)
-          setIsLoading(false)
-        },
-        onComplete: async ({ inquiryId, status: personaStatus }) => {
-          console.log(`Completed inquiry ${inquiryId} with status ${personaStatus}`)
-          
-          setIsStarting(false)
-          setIsPersonaActive(false)
-          // Reset flag on completion so user can retry if verification fails
-          hasOpenedPersonaRef.current = false
-          
-          // Update verification status in our database
-          try {
-            // Fetch CSRF token from authenticated API endpoint
-            // This is more secure than reading from cookie (prevents XSS)
-            let csrfToken: string | null = null
-            try {
-              const tokenResponse = await fetch('/api/csrf-token', {
-                credentials: 'include',
-                cache: 'no-store'
-              })
-              if (tokenResponse.ok) {
-                const tokenData = await tokenResponse.json()
-                csrfToken = tokenData.token
-              }
-            } catch (error) {
-              console.error('[Verify] Failed to fetch CSRF token:', error)
-            }
-
-            const headers: HeadersInit = {
-              'Content-Type': 'application/json',
-            }
-            
-            // Add CSRF token if available
-            if (csrfToken) {
-              headers['x-csrf-token'] = csrfToken
-            }
-
-            const response = await fetch('/api/verification/persona-complete', {
-              method: 'POST',
-              headers,
-              body: JSON.stringify({
-                inquiryId,
-                status: personaStatus
-              })
-            })
-
-            if (response.ok) {
-              const data = await response.json()
-              console.warn('[Verification] Persona complete success:', data)
-              
-              // Force a fresh status check immediately after completion
-              // Add a small delay to ensure database write has completed
-              await new Promise(resolve => setTimeout(resolve, 500))
-              await fetchStatus()
-              
-              // Check the updated status - don't auto-redirect to avoid loops
-              // Let the user click the Continue button instead
-              const currentStatus = statusRef.current
-              console.warn('[Verification] Status after completion:', {
-                personaStatus,
-                apiStatus: data.status,
-                currentStatus,
-                userCanContinue: personaStatus === 'approved' || personaStatus === 'completed' || data.status === 'approved' || currentStatus === 'verified'
-              })
-              
-              // Update status based on response
-              if (personaStatus === 'approved' || personaStatus === 'completed' || data.status === 'approved') {
-                // Status will be updated by fetchStatus, but ensure it's set to verified
-                setStatus('verified')
-              } else if (currentStatus === 'pending') {
-                // If status is pending, the existing polling effect will handle it
-                setStatus('pending')
-              } else {
-                // Status might not have updated yet, poll a few times to update UI
-                let pollCount = 0
-                const maxPolls = 5
-                const pollInterval = setInterval(async () => {
-                  pollCount++
-                  await fetchStatus()
-                  const latestStatus = statusRef.current
-                  console.warn('[Verification] Polling status:', { pollCount, latestStatus })
-                  if (latestStatus === 'verified' || pollCount >= maxPolls) {
-                    clearInterval(pollInterval)
-                    // Don't auto-redirect - let user click button
-                  }
-                }, 2000)
-              }
-            } else {
-              // Get error message from response if available
-              let errorMessage = 'Failed to update verification status. Please contact support.'
-              try {
-                const errorData = await response.json()
-                if (errorData.error) {
-                  errorMessage = `Failed to update verification status: ${errorData.error}`
-                }
-              } catch {
-                // If response is not JSON, use status-based message
-                if (response.status === 403) {
-                  errorMessage = 'Access denied. Please refresh the page and try again.'
-                } else if (response.status === 401) {
-                  errorMessage = 'Session expired. Please refresh the page and try again.'
-                } else if (response.status >= 500) {
-                  errorMessage = 'Server error. Please try again in a moment or contact support.'
-                }
-              }
-              console.error('[Verification] Persona complete failed:', {
-                status: response.status,
-                statusText: response.statusText,
-                inquiryId,
-                personaStatus
-              })
-              setError(errorMessage)
-            }
-          } catch (err) {
-            console.error('[Verification] Failed to update verification status:', err)
-            setError('Verification completed but failed to update status. Please refresh the page or contact support.')
-          }
-        },
-        onCancel: () => {
-          console.log('Persona verification cancelled by user')
-          setIsStarting(false)
-          setIsPersonaActive(false)
-          setError(null)
-          // Don't reset hasOpenedPersonaRef on cancel - user can retry manually
-        },
-        onError: (error) => {
-          console.error('Persona verification error:', error)
-          
-          // Provide more specific error messages based on error type
-          let errorMessage = 'Verification failed. Please try again.'
-          
-          if (error?.status === 429 || error?.code === 'rate_limit_exceeded') {
-            errorMessage = 'Too many verification attempts. Please wait a few minutes and try again.'
-          } else if (error?.status === 400 || error?.code === 'invalid_config') {
-            errorMessage = 'Verification service configuration error. Please contact support if this persists.'
-            console.error('[Verify] Persona config error - check environment variables:', {
-              templateId: process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID,
-              environmentId: process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID,
-              hasEnvVar: !!process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID
-            })
-          } else if (error?.message) {
-            // Use Persona's error message if available
-            errorMessage = `Verification error: ${error.message}. Please try again.`
-          }
-          
-          setError(errorMessage)
-          setIsStarting(false)
-          setIsPersonaActive(false)
-          // Reset flag on error so user can retry
-          hasOpenedPersonaRef.current = false
-        }
-      })
-      
-      // Client reference is stored in onReady callback
-    } catch (err) {
-      console.error('Failed to initialize Persona:', err)
-      setError('Failed to initialize verification service. Please refresh the page.')
-      setIsLoading(false)
-    }
+    // Script is ready; inquiry is created on Start via /api/verification/start
+    setIsPersonaReady(true)
+    setIsLoading(false)
   }
 
   const fetchStatus = async () => {
@@ -403,33 +318,118 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
     }
   }
 
-  const startVerification = () => {
-    // Prevent multiple opens
+  const startVerification = async () => {
     if (hasOpenedPersonaRef.current && isPersonaActive) {
-      console.log('[Verify] Persona already active, ignoring start request')
       return
     }
-    
+
+    const environmentId = process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID
+    if (!environmentId || !window.Persona?.Client) {
+      setError('Verification service not ready. Please wait a moment and try again.')
+      return
+    }
+
     setIsStarting(true)
     setIsPersonaActive(true)
     setError(null)
 
-    if (!personaClientRef.current) {
-      setError('Verification service not ready. Please wait a moment and try again.')
-      setIsStarting(false)
-      setIsPersonaActive(false)
-      return
-    }
-
     try {
+      let csrfToken: string | null = null
+      try {
+        const tokenResponse = await fetch('/api/csrf-token', {
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        if (tokenResponse.ok) {
+          const tokenData = await tokenResponse.json()
+          csrfToken = tokenData.token
+        }
+      } catch {
+        // continue; CSRF may be optional depending on middleware
+      }
+
+      const headers: HeadersInit = { 'Content-Type': 'application/json' }
+      if (csrfToken) headers['x-csrf-token'] = csrfToken
+
+      const startRes = await fetch('/api/verification/start', {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+      })
+      const startData = await startRes.json().catch(() => ({}))
+
+      if (!startRes.ok) {
+        setError(
+          startData?.error ||
+            'Could not start verification. Please complete your profile name and date of birth, then try again.'
+        )
+        setIsStarting(false)
+        setIsPersonaActive(false)
+        return
+      }
+
+      if (startData.status === 'verified') {
+        setStatus('verified')
+        setIsStarting(false)
+        setIsPersonaActive(false)
+        window.location.replace(redirectTo)
+        return
+      }
+
+      const inquiryId = startData.inquiryId || startData.sessionId
+      if (!inquiryId) {
+        setError('Could not create verification session. Please try again.')
+        setIsStarting(false)
+        setIsPersonaActive(false)
+        return
+      }
+
       hasOpenedPersonaRef.current = true
-      personaClientRef.current.open()
+
+      let client: InstanceType<typeof window.Persona.Client> | null = null
+
+      const clientConfig: ConstructorParameters<typeof window.Persona.Client>[0] = {
+        environmentId,
+        inquiryId,
+        referenceId: user.id,
+        onReady: () => {
+          client?.open()
+        },
+        onComplete: ({ inquiryId: completedId, status: personaStatus }) => {
+          void handlePersonaComplete(completedId, personaStatus)
+        },
+        onCancel: () => {
+          setIsStarting(false)
+          setIsPersonaActive(false)
+          setError(null)
+        },
+        onError: (error: any) => {
+          let errorMessage = 'Verification failed. Please try again.'
+          if (error?.status === 429 || error?.code === 'rate_limit_exceeded') {
+            errorMessage =
+              'Too many verification attempts. Please wait a few minutes and try again.'
+          } else if (error?.message) {
+            errorMessage = `Verification error: ${error.message}. Please try again.`
+          }
+          setError(errorMessage)
+          setIsStarting(false)
+          setIsPersonaActive(false)
+          hasOpenedPersonaRef.current = false
+        },
+      }
+
+      if (startData.clientToken) {
+        clientConfig.sessionToken = startData.clientToken
+      }
+
+      client = new window.Persona.Client(clientConfig)
+      personaClientRef.current = client
     } catch (err) {
       console.error('Failed to open Persona verification:', err)
       setError('Failed to start verification. Please try again.')
       setIsStarting(false)
       setIsPersonaActive(false)
-      hasOpenedPersonaRef.current = false // Reset on error
+      hasOpenedPersonaRef.current = false
     }
   }
 

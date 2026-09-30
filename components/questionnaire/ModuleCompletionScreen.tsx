@@ -62,11 +62,15 @@ interface ModuleCompletionScreenProps {
     moduleTotal: number
     hideModuleTracker?: boolean
     showExit?: boolean
+    exitHref?: string
   }
   /** When set, show terms + submit-to-dashboard inline (skips a separate context-submit page). */
   contextSubmit?: ContextSubmitConfig
   /** Return to the last questionnaire card without remounting the flow. */
   onBack?: () => void
+  /** Override exit visibility (edit / already-complete flows). */
+  showExit?: boolean
+  exitHref?: string
 }
 
 export function ModuleCompletionScreen({
@@ -78,6 +82,8 @@ export function ModuleCompletionScreen({
   chrome,
   contextSubmit,
   onBack,
+  showExit: showExitProp,
+  exitHref: exitHrefProp,
 }: ModuleCompletionScreenProps) {
   const router = useRouter()
   const cardRef = useRef<HTMLDivElement>(null)
@@ -88,6 +94,8 @@ export function ModuleCompletionScreen({
   const isContextStep = Boolean(chrome)
   const headerModuleIndex = chrome?.moduleIndex ?? displayModule
   const headerTotal = chrome?.moduleTotal ?? 5
+  const showExit = showExitProp ?? chrome?.showExit ?? true
+  const exitHref = exitHrefProp ?? chrome?.exitHref ?? '/dashboard'
   const doneTitle = isContextStep
     ? 'Head to your dashboard'
     : `Module ${displayModule} of 5 done`
@@ -142,7 +150,8 @@ export function ModuleCompletionScreen({
           moduleTotal={headerTotal}
           moduleLabel={contextSubmit ? 'Ready' : headerLabel}
           titleOverride={contextSubmit ? 'Almost done' : chrome?.titleOverride}
-          showExit={chrome?.showExit ?? true}
+          showExit={showExit}
+          exitHref={exitHref}
           belowProgress={
             chrome?.hideModuleTracker ? undefined : (
               <ModuleTracker

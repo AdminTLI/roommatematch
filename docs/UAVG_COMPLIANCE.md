@@ -126,7 +126,7 @@ Domu Match does not operate a whistleblower system. User reports are handled as 
 - Student data protection (under 18 handling)
 
 **Compliance Measures:**
-- Age verification (minimum 17 years)
+- Age verification (minimum 18 years)
 - University email verification
 - DUO data attribution
 - Education data minimization

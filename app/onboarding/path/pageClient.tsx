@@ -32,12 +32,21 @@ const PATH_OPTIONS: {
   },
 ]
 
-export default function PathSelectionClient({ preview = false }: { preview?: boolean }) {
+export default function PathSelectionClient({
+  preview = false,
+  /** When true, hide cohort selection and show academic verification (user_type already set). */
+  skipSelection = false,
+  initialUserType = null,
+}: {
+  preview?: boolean
+  skipSelection?: boolean
+  initialUserType?: UserType | null
+}) {
   const router = useRouter()
   const supabase = createClient()
-  const [selected, setSelected] = useState<UserType | null>(null)
+  const [selected, setSelected] = useState<UserType | null>(initialUserType)
   const [isLoading, setIsLoading] = useState(false)
-  const [showStudentGate, setShowStudentGate] = useState(false)
+  const [showStudentGate, setShowStudentGate] = useState(skipSelection && initialUserType === 'student')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -138,6 +147,15 @@ export default function PathSelectionClient({ preview = false }: { preview?: boo
     router.push('/onboarding/welcome')
   }
 
+  const handleGateBack = () => {
+    if (skipSelection) {
+      // Cohort was chosen at sign-up; going "back" still continues onboarding.
+      router.push('/onboarding/welcome')
+      return
+    }
+    setShowStudentGate(false)
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0F172A] dark:text-slate-50">
       <div className="pointer-events-none absolute inset-0">
@@ -165,7 +183,7 @@ export default function PathSelectionClient({ preview = false }: { preview?: boo
                 preview={preview}
                 onVerified={handleStudentVerified}
                 onSkip={handleStudentSkipUniversityEmail}
-                onBack={() => setShowStudentGate(false)}
+                onBack={handleGateBack}
               />
             ) : (
               <>

@@ -12,7 +12,7 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
       {
         question: 'Wie kan Domu Match gebruiken?',
         answer:
-          'Studenten aan een Nederlandse universiteit of hogeschool melden zich aan met een instellingsmail en doorlopen identiteitsverificatie. Young professionals in Nederland gebruiken hun eigen e-mailadres en dezelfde ID-check. Je moet minimaal 17 zijn. Iedereen wordt geverifieerd voordat matching en chat volledig beschikbaar zijn.',
+          'Studenten aan een Nederlandse universiteit of hogeschool melden zich aan met een instellingsmail en doorlopen identiteitsverificatie. Young professionals in Nederland gebruiken hun eigen e-mailadres en dezelfde ID-check. Je moet minimaal 18 zijn. Iedereen wordt geverifieerd voordat matching en chat volledig beschikbaar zijn.',
       },
       {
         question: 'Hoe lang duurt aanmelden en onboarding?',

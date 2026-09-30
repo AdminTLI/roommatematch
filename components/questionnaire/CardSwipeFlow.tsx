@@ -37,6 +37,7 @@ interface CardSwipeFlowProps {
     moduleTotal: number
     hideModuleTracker?: boolean
     showExit?: boolean
+    exitHref?: string
   }
   /** Inline terms + dashboard submit on the logistics completion screen. */
   contextSubmit?: {
@@ -146,6 +147,10 @@ function CardSwipeFlowInner({
       totalInCurrent: items.length,
     })
   const canJumpToReview = fromReview || questionnaireComplete
+  // First-time context onboarding hides exit; edit / already-complete users can leave anytime.
+  const showExit =
+    returnEditMode || canJumpToReview || (chrome?.showExit ?? true)
+  const exitHref = returnEditMode ? '/settings?tab=questionnaire' : '/dashboard'
 
   // Clear leftover Radix dialog body locks (e.g. navigating here from the
   // "Continue questionnaire" modal on /matches) so answer buttons stay clickable.
@@ -199,6 +204,10 @@ function CardSwipeFlowInner({
     if (currentIndex < items.length - 1) {
       setDirection(1)
       setCurrentIndex((i) => i + 1)
+    } else if (returnEditMode) {
+      // Editing a completed section: leave after the last question instead of
+      // re-opening the first-time submit/completion interstitial.
+      router.push(exitHref)
     } else if (questionnaireComplete) {
       // Full questionnaire already done - skip interstitials and open review.
       returnToReview()
@@ -209,8 +218,11 @@ function CardSwipeFlowInner({
     currentIndex,
     items.length,
     fromReview,
+    returnEditMode,
     questionnaireComplete,
     returnToReview,
+    router,
+    exitHref,
   ])
 
   const goPrev = useCallback(() => {
@@ -219,8 +231,10 @@ function CardSwipeFlowInner({
       setCurrentIndex((i) => i - 1)
     } else if (canJumpToReview) {
       returnToReview()
+    } else if (returnEditMode) {
+      router.push(exitHref)
     }
-  }, [currentIndex, canJumpToReview, returnToReview])
+  }, [currentIndex, canJumpToReview, returnToReview, returnEditMode, router, exitHref])
 
   const backFromCompletion = useCallback(() => {
     setShowCompletion(false)
@@ -277,6 +291,19 @@ function CardSwipeFlowInner({
     return () => window.removeEventListener('keydown', handler)
   }, [goPrev])
 
+  // Wait for section answers to hydrate before rendering cards — otherwise edit mode
+  // briefly (or permanently, under Strict Mode races) looks like an empty questionnaire.
+  if (!hasLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-indigo-500" />
+          <p className="text-sm text-slate-500 dark:text-slate-400">Loading your answers…</p>
+        </div>
+      </div>
+    )
+  }
+
   if (showCompletion) {
     return (
       <ModuleCompletionScreen
@@ -288,6 +315,8 @@ function CardSwipeFlowInner({
         chrome={chrome}
         contextSubmit={contextSubmit}
         onBack={contextSubmit ? backFromCompletion : undefined}
+        showExit={showExit}
+        exitHref={exitHref}
       />
     )
   }
@@ -317,7 +346,8 @@ function CardSwipeFlowInner({
           moduleTotal={headerTotal}
           moduleLabel={headerLabel}
           titleOverride={headerTitleOverride}
-          showExit={chrome?.showExit ?? true}
+          showExit={showExit}
+          exitHref={exitHref}
           belowProgress={
             showModuleTracker ? (
               <ModuleTracker
@@ -445,12 +475,14 @@ function CardSwipeFlowInner({
                 <button
                   type="button"
                   onClick={goPrev}
-                  disabled={!canJumpToReview && currentIndex === 0}
+                  disabled={!canJumpToReview && !returnEditMode && currentIndex === 0}
                   className="inline-flex items-center gap-1.5 rounded-xl px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:text-slate-600 dark:text-slate-300 dark:hover:text-indigo-300 dark:disabled:hover:text-slate-300"
                 >
                   <ArrowLeft className="h-4 w-4" strokeWidth={2.25} />
-                  {canJumpToReview && currentIndex === 0
-                    ? 'Back to review'
+                  {currentIndex === 0 && (canJumpToReview || returnEditMode)
+                    ? canJumpToReview
+                      ? 'Back to review'
+                      : 'Back to settings'
                     : 'Previous Question'}
                 </button>
 
