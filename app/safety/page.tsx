@@ -1,6 +1,7 @@
 import { AppShell } from '@/components/app/shell'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getUserProfile } from '@/lib/auth/user-profile'
 import { SafetyContent } from './components/safety-content'
 import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
 
@@ -9,6 +10,11 @@ export default async function SafetyPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
+    redirect('/auth/sign-in')
+  }
+
+  const userProfile = await getUserProfile(user.id)
+  if (!userProfile) {
     redirect('/auth/sign-in')
   }
 
@@ -57,12 +63,7 @@ export default async function SafetyPage() {
 
   return (
     <>
-      <AppShell user={{
-        id: user.id,
-        email: user.email || '',
-        name: user.user_metadata?.full_name || 'User',
-        avatar: user.user_metadata?.avatar_url
-      }}>
+      <AppShell user={userProfile}>
         <SafetyContent 
           universitySecurityPhone={universitySecurityPhone}
           universityName={universityName}
