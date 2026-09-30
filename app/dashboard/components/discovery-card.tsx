@@ -15,7 +15,7 @@ import {
 } from '@/lib/compatibility/discovery-score-visuals'
 import { cn } from '@/lib/utils'
 
-/** Fixed rem height so discovery cards stay consistent; also used by Find More CTAs. */
+/** Fixed rem height so discovery cards stay consistent; also used by empty-state / CTA shells. */
 export const DISCOVERY_CARD_SHELL_HEIGHT_CLASS =
   'h-[34rem] min-h-[34rem] max-h-[34rem] shrink-0 sm:h-[36rem] sm:min-h-[36rem] sm:max-h-[36rem]'
 

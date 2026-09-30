@@ -29,9 +29,6 @@ import {
   Settings,
   LayoutDashboard,
   Sparkles,
-  Zap,
-  GraduationCap,
-  Briefcase
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -39,7 +36,6 @@ import { DiscoveryCard, DISCOVERY_CARD_SHELL_HEIGHT_CLASS } from './discovery-ca
 import { DiscoveryFeedMobileCarousel } from './discovery-feed-mobile-carousel'
 import { MatchRightsInfoBanner } from '@/components/privacy/match-rights-info-banner'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -1582,76 +1578,27 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             )
           })}
 
-        {/* Empty State Card - Glassmorphic, user_type-aware (Phase 3) */}
+        {/* Empty state — only when there are no matches (do not nudge questionnaire tweaks) */}
         {recentMatches.length === 0 && (
           <motion.div
             variants={fadeInUp}
-            className="h-full"
-          >
-            <Card className="h-full bg-background/40 dark:bg-white/5 backdrop-blur-lg border border-border/50 shadow-xl overflow-hidden">
-              <CardContent className="flex flex-col items-center justify-center p-8 group">
-                <motion.div
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-                  className="w-20 h-20 rounded-2xl bg-white/10 dark:bg-black/40 backdrop-blur-md flex items-center justify-center mb-6 border border-white/10"
-                >
-                  {userType === 'student' ? (
-                    <GraduationCap className="w-10 h-10 text-violet-400 dark:text-violet-300" />
-                  ) : userType === 'professional' ? (
-                    <Briefcase className="w-10 h-10 text-amber-400 dark:text-amber-300" />
-                  ) : (
-                    <TrendingUp className="w-10 h-10 text-violet-400 dark:text-violet-300" />
-                  )}
-                </motion.div>
-                <div className="text-center max-w-[300px] space-y-3">
-                  <h3 className="text-2xl font-bold text-zinc-900 dark:text-white">
-                    {userType === 'student'
-                      ? "You've seen all the students in your area!"
-                      : userType === 'professional'
-                        ? "You're caught up!"
-                        : 'No suggested matches yet'}
-                  </h3>
-                  <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
-                    {userType === 'student'
-                      ? "We're constantly verifying new students. Check back tomorrow for fresh campus matches."
-                      : userType === 'professional'
-                        ? "You've reviewed all the young professionals currently looking for housing. We'll notify you when new professionals join."
-                        : 'New suggestions will appear here as they become available.'}
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  className="mt-8 bg-white/10 dark:bg-black/40 backdrop-blur-md border border-border/50 hover:bg-white/20 dark:hover:bg-black/60 text-zinc-900 dark:text-zinc-100"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    router.push('/settings')
-                  }}
-                >
-                  Review My Dealbreakers
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* Call to Action - Find More (desktop only; mobile uses carousel CTA → /matches) */}
-        {recentMatches.length > 0 && recentMatches.length < 3 && (
-          <motion.div
-            variants={fadeInUp}
-            whileHover={{ y: -4, scale: 1.01 }}
-            transition={{ duration: 0.2 }}
             className={cn(
-              'group relative hidden md:flex flex-col items-center justify-center p-8 rounded-2xl bg-slate-800 border border-slate-700 shadow-xl transition-all duration-300 hover:border-violet-500/50 cursor-pointer w-full',
+              'flex w-full flex-col items-center justify-center rounded-2xl border border-slate-700 bg-slate-800 p-8 shadow-xl',
               DISCOVERY_CARD_SHELL_HEIGHT_CLASS,
             )}
-            onClick={() => router.push('/settings')}
           >
-            <div className="w-20 h-20 rounded-2xl bg-violet-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-              <Zap className="w-10 h-10 text-violet-400" />
-            </div>
-            <div className="text-center max-w-[280px]">
-              <h3 className="text-2xl font-bold text-white mb-3">Find More</h3>
-              <p className="text-slate-400 text-sm">Refine your preferences to see more people.</p>
+            <motion.div
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
+              className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-violet-500/10"
+            >
+              <Users className="h-10 w-10 text-violet-400" />
+            </motion.div>
+            <div className="max-w-[280px] text-center">
+              <h3 className="mb-3 text-2xl font-bold text-white">Matches on the way</h3>
+              <p className="text-sm text-slate-400">
+                Compatible roommates will show up here as soon as they&apos;re ready.
+              </p>
             </div>
           </motion.div>
         )}
