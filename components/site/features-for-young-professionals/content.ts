@@ -1,6 +1,7 @@
 export type Locale = 'en' | 'nl'
 
 export interface HeroContent {
+  comingSoonBadge: string
   headlineBefore: string
   headlineGradient: string
   headlineAfter: string
@@ -9,6 +10,19 @@ export interface HeroContent {
   domuWay: string
   findMatch: string
   howItWorks: string
+}
+
+export interface WaitlistContent {
+  eyebrow: string
+  title: string
+  titleHighlight: string
+  copy: string
+  emailLabel: string
+  emailPlaceholder: string
+  submit: string
+  submitting: string
+  successTitle: string
+  successCopy: string
 }
 
 export interface WhyContent {
@@ -65,6 +79,7 @@ export interface FeaturesForYoungProfessionalsContent {
   solution: SolutionContent
   trust: TrustContent
   investment: InvestmentContent
+  waitlist: WaitlistContent
   faq: FAQContent
   stickyCta: StickyCTAContent
   comparison: ComparisonContent
@@ -73,6 +88,7 @@ export interface FeaturesForYoungProfessionalsContent {
 export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
   en: {
     hero: {
+      comingSoonBadge: 'Not yet released',
       headlineBefore: 'Build your career with ',
       headlineGradient: 'flatmates who fit',
       headlineAfter: ' your rhythm.',
@@ -80,7 +96,7 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
         "Lifestyle compatibility matching for young professionals. 100% ID verified. Separate pool from students. Zero scams.",
       oldWay: 'The Old Way',
       domuWay: 'The Domu Way',
-      findMatch: 'Find My Match',
+      findMatch: 'Join the waitlist',
       howItWorks: 'How it Works',
     },
     why: {
@@ -123,6 +139,18 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
     investment: {
       copy: "Our quiz goes deep. Trade 5–8 minutes now to avoid months of conflict with the wrong flatmate.",
     },
+    waitlist: {
+      eyebrow: 'Coming soon',
+      title: 'Be first when ',
+      titleHighlight: 'professionals launch',
+      copy: "Young professional matching isn't available yet. Leave your email and we'll notify you as soon as it goes live.",
+      emailLabel: 'Email',
+      emailPlaceholder: 'you@example.com',
+      submit: 'Notify me',
+      submitting: 'Saving…',
+      successTitle: "You're on the list",
+      successCopy: "We'll email you when young professional matching is ready.",
+    },
     faq: {
       title: 'Frequently Asked Questions',
       items: [
@@ -146,8 +174,8 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
       ],
     },
     stickyCta: {
-      copy: 'Join {count} people finding their perfect match',
-      button: 'Get Started',
+      copy: 'Young professionals matching is coming soon',
+      button: 'Join the waitlist',
     },
     comparison: {
       title: 'How we compare',
@@ -169,6 +197,7 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
   },
   nl: {
     hero: {
+      comingSoonBadge: 'Nog niet beschikbaar',
       headlineBefore: 'Bouw je carrière met ',
       headlineGradient: 'huisgenoten die passen',
       headlineAfter: ' bij je ritme.',
@@ -176,7 +205,7 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
         "Levensstijl-compatibiliteitsmatching voor young professionals. 100% ID-geverifieerd. Aparte pool van studenten. Geen oplichting.",
       oldWay: 'De Oude Manier',
       domuWay: 'De Domu Manier',
-      findMatch: 'Vind Mijn Match',
+      findMatch: 'Schrijf je in',
       howItWorks: 'Hoe het werkt',
     },
     why: {
@@ -219,6 +248,18 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
     investment: {
       copy: "Onze quiz gaat diep. Ruil 5–8 minuten nu in om maanden conflict met de verkeerde huisgenoot te voorkomen.",
     },
+    waitlist: {
+      eyebrow: 'Binnenkort',
+      title: 'Wees als eerste bij als ',
+      titleHighlight: 'professionals live gaan',
+      copy: 'Matching voor young professionals is nog niet beschikbaar. Laat je e-mail achter en we laten je weten zodra het live is.',
+      emailLabel: 'E-mail',
+      emailPlaceholder: 'jij@voorbeeld.com',
+      submit: 'Houd me op de hoogte',
+      submitting: 'Opslaan…',
+      successTitle: 'Je staat op de lijst',
+      successCopy: 'We mailen je wanneer matching voor young professionals klaar is.',
+    },
     faq: {
       title: 'Veelgestelde vragen',
       items: [
@@ -242,12 +283,13 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
       ],
     },
     stickyCta: {
-      copy: 'Doe mee met {count} mensen die hun perfecte match vinden',
-      button: 'Begin nu',
+      copy: 'Matching voor young professionals komt eraan',
+      button: 'Schrijf je in',
     },
     comparison: {
       title: 'Zo vergelijken we',
       subtitle: 'Ontdek waarom young professionals voor Domu Match kiezen',
+
       competitors: ['Domu Match', 'Kamernet', 'Roomster', 'Room.nl'],
       rows: [
         { feature: 'Levensstijl compatibiliteitsmatching (40+ factoren)', domu: true, kamernet: false, roomster: false, roomnl: false },

@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Clock } from 'lucide-react'
 import Container from '@/components/ui/primitives/container'
@@ -16,12 +15,11 @@ const headlineGradientClass =
   'text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700'
 
 export function InvestmentSection() {
-  const router = useRouter()
   const { locale } = useApp()
   const t = content[locale].investment
 
-  const handleGetStarted = () => {
-    router.push('/auth/sign-up')
+  const handleJoinWaitlist = () => {
+    document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
@@ -70,7 +68,7 @@ export function InvestmentSection() {
             {t.copy}
           </p>
           <button
-            onClick={handleGetStarted}
+            onClick={handleJoinWaitlist}
             className={cn(
               'inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-semibold',
               'bg-indigo-500 text-white hover:bg-indigo-600',
@@ -78,7 +76,7 @@ export function InvestmentSection() {
               'focus-visible:outline focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent'
             )}
           >
-            {locale === 'nl' ? 'Begin de quiz' : 'Start the quiz'}
+            {locale === 'nl' ? 'Schrijf je in' : 'Join the waitlist'}
           </button>
         </motion.div>
       </Container>

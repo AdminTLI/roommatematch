@@ -1,39 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
 import Container from '@/components/ui/primitives/container'
 import { useApp } from '@/app/providers'
 import { content } from './content'
-import type { MarketingStatsResponse } from '@/app/api/marketing/stats/route'
 import { cn } from '@/lib/utils'
-
-async function fetchMarketingStats(): Promise<MarketingStatsResponse> {
-  const response = await fetch('/api/marketing/stats')
-  if (!response.ok) {
-    throw new Error('Failed to fetch marketing stats')
-  }
-  return response.json()
-}
 
 const SCROLL_THRESHOLD = 400
 
 export function StickyCTA() {
-  const router = useRouter()
   const { locale } = useApp()
   const t = content[locale].stickyCta
   const [isVisible, setIsVisible] = useState(false)
-
-  const { data } = useQuery({
-    queryKey: ['marketing-stats'],
-    queryFn: fetchMarketingStats,
-    staleTime: 60_000,
-    retry: 2,
-  })
-
-  const count = data?.totalUsers ?? 1000
-  const displayCount = count >= 1000 ? `${Math.floor(count / 1000)}k+` : `${count}+`
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,8 +22,8 @@ export function StickyCTA() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const handleGetStarted = () => {
-    router.push('/auth/sign-up')
+  const handleJoinWaitlist = () => {
+    document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   if (!isVisible) return null
@@ -62,10 +40,10 @@ export function StickyCTA() {
     >
       <Container className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-base font-medium text-slate-800 text-center sm:text-left">
-          {t.copy.replace('{count}', displayCount)}
+          {t.copy}
         </p>
         <button
-          onClick={handleGetStarted}
+          onClick={handleJoinWaitlist}
           className={cn(
             'inline-flex items-center justify-center rounded-xl px-6 py-4 text-base font-semibold min-h-[44px] w-full sm:w-auto shrink-0',
             'bg-indigo-500 text-white hover:bg-indigo-600',

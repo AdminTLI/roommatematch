@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, useReducedMotion } from 'framer-motion'
 import { AlertTriangle, X, Check, Shield, Users, SlidersHorizontal } from 'lucide-react'
@@ -17,13 +16,12 @@ const headlineGradientClass =
   'text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-violet-700'
 
 export function HeroSection() {
-  const router = useRouter()
   const { locale } = useApp()
   const t = content[locale].hero
   const reducedMotion = useReducedMotion()
 
-  const handleFindMatch = () => {
-    router.push('/auth/sign-up')
+  const handleJoinWaitlist = () => {
+    document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const motionConfig = reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }
@@ -39,6 +37,16 @@ export function HeroSection() {
       <Container className="relative z-10">
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
           <div className="space-y-6 text-center lg:text-left">
+            <motion.div
+              className="flex justify-center lg:justify-start"
+              initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+              animate={motionConfig}
+              transition={{ duration: reducedMotion ? 0 : 0.5, ease: 'easeOut' }}
+            >
+              <span className="inline-flex items-center rounded-full border border-amber-200/80 bg-amber-50/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-amber-800">
+                {t.comingSoonBadge}
+              </span>
+            </motion.div>
             <motion.h1
               id="hero-heading"
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-slate-800 tracking-tight"
@@ -65,7 +73,7 @@ export function HeroSection() {
               transition={{ duration: reducedMotion ? 0 : 0.6, delay: reducedMotion ? 0 : 0.2, ease: 'easeOut' }}
             >
               <button
-                onClick={handleFindMatch}
+                onClick={handleJoinWaitlist}
                 aria-label={t.findMatch}
                 className={cn(
                   'inline-flex items-center justify-center rounded-2xl px-6 py-4 text-base font-semibold',

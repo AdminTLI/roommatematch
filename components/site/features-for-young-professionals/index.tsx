@@ -6,6 +6,7 @@ import { SolutionSection } from './solution-section'
 import { TrustSection } from './trust-section'
 import { ComparisonTableSection } from './comparison-table-section'
 import { InvestmentSection } from './investment-section'
+import { WaitlistSection } from './waitlist-section'
 import { FAQSection } from './faq-section'
 import { StickyCTA } from './sticky-cta'
 
@@ -18,6 +19,7 @@ export function FeaturesForYoungProfessionals() {
       <TrustSection />
       <ComparisonTableSection />
       <InvestmentSection />
+      <WaitlistSection />
       <FAQSection />
       <StickyCTA />
     </>

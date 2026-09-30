@@ -1,12 +1,26 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import Section from '@/components/ui/primitives/section'
 import Container from '@/components/ui/primitives/container'
 import Link from 'next/link'
-import { Calendar, Clock, ArrowRight, BookOpen, Shield, Brain, TrendingUp, Users } from 'lucide-react'
+import {
+  Calendar,
+  Clock,
+  ArrowRight,
+  BookOpen,
+  Shield,
+  Brain,
+  TrendingUp,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 import { useApp } from '@/app/providers'
 import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+
+const POSTS_PER_PAGE = 6
 
 const content = {
   en: {
@@ -14,6 +28,12 @@ const content = {
     titleHighlight: 'Resources',
     subtitle: 'Expert guidance on finding compatible roommates, staying safe while renting, and understanding how technology can help you make better housing decisions.',
     readArticle: 'Read article',
+    allCategories: 'All',
+    filterLabel: 'Filter by category',
+    previousPage: 'Previous',
+    nextPage: 'Next',
+    pageOf: (page: number, total: number) => `Page ${page} of ${total}`,
+    noResults: 'No articles in this category yet.',
     posts: [
       {
         slug: 'international-students-dutch-housemates-language',
@@ -332,6 +352,12 @@ const content = {
     titleHighlight: 'hulpmiddelen',
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
+    allCategories: 'Alles',
+    filterLabel: 'Filter op categorie',
+    previousPage: 'Vorige',
+    nextPage: 'Volgende',
+    pageOf: (page: number, total: number) => `Pagina ${page} van ${total}`,
+    noResults: 'Nog geen artikelen in deze categorie.',
     posts: [
       {
         slug: 'international-students-dutch-housemates-language',
@@ -650,11 +676,76 @@ export function BlogContent() {
   const { locale } = useApp()
   const t = content[locale]
   const reducedMotion = useReducedMotion()
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const categories = useMemo(() => {
+    const seen = new Set<string>()
+    const ordered: string[] = []
+    for (const post of t.posts) {
+      if (!seen.has(post.category)) {
+        seen.add(post.category)
+        ordered.push(post.category)
+      }
+    }
+    return ordered.sort((a, b) => a.localeCompare(b, locale === 'nl' ? 'nl' : 'en'))
+  }, [t.posts, locale])
+
+  const filteredPosts = useMemo(() => {
+    const posts = selectedCategory
+      ? t.posts.filter((post) => post.category === selectedCategory)
+      : t.posts
+    return [...posts].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    )
+  }, [t.posts, selectedCategory])
+
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE))
+
+  useEffect(() => {
+    setSelectedCategory(null)
+    setCurrentPage(1)
+  }, [locale])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [selectedCategory])
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
+
+  const pagePosts = filteredPosts.slice(
+    (currentPage - 1) * POSTS_PER_PAGE,
+    currentPage * POSTS_PER_PAGE
+  )
+
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale === 'nl' ? 'nl-NL' : 'en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+    [locale]
+  )
+
+  const handleCategoryChange = (category: string | null) => {
+    setSelectedCategory(category)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    const grid = document.getElementById('blog-posts-grid')
+    grid?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })
+  }
 
   return (
     <>
       {/* Hero section (light, homepage-aligned) */}
-      <Section className="relative overflow-hidden pt-14 md:pt-20 pb-10 md:pb-14">
+      <Section className="relative overflow-hidden pt-14 md:pt-20 lg:pt-20 pb-4 md:pb-5 lg:pb-5">
         <Container className="relative z-10">
           <motion.div
             className="mx-auto max-w-4xl text-center"
@@ -677,72 +768,181 @@ export function BlogContent() {
       </Section>
 
       {/* Blog post cards */}
-      <Section className="relative overflow-hidden pb-16 md:pb-24">
+      <Section className="relative overflow-visible pt-2 md:pt-3 lg:pt-3 pb-16 md:pb-24 lg:pb-24">
         <Container className="relative z-10">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {t.posts.map((post, index) => {
-              const Icon = post.icon
-              const dateFormatter = new Intl.DateTimeFormat(locale === 'nl' ? 'nl-NL' : 'en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })
-
-              return (
-                <motion.div
-                  key={post.slug}
-                  initial={reducedMotion ? undefined : { opacity: 0, y: 24 }}
-                  whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <Link href={`/blog/${post.slug}`} className="block h-full group">
-                    <div
-                      className={cn(
-                        'h-full flex flex-col p-6 md:p-8 transition-all duration-300',
-                        'rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]',
-                        'hover:bg-white/60 hover:shadow-[0_22px_60px_rgba(15,23,42,0.10)]'
-                      )}
-                    >
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="h-12 w-12 rounded-2xl bg-white/60 border border-white/70 flex items-center justify-center group-hover:bg-white/75 transition-colors shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
-                          <Icon className="h-6 w-6 text-blue-700" />
-                        </div>
-                        <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                          {post.category}
-                        </span>
-                      </div>
-
-                      <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-3 group-hover:text-slate-800 transition-colors">
-                        {post.title}
-                      </h2>
-
-                      <p className="text-slate-700 mb-6 flex-1 leading-relaxed">
-                        {post.excerpt}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-white/60">
-                        <div className="flex items-center gap-4 text-xs text-slate-600">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5" />
-                            <span>{dateFormatter.format(new Date(post.date))}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5" />
-                            <span>{post.readTime}</span>
-                          </div>
-                        </div>
-                        <span className="inline-flex items-center text-sm font-semibold text-blue-700 group-hover:text-blue-800 transition-colors">
-                          {t.readArticle}
-                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              )
-            })}
+          <div
+            className="mb-8 md:mb-10"
+            role="group"
+            aria-label={t.filterLabel}
+          >
+            <p className="mb-3 text-center text-sm font-medium text-slate-600">
+              {t.filterLabel}
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleCategoryChange(null)}
+                aria-pressed={selectedCategory === null}
+                className={cn(
+                  'rounded-full border px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all duration-200',
+                  'backdrop-blur-xl shadow-[0_8px_20px_rgba(15,23,42,0.06)]',
+                  selectedCategory === null
+                    ? 'border-blue-600/30 bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)]'
+                    : 'border-white/70 bg-white/55 text-slate-700 hover:bg-white/75'
+                )}
+              >
+                {t.allCategories}
+              </button>
+              {categories.map((category) => {
+                const isActive = selectedCategory === category
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => handleCategoryChange(category)}
+                    aria-pressed={isActive}
+                    className={cn(
+                      'rounded-full border px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all duration-200',
+                      'backdrop-blur-xl shadow-[0_8px_20px_rgba(15,23,42,0.06)]',
+                      isActive
+                        ? 'border-blue-600/30 bg-blue-600 text-white shadow-[0_10px_24px_rgba(37,99,235,0.25)]'
+                        : 'border-white/70 bg-white/55 text-slate-700 hover:bg-white/75'
+                    )}
+                  >
+                    {category}
+                  </button>
+                )
+              })}
+            </div>
           </div>
+
+          <div
+            id="blog-posts-grid"
+            className="grid scroll-mt-24 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+          >
+            {pagePosts.length === 0 ? (
+              <p className="col-span-full text-center text-slate-600 py-12">
+                {t.noResults}
+              </p>
+            ) : (
+              pagePosts.map((post, index) => {
+                const Icon = post.icon
+
+                return (
+                  <motion.div
+                    key={post.slug}
+                    initial={reducedMotion ? undefined : { opacity: 0, y: 24 }}
+                    animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, delay: Math.min(index, 5) * 0.06 }}
+                  >
+                    <Link href={`/blog/${post.slug}`} className="block h-full group">
+                      <div
+                        className={cn(
+                          'h-full flex flex-col p-6 md:p-8 transition-all duration-300',
+                          'rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]',
+                          'hover:bg-white/60 hover:shadow-[0_22px_60px_rgba(15,23,42,0.10)]'
+                        )}
+                      >
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="h-12 w-12 rounded-2xl bg-white/60 border border-white/70 flex items-center justify-center group-hover:bg-white/75 transition-colors shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+                            <Icon className="h-6 w-6 text-blue-700" />
+                          </div>
+                          <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                            {post.category}
+                          </span>
+                        </div>
+
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-3 group-hover:text-slate-800 transition-colors">
+                          {post.title}
+                        </h2>
+
+                        <p className="text-slate-700 mb-6 flex-1 leading-relaxed">
+                          {post.excerpt}
+                        </p>
+
+                        <div className="flex items-center justify-between pt-4 border-t border-white/60">
+                          <div className="flex items-center gap-4 text-xs text-slate-600">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5" />
+                              <span>{dateFormatter.format(new Date(post.date))}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="h-3.5 w-3.5" />
+                              <span>{post.readTime}</span>
+                            </div>
+                          </div>
+                          <span className="inline-flex items-center text-sm font-semibold text-blue-700 group-hover:text-blue-800 transition-colors">
+                            {t.readArticle}
+                            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                )
+              })
+            )}
+          </div>
+
+          {totalPages > 1 && (
+            <nav
+              className="mt-10 md:mt-12 flex flex-col items-center gap-4 pb-2"
+              aria-label="Blog pagination"
+            >
+              <p className="text-sm text-slate-600">{t.pageOf(currentPage, totalPages)}</p>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-all duration-200',
+                    'backdrop-blur-xl',
+                    currentPage <= 1
+                      ? 'cursor-not-allowed border-white/40 bg-white/30 text-slate-400'
+                      : 'border-white/70 bg-white/55 text-slate-700 hover:bg-white/75'
+                  )}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  {t.previousPage}
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => handlePageChange(page)}
+                    aria-current={page === currentPage ? 'page' : undefined}
+                    className={cn(
+                      'min-w-9 h-9 rounded-full border text-xs font-semibold transition-all duration-200',
+                      'backdrop-blur-xl',
+                      page === currentPage
+                        ? 'border-blue-600/30 bg-blue-600 text-white'
+                        : 'border-white/70 bg-white/55 text-slate-700 hover:bg-white/75'
+                    )}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-all duration-200',
+                    'backdrop-blur-xl',
+                    currentPage >= totalPages
+                      ? 'cursor-not-allowed border-white/40 bg-white/30 text-slate-400'
+                      : 'border-white/70 bg-white/55 text-slate-700 hover:bg-white/75'
+                  )}
+                >
+                  {t.nextPage}
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </nav>
+          )}
         </Container>
       </Section>
     </>
