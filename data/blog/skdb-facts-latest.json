@@ -1,12 +1,1566 @@
 {
-  "generatedAt": null,
+  "generatedAt": "2026-09-30T06:03:46.800Z",
   "skdbRelease": "26.3",
-  "peildatum": "2026-04-07",
+  "peildatum": "2026-09-30",
   "attribution": "Studiekeuzedatabase (LCSK)",
   "sourceMode": "api",
-  "_notice": "Run `pnpm sync:skdb-blog-facts` with SKDB_API_KEY set to populate this file.",
-  "facts": [],
-  "byCluster": [],
-  "bySector": [],
-  "byInstitution": []
+  "facts": [
+    {
+      "id": "programmes_total_count",
+      "label": "Programmes in Studiekeuzedatabase (API)",
+      "value": 3297,
+      "unit": "count",
+      "scope": "nl",
+      "source": "opleidingen"
+    },
+    {
+      "id": "programmes_active_count",
+      "label": "Active programmes (at least one open vorm)",
+      "value": 3297,
+      "unit": "count",
+      "scope": "nl",
+      "source": "opleidingen"
+    },
+    {
+      "id": "programmes_with_admission_requirements_count",
+      "label": "Programmes with admission requirements text",
+      "value": 3297,
+      "unit": "count",
+      "scope": "nl",
+      "source": "opleidingen"
+    },
+    {
+      "id": "programmes_with_admission_requirements_pct",
+      "label": "Share of programmes with admission requirements",
+      "value": 100,
+      "unit": "percent",
+      "scope": "nl",
+      "source": "opleidingen"
+    },
+    {
+      "id": "programmes_with_ects_count",
+      "label": "Programmes with ECTS credits",
+      "value": 3297,
+      "unit": "count",
+      "scope": "nl",
+      "source": "opleidingen"
+    },
+    {
+      "id": "programmes_with_language_codes_count",
+      "label": "Programmes with instruction language codes",
+      "value": 0,
+      "unit": "count",
+      "scope": "nl",
+      "source": "opleidingen"
+    },
+    {
+      "id": "programmes_bachelor_count",
+      "label": "Bachelor programmes (inferred level)",
+      "value": 1993,
+      "unit": "count",
+      "scope": "nl",
+      "source": "opleidingen"
+    },
+    {
+      "id": "programmes_master_count",
+      "label": "Master programmes (inferred level)",
+      "value": 1304,
+      "unit": "count",
+      "scope": "nl",
+      "source": "opleidingen"
+    },
+    {
+      "id": "programmes_premaster_count",
+      "label": "Pre-master / bridge programmes (inferred level)",
+      "value": 0,
+      "unit": "count",
+      "scope": "nl",
+      "source": "opleidingen"
+    },
+    {
+      "id": "institutions_count",
+      "label": "Institutions in SKDB",
+      "value": 109,
+      "unit": "count",
+      "scope": "nl",
+      "source": "instellingen"
+    }
+  ],
+  "byCluster": [
+    {
+      "cluster": "Bedrijfskunde en management",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 167,
+      "activeCount": 167
+    },
+    {
+      "cluster": "Informatica",
+      "sector": "Exact en Informatica",
+      "programmeCount": 116,
+      "activeCount": 116
+    },
+    {
+      "cluster": "Bedrijfskunde",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 111,
+      "activeCount": 111
+    },
+    {
+      "cluster": "Pedagogiek",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 81,
+      "activeCount": 81
+    },
+    {
+      "cluster": "Kunstacademie",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 71,
+      "activeCount": 71
+    },
+    {
+      "cluster": "Gezondheidswetenschappen",
+      "sector": "Gezondheid",
+      "programmeCount": 70,
+      "activeCount": 70
+    },
+    {
+      "cluster": "Lerarenopleidingen maatschappijvakken",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 67,
+      "activeCount": 67
+    },
+    {
+      "cluster": "Communicatie",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 67,
+      "activeCount": 67
+    },
+    {
+      "cluster": "Lerarenopleiding talen",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 66,
+      "activeCount": 66
+    },
+    {
+      "cluster": "Werktuigbouwkunde",
+      "sector": "Techniek",
+      "programmeCount": 64,
+      "activeCount": 64
+    },
+    {
+      "cluster": "Social Work",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 64,
+      "activeCount": 64
+    },
+    {
+      "cluster": "Lerarenopleidingen exact",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 61,
+      "activeCount": 61
+    },
+    {
+      "cluster": "Recht",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 57,
+      "activeCount": 57
+    },
+    {
+      "cluster": "Verpleegkunde",
+      "sector": "Gezondheid",
+      "programmeCount": 50,
+      "activeCount": 50
+    },
+    {
+      "cluster": "Psychologie",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 49,
+      "activeCount": 49
+    },
+    {
+      "cluster": "Taal, Literatuur en Cultuur",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 46,
+      "activeCount": 46
+    },
+    {
+      "cluster": "Commerciële economie",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 45,
+      "activeCount": 45
+    },
+    {
+      "cluster": "Kunst- en cultuurstudies",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 43,
+      "activeCount": 43
+    },
+    {
+      "cluster": "Elektrotechniek",
+      "sector": "Techniek",
+      "programmeCount": 42,
+      "activeCount": 42
+    },
+    {
+      "cluster": "Theologie en Levensbeschouwing",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 42,
+      "activeCount": 42
+    },
+    {
+      "cluster": "Leraar basisonderwijs (PABO)",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 41,
+      "activeCount": 41
+    },
+    {
+      "cluster": "International Business and Management",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 41,
+      "activeCount": 41
+    },
+    {
+      "cluster": "Toerisme en Vrijetijdskunde",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 38,
+      "activeCount": 38
+    },
+    {
+      "cluster": "Sociologie en Sociale studies",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 38,
+      "activeCount": 38
+    },
+    {
+      "cluster": "Muziek",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 38,
+      "activeCount": 38
+    },
+    {
+      "cluster": "Bestuur en organisatie",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 38,
+      "activeCount": 38
+    },
+    {
+      "cluster": "Internationaal en Europees recht",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 38,
+      "activeCount": 38
+    },
+    {
+      "cluster": "Bouwkunde",
+      "sector": "Techniek",
+      "programmeCount": 38,
+      "activeCount": 38
+    },
+    {
+      "cluster": "Universitaire lerarenopleiding",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 37,
+      "activeCount": 37
+    },
+    {
+      "cluster": "Fiscale economie",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 36,
+      "activeCount": 36
+    },
+    {
+      "cluster": "Accountancy en fiscaal",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 35,
+      "activeCount": 35
+    },
+    {
+      "cluster": "Informatiekunde",
+      "sector": "Exact en Informatica",
+      "programmeCount": 35,
+      "activeCount": 35
+    },
+    {
+      "cluster": "Fysiotherapie",
+      "sector": "Gezondheid",
+      "programmeCount": 35,
+      "activeCount": 35
+    },
+    {
+      "cluster": "Economie",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 34,
+      "activeCount": 34
+    },
+    {
+      "cluster": "Wijsbegeerte",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 32,
+      "activeCount": 32
+    },
+    {
+      "cluster": "Constructiestudies",
+      "sector": "Techniek",
+      "programmeCount": 32,
+      "activeCount": 32
+    },
+    {
+      "cluster": "Pedagogiek en Onderwijskunde",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 31,
+      "activeCount": 31
+    },
+    {
+      "cluster": "Bedrijfseconomie",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 31,
+      "activeCount": 31
+    },
+    {
+      "cluster": "Wiskunde",
+      "sector": "Exact en Informatica",
+      "programmeCount": 31,
+      "activeCount": 31
+    },
+    {
+      "cluster": "Sociale geografie en planologie",
+      "sector": "Aarde en Milieu",
+      "programmeCount": 30,
+      "activeCount": 30
+    },
+    {
+      "cluster": "Hotelschool",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 29,
+      "activeCount": 29
+    },
+    {
+      "cluster": "Geneeskunde",
+      "sector": "Gezondheid",
+      "programmeCount": 28,
+      "activeCount": 28
+    },
+    {
+      "cluster": "Vervoer en logistiek",
+      "sector": "Techniek",
+      "programmeCount": 28,
+      "activeCount": 28
+    },
+    {
+      "cluster": "Chemie en Chemische technologie",
+      "sector": "Exact en Informatica",
+      "programmeCount": 28,
+      "activeCount": 28
+    },
+    {
+      "cluster": "HBO - Rechten",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 27,
+      "activeCount": 27
+    },
+    {
+      "cluster": "Bèta en Beleid",
+      "sector": "Techniek",
+      "programmeCount": 27,
+      "activeCount": 27
+    },
+    {
+      "cluster": "Kunstmatige Intelligentie",
+      "sector": "Exact en Informatica",
+      "programmeCount": 27,
+      "activeCount": 27
+    },
+    {
+      "cluster": "Management in de Zorg",
+      "sector": "Gezondheid",
+      "programmeCount": 27,
+      "activeCount": 27
+    },
+    {
+      "cluster": "Business Studies",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 26,
+      "activeCount": 26
+    },
+    {
+      "cluster": "Biologie",
+      "sector": "Aarde en Milieu",
+      "programmeCount": 25,
+      "activeCount": 25
+    },
+    {
+      "cluster": "Financial Services Management",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 24,
+      "activeCount": 24
+    },
+    {
+      "cluster": "Small Business en Retail Management",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 23,
+      "activeCount": 23
+    },
+    {
+      "cluster": "Natuur- en Sterrenkunde",
+      "sector": "Exact en Informatica",
+      "programmeCount": 22,
+      "activeCount": 22
+    },
+    {
+      "cluster": "Toegepaste biowetenschappen",
+      "sector": "Techniek",
+      "programmeCount": 22,
+      "activeCount": 22
+    },
+    {
+      "cluster": "Econometrie",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 21,
+      "activeCount": 21
+    },
+    {
+      "cluster": "Industrieel Produkt Ontwerpen",
+      "sector": "Techniek",
+      "programmeCount": 21,
+      "activeCount": 21
+    },
+    {
+      "cluster": "Facility management",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 21,
+      "activeCount": 21
+    },
+    {
+      "cluster": "Culturele antropologie",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 21,
+      "activeCount": 21
+    },
+    {
+      "cluster": "Aardwetenschappen",
+      "sector": "Aarde en Milieu",
+      "programmeCount": 21,
+      "activeCount": 21
+    },
+    {
+      "cluster": "Archeologie",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 20,
+      "activeCount": 20
+    },
+    {
+      "cluster": "Dans",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 20,
+      "activeCount": 20
+    },
+    {
+      "cluster": "Sport en Bewegen",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 19,
+      "activeCount": 19
+    },
+    {
+      "cluster": "Fiscaal recht",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 19,
+      "activeCount": 19
+    },
+    {
+      "cluster": "Landbouw",
+      "sector": "Aarde en Milieu",
+      "programmeCount": 19,
+      "activeCount": 19
+    },
+    {
+      "cluster": "Toegepaste Psychologie",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 19,
+      "activeCount": 19
+    },
+    {
+      "cluster": "Talen en Culturen van Azië en Afrika",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 18,
+      "activeCount": 18
+    },
+    {
+      "cluster": "Geschiedenis",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 18,
+      "activeCount": 18
+    },
+    {
+      "cluster": "Farmaceutische wetenschappen",
+      "sector": "Gezondheid",
+      "programmeCount": 18,
+      "activeCount": 18
+    },
+    {
+      "cluster": "Milieuwetenschappen",
+      "sector": "Aarde en Milieu",
+      "programmeCount": 18,
+      "activeCount": 18
+    },
+    {
+      "cluster": "Milieustudies",
+      "sector": "Aarde en Milieu",
+      "programmeCount": 18,
+      "activeCount": 18
+    },
+    {
+      "cluster": "Scheikunde en Chemische technologie",
+      "sector": "Exact en Informatica",
+      "programmeCount": 18,
+      "activeCount": 18
+    },
+    {
+      "cluster": "Onderwijsmanagement",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 18,
+      "activeCount": 18
+    },
+    {
+      "cluster": "Toneel",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 16,
+      "activeCount": 16
+    },
+    {
+      "cluster": "Sociaal Juridische Dienstverlening",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 16,
+      "activeCount": 16
+    },
+    {
+      "cluster": "Bestuurskunde",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 15,
+      "activeCount": 15
+    },
+    {
+      "cluster": "Veiligheidskunde",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 15,
+      "activeCount": 15
+    },
+    {
+      "cluster": "Biologie en medisch labaratoriumonderzoek",
+      "sector": "Aarde en Milieu",
+      "programmeCount": 15,
+      "activeCount": 15
+    },
+    {
+      "cluster": "Voeding",
+      "sector": "Aarde en Milieu",
+      "programmeCount": 15,
+      "activeCount": 15
+    },
+    {
+      "cluster": "Lerarenopleidingen speciaal",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 14,
+      "activeCount": 14
+    },
+    {
+      "cluster": "Criminologie",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 14,
+      "activeCount": 14
+    },
+    {
+      "cluster": "Vastgoed en Makelaardij",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 14,
+      "activeCount": 14
+    },
+    {
+      "cluster": "Overig gezondheidszorg",
+      "sector": "Gezondheid",
+      "programmeCount": 14,
+      "activeCount": 14
+    },
+    {
+      "cluster": "Liberal Arts and Sciences",
+      "sector": "Interdisciplinair",
+      "programmeCount": 14,
+      "activeCount": 14
+    },
+    {
+      "cluster": "Zee- en Luchtvaart",
+      "sector": "Techniek",
+      "programmeCount": 14,
+      "activeCount": 14
+    },
+    {
+      "cluster": "Overige Europese talen en culturen",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 13,
+      "activeCount": 13
+    },
+    {
+      "cluster": "Mediastudies",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 13,
+      "activeCount": 13
+    },
+    {
+      "cluster": "Ruimtelijke ordening en planologie",
+      "sector": "Aarde en Milieu",
+      "programmeCount": 12,
+      "activeCount": 12
+    },
+    {
+      "cluster": "Nederlandse taal en cultuur",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 12,
+      "activeCount": 12
+    },
+    {
+      "cluster": "Civiele techniek",
+      "sector": "Techniek",
+      "programmeCount": 12,
+      "activeCount": 12
+    },
+    {
+      "cluster": "Ontwerpen",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 12,
+      "activeCount": 12
+    },
+    {
+      "cluster": "Mechatronica",
+      "sector": "Techniek",
+      "programmeCount": 11,
+      "activeCount": 11
+    },
+    {
+      "cluster": "Politicologie",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 11,
+      "activeCount": 11
+    },
+    {
+      "cluster": "Kunstgeschiedenis",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 10,
+      "activeCount": 10
+    },
+    {
+      "cluster": "Ergotherapie en Beweging",
+      "sector": "Gezondheid",
+      "programmeCount": 10,
+      "activeCount": 10
+    },
+    {
+      "cluster": "Bouwkunde en Civiele techniek",
+      "sector": "Techniek",
+      "programmeCount": 10,
+      "activeCount": 10
+    },
+    {
+      "cluster": "Militaire Wetenschappen",
+      "sector": "Interdisciplinair",
+      "programmeCount": 9,
+      "activeCount": 9
+    },
+    {
+      "cluster": "Romaanse talen",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 9,
+      "activeCount": 9
+    },
+    {
+      "cluster": "Maatschappelijk Werk en Dienstverlening",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 9,
+      "activeCount": 9
+    },
+    {
+      "cluster": "Creatieve Therapie",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 9,
+      "activeCount": 9
+    },
+    {
+      "cluster": "Sociaal-economische wetenschappen",
+      "sector": "Interdisciplinair",
+      "programmeCount": 9,
+      "activeCount": 9
+    },
+    {
+      "cluster": "Informatiestudies",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 8,
+      "activeCount": 8
+    },
+    {
+      "cluster": "Industrieel ontwerpen",
+      "sector": "Techniek",
+      "programmeCount": 8,
+      "activeCount": 8
+    },
+    {
+      "cluster": "Game Architecture and Design",
+      "sector": "Techniek",
+      "programmeCount": 8,
+      "activeCount": 8
+    },
+    {
+      "cluster": "Tandheelkunde",
+      "sector": "Gezondheid",
+      "programmeCount": 8,
+      "activeCount": 8
+    },
+    {
+      "cluster": "Logopedie",
+      "sector": "Gezondheid",
+      "programmeCount": 8,
+      "activeCount": 8
+    },
+    {
+      "cluster": "Politie en Defensie",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 8,
+      "activeCount": 8
+    },
+    {
+      "cluster": "Aarde en Economie",
+      "sector": "Interdisciplinair",
+      "programmeCount": 8,
+      "activeCount": 8
+    },
+    {
+      "cluster": "Diagnostiek",
+      "sector": "Gezondheid",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "cluster": "Academie lichamelijke opvoeding (ALO)",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "cluster": "Technische natuurkunde",
+      "sector": "Exact en Informatica",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "cluster": "Sociaal Pedagogische Hulpverlening",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "cluster": "Personeel en Arbeid",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "cluster": "Mondzorgkunde",
+      "sector": "Gezondheid",
+      "programmeCount": 6,
+      "activeCount": 6
+    },
+    {
+      "cluster": "Voeding en diëtetiek",
+      "sector": "Gezondheid",
+      "programmeCount": 6,
+      "activeCount": 6
+    },
+    {
+      "cluster": "Onderwijskunde",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 6,
+      "activeCount": 6
+    },
+    {
+      "cluster": "Sociaal Financiële Dienstverlening",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 6,
+      "activeCount": 6
+    },
+    {
+      "cluster": "Engelse taal en cultuur",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 5,
+      "activeCount": 5
+    },
+    {
+      "cluster": "Diergeneeskunde en Dierwetenschappen",
+      "sector": "Gezondheid",
+      "programmeCount": 5,
+      "activeCount": 5
+    },
+    {
+      "cluster": "Verloskunde",
+      "sector": "Gezondheid",
+      "programmeCount": 5,
+      "activeCount": 5
+    },
+    {
+      "cluster": "Journalistiek",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 4,
+      "activeCount": 4
+    },
+    {
+      "cluster": "Informatie- en Communicatietechnologie",
+      "sector": "Interdisciplinair",
+      "programmeCount": 4,
+      "activeCount": 4
+    },
+    {
+      "cluster": "Vertaalopleidingen",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "cluster": "Forensisch Sociale Professional",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "cluster": "Farmakunde",
+      "sector": "Gezondheid",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "cluster": "Lifestyle Studies",
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "cluster": "Lerarenopleidingen beroepsonderwijs",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "cluster": "Digitale veiligheid",
+      "sector": "Interdisciplinair",
+      "programmeCount": 2,
+      "activeCount": 2
+    }
+  ],
+  "bySector": [
+    {
+      "sector": "Economie en Bedrijf",
+      "programmeCount": 698,
+      "activeCount": 698
+    },
+    {
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 431,
+      "activeCount": 431
+    },
+    {
+      "sector": "Techniek",
+      "programmeCount": 324,
+      "activeCount": 324
+    },
+    {
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 322,
+      "activeCount": 322
+    },
+    {
+      "sector": "Gezondheid",
+      "programmeCount": 299,
+      "activeCount": 299
+    },
+    {
+      "sector": "Exact en Informatica",
+      "programmeCount": 293,
+      "activeCount": 293
+    },
+    {
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 267,
+      "activeCount": 267
+    },
+    {
+      "sector": "Recht en Bestuur",
+      "programmeCount": 242,
+      "activeCount": 242
+    },
+    {
+      "sector": "Taal en Communicatie",
+      "programmeCount": 198,
+      "activeCount": 198
+    },
+    {
+      "sector": "Aarde en Milieu",
+      "programmeCount": 173,
+      "activeCount": 173
+    },
+    {
+      "sector": "Interdisciplinair",
+      "programmeCount": 50,
+      "activeCount": 50
+    }
+  ],
+  "byInstitution": [
+    {
+      "instellingSkdb": 54,
+      "instellingNaam": "Universiteit van Amsterdam",
+      "programmeCount": 166,
+      "activeCount": 166
+    },
+    {
+      "instellingSkdb": 183,
+      "instellingNaam": "Fontys Hogeschool",
+      "programmeCount": 163,
+      "activeCount": 163
+    },
+    {
+      "instellingSkdb": 46,
+      "instellingNaam": "Rijksuniversiteit Groningen",
+      "programmeCount": 153,
+      "activeCount": 153
+    },
+    {
+      "instellingSkdb": 45,
+      "instellingNaam": "Universiteit Leiden",
+      "programmeCount": 132,
+      "activeCount": 132
+    },
+    {
+      "instellingSkdb": 55,
+      "instellingNaam": "Vrije Universiteit Amsterdam",
+      "programmeCount": 132,
+      "activeCount": 132
+    },
+    {
+      "instellingSkdb": 263,
+      "instellingNaam": "NHL Stenden",
+      "programmeCount": 129,
+      "activeCount": 129
+    },
+    {
+      "instellingSkdb": 47,
+      "instellingNaam": "Universiteit Utrecht",
+      "programmeCount": 122,
+      "activeCount": 122
+    },
+    {
+      "instellingSkdb": 106,
+      "instellingNaam": "HAN University of Applied Sciences",
+      "programmeCount": 111,
+      "activeCount": 111
+    },
+    {
+      "instellingSkdb": 79,
+      "instellingNaam": "Hogeschool Rotterdam",
+      "programmeCount": 106,
+      "activeCount": 106
+    },
+    {
+      "instellingSkdb": 56,
+      "instellingNaam": "Radboud Universiteit",
+      "programmeCount": 102,
+      "activeCount": 102
+    },
+    {
+      "instellingSkdb": 104,
+      "instellingNaam": "Hogeschool Utrecht",
+      "programmeCount": 102,
+      "activeCount": 102
+    },
+    {
+      "instellingSkdb": 181,
+      "instellingNaam": "Hogeschool Inholland",
+      "programmeCount": 97,
+      "activeCount": 97
+    },
+    {
+      "instellingSkdb": 21,
+      "instellingNaam": "Windesheim",
+      "programmeCount": 96,
+      "activeCount": 96
+    },
+    {
+      "instellingSkdb": 184,
+      "instellingNaam": "Saxion",
+      "programmeCount": 96,
+      "activeCount": 96
+    },
+    {
+      "instellingSkdb": 182,
+      "instellingNaam": "Avans Hogeschool",
+      "programmeCount": 95,
+      "activeCount": 95
+    },
+    {
+      "instellingSkdb": 53,
+      "instellingNaam": "Maastricht University",
+      "programmeCount": 90,
+      "activeCount": 90
+    },
+    {
+      "instellingSkdb": 61,
+      "instellingNaam": "Hogeschool van Amsterdam",
+      "programmeCount": 87,
+      "activeCount": 87
+    },
+    {
+      "instellingSkdb": 48,
+      "instellingNaam": "Erasmus Universiteit Rotterdam",
+      "programmeCount": 85,
+      "activeCount": 85
+    },
+    {
+      "instellingSkdb": 102,
+      "instellingNaam": "Hanze",
+      "programmeCount": 84,
+      "activeCount": 84
+    },
+    {
+      "instellingSkdb": 124,
+      "instellingNaam": "Hogeschool Tio",
+      "programmeCount": 72,
+      "activeCount": 72
+    },
+    {
+      "instellingSkdb": 57,
+      "instellingNaam": "Tilburg University",
+      "programmeCount": 70,
+      "activeCount": 70
+    },
+    {
+      "instellingSkdb": 185,
+      "instellingNaam": "De Haagse Hogeschool",
+      "programmeCount": 58,
+      "activeCount": 58
+    },
+    {
+      "instellingSkdb": 51,
+      "instellingNaam": "Universiteit Twente",
+      "programmeCount": 55,
+      "activeCount": 55
+    },
+    {
+      "instellingSkdb": 65,
+      "instellingNaam": "Zuyd Hogeschool",
+      "programmeCount": 53,
+      "activeCount": 53
+    },
+    {
+      "instellingSkdb": 52,
+      "instellingNaam": "Wageningen University & Research",
+      "programmeCount": 52,
+      "activeCount": 52
+    },
+    {
+      "instellingSkdb": 49,
+      "instellingNaam": "Technische Universiteit Delft",
+      "programmeCount": 50,
+      "activeCount": 50
+    },
+    {
+      "instellingSkdb": 91,
+      "instellingNaam": "Hogeschool NCOI",
+      "programmeCount": 50,
+      "activeCount": 50
+    },
+    {
+      "instellingSkdb": 96,
+      "instellingNaam": "LOI Hogeschool",
+      "programmeCount": 39,
+      "activeCount": 39
+    },
+    {
+      "instellingSkdb": 44,
+      "instellingNaam": "HZ University of Applied Sciences",
+      "programmeCount": 38,
+      "activeCount": 38
+    },
+    {
+      "instellingSkdb": 50,
+      "instellingNaam": "Technische Universiteit Eindhoven",
+      "programmeCount": 36,
+      "activeCount": 36
+    },
+    {
+      "instellingSkdb": 241,
+      "instellingNaam": "Capabel Hogeschool",
+      "programmeCount": 31,
+      "activeCount": 31
+    },
+    {
+      "instellingSkdb": 180,
+      "instellingNaam": "ArtEZ University of the Arts",
+      "programmeCount": 28,
+      "activeCount": 28
+    },
+    {
+      "instellingSkdb": 62,
+      "instellingNaam": "Hogeschool Leiden",
+      "programmeCount": 28,
+      "activeCount": 28
+    },
+    {
+      "instellingSkdb": 186,
+      "instellingNaam": "Van Hall Larenstein",
+      "programmeCount": 28,
+      "activeCount": 28
+    },
+    {
+      "instellingSkdb": 58,
+      "instellingNaam": "Amsterdamse Hogeschool voor de Kunsten",
+      "programmeCount": 23,
+      "activeCount": 23
+    },
+    {
+      "instellingSkdb": 101,
+      "instellingNaam": "Christelijke Hogeschool Ede",
+      "programmeCount": 22,
+      "activeCount": 22
+    },
+    {
+      "instellingSkdb": 168,
+      "instellingNaam": "TIAS School for Business and Society",
+      "programmeCount": 22,
+      "activeCount": 22
+    },
+    {
+      "instellingSkdb": 138,
+      "instellingNaam": "Open Universiteit",
+      "programmeCount": 21,
+      "activeCount": 21
+    },
+    {
+      "instellingSkdb": 67,
+      "instellingNaam": "Breda University of Applied Sciences",
+      "programmeCount": 20,
+      "activeCount": 20
+    },
+    {
+      "instellingSkdb": 254,
+      "instellingNaam": "Aeres Hogeschool",
+      "programmeCount": 19,
+      "activeCount": 19
+    },
+    {
+      "instellingSkdb": 85,
+      "instellingNaam": "Business School Notenboom",
+      "programmeCount": 16,
+      "activeCount": 16
+    },
+    {
+      "instellingSkdb": 17,
+      "instellingNaam": "HKU",
+      "programmeCount": 16,
+      "activeCount": 16
+    },
+    {
+      "instellingSkdb": 40,
+      "instellingNaam": "HAS green academy",
+      "programmeCount": 16,
+      "activeCount": 16
+    },
+    {
+      "instellingSkdb": 87,
+      "instellingNaam": "Hogeschool Schoevers",
+      "programmeCount": 14,
+      "activeCount": 14
+    },
+    {
+      "instellingSkdb": 5,
+      "instellingNaam": "Driestar Hogeschool",
+      "programmeCount": 12,
+      "activeCount": 12
+    },
+    {
+      "instellingSkdb": 19,
+      "instellingNaam": "Nyenrode Business Universiteit",
+      "programmeCount": 12,
+      "activeCount": 12
+    },
+    {
+      "instellingSkdb": 166,
+      "instellingNaam": "EuroCollege Hogeschool",
+      "programmeCount": 12,
+      "activeCount": 12
+    },
+    {
+      "instellingSkdb": 82,
+      "instellingNaam": "Hogeschool der Kunsten Den Haag",
+      "programmeCount": 11,
+      "activeCount": 11
+    },
+    {
+      "instellingSkdb": 244,
+      "instellingNaam": "SDO Hogeschool voor Moderne Bedrijfskunde",
+      "programmeCount": 11,
+      "activeCount": 11
+    },
+    {
+      "instellingSkdb": 190,
+      "instellingNaam": "Habeo+",
+      "programmeCount": 10,
+      "activeCount": 10
+    },
+    {
+      "instellingSkdb": 36,
+      "instellingNaam": "Marnix Academie",
+      "programmeCount": 9,
+      "activeCount": 9
+    },
+    {
+      "instellingSkdb": 76,
+      "instellingNaam": "Hogeschool Viaa",
+      "programmeCount": 9,
+      "activeCount": 9
+    },
+    {
+      "instellingSkdb": 38,
+      "instellingNaam": "Codarts Hogeschool voor de Kunsten",
+      "programmeCount": 9,
+      "activeCount": 9
+    },
+    {
+      "instellingSkdb": 2114,
+      "instellingNaam": "Politieacademie",
+      "programmeCount": 8,
+      "activeCount": 8
+    },
+    {
+      "instellingSkdb": 162,
+      "instellingNaam": "Hogeschool Bestuursacademie Nederland",
+      "programmeCount": 8,
+      "activeCount": 8
+    },
+    {
+      "instellingSkdb": 92,
+      "instellingNaam": "Markus Verbeek Praehep",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "instellingSkdb": 247,
+      "instellingNaam": "Faculteit Militaire Wetenschappen",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "instellingSkdb": 173,
+      "instellingNaam": "SOMT",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "instellingSkdb": 259,
+      "instellingNaam": "HBO Academy",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "instellingSkdb": 178,
+      "instellingNaam": "IHE Delft Institute for Water Education",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "instellingSkdb": 243,
+      "instellingNaam": "TSM Business School",
+      "programmeCount": 7,
+      "activeCount": 7
+    },
+    {
+      "instellingSkdb": 100,
+      "instellingNaam": "Wittenborg University of Applied Sciences",
+      "programmeCount": 6,
+      "activeCount": 6
+    },
+    {
+      "instellingSkdb": 261,
+      "instellingNaam": "Nederlandse Academie voor Beeldcreatie",
+      "programmeCount": 6,
+      "activeCount": 6
+    },
+    {
+      "instellingSkdb": 81,
+      "instellingNaam": "Universiteit voor Humanistiek",
+      "programmeCount": 5,
+      "activeCount": 5
+    },
+    {
+      "instellingSkdb": 26,
+      "instellingNaam": "Hotelschool The Hague",
+      "programmeCount": 5,
+      "activeCount": 5
+    },
+    {
+      "instellingSkdb": 170,
+      "instellingNaam": "Schouten & Nelissen",
+      "programmeCount": 5,
+      "activeCount": 5
+    },
+    {
+      "instellingSkdb": 66,
+      "instellingNaam": "Hogeschool IPABO",
+      "programmeCount": 4,
+      "activeCount": 4
+    },
+    {
+      "instellingSkdb": 253,
+      "instellingNaam": "Unknown University of Applied Sciences",
+      "programmeCount": 4,
+      "activeCount": 4
+    },
+    {
+      "instellingSkdb": 260,
+      "instellingNaam": "Nederlandse Loodsencorporatie",
+      "programmeCount": 4,
+      "activeCount": 4
+    },
+    {
+      "instellingSkdb": 265,
+      "instellingNaam": "Academica University of Applied Sciences",
+      "programmeCount": 4,
+      "activeCount": 4
+    },
+    {
+      "instellingSkdb": 2124,
+      "instellingNaam": "SRH Haarlem University of Applied Sciences",
+      "programmeCount": 4,
+      "activeCount": 4
+    },
+    {
+      "instellingSkdb": 16,
+      "instellingNaam": "Hogeschool KPZ",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "instellingSkdb": 35,
+      "instellingNaam": "Iselinge Hogeschool",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "instellingSkdb": 99,
+      "instellingNaam": "Theologische Universiteit Utrecht",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "instellingSkdb": 60,
+      "instellingNaam": "Theologische Universiteit Apeldoorn",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "instellingSkdb": 161,
+      "instellingNaam": "Hogeschool Dirksen",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "instellingSkdb": 22,
+      "instellingNaam": "Gerrit Rietveld Academie",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "instellingSkdb": 211,
+      "instellingNaam": "Transnationale Universiteit Limburg",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "instellingSkdb": 234,
+      "instellingNaam": "Netherlands Business Academy",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "instellingSkdb": 142,
+      "instellingNaam": "Breederode Hogeschool",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "instellingSkdb": 15,
+      "instellingNaam": "Protestantse Theologische Universiteit",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "instellingSkdb": 27,
+      "instellingNaam": "Design Academy Eindhoven",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 130,
+      "instellingNaam": "IVA Driebergen Business School",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 10,
+      "instellingNaam": "Hogeschool voor Pedagogisch en Sociaal-Agogisch Onderwijs Groningen",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 105,
+      "instellingNaam": "Stichting hbo A&A Hogeschool voor de Accountancy",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 152,
+      "instellingNaam": "TMO Fashion Business School",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 108,
+      "instellingNaam": "THIM Hogeschool voor Fysiotherapie",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 230,
+      "instellingNaam": "Hogeschool ISBW",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 11,
+      "instellingNaam": "University of Applied Sciences Europe",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 239,
+      "instellingNaam": "Islamic University of Applied Sciences Rotterdam",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 258,
+      "instellingNaam": "Thomas More Hogeschool",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 169,
+      "instellingNaam": "Business School Nederland",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 221,
+      "instellingNaam": "Amsterdam School of Real Estate",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 150,
+      "instellingNaam": "Hogeschool NOVI",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 264,
+      "instellingNaam": "Hogeschool voor Toegepaste Filosofie (HTF)",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 93,
+      "instellingNaam": "The New School for Information Services",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 32,
+      "instellingNaam": "Hogeschool De Kempel",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 236,
+      "instellingNaam": "Artemis Academie, Hogeschool voor Trend Forecasting, Styling & Design en Art Direction",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 193,
+      "instellingNaam": "Instituut Defensie Leergangen",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 233,
+      "instellingNaam": "Team Academy",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 232,
+      "instellingNaam": "Opleidingsinstelling Geestelijke Gezondheidszorg Verpleegkundig Specialist",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 248,
+      "instellingNaam": "Tyndale Theological Seminary",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 2116,
+      "instellingNaam": "Saba University School of Medicine",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 242,
+      "instellingNaam": "Koninklijk Actuarieel Genootschap & Actuarieel Instituut",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 192,
+      "instellingNaam": "NSO-CNA Leiderschapsacademie",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 189,
+      "instellingNaam": "NCOI / Pro Education",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 235,
+      "instellingNaam": "Hogeschool Scheidegger",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 2122,
+      "instellingNaam": "Stichting BV/BmS Opleidingen",
+      "programmeCount": 1,
+      "activeCount": 1
+    },
+    {
+      "instellingSkdb": 2123,
+      "instellingNaam": "International University of Applied Sciences Amsterdam",
+      "programmeCount": 1,
+      "activeCount": 1
+    }
+  ]
 }

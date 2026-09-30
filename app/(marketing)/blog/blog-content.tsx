@@ -16,6 +16,16 @@ const content = {
     readArticle: 'Read article',
     posts: [
       {
+        slug: 'international-students-dutch-housemates-language',
+        title: 'Language Gaps With Dutch Housemates',
+        excerpt:
+          'ResearchNed and Nuffic data show many international students struggle to connect with Dutch peers. In mixed student houses, kitchen Dutch often matters more than lecture English.',
+        readTime: '9 min read',
+        date: '2026-09-30',
+        category: 'Integration',
+        icon: Users,
+      },
+      {
         slug: 'dutch-study-choice-gamma-fields',
         title: 'Dutch Study Choice: Why Gamma Fields Dominate',
         excerpt:
@@ -323,6 +333,16 @@ const content = {
     subtitle: 'Deskundige tips om compatibele huisgenoten te vinden, veilig te huren en te begrijpen hoe technologie je helpt betere woonbeslissingen te nemen.',
     readArticle: 'Lees artikel',
     posts: [
+      {
+        slug: 'international-students-dutch-housemates-language',
+        title: 'Taalkloven met Nederlandse huisgenoten',
+        excerpt:
+          'ResearchNed en Nuffic laten zien dat veel internationale studenten moeite hebben contact te maken met Nederlandse peers. In gemengde huizen telt keuken-Nederlands vaak zwaarder dan college-Engels.',
+        readTime: '9 min lezen',
+        date: '2026-09-30',
+        category: 'Integratie',
+        icon: Users,
+      },
       {
         slug: 'dutch-study-choice-gamma-fields',
         title: 'Studiekeuze in Nederland: waarom gamma zo dominant is',
