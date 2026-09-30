@@ -860,8 +860,8 @@ export function BlogContent() {
                           {post.excerpt}
                         </p>
 
-                        <div className="flex items-center justify-between pt-4 border-t border-white/60">
-                          <div className="flex items-center gap-4 text-xs text-slate-600">
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center justify-between text-xs text-slate-600">
                             <div className="flex items-center gap-1.5">
                               <Calendar className="h-3.5 w-3.5" />
                               <span>{dateFormatter.format(new Date(post.date))}</span>
@@ -871,9 +871,16 @@ export function BlogContent() {
                               <span>{post.readTime}</span>
                             </div>
                           </div>
-                          <span className="inline-flex items-center text-sm font-semibold text-blue-700 group-hover:text-blue-800 transition-colors">
+                          <span
+                            className={cn(
+                              'inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5',
+                              'bg-indigo-500 text-sm font-semibold text-white',
+                              'shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
+                              'transition-colors group-hover:bg-indigo-600'
+                            )}
+                          >
                             {t.readArticle}
-                            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                           </span>
                         </div>
                       </div>
