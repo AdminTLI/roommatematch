@@ -93,7 +93,7 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
     setMounted(true)
   }, [])
 
-  const navItems = [
+  const navItems: { id: SettingsTab; label: string; icon: typeof User }[] = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'questionnaire', label: 'Questionnaire', icon: FileText },
     { id: 'account', label: 'Account', icon: SettingsIcon },
@@ -196,7 +196,11 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                 </div>
               </div>
             ) : (
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs
+                value={activeTab}
+                onValueChange={(value) => setActiveTab(tabFromSearchParams(value))}
+                className="w-full"
+              >
                 <TabsContent value="profile" className="mt-0 focus-visible:outline-none">
                   <div className="p-6">
                     <div className="mb-6">
