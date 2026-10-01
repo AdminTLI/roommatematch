@@ -753,8 +753,11 @@ CREATE TRIGGER trigger_create_chat_on_match_insert
   EXECUTE FUNCTION trigger_create_chat_on_match();
 
 -- Function for match status change notifications
-CREATE OR REPLACE FUNCTION trigger_notify_match_status_change()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.trigger_notify_match_status_change()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public, extensions
+AS $$
 DECLARE
   user_a_name TEXT;
   user_b_name TEXT;
@@ -793,7 +796,7 @@ BEGIN
   
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Create trigger for match status changes
 DROP TRIGGER IF EXISTS trigger_notify_match_status_change ON matches;
