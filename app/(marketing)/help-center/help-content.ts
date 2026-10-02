@@ -206,34 +206,87 @@ The quiz is designed to be thorough but not overwhelming. Take your time to give
         {
           id: 'verification-process',
           title: 'ID Verification Process',
-          content: `ID verification is required to ensure platform safety and authenticity.
+          content: `ID verification is required to keep Domu Match safe - so you're matching with real people, not fake profiles.
 
-**What You'll Need:**
-- Government-issued ID (passport, driver's license, or national ID card)
-- A smartphone or device with a camera
-- Good lighting for a clear selfie
+**What you'll need:**
+- A government-issued ID (passport, driver's licence, or national ID card)
+- A phone or laptop with a camera
+- Decent lighting for a clear selfie
 
-**Step-by-Step Process:**
-1. After email verification, you'll be prompted to verify your identity
-2. Choose your ID type (passport, driver's license, or national ID)
-3. Take a clear photo of your ID (both sides if applicable)
-4. Take a selfie following the on-screen instructions
-5. Submit for review
+**How it works (simple version):**
+1. We ask you to do a quick ID check before you can message matches
+2. A trusted partner called **Persona** opens a secure check (same kind of tool companies like LinkedIn and Coursera use)
+3. You take a selfie and show your ID on their screen
+4. Persona checks that the ID looks real and matches you
+5. We get a yes/no result so we know you're a real person
 
-**Verification Review:**
-- Automatic verification usually takes 1-2 minutes
-- Manual review may take up to 24 hours
-- You'll receive an email notification once verified
+**How long does it take?**
+- Usually 1–2 minutes when it goes through automatically
+- Sometimes a human review takes up to 24 hours
+- You'll get a notification when you're verified
 
-**Privacy & Security:**
-- All verification data is encrypted and secure
-- ID photos are stored for 4 weeks after verification (per Dutch law)
-- Your ID information is never shared with other users
-- Verification is processed by trusted third-party providers (Persona, Veriff, or Onfido)`,
+**Your photos & privacy:**
+- Domu Match does **not** keep your ID photos or selfie
+- Persona runs the scan on their secure flow
+- Other users never see your ID
+- Want the full plain-language breakdown? Read **What happens to my ID photos?**`,
           section: 'account-verification',
           tags: ['verification', 'ID', 'safety'],
-          keywords: ['ID verification', 'identity check', 'verify ID'],
-          relatedArticles: ['account-settings', 'safety-features'],
+          keywords: ['ID verification', 'identity check', 'verify ID', 'Persona'],
+          relatedArticles: ['id-verification-privacy', 'account-settings', 'safety-features'],
+          type: 'article',
+        },
+        {
+          id: 'id-verification-privacy',
+          title: 'What happens to my ID photos?',
+          content: `Short answer: **we don't keep your ID photos or selfie.** Persona (our ID-check partner) runs the scan. We mainly keep that you passed - so the platform stays safer for everyone.
+
+If you're nervous about uploading your ID, that's totally fair. Here's exactly what happens, in student-friendly language.
+
+**What you do**
+1. Open the ID check in Domu Match
+2. Persona asks for a quick selfie and a government ID (passport, driver's licence, etc.)
+3. Their system checks that the ID looks real and matches you
+4. We get a result: passed or not passed
+
+**What Domu Match does *not* store**
+- Photos of your ID
+- Your selfie / face scan
+- Biometric templates (the technical "face map" some ID tools create)
+
+Those stay with Persona for the check. They never become something other users can see, and they are not sitting in your Domu Match profile.
+
+**What we *do* keep (and why)**
+- **Long-term:** that you verified successfully (basically a pass/fail flag, plus that Persona was used). We need this so only real people can chat and match.
+- **For a short time (~4 weeks):** limited check details used to confirm the result - for example whether the name and date of birth on the ID match what you typed at signup, and that you're 18+. After that window, those detailed check fields are scrubbed from our side. We keep the "you passed" confirmation.
+
+**Why we need even that much**
+- So you're not chatting with bots or fake profiles
+- So your signup name/age matches the person on the ID
+- So someone we banned can't easily waltz back in with a new account and the same ID
+
+Think of it like a nightclub stamp: the bouncer checks your ID at the door. They don't photocopy your passport into a binder forever - they just need to know you're allowed in, and that the same person who got kicked out earlier can't sneak back in.
+
+**Who can see what**
+- Other students / housemates: **never** see your ID or selfie
+- Domu Match: pass/fail + the limited fields above
+- Persona: runs the secure check as our processor
+
+**Still unsure?**
+Read the ID verification section in our Privacy Policy, or email us at domumatch@gmail.com. We'd rather you feel solid about this before you continue.`,
+          section: 'account-verification',
+          tags: ['verification', 'privacy', 'Persona', 'ID', 'safety'],
+          keywords: [
+            'ID photos',
+            'do you store my ID',
+            'Persona privacy',
+            'selfie stored',
+            'biometric',
+            'what happens to my ID',
+            'ID check privacy',
+            'trust',
+          ],
+          relatedArticles: ['verification-process', 'privacy-controls', 'safety-features'],
           type: 'article',
         },
         {
@@ -309,17 +362,29 @@ You can update your profile anytime from Settings > Profile. Changes may take a 
         {
           id: 'faq-verification-required',
           title: 'Is ID verification required?',
-          content: `Yes, ID verification is required for all users. This ensures:
-- Platform safety and security
-- All users are legitimate students
-- Compliance with university partnerships
-- Protection against fraud and scams
+          content: `Yes - for matching and chat, everyone needs to complete identity verification. That way you're not messaging bots or fake profiles.
 
-Verification is quick and secure, using trusted third-party providers.`,
+It's a quick Persona check (selfie + government ID). Students also use their university email; young professionals use their own email plus the same ID check.
+
+We don't keep your ID photos - see **What happens to my ID photos?** for the full plain-language version.`,
           section: 'account-verification',
           tags: ['verification', 'required'],
           keywords: ['required', 'mandatory', 'do I need'],
-          relatedArticles: ['verification-process'],
+          relatedArticles: ['verification-process', 'id-verification-privacy'],
+          type: 'faq',
+        },
+        {
+          id: 'faq-store-id-photos',
+          title: 'Do you store my ID photos or selfie?',
+          content: `No. Domu Match does not store your ID photos or selfie. Persona runs that part of the check on their secure flow.
+
+We keep a pass/fail confirmation so we know you're verified, plus limited match details for a short time (about 4 weeks) so we can confirm name/age and help stop banned people from coming back. After that, those detailed fields are scrubbed. Other users never see your ID.
+
+Read **What happens to my ID photos?** for the full breakdown.`,
+          section: 'account-verification',
+          tags: ['verification', 'privacy', 'ID'],
+          keywords: ['store ID', 'keep selfie', 'Persona data', 'ID photos', 'privacy'],
+          relatedArticles: ['id-verification-privacy', 'verification-process', 'privacy-controls'],
           type: 'faq',
         },
         {
@@ -334,7 +399,7 @@ If your verification is taking longer than 24 hours, contact support.`,
           section: 'account-verification',
           tags: ['verification', 'time'],
           keywords: ['how long', 'verification time', 'processing'],
-          relatedArticles: ['verification-process', 'troubleshooting-verification'],
+          relatedArticles: ['verification-process', 'id-verification-privacy', 'troubleshooting-verification'],
           type: 'faq',
         },
         {
@@ -1158,14 +1223,15 @@ As a user in the EU, you have the right to:
 - Contact domumatch@gmail.com for assistance
 
 **Data Retention:**
-- Verification documents: 4 weeks (Dutch law requirement)
+- ID photos / selfie: not stored by Domu Match (Persona runs the check)
+- Limited verification check details: scrubbed after about 4 weeks (Dutch law window); we keep that you passed
 - Chat messages: 1 year after last message
 - Profile data: Until account deletion
-- See our Privacy Policy for full details`,
+- See our Privacy Policy and **What happens to my ID photos?** for full details`,
           section: 'safety',
           tags: ['privacy', 'GDPR', 'data'],
           keywords: ['privacy', 'GDPR', 'data protection', 'rights'],
-          relatedArticles: ['safety-features', 'account-settings'],
+          relatedArticles: ['safety-features', 'account-settings', 'id-verification-privacy'],
           type: 'article',
         },
       ],
@@ -1185,7 +1251,7 @@ Your data is never shared with other users or sold to third parties.`,
           section: 'safety',
           tags: ['security', 'data protection'],
           keywords: ['data security', 'protected', 'safe data'],
-          relatedArticles: ['privacy-controls'],
+          relatedArticles: ['privacy-controls', 'id-verification-privacy'],
           type: 'faq',
         },
         {
@@ -1213,8 +1279,8 @@ If you need immediate assistance, contact domumatch@gmail.com.`,
 3. Confirm the deletion
 4. Your account will be permanently deleted after 30 days (GDPR/AVG grace period)
 
-Note: Some data may be retained for legal compliance:
-- Verification documents: 4 weeks (Dutch law)
+Note: Some limited data may be retained for legal / safety compliance:
+- Limited ID-check details for about 4 weeks (then scrubbed); we do not store your ID photos
 - Certain records for safety/legal purposes
 
 Contact domumatch@gmail.com if you have questions.`,
@@ -1875,14 +1941,26 @@ export function getAllArticles(locale: 'en' | 'nl' = 'en'): HelpArticle[] {
  * Get article by ID
  */
 export function getArticleById(id: string, locale: 'en' | 'nl' = 'en'): HelpArticle | undefined {
-  return getAllArticles(locale).find(article => article.id === id)
+  const local = getAllArticles(locale).find((article) => article.id === id)
+  if (local) return local
+  if (locale !== 'en') {
+    return getAllArticles('en').find((article) => article.id === id)
+  }
+  return undefined
 }
 
 /**
  * Get section by ID
  */
 export function getSectionById(id: string, locale: 'en' | 'nl' = 'en'): HelpSection | undefined {
-  return helpContent[locale].find(section => section.id === id)
+  const local = helpContent[locale].find((section) => section.id === id)
+  if (local && (local.articles.length > 0 || local.faqs.length > 0 || locale === 'en')) {
+    return local
+  }
+  if (locale !== 'en') {
+    return helpContent.en.find((section) => section.id === id)
+  }
+  return local
 }
 
 /**

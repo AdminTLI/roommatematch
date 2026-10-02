@@ -70,7 +70,7 @@ const faqSchema = {
       name: 'How do young professionals verify their identity?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Every user is government-ID verified through Persona before they can chat. This keeps the platform safe from bots and scams. Young professionals verify with the same process; no university email is needed.',
+        text: 'Every user is government-ID verified through Persona before they can chat. We don’t keep your ID photos — Persona runs that check; we mainly store that you passed. This keeps the platform safe from bots and scams. Young professionals verify with the same process; no university email is needed.',
       },
     },
     {

@@ -142,7 +142,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
     },
     trust: {
       badge: 'Powered by Persona™ Identity Verification',
-      copy: 'No bots. No AI profiles. No Scams. Every user is government-ID verified before they can chat.',
+      copy: 'No bots. No AI profiles. No scams. Every user is government-ID verified before they can chat — and we don’t keep your ID photos. Persona runs the scan; we mainly store that you passed.',
       proofLine:
         'Persona is trusted by leading companies (e.g. Robinhood and DoorDash) for identity verification - so you’re matching with real people, not fake profiles.',
       verifiedLabel: 'Verified User',
@@ -172,7 +172,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
         {
           question: 'How do you prevent housing scams?',
           answer:
-            'Every user on Domu Match is government-ID verified through Persona before they can chat. No bots, no fake profiles, no AI-generated identities. We also verify student status through university email addresses. If something feels wrong, our safety team reviews reports within 24 hours.',
+            'Every user on Domu Match is government-ID verified through Persona before they can chat. No bots, no fake profiles, no AI-generated identities. We don’t keep your ID photos — Persona runs that check; we mainly store that you passed (so banned people can’t easily come back). We also verify student status through university email addresses. If something feels wrong, our safety team reviews reports within 24 hours.',
         },
       ],
     },
@@ -322,7 +322,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
     },
     trust: {
       badge: 'Mede mogelijk gemaakt door Persona™ Identity Verification',
-      copy: 'Geen bots. Geen AI-profielen. Geen oplichting. Elke gebruiker is geverifieerd met overheids-ID voordat ze kunnen chatten.',
+      copy: 'Geen bots. Geen AI-profielen. Geen oplichting. Elke gebruiker is geverifieerd met overheids-ID voordat ze kunnen chatten — en we bewaren je ID-foto’s niet. Persona doet de scan; wij bewaren vooral dat je bent goedgekeurd.',
       proofLine:
         'Persona wordt gebruikt door toonaangevende bedrijven (bijv. Robinhood en DoorDash) voor identiteitsverificatie - zodat jij met echte mensen matcht, niet met nep-profielen.',
       verifiedLabel: 'Geverifieerde Gebruiker',
@@ -352,7 +352,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
         {
           question: 'Hoe voorkomen jullie huisvestingsfraude?',
           answer:
-            'Elke gebruiker op Domu Match is geverifieerd met overheids-ID via Persona voordat ze kunnen chatten. Geen bots, geen nep-profielen, geen AI-gegenereerde identiteiten. We verifiëren ook de studentenstatus via universiteits-e-mailadressen. Als iets niet klopt, beoordeelt ons veiligheidsteam meldingen binnen 24 uur.',
+            'Elke gebruiker op Domu Match is geverifieerd met overheids-ID via Persona voordat ze kunnen chatten. Geen bots, geen nep-profielen, geen AI-gegenereerde identiteiten. We bewaren je ID-foto’s niet — Persona doet die check; wij bewaren vooral dat je bent goedgekeurd (zodat verbannen mensen niet makkelijk terugkomen). We verifiëren ook de studentenstatus via universiteits-e-mailadressen. Als iets niet klopt, beoordeelt ons veiligheidsteam meldingen binnen 24 uur.',
         },
       ],
     },

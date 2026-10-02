@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Camera, IdCard, Loader2, ShieldCheck } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { ID_VERIFICATION_PRIVACY_HELP_HREF } from '@/lib/verification/privacy-help'
+
+export { ID_VERIFICATION_PRIVACY_HELP_HREF } from '@/lib/verification/privacy-help'
 
 type PersonaClient = {
   open: () => void
@@ -204,7 +208,7 @@ export function PersonaTrustDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md gap-5 sm:gap-6">
+      <DialogContent className="max-w-md gap-5 sm:gap-6 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="space-y-3 text-center sm:text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 dark:bg-indigo-400/15">
             <ShieldCheck className="h-6 w-6 text-indigo-500 dark:text-indigo-400" aria-hidden />
@@ -213,7 +217,7 @@ export function PersonaTrustDialog({
             <DialogTitle className="text-xl">Quick check before you connect</DialogTitle>
             <DialogDescription className="text-sm leading-relaxed text-text-secondary dark:text-text-secondary">
               Before you message matches, we need a quick ID check. It helps keep roommate matching
-              safer for everyone on campus.
+              safer for everyone on campus - real people only, fewer scams.
             </DialogDescription>
           </div>
         </DialogHeader>
@@ -240,9 +244,42 @@ export function PersonaTrustDialog({
           </ul>
         </div>
 
+        <div className="space-y-2.5 rounded-2xl border border-emerald-200/70 bg-emerald-50/50 px-4 py-3.5 dark:border-emerald-500/25 dark:bg-emerald-500/10">
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
+            Your ID stays private
+          </p>
+          <ul className="space-y-2 text-sm leading-snug text-text-primary dark:text-text-primary">
+            <li>
+              <span className="font-medium">We never keep your ID photos or selfie.</span> Persona
+              runs that scan - other users never see it.
+            </li>
+            <li>
+              We mainly store that you <span className="font-medium">passed</span>, so only real
+              people can chat.
+            </li>
+            <li>
+              Limited check details (like name/age match) are scrubbed after about{' '}
+              <span className="font-medium">4 weeks</span>. That also helps stop banned people from
+              coming back with a new account.
+            </li>
+          </ul>
+          <p className="text-xs leading-relaxed text-text-muted pt-0.5">
+            Not sure yet?{' '}
+            <Link
+              href={ID_VERIFICATION_PRIVACY_HELP_HREF}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-indigo-600 underline underline-offset-2 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              onClick={() => onOpenChange(false)}
+            >
+              Read the full plain-language explanation
+            </Link>{' '}
+            in Help Center - then come back when you feel ready.
+          </p>
+        </div>
+
         <p className="text-center text-xs leading-relaxed text-text-muted">
-          Powered by Persona, the same kind of ID check LinkedIn and Coursera use. We never keep
-          your ID photos; we only store that you passed.
+          Powered by Persona - the same kind of ID check LinkedIn and Coursera use.
         </p>
 
         {error && (

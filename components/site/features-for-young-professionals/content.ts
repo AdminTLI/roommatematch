@@ -131,7 +131,7 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
     },
     trust: {
       badge: 'Powered by Persona™ Identity Verification',
-      copy: 'No bots. No fake profiles. No scams. Every user is government-ID verified before they can chat. Young professionals get the same safe, gated environment as students - in a separate pool.',
+      copy: 'No bots. No fake profiles. No scams. Every user is government-ID verified before they can chat — and we don’t keep your ID photos. Persona runs the scan; we mainly store that you passed. Young professionals get the same safe, gated environment as students - in a separate pool.',
       verifiedLabel: 'Verified User',
       proofLine:
         'Persona is trusted by leading companies (e.g. OpenAI, Coursera, and Brex) for identity verification - so you’re matching with real people, not fake profiles.',
@@ -165,7 +165,8 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
         },
         {
           question: 'How do young professionals verify?',
-          answer: 'Every user is government-ID verified through Persona before they can chat. Young professionals use the same process; no university email is needed.',
+          answer:
+            'Every user is government-ID verified through Persona before they can chat. We don’t keep your ID photos — Persona runs that check; we mainly store that you passed. Young professionals use the same process; no university email is needed.',
         },
         {
           question: 'Do I only get matched with other young professionals?',
@@ -240,7 +241,7 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
     },
     trust: {
       badge: 'Mede mogelijk gemaakt door Persona™ Identity Verification',
-      copy: 'Geen bots. Geen nep-profielen. Geen oplichting. Elke gebruiker is geverifieerd met overheids-ID voordat ze kunnen chatten. Young professionals krijgen dezelfde veilige omgeving als studenten - in een aparte pool.',
+      copy: 'Geen bots. Geen nep-profielen. Geen oplichting. Elke gebruiker is geverifieerd met overheids-ID voordat ze kunnen chatten — en we bewaren je ID-foto’s niet. Persona doet de scan; wij bewaren vooral dat je bent goedgekeurd. Young professionals krijgen dezelfde veilige omgeving als studenten - in een aparte pool.',
       verifiedLabel: 'Geverifieerde Gebruiker',
       proofLine:
         'Persona wordt gebruikt door toonaangevende bedrijven (bijv. OpenAI, Coursera en Brex) voor identiteitsverificatie - zodat jij met echte mensen matcht, niet met nep-profielen.',
@@ -274,7 +275,8 @@ export const content: Record<Locale, FeaturesForYoungProfessionalsContent> = {
         },
         {
           question: 'Hoe verifiëren young professionals?',
-          answer: 'Elke gebruiker is geverifieerd met overheids-ID via Persona voordat ze kunnen chatten. Young professionals gebruiken hetzelfde proces.',
+          answer:
+            'Elke gebruiker is geverifieerd met overheids-ID via Persona voordat ze kunnen chatten. We bewaren je ID-foto’s niet — Persona doet die check; wij bewaren vooral dat je bent goedgekeurd. Young professionals gebruiken hetzelfde proces.',
         },
         {
           question: 'Word ik alleen gematcht met andere young professionals?',

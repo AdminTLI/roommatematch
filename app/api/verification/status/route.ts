@@ -7,6 +7,7 @@ import {
   extractPersonaInquiryStatus,
   fetchPersonaInquiry,
 } from '@/lib/verification/persona-client'
+import { reevaluateLatestRejectedPersonaVerification } from '@/lib/verification/reevaluate-persona'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -92,6 +93,32 @@ export async function GET(request: NextRequest) {
       verificationStatus = 'verified'
     } else if (latestVerification?.status === 'rejected' || latestVerification?.status === 'expired') {
       verificationStatus = 'failed'
+
+      // Re-run Domu Match checks if Persona already approved (e.g. swapped names
+      // that the updated matcher now accepts).
+      if (latestVerification.status === 'rejected' && latestVerification.provider === 'persona') {
+        try {
+          const reeval = await reevaluateLatestRejectedPersonaVerification(
+            admin,
+            user.id,
+            user.email
+          )
+          if (reeval.outcome === 'approved') {
+            verificationStatus = 'verified'
+            canContinue = false
+            verification = {
+              ...latestVerification,
+              status: 'approved',
+              updated_at: new Date().toISOString(),
+            }
+          }
+        } catch (syncError) {
+          safeLogger.warn('[Verification] Rejected Persona re-eval failed', {
+            userId: user.id,
+            error: syncError,
+          })
+        }
+      }
     } else if (latestVerification?.status === 'pending') {
       verificationStatus = 'pending'
       canContinue = true

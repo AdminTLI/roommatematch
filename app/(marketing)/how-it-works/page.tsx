@@ -1,5 +1,6 @@
 import { HowItWorksSection } from '@/components/site/how-it-works-section'
 import { SocialFinalCTA } from '@/components/site/social-final-cta'
+import { IdVerificationPrivacySection } from '@/components/site/id-verification-privacy-section'
 import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wrapper-light'
 import { HowItWorksSafetyBand } from './how-it-works-safety-band'
 import { Metadata } from 'next'
@@ -118,6 +119,7 @@ export default function HowItWorksPage() {
         <div>
           <HowItWorksSection />
           <HowItWorksSafetyBand />
+          <IdVerificationPrivacySection />
           <SocialFinalCTA />
         </div>
       </MarketingSubpageWrapperLight>

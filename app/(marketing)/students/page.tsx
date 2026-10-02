@@ -80,7 +80,7 @@ const faqSchema = {
       name: 'How do you prevent housing scams?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Every user on Domu Match is government-ID verified through Persona before they can chat. No bots, no fake profiles, no AI-generated identities. We also verify student status through university email addresses. If something feels wrong, our safety team reviews reports within 24 hours.',
+        text: 'Every user on Domu Match is government-ID verified through Persona before they can chat. No bots, no fake profiles, no AI-generated identities. We don’t keep your ID photos — Persona runs that check; we mainly store that you passed. We also verify student status through university email addresses. If something feels wrong, our safety team reviews reports within 24 hours.',
       },
     },
   ],

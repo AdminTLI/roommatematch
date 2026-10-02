@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
-import { normalizeDateInput } from '@/lib/auth/age-verification'
 import { markIdentityVerified } from '@/lib/auth/verification-check'
 import {
   classifyPersonaInquiryForReuse,
@@ -10,6 +9,8 @@ import {
   fetchPersonaInquiry,
   resumePersonaInquiry,
 } from '@/lib/verification/persona-client'
+import { reevaluateLatestRejectedPersonaVerification } from '@/lib/verification/reevaluate-persona'
+import { normalizeDateInput } from '@/lib/auth/age-verification'
 
 type KYCProvider = 'veriff' | 'persona' | 'onfido'
 
@@ -112,6 +113,21 @@ export async function POST(_request: NextRequest) {
       return NextResponse.json({
         status: 'verified',
         message: 'Already verified',
+      })
+    }
+
+    // Heal false name-mismatch rejections (Persona already approved) before
+    // forcing the user through another ID capture.
+    const healed = await reevaluateLatestRejectedPersonaVerification(
+      admin,
+      user.id,
+      user.email
+    )
+    if (healed.outcome === 'approved') {
+      return NextResponse.json({
+        status: 'verified',
+        message: 'Already verified',
+        healed: true,
       })
     }
 

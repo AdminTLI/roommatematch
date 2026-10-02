@@ -17,12 +17,37 @@ describe('namesMatch', () => {
     expect(namesMatch('Ada', 'Lovelace', 'Ada', 'Lovelace')).toBe(true)
   })
 
-  it('tolerates middle names in first name field', () => {
+  it('tolerates middle names on the ID first-name field', () => {
     expect(namesMatch('Mary', 'Smith', 'Mary Jane', 'Smith')).toBe(true)
   })
 
-  it('rejects last name mismatch', () => {
+  it('tolerates swapped first and last names', () => {
+    expect(namesMatch('Bucuci', 'Sergiu', 'SERGIU', 'BUCUCI')).toBe(true)
+    expect(namesMatch('Sergiu', 'Bucuci', 'BUCUCI', 'SERGIU')).toBe(true)
+  })
+
+  it('tolerates many ID names when platform only has two', () => {
+    expect(
+      namesMatch('Sergiu', 'Bucuci', 'Sergiu Alexandru Ion', 'Bucuci')
+    ).toBe(true)
+    expect(
+      namesMatch('Ana', 'Popescu', 'Ana Maria', 'Popescu Ionescu')
+    ).toBe(true)
+    expect(namesMatch('Jan', 'Berg', 'Jan', 'van der Berg')).toBe(true)
+  })
+
+  it('treats hyphenated and spaced names as equivalent tokens', () => {
+    expect(namesMatch('Mary-Jane', 'Smith', 'Mary Jane', 'Smith')).toBe(true)
+    expect(namesMatch('Mary Jane', 'Smith', 'Mary-Jane', 'Smith')).toBe(true)
+  })
+
+  it('still rejects when a claimed name is missing from the ID', () => {
     expect(namesMatch('Ada', 'Lovelace', 'Ada', 'Byron')).toBe(false)
+    expect(namesMatch('Ada', 'Lovelace', 'Charles', 'Babbage')).toBe(false)
+  })
+
+  it('rejects when the platform has a name the ID does not include', () => {
+    expect(namesMatch('José María', 'García', 'Jose', 'Garcia')).toBe(false)
   })
 })
 
@@ -104,6 +129,42 @@ describe('decidePersonaIdentity', () => {
     })
     expect(result.approved).toBe(false)
     expect(result.reasons).toContain('name_mismatch')
+  })
+
+  it('approves swapped first/last against an approved Persona inquiry', () => {
+    const result = decidePersonaIdentity({
+      personaApproved: true,
+      expected: {
+        firstName: 'Bucuci',
+        lastName: 'Sergiu',
+        dateOfBirth: '1990-01-15',
+      },
+      persona: {
+        firstName: 'SERGIU',
+        lastName: 'BUCUCI',
+        dateOfBirth: '1990-01-15',
+      },
+    })
+    expect(result.approved).toBe(true)
+    expect(result.reasons).toEqual([])
+  })
+
+  it('approves when ID has extra names beyond signup', () => {
+    const result = decidePersonaIdentity({
+      personaApproved: true,
+      expected: {
+        firstName: 'Sergiu',
+        lastName: 'Bucuci',
+        dateOfBirth: '1990-01-15',
+      },
+      persona: {
+        firstName: 'Sergiu Alexandru',
+        lastName: 'Bucuci',
+        dateOfBirth: '1990-01-15',
+      },
+    })
+    expect(result.approved).toBe(true)
+    expect(result.reasons).toEqual([])
   })
 
   it('rejects missing persona name', () => {

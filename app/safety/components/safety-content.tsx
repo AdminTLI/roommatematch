@@ -30,7 +30,10 @@ import {
   ExternalLink,
   ArrowRight,
   Sparkles,
+  EyeOff,
+  TimerReset,
 } from 'lucide-react'
+import { ID_VERIFICATION_PRIVACY_HELP_HREF } from '@/lib/verification/privacy-help'
 import {
   Accordion,
   AccordionContent,
@@ -229,6 +232,13 @@ export function SafetyContent({
 
         <div className="flex flex-wrap gap-2 pt-1">
           <a
+            href="#id-privacy"
+            className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-emerald-50/80 px-3.5 py-1.5 text-xs font-semibold text-emerald-800 transition-colors hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
+          >
+            ID check privacy
+            <ArrowRight className="h-3 w-3" />
+          </a>
+          <a
             href="#platform-guide"
             className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200/80 bg-indigo-50/80 px-3.5 py-1.5 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
           >
@@ -358,7 +368,7 @@ export function SafetyContent({
           {
             icon: Lock,
             title: 'Private by default',
-            body: 'You’re in control of your profile',
+            body: 'We don’t keep your ID photos',
             tint: 'from-violet-500/15 to-fuchsia-500/10',
             iconColor: 'text-violet-600 dark:text-violet-400',
           },
@@ -385,6 +395,88 @@ export function SafetyContent({
             </div>
           </div>
         ))}
+      </motion.div>
+
+      {/* ID verification privacy */}
+      <motion.div
+        id="id-privacy"
+        variants={fadeInUp}
+        initial="initial"
+        animate="animate"
+        className="relative scroll-mt-24"
+      >
+        <Card className={shell}>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-12 top-0 h-36 w-36 rounded-full bg-emerald-400/15 blur-3xl"
+          />
+          <CardHeader className="relative border-b border-zinc-200/80 dark:border-white/10 bg-gradient-to-r from-emerald-50/70 via-white/50 to-teal-50/40 dark:from-emerald-500/[0.08] dark:via-transparent dark:to-teal-500/[0.06]">
+            <CardTitle className="flex items-center gap-3 text-zinc-900 dark:text-white">
+              <div className="rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/15 p-2.5">
+                <EyeOff className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              Your ID check, explained simply
+            </CardTitle>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+              We get that showing your passport or driver&apos;s licence feels personal. Here&apos;s
+              what actually happens - no jargon, no surprises.
+            </p>
+          </CardHeader>
+          <CardContent className="relative space-y-5 p-5 sm:p-6">
+            <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
+              Domu Match uses <span className="font-semibold text-zinc-800 dark:text-zinc-100">Persona</span>{' '}
+              (same kind of ID check LinkedIn and Coursera use) for a quick selfie + government ID
+              scan. Persona runs that part. We mainly need to know you passed - so you&apos;re
+              matching with real people, not bots or someone we already banned.
+            </p>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                {
+                  icon: EyeOff,
+                  title: 'We don’t keep ID photos',
+                  body: 'Your ID images and selfie are not stored in Domu Match. Other users never see them.',
+                },
+                {
+                  icon: CheckCircle,
+                  title: 'Pass / fail stays',
+                  body: 'Long-term we keep that you’re verified - so chat stays people-only.',
+                },
+                {
+                  icon: TimerReset,
+                  title: 'Extra details get scrubbed',
+                  body: 'Limited check fields (like name/age match) are removed after about 4 weeks.',
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-2xl border border-emerald-200/50 bg-gradient-to-br from-emerald-50/60 to-white p-4 dark:border-emerald-500/20 dark:from-emerald-500/[0.08] dark:to-transparent"
+                >
+                  <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/15">
+                    <item.icon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-white">{item.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                    {item.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-zinc-200/80 bg-zinc-50/80 px-4 py-3 dark:border-white/10 dark:bg-white/[0.03]">
+              <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                Want the full walkthrough? We wrote it in plain language.
+              </p>
+              <Link
+                href={ID_VERIFICATION_PRIVACY_HELP_HREF}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              >
+                What happens to my ID photos?
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Platform Safety Guide */}

@@ -50,20 +50,40 @@ export function normalizePersonName(value?: string | null): string {
     .trim()
 }
 
-/** Compare first token of first name + full last name (middle-name tolerant). */
+/** Split a name field into comparable tokens (spaces, hyphens, apostrophes). */
+export function nameTokens(value?: string | null): string[] {
+  const normalized = normalizePersonName(value)
+  if (!normalized) return []
+  return normalized
+    .split(/[\s'-]+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 0)
+}
+
+/**
+ * Compare claimed signup names against Persona / ID names.
+ *
+ * Accepts:
+ * - Swapped first/last (e.g. signup "Bucuci Sergiu" vs ID "Sergiu Bucuci")
+ * - Extra middle / compound names on the ID that were not entered on the platform
+ * - Hyphenated vs spaced equivalents (Mary-Jane vs Mary Jane)
+ *
+ * Rule: every token from the claimed first+last must appear somewhere in the
+ * Persona first+last tokens. Extra ID tokens are allowed; missing claimed tokens are not.
+ */
 export function namesMatch(
   expectedFirst?: string | null,
   expectedLast?: string | null,
   personaFirst?: string | null,
   personaLast?: string | null
 ): boolean {
-  const eFirst = normalizePersonName(expectedFirst).split(' ')[0] || ''
-  const eLast = normalizePersonName(expectedLast)
-  const pFirst = normalizePersonName(personaFirst).split(' ')[0] || ''
-  const pLast = normalizePersonName(personaLast)
+  const expected = [...nameTokens(expectedFirst), ...nameTokens(expectedLast)]
+  const persona = [...nameTokens(personaFirst), ...nameTokens(personaLast)]
 
-  if (!eFirst || !eLast || !pFirst || !pLast) return false
-  return eFirst === pFirst && eLast === pLast
+  if (expected.length < 2 || persona.length < 2) return false
+
+  const personaBag = new Set(persona)
+  return expected.every((token) => personaBag.has(token))
 }
 
 function reasonMessage(reasons: PersonaDecisionReason[]): string {

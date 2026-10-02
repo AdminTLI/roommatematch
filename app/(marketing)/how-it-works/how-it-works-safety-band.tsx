@@ -7,26 +7,41 @@ import Section from '@/components/ui/primitives/section'
 import { Button } from '@/components/ui/button'
 import { useApp } from '@/app/providers'
 import type { Locale } from '@/lib/i18n'
+import { ID_VERIFICATION_PRIVACY_HELP_HREF } from '@/lib/verification/privacy-help'
 
 const copy: Record<
   Locale,
-  { badge: string; title: string; body: string; primary: string; secondary: string }
+  {
+    badge: string
+    title: string
+    body: string
+    privacyNote: string
+    primary: string
+    secondary: string
+    privacyLink: string
+  }
 > = {
   en: {
     badge: 'Safety built in',
     title: 'Verified people. Calm, safe chat.',
     body:
       'Everyone is government‑ID verified before they can chat. You can always block or report, and you stay in your life‑stage pool (students with students, professionals with professionals).',
+    privacyNote:
+      'We don’t keep your ID photos — Persona runs the scan. We mainly store that you passed.',
     primary: 'Get started',
     secondary: 'Safety',
+    privacyLink: 'What happens to my ID?',
   },
   nl: {
     badge: 'Veiligheid standaard',
     title: 'Geverifieerde mensen. Rustige, veilige chat.',
     body:
       'Iedereen wordt geverifieerd met een overheids-ID voordat je kunt chatten. Je kunt altijd blokkeren of melden, en je blijft in je eigen pool (studenten met studenten, professionals met professionals).',
+    privacyNote:
+      'We bewaren je ID-foto’s niet — Persona doet de scan. We bewaren vooral dat je bent goedgekeurd.',
     primary: 'Begin gratis',
     secondary: 'Veiligheid',
+    privacyLink: 'Wat gebeurt er met mijn ID?',
   },
 }
 
@@ -46,6 +61,15 @@ export function HowItWorksSafetyBand() {
               </div>
               <h2 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight text-slate-800">{t.title}</h2>
               <p className="mt-3 text-slate-600">{t.body}</p>
+              <p className="mt-3 text-sm text-slate-500">
+                {t.privacyNote}{' '}
+                <Link
+                  href={ID_VERIFICATION_PRIVACY_HELP_HREF}
+                  className="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-500"
+                >
+                  {t.privacyLink}
+                </Link>
+              </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 md:justify-end">
               <Button

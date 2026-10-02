@@ -27,6 +27,14 @@ const SocialProof = dynamic(
   { loading: () => <SectionPlaceholder minHeight="20rem" /> }
 )
 
+const IdVerificationPrivacySection = dynamic(
+  () =>
+    import('@/components/site/id-verification-privacy-section').then((m) => ({
+      default: m.IdVerificationPrivacySection,
+    })),
+  { loading: () => <SectionPlaceholder minHeight="24rem" /> }
+)
+
 const SocialFinalCTA = dynamic(
   () => import('@/components/site/social-final-cta').then((m) => ({ default: m.SocialFinalCTA })),
   { loading: () => <SectionPlaceholder minHeight="16rem" /> }
@@ -52,6 +60,7 @@ export function HomepageBelowFold() {
       <StatusQuoSection />
       <LifestyleFeatures />
       <PlatformPreview />
+      <IdVerificationPrivacySection />
       <Partners />
       <SocialProof />
       <SocialFinalCTA />

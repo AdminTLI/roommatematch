@@ -40,6 +40,11 @@ export const faqMarketingNl: FaqMarketingCategory[] = [
           'Identiteit loopt via Persona met een overheids-ID en selfie (en soms een korte video) op hun beveiligde flow. Studenten tonen daarnaast hun studentstatus via de universiteits- of hogeschoolmail. Zonder voltooide verificatie werken matching en chat niet hetzelfde als voor geverifieerde gebruikers.',
       },
       {
+        question: 'Bewaren jullie mijn ID-foto’s of selfie?',
+        answer:
+          'Nee. Domu Match bewaart je ID-foto’s of selfie niet — Persona doet die scan. We bewaren vooral dat je bent goedgekeurd, plus beperkte checkdetails (zoals naam/leeftijd) voor ongeveer 4 weken; daarna worden die details gewist. Andere gebruikers zien je ID nooit. Zo houden we chat mensen-only en voorkomen we dat verbannen accounts makkelijk terugkomen. Volledige uitleg: Helpcentrum → “What happens to my ID photos?”',
+      },
+      {
         question: 'Zijn mijn persoonsgegevens veilig?',
         answer:
           'We verwerken gegevens volgens de AVG. We gebruiken versleuteling zoals gangbaar in de sector, we verkopen je persoonsgegevens niet en jij bepaalt wat je op je profiel zet. Zie ons Privacybeleid voor details.',

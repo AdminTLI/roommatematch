@@ -2,10 +2,12 @@
  * Sync verification status: ensures durable users.identity_verified_at and
  * profiles.verification_status match an approved verification record.
  * Use when a user completed Persona but login still redirects to /verify.
+ * Also re-evaluates false name-mismatch rejections after matcher updates.
  */
 import { NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { clearVerificationCache, markIdentityVerified } from '@/lib/auth/verification-check'
+import { reevaluateLatestRejectedPersonaVerification } from '@/lib/verification/reevaluate-persona'
 
 export async function POST() {
   try {
@@ -41,6 +43,20 @@ export async function POST() {
     const profileVerified = profile?.verification_status === 'verified'
 
     if (!approved && !alreadyDurable && !profileVerified) {
+      const reeval = await reevaluateLatestRejectedPersonaVerification(
+        admin,
+        user.id,
+        user.email
+      )
+      if (reeval.outcome === 'approved') {
+        return NextResponse.json({
+          synced: true,
+          verified: true,
+          healed: true,
+          message: 'Verification status synced.',
+        })
+      }
+
       return NextResponse.json({
         synced: false,
         verified: false,

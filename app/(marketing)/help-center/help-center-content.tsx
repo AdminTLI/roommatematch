@@ -17,8 +17,13 @@ export function HelpCenterContent() {
   const [selectedSection, setSelectedSection] = useState<string>('getting-started')
   const [highlightArticleId, setHighlightArticleId] = useState<string | undefined>()
   
-  const content = helpContent[locale as 'en' | 'nl'] || helpContent.en
-  const sections = content
+  const localeKey = (locale === 'nl' ? 'nl' : 'en') as 'en' | 'nl'
+  const localized = helpContent[localeKey] || helpContent.en
+  const hasLocalizedArticles = localized.some(
+    (section) => section.articles.length > 0 || section.faqs.length > 0
+  )
+  // NL help content is still a stub in places — fall back to English so deep links work.
+  const sections = hasLocalizedArticles ? localized : helpContent.en
 
   // Handle URL params for direct article links
   useEffect(() => {

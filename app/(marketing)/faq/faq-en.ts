@@ -41,6 +41,11 @@ export const faqMarketingEn: FaqMarketingCategory[] = [
           'Identity verification is done through Persona using government ID and a selfie (and sometimes a short video) on their secure flow. Students also prove student status via their university or hogeschool email. Until verification is complete, you cannot use matching and chat the same way as verified users.',
       },
       {
+        question: 'Do you store my ID photos or selfie?',
+        answer:
+          'No. Domu Match does not keep your ID photos or selfie — Persona runs that scan. We mainly store that you passed the check, plus limited match details (like name/age confirmation) for about 4 weeks, then those details are scrubbed. Other users never see your ID. We use this so only real people can chat and so banned accounts can’t easily come back. Full plain-language explanation: Help Center → “What happens to my ID photos?”',
+      },
+      {
         question: 'Is my personal data safe?',
         answer:
           'We process data under GDPR. We use encryption in line with industry practice, we do not sell your personal data, and you control what you put on your profile. For full detail, see our Privacy Policy.',
