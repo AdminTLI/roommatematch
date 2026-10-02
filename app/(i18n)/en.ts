@@ -624,7 +624,8 @@ export const en = {
         activate: 'Activate User',
         delete: 'Delete User',
         verify: 'Verify User',
-        unverify: 'Unverify User'
+        unverify: 'Unverify User',
+        resetVerification: 'Allow Re-verify'
       }
     },
     moderation: {

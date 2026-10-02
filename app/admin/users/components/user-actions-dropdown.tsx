@@ -9,7 +9,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import { MoreVertical, UserX, UserCheck, ShieldCheck, ShieldX, Trash2, Loader2 } from 'lucide-react'
+import {
+  MoreVertical,
+  UserX,
+  UserCheck,
+  ShieldCheck,
+  ShieldX,
+  ShieldAlert,
+  Trash2,
+  Loader2,
+} from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 
 interface UserActionsDropdownProps {
@@ -17,6 +26,40 @@ interface UserActionsDropdownProps {
   isActive: boolean
   verificationStatus: string
   onActionComplete: () => void
+}
+
+const ACTION_LABELS: Record<string, { success: string; confirm: string }> = {
+  suspend: {
+    confirm:
+      'Are you sure you want to suspend this user? They will not be able to access the platform.',
+    success: 'User suspended successfully',
+  },
+  activate: {
+    confirm:
+      'Are you sure you want to activate this user? They will be able to access the platform.',
+    success: 'User activated successfully',
+  },
+  verify: {
+    confirm:
+      'Are you sure you want to verify this user? This will mark their identity as verified.',
+    success: 'User verified successfully',
+  },
+  unverify: {
+    confirm:
+      'Are you sure you want to unverify this user? This removes their verified status and expires existing KYC sessions.',
+    success: 'User unverified successfully',
+  },
+  reset_verification: {
+    confirm:
+      'Allow this user to re-verify? This clears their current identity verification so they can start a fresh Persona check at /verify. Use this after backend failures or stuck sessions.',
+    success:
+      'Verification reset. Ask the user to visit /verify to start a new identity check.',
+  },
+  delete: {
+    confirm:
+      'WARNING: Are you sure you want to permanently delete this user? This action cannot be undone and will delete all associated data including profile, matches, and chats.',
+    success: 'User deleted successfully',
+  },
 }
 
 export function UserActionsDropdown({
@@ -28,8 +71,9 @@ export function UserActionsDropdown({
   const [isLoading, setIsLoading] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
 
-  const handleAction = async (action: string, confirmMessage: string) => {
-    if (!confirm(confirmMessage)) {
+  const handleAction = async (action: string) => {
+    const labels = ACTION_LABELS[action]
+    if (!labels || !confirm(labels.confirm)) {
       return
     }
 
@@ -53,8 +97,7 @@ export function UserActionsDropdown({
         throw new Error(errorData.message || errorData.error || `Failed to ${action} user`)
       }
 
-      // Show success message
-      alert(`User ${action}d successfully`)
+      alert(labels.success)
       onActionComplete()
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : `Failed to ${action} user`
@@ -89,15 +132,10 @@ export function UserActionsDropdown({
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuContent align="end" className="w-56">
           {isActive ? (
             <DropdownMenuItem
-              onClick={() =>
-                handleAction(
-                  'suspend',
-                  'Are you sure you want to suspend this user? They will not be able to access the platform.'
-                )
-              }
+              onClick={() => handleAction('suspend')}
               disabled={isLoading}
               className="flex items-center gap-2"
             >
@@ -106,12 +144,7 @@ export function UserActionsDropdown({
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem
-              onClick={() =>
-                handleAction(
-                  'activate',
-                  'Are you sure you want to activate this user? They will be able to access the platform.'
-                )
-              }
+              onClick={() => handleAction('activate')}
               disabled={isLoading}
               className="flex items-center gap-2"
             >
@@ -124,12 +157,7 @@ export function UserActionsDropdown({
 
           {verificationStatus !== 'verified' ? (
             <DropdownMenuItem
-              onClick={() =>
-                handleAction(
-                  'verify',
-                  'Are you sure you want to verify this user? This will mark their identity as verified.'
-                )
-              }
+              onClick={() => handleAction('verify')}
               disabled={isLoading}
               className="flex items-center gap-2"
             >
@@ -138,12 +166,7 @@ export function UserActionsDropdown({
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem
-              onClick={() =>
-                handleAction(
-                  'unverify',
-                  'Are you sure you want to unverify this user? This will remove their verified status.'
-                )
-              }
+              onClick={() => handleAction('unverify')}
               disabled={isLoading}
               className="flex items-center gap-2"
             >
@@ -152,15 +175,19 @@ export function UserActionsDropdown({
             </DropdownMenuItem>
           )}
 
+          <DropdownMenuItem
+            onClick={() => handleAction('reset_verification')}
+            disabled={isLoading}
+            className="flex items-center gap-2"
+          >
+            <ShieldAlert className="h-4 w-4" />
+            Allow Re-verify
+          </DropdownMenuItem>
+
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
-            onClick={() =>
-              handleAction(
-                'delete',
-                'WARNING: Are you sure you want to permanently delete this user? This action cannot be undone and will delete all associated data including profile, matches, and chats.'
-              )
-            }
+            onClick={() => handleAction('delete')}
             disabled={isLoading}
             className="flex items-center gap-2 text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
           >
@@ -175,5 +202,3 @@ export function UserActionsDropdown({
     </div>
   )
 }
-
-

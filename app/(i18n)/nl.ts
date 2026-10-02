@@ -614,7 +614,8 @@ export const nl = {
         activate: 'Gebruiker Activeren',
         delete: 'Gebruiker Verwijderen',
         verify: 'Gebruiker Verifiëren',
-        unverify: 'Gebruiker Niet Verifiëren'
+        unverify: 'Gebruiker Niet Verifiëren',
+        resetVerification: 'Opnieuw Verifiëren Toestaan'
       }
     },
     moderation: {

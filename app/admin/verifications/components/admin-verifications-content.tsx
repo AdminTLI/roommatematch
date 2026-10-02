@@ -32,7 +32,7 @@ import {
   User,
   Calendar,
   Building2,
-  Mail
+  RotateCcw,
 } from 'lucide-react'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { useDebounce } from '@/hooks/use-debounce'
@@ -82,6 +82,8 @@ export function AdminVerificationsContent() {
   const [showOverrideDialog, setShowOverrideDialog] = useState(false)
   const [overrideStatus, setOverrideStatus] = useState<'approved' | 'rejected'>('approved')
   const [isOverriding, setIsOverriding] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
+  const [showResetDialog, setShowResetDialog] = useState(false)
   
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -174,6 +176,42 @@ export function AdminVerificationsContent() {
       showErrorToast('Failed to override verification')
     } finally {
       setIsOverriding(false)
+    }
+  }
+
+  const handleReset = async () => {
+    if (!selectedVerification) return
+
+    setIsResetting(true)
+    try {
+      const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
+      const response = await fetchWithCSRF('/api/admin/verifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reset',
+          verificationId: selectedVerification.id,
+          userId: selectedVerification.user_id,
+        }),
+      })
+
+      if (response.ok) {
+        showSuccessToast(
+          'Verification reset. Ask the user to visit /verify to start a new identity check.'
+        )
+        setShowResetDialog(false)
+        setShowDetailDialog(false)
+        setSelectedVerification(null)
+        loadVerifications()
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        showErrorToast(errorData.error || 'Failed to reset verification')
+      }
+    } catch (error) {
+      console.error('Failed to reset verification:', error)
+      showErrorToast('Failed to reset verification')
+    } finally {
+      setIsResetting(false)
     }
   }
 
@@ -280,7 +318,7 @@ export function AdminVerificationsContent() {
     {
       header: 'Actions',
       accessor: (row: Verification) => (
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             size="sm"
             variant="outline"
@@ -317,9 +355,20 @@ export function AdminVerificationsContent() {
               </Button>
             </>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setSelectedVerification(row)
+              setShowResetDialog(true)
+            }}
+          >
+            <RotateCcw className="h-3 w-3 mr-1" />
+            Allow Re-verify
+          </Button>
         </div>
       ),
-      tooltip: 'Available actions: View details, Approve (for pending verifications), or Reject (for pending verifications)'
+      tooltip: 'Available actions: View details, Approve/Reject (pending), or Allow Re-verify (clears sessions so the user can try again)'
     }
   ]
 
@@ -546,6 +595,16 @@ export function AdminVerificationsContent() {
             <Button variant="outline" onClick={() => setShowDetailDialog(false)}>
               Close
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDetailDialog(false)
+                setShowResetDialog(true)
+              }}
+            >
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Allow Re-verify
+            </Button>
             {selectedVerification?.status === 'pending' && (
               <>
                 <Button
@@ -572,6 +631,44 @@ export function AdminVerificationsContent() {
                 </Button>
               </>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset / Allow Re-verify Dialog */}
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Allow user to re-verify?</DialogTitle>
+            <DialogDescription>
+              This clears the user&apos;s current identity verification (including stuck or failed
+              sessions) so they can start a fresh Persona check at /verify. Use this after backend
+              failures or corrupted sessions.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedVerification && (
+            <div className="space-y-2">
+              <p className="text-sm">
+                <strong>User:</strong>{' '}
+                {selectedVerification.profile?.email ||
+                  selectedVerification.user?.email ||
+                  'Unknown'}
+              </p>
+              <p className="text-sm">
+                <strong>Current status:</strong> {selectedVerification.status}
+              </p>
+              <p className="text-sm">
+                <strong>Session ID:</strong> {selectedVerification.provider_session_id}
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleReset} disabled={isResetting}>
+              {isResetting ? 'Resetting...' : 'Allow Re-verify'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

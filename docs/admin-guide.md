@@ -105,6 +105,7 @@ The Admin Panel provides comprehensive tools for managing users, moderating cont
 - **Manual Override**: 
   - Approve verification (bypass provider)
   - Reject verification (with reason)
+- **Allow Re-verify**: Clear stuck/failed/approved KYC sessions so the user can start a fresh Persona check at `/verify` (use after backend failures)
 - **Evidence View**: Links to provider verification evidence
 
 **Common Workflows**:
@@ -117,6 +118,12 @@ The Admin Panel provides comprehensive tools for managing users, moderating cont
 5. Click "Approve" → Confirm
 6. User's verification status updates immediately
 
+**Allow Re-verify (after backend failure)**:
+1. Open the user in Users, or the verification row in Verifications
+2. Click **Allow Re-verify** → Confirm
+3. Tell the user to open `/verify` and complete Persona again
+4. Action is logged in admin audit
+
 **Manual Override**:
 1. Select verification from queue
 2. Click "Manual Override"
@@ -126,7 +133,8 @@ The Admin Panel provides comprehensive tools for managing users, moderating cont
 
 **API Endpoints**:
 - `GET /api/admin/verifications` - List verifications
-- `POST /api/admin/verifications` - Manual override
+- `POST /api/admin/verifications` - Manual override (`override`) or reset for retry (`reset`)
+- `POST /api/admin/users` - Includes `reset_verification` to clear KYC and allow a fresh attempt
 
 ---
 

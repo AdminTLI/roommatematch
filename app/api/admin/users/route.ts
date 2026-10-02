@@ -4,10 +4,8 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from '@/lib/admin/audit'
 import { safeLogger } from '@/lib/utils/logger'
 import { sanitizeSearchInput, validateSearchInputLength } from '@/lib/utils/sanitize'
-import {
-  clearVerificationCache,
-  markIdentityVerified,
-} from '@/lib/auth/verification-check'
+import { markIdentityVerified } from '@/lib/auth/verification-check'
+import { resetUserIdentityVerification } from '@/lib/admin/reset-verification'
 import { findVerificationRetentionHolds } from '@/lib/privacy/verification-retention'
 
 export async function GET(request: NextRequest) {
@@ -332,37 +330,38 @@ export async function POST(request: NextRequest) {
         break
       }
       
-      case 'unverify': {
-        const now = new Date().toISOString()
-        const { error: unverifyProfileError } = await admin
-          .from('profiles')
-          .update({ verification_status: 'unverified', updated_at: now })
-          .in('user_id', userIds)
-        
-        if (unverifyProfileError) {
-          safeLogger.error('[Admin Users] Failed to unverify users (profiles)', unverifyProfileError)
-          return NextResponse.json({ error: 'Failed to unverify users' }, { status: 500 })
-        }
-
-        const { error: unverifyUsersError } = await admin
-          .from('users')
-          .update({
-            identity_verified_at: null,
-            identity_verification_provider: null,
-            updated_at: now,
-          })
-          .in('id', userIds)
-
-        if (unverifyUsersError) {
-          safeLogger.error('[Admin Users] Failed to clear durable verification', unverifyUsersError)
-          return NextResponse.json({ error: 'Failed to unverify users' }, { status: 500 })
-        }
+      case 'unverify':
+      case 'reset_verification': {
+        const results: Array<{
+          userId: string
+          expiredCount: number
+          previousStatuses: string[]
+        }> = []
 
         for (const targetUserId of userIds as string[]) {
-          clearVerificationCache(targetUserId)
+          const result = await resetUserIdentityVerification(admin, targetUserId, {
+            reason:
+              action === 'reset_verification'
+                ? 'admin_reset_for_retry'
+                : 'admin_unverify',
+          })
+          if (!result.ok) {
+            return NextResponse.json({ error: result.error }, { status: 500 })
+          }
+          results.push({
+            userId: targetUserId,
+            expiredCount: result.expiredCount,
+            previousStatuses: result.previousStatuses,
+          })
         }
-        
-        await logAdminAction(user!.id, 'unverify_users', 'user', null, { userIds })
+
+        await logAdminAction(
+          user!.id,
+          action === 'reset_verification' ? 'reset_verification' : 'unverify_users',
+          'user',
+          null,
+          { userIds, results }
+        )
         break
       }
       case 'delete': {

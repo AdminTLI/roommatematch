@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 import { requireAdminResponse, requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from '@/lib/admin/audit'
+import { resetUserIdentityVerification } from '@/lib/admin/reset-verification'
+import { markIdentityVerified } from '@/lib/auth/verification-check'
 import { safeLogger } from '@/lib/utils/logger'
 
 export async function GET(request: NextRequest) {
@@ -167,9 +169,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { action, verificationId, userId, status: newStatus } = body
 
+    const admin = createAdminClient()
+
     if (action === 'override' && verificationId && newStatus) {
-      const admin = await createAdminClient()
-      
       // Validate status
       if (newStatus !== 'approved' && newStatus !== 'rejected') {
         return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
@@ -205,6 +207,15 @@ export async function POST(request: NextRequest) {
           safeLogger.warn('[Admin Verifications] Failed to update profile status', profileError)
           // Don't fail the request - verification was updated successfully
         }
+
+        if (newStatus === 'approved') {
+          const { data: authUser } = await admin.auth.admin.getUserById(userId)
+          await markIdentityVerified(
+            userId,
+            'admin_manual',
+            authUser?.user?.email || null
+          )
+        }
       }
 
       await logAdminAction(user!.id, 'override_verification', 'verification', verificationId, { 
@@ -213,6 +224,29 @@ export async function POST(request: NextRequest) {
       })
 
       return NextResponse.json({ success: true })
+    }
+
+    if (action === 'reset' && userId) {
+      const result = await resetUserIdentityVerification(admin, userId, {
+        reason: 'admin_reset_for_retry',
+      })
+
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error }, { status: 500 })
+      }
+
+      await logAdminAction(user!.id, 'reset_verification', 'user', userId, {
+        verificationId: verificationId || null,
+        expiredCount: result.expiredCount,
+        previousStatuses: result.previousStatuses,
+      })
+
+      return NextResponse.json({
+        success: true,
+        message:
+          'Verification reset. Ask the user to visit /verify to start a new identity check.',
+        expiredCount: result.expiredCount,
+      })
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
