@@ -111,7 +111,7 @@ export function HelpCenterSearch({ onArticleSelect, className }: HelpCenterSearc
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          className="pl-12 pr-10 h-14 text-lg bg-white/60 border-white/70 text-slate-900 placeholder:text-slate-500 focus-visible:ring-slate-900/20"
+          className="pl-12 pr-10 h-14 text-lg bg-white/90 border-white/80 text-slate-900 placeholder:text-slate-500 focus-visible:ring-slate-900/20 shadow-[0_12px_40px_rgba(15,23,42,0.08)]"
           aria-label="Search help center"
           aria-expanded={isOpen}
           aria-haspopup="listbox"
@@ -128,7 +128,7 @@ export function HelpCenterSearch({ onArticleSelect, className }: HelpCenterSearc
       </div>
 
       {isOpen && (hasResults || showSuggestions || showNoResults) && (
-        <div className="absolute top-full left-0 right-0 mt-2 rounded-3xl border border-white/70 bg-white/75 backdrop-blur-xl shadow-[0_22px_60px_rgba(15,23,42,0.12)] max-h-[500px] overflow-y-auto z-50 animate-in fade-in-0 slide-in-from-top-2 duration-200">
+        <div className="absolute top-full left-0 right-0 mt-2 rounded-3xl border border-white/80 bg-white/95 backdrop-blur-xl shadow-[0_22px_60px_rgba(15,23,42,0.12)] max-h-[500px] overflow-y-auto z-50 animate-in fade-in-0 slide-in-from-top-2 duration-200">
           {hasResults && (
             <div className="p-2">
               <div className="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">

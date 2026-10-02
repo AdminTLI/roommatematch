@@ -71,7 +71,7 @@ export function HelpCenterContent() {
       <Container>
         {/* Hero Section with Search */}
         <div className="text-center mb-12">
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/55 px-4 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/90 px-4 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <span className="h-1.5 w-1.5 rounded-full bg-blue-600/70" aria-hidden />
             Domu Match
           </div>
@@ -90,7 +90,7 @@ export function HelpCenterContent() {
         {/* Section Navigation Tabs */}
         <div className="mb-8">
           <Tabs value={selectedSection} onValueChange={handleSectionChange}>
-            <TabsList className="flex-wrap h-auto p-2 rounded-3xl overflow-x-auto border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+            <TabsList className="flex-wrap h-auto p-2 rounded-3xl overflow-x-auto border border-white/80 bg-white/90 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
               {sections.map((section) => (
                 <TabsTrigger
                   key={section.id}
@@ -137,7 +137,7 @@ export function HelpCenterContent() {
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <a
               href="/contact"
-              className="p-6 rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] hover:bg-white/60 transition-all duration-200 text-center"
+              className="p-6 rounded-3xl border border-white/80 bg-white/90 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] hover:bg-white transition-all duration-200 text-center"
               aria-label="Contact us for help"
             >
               <div className="text-3xl mb-3">📧</div>
@@ -153,7 +153,7 @@ export function HelpCenterContent() {
             </a>
             <a
               href="/safety"
-              className="p-6 rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] hover:bg-white/60 transition-all duration-200 text-center"
+              className="p-6 rounded-3xl border border-white/80 bg-white/90 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] hover:bg-white transition-all duration-200 text-center"
               aria-label="Visit safety center"
             >
               <div className="text-3xl mb-3">🛡️</div>
@@ -169,7 +169,7 @@ export function HelpCenterContent() {
             </a>
             <a
               href="mailto:domumatch@gmail.com"
-              className="p-6 rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] hover:bg-white/60 transition-all duration-200 text-center"
+              className="p-6 rounded-3xl border border-white/80 bg-white/90 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] hover:bg-white transition-all duration-200 text-center"
               aria-label="Email support"
             >
               <div className="text-3xl mb-3">💬</div>
