@@ -87,13 +87,14 @@ export function MatchingRightsSection({ openReviewOnMount = false }: MatchingRig
           <Scale className="w-5 h-5 text-violet-500 shrink-0 mt-0.5" />
           <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
             <p>
-              Compatibility scores are <strong className="text-zinc-800 dark:text-zinc-200">suggestions only</strong> based on
-              your questionnaire answers. You always choose who to contact. The score breakdown in the app shows the main
+              Compatibility scores are a <strong className="text-zinc-800 dark:text-zinc-200">starting point</strong> based on
+              how you answered. You always choose who to contact. The score breakdown shows the main
               factors; optional &quot;Living together&quot; text is an AI summary and is not the sole basis for matching.
             </p>
             <p>
-              Under GDPR Article 22 you may request a <strong className="text-zinc-800 dark:text-zinc-200">human review</strong>,
-              an explanation, or challenge a suggestion. See our{' '}
+              Under GDPR Article 22 you may ask someone on our team to{' '}
+              <strong className="text-zinc-800 dark:text-zinc-200">look at a match</strong>,
+              explain it, or challenge a suggestion. See our{' '}
               <Link href="/privacy" className="text-violet-600 underline">
                 Privacy Policy
               </Link>{' '}
@@ -126,14 +127,14 @@ export function MatchingRightsSection({ openReviewOnMount = false }: MatchingRig
           onClick={() => setDialogOpen(true)}
           disabled={!!pendingReview}
         >
-          Request human review of a match
+          Request a team look at a match
         </Button>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Request human review</DialogTitle>
+            <DialogTitle>Ask us to look at a match</DialogTitle>
             <DialogDescription>
               Tell us which match or score concerns you. We will review the algorithm factors and respond within the GDPR
               one-month deadline.

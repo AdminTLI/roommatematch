@@ -13,7 +13,7 @@ const GLASS =
 const content = {
   en: {
     title: 'Built for calm homes',
-    subtitle: 'Clearer matches. Better vibes at home.',
+    subtitle: 'Clearer matches. Homes that are easier to live in.',
     cards: {
       verified: {
         key: 'verified',
@@ -45,11 +45,11 @@ const content = {
       },
       explainable: {
         key: 'explainable',
-        title: 'Shared vibes',
+        title: 'Why you’d click',
         copy: 'See exactly why you click before you even say hello.',
-        badge: 'Tailored Matching Algorithm',
+        badge: 'Matching on how you live',
         whyTitle: 'Why you match',
-        why: ['Shared interests', 'Similar context', 'Compatible home vibe'],
+        why: ['Shared interests', 'Similar context', 'Same rhythm at home'],
         previewTitle: 'Match preview',
         previewScore: '91%',
       },
@@ -57,7 +57,7 @@ const content = {
   },
   nl: {
     title: 'Gemaakt voor rustige huizen',
-    subtitle: 'Duidelijkere matches. Betere vibes thuis.',
+    subtitle: 'Duidelijkere matches. Huizen die fijner zijn om in te wonen.',
     cards: {
       verified: {
         key: 'verified',
@@ -89,11 +89,11 @@ const content = {
       },
       explainable: {
         key: 'explainable',
-        title: 'Gedeelde vibes',
+        title: 'Waarom jullie klikken',
         copy: 'Zie precies waarom je klikt, nog vóór je hallo zegt.',
-        badge: 'Matching op maat',
+        badge: 'Matching op hoe je woont',
         whyTitle: 'Waarom het klikt',
-        why: ['Gedeelde interesses', 'Vergelijkbare context', 'Fijne huisvibe'],
+        why: ['Gedeelde interesses', 'Vergelijkbare context', 'Zelfde ritme thuis'],
         previewTitle: 'Match preview',
         previewScore: '91%',
       },

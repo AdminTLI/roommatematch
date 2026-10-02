@@ -15,26 +15,26 @@ const content = {
     titleStrangers: "strangers",
     titleTo: "to",
     titleRoommates: "roommates",
-    subtitle: "Domu Match connects you with compatible students based on lifestyle, study habits, and personality. Our science-backed algorithm analyzes 40+ factors to prevent conflicts before they start - so finding your ideal roommate feels easy.",
+    subtitle: "Domu Match connects you with students based on lifestyle, study habits, and how you live day to day - so you see clear reasons before you move in.",
     getMatched: "Get started",
     seeHowItWorks: "See how it works",
     verified: "Verified students only",
     free: "Free for students",
-    scienceBacked: "Science-backed matching",
-    transparent: "Transparent compatibility"
+    scienceBacked: "Matching on how you live",
+    transparent: "Clear reasons why you click"
   },
   nl: {
     title: "Van",
     titleStrangers: "vreemden",
     titleTo: "tot",
     titleRoommates: "huisgenoten",
-    subtitle: "Domu Match verbindt je met compatibele studenten op basis van levensstijl, studiegewoonten en persoonlijkheid. Ons wetenschappelijk onderbouwde algoritme analyseert 40+ factoren om conflicten te voorkomen voordat ze beginnen - zodat het vinden van je ideale huisgenoot gemakkelijk aanvoelt.",
+    subtitle: "Domu Match verbindt je met studenten op basis van levensstijl, studiegewoonten en hoe je dagelijks woont - zodat je duidelijke redenen ziet vóór je intrekt.",
     getMatched: "Begin nu",
     seeHowItWorks: "Bekijk hoe het werkt",
     verified: "Alleen geverifieerde studenten",
     free: "Gratis voor studenten",
-    scienceBacked: "Wetenschappelijk onderbouwde matching",
-    transparent: "Transparante compatibiliteit"
+    scienceBacked: "Matching op hoe je woont",
+    transparent: "Duidelijke redenen waarom jullie klikken"
   }
 }
 

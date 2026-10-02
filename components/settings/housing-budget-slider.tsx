@@ -73,22 +73,20 @@ export function HousingBudgetSlider({
             Monthly room budget
           </Label>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            What you&apos;re willing to spend on a room (min–max, euros).
+            What you&apos;re willing to spend on a room (min – max, euros).
           </p>
         </div>
         <span
           className={cn(
             'shrink-0 text-sm font-semibold tabular-nums',
-            budgetUnknown || (budgetMin == null && budgetMax == null)
+            budgetUnknown
               ? 'text-zinc-400 dark:text-zinc-500'
               : 'text-blue-600 dark:text-blue-400'
           )}
         >
           {budgetUnknown
             ? 'Not sure yet'
-            : budgetMin == null && budgetMax == null
-              ? 'Not set'
-              : `${formatEuro(range[0])}–${formatEuro(range[1])}`}
+            : `${formatEuro(range[0])} – ${formatEuro(range[1])}`}
         </span>
       </div>
 

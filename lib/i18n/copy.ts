@@ -28,10 +28,10 @@ export const reportCopy = {
     important: 'Important',
     
     // Privacy notice
-    privacyNotice: 'This report contains personal preferences and should be shared only with potential roommates.',
+    privacyNotice: 'This report contains personal living answers and should be shared only with people you’re considering living with.',
     
     // Section titles
-    sleep: 'Sleep & Circadian',
+    sleep: 'Sleep & schedule',
     lifestyle: 'Lifestyle & Habits',
     social: 'Social Preferences',
     logistics: 'Housing Logistics',

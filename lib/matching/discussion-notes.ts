@@ -3,15 +3,15 @@ const MAX_NOTES = 2
 
 const V2_DIMENSION_NOTES: Record<string, string> = {
   environment:
-    'Your daily rhythms differ a bit — quiet hours and sleep schedules are worth comparing early.',
+    'Your daily rhythms differ a bit – quiet hours and sleep schedules are worth comparing early.',
   cleanliness:
-    'You have different cleanliness habits — agreeing on shared-space standards upfront helps.',
+    'You have different cleanliness habits – agreeing on shared-space standards upfront helps.',
   communication:
-    'You handle feedback a little differently — a quick chat about resolving small issues goes a long way.',
+    'You handle feedback a little differently – a quick chat about resolving small issues goes a long way.',
   social:
-    'Your preferences around guests and socializing at home differ — house rules are worth aligning on.',
+    'Your preferences around guests and socializing at home differ – house rules are worth aligning on.',
   logistics_context:
-    'Your move-in timing or stay-length preferences differ — worth confirming expectations early.',
+    'Your move-in timing or stay-length preferences differ – worth confirming expectations early.',
 }
 
 const V2_DIMENSION_KEYS = [
@@ -57,7 +57,7 @@ export function generateDiscussionNotes(input: {
     input.otherUserHasIncompleteAcademic
   ) {
     notes.push(
-      'Their university details are still incomplete — context score may shift once their profile is finished.',
+      'Their university details are still incomplete – context score may shift once their profile is finished.',
     )
   }
 
@@ -68,7 +68,7 @@ export function generateDiscussionNotes(input: {
     !input.otherUserHasIncompleteAcademic
   ) {
     notes.push(
-      'Your academic or logistics context differs — worth comparing study schedules and practical plans early.',
+      'Your academic or logistics context differs – worth comparing study schedules and practical plans early.',
     )
   }
 

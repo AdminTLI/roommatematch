@@ -31,7 +31,7 @@ const V1_SECTION_META: Record<string, { title: string; whyItMatters: string }> =
       'Helps match you with compatible roommates who share similar approaches to life and living together.',
   },
   'sleep-circadian': {
-    title: 'Sleep & Circadian Rhythms',
+    title: 'Sleep & schedule',
     whyItMatters:
       'Critical for avoiding conflicts around noise levels and establishing mutually respectful schedules.',
   },
@@ -41,7 +41,7 @@ const V1_SECTION_META: Record<string, { title: string; whyItMatters: string }> =
       'Ensures comfort in shared spaces by aligning environmental preferences and sensitivities.',
   },
   'home-operations': {
-    title: 'Home Operations',
+    title: 'Chores & shared space',
     whyItMatters:
       'Establishes clear expectations for maintaining shared spaces and preventing common roommate conflicts.',
   },
@@ -85,7 +85,7 @@ const V2_SECTION_META: Record<string, { title: string; whyItMatters: string }> =
       'Sets expectations for kitchen habits, chores, and upkeep to reduce friction in shared spaces.',
   },
   'communication-resolution': {
-    title: 'Communication and Resolution',
+    title: 'Talking things through',
     whyItMatters:
       'Captures how you give feedback and handle conflict so communication styles can be matched thoughtfully.',
   },

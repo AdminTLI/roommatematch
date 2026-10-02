@@ -28,10 +28,10 @@ const content = {
     subtitle:
       'Sign up, complete a short quiz, and get matched with verified users who share your lifestyle. Students and young professionals are in separate pools. From profile to move-in in five clear steps.',
     featuresTitle: 'Why our process works',
-    featuresSubtitle: 'Built on science, backed by universities, designed for safety',
-    ctaTitle: 'Ready to find your perfect match?',
+    featuresSubtitle: 'Verified people, clear reasons, and safety built in',
+    ctaTitle: 'Ready to meet people who’d fit at home?',
     ctaSubtitle:
-      'Set up your profile in about 5–8 minutes. No commitment - just better matches.',
+      'Set up your profile in about 5–8 minutes. No commitment - just better fits.',
     ctaButton: 'Get started for free',
     steps: [
       {
@@ -39,7 +39,7 @@ const content = {
         icon: UserPlus,
         title: 'Sign up & verify',
         description:
-          'Create your account and verify your identity so everyone on the platform is real and verified. Students use a university email; young professionals use their email. Both complete government ID verification.',
+          'Create your account and verify your identity so everyone here is real. Students use a university email; young professionals use their email. Both complete government ID verification.',
         details: [
           'Government ID and selfie verification',
           'University email for students, or email for young professionals',
@@ -52,12 +52,12 @@ const content = {
       {
         step: '02',
         icon: FileText,
-        title: 'Complete the compatibility quiz',
+        title: 'Answer a few living questions',
         description:
-          'Answer questions about how you study or work, live, and unwind. Your answers shape your profile so we can match you with people who truly fit.',
+          'Tell us how you study or work, live, and unwind. Your answers shape who we show you.',
         details: [
-          '40+ factors: study/work schedule, cleanliness, social style',
-          'Quiet hours, guests, and lifestyle preferences',
+          'Sleep, cleanliness, guests, study/work rhythm',
+          'Quiet hours and lifestyle habits',
           'Takes about 5–8 minutes',
         ],
         gradient: 'from-emerald-500/20 to-emerald-600/10 border-emerald-400/30',
@@ -67,11 +67,11 @@ const content = {
       {
         step: '03',
         icon: Users,
-        title: 'Get your matches',
+        title: 'See who might fit',
         description:
-          'We show you compatible roommates with a clear score and reasoning - no black box. You see why you match before you message.',
+          'We show you people with a clear score and reasons - no mystery. You see why you’d click before you message.',
         details: [
-          'Compatibility score and short explanation',
+          'Harmony score and short explanation',
           'Life stage (student or professional) and lifestyle considered',
           'Shared interests and habits highlighted',
         ],
@@ -82,7 +82,7 @@ const content = {
       {
         step: '04',
         icon: MessageSquare,
-        title: 'Chat safely on the platform',
+        title: 'Chat safely here first',
         description:
           'Message your matches inside Domu Match. Text-only, moderated, and rate-limited so conversations stay respectful and safe.',
         details: [
@@ -115,7 +115,7 @@ const content = {
         icon: Zap,
         title: 'Smart matching',
         description:
-          '40+ compatibility factors help us suggest roommates who are more likely to click - before any conflict starts.',
+          'We look at how you live day to day so we can suggest people who’d click - before any conflict starts.',
       },
       {
         icon: Shield,
@@ -136,10 +136,10 @@ const content = {
     subtitle:
       'Meld je aan, vul een korte quiz in en krijg matches met geverifieerde gebruikers die bij je levensstijl passen. Studenten en young professionals zitten in aparte pools. Van profiel tot verhuizing in vijf duidelijke stappen.',
     featuresTitle: 'Waarom ons proces werkt',
-    featuresSubtitle: 'Gebouwd op wetenschap, ondersteund door universiteiten, ontworpen voor veiligheid',
-    ctaTitle: 'Klaar om je perfecte match te vinden?',
+    featuresSubtitle: 'Geverifieerde mensen, duidelijke redenen, veiligheid standaard',
+    ctaTitle: 'Klaar om mensen te ontmoeten die thuis passen?',
     ctaSubtitle:
-      'Zet je profiel in ongeveer 5–8 minuten op. Geen verplichting - alleen betere matches.',
+      'Zet je profiel in ongeveer 5–8 minuten op. Geen verplichting - alleen betere fits.',
     ctaButton: 'Begin gratis',
     steps: [
       {
@@ -147,7 +147,7 @@ const content = {
         icon: UserPlus,
         title: 'Aanmelden en verifiëren',
         description:
-          'Maak je account aan en verifieer je identiteit. Studenten gebruiken een universiteits-e-mail; young professionals hun e-mail. Iedereen verifieert met overheids-ID.',
+          'Maak je account aan en verifieer je identiteit zodat iedereen hier echt is. Studenten gebruiken een universiteits-e-mail; young professionals hun e-mail. Iedereen verifieert met overheids-ID.',
         details: [
           'Verificatie met overheids-ID en selfie',
           'Bevestiging universiteits-e-mail',
@@ -160,12 +160,12 @@ const content = {
       {
         step: '02',
         icon: FileText,
-        title: 'Voltooi de compatibiliteitsquiz',
+        title: 'Beantwoord een paar woonvragen',
         description:
-          'Beantwoord vragen over hoe je studeert of werkt, leeft en ontspant. Je antwoorden vormen je profiel zodat we je kunnen matchen met mensen die echt bij je passen.',
+          'Vertel hoe je studeert of werkt, woont en ontspant. Je antwoorden bepalen wie we je laten zien.',
         details: [
-          '40+ factoren: studie/werkschema, netheid, sociale stijl',
-          'Stilte-uren, gasten en levensstijlvoorkeuren',
+          'Slaap, netheid, gasten, studie/werkritme',
+          'Stilte-uren en leefgewoonten',
           'Duurt ongeveer 5–8 minuten',
         ],
         gradient: 'from-emerald-500/20 to-emerald-600/10 border-emerald-400/30',
@@ -175,12 +175,12 @@ const content = {
       {
         step: '03',
         icon: Users,
-        title: 'Krijg je matches',
+        title: 'Zie wie zou kunnen passen',
         description:
-          'We tonen je compatibele huisgenoten met een duidelijke score en uitleg - geen black box. Je ziet waarom je matcht voordat je bericht stuurt.',
+          'We tonen mensen met een duidelijke score en redenen - geen mysterie. Je ziet waarom jullie klikken vóór je bericht stuurt.',
         details: [
-          'Compatibiliteitsscore en korte uitleg',
-          'Studierichting en jaar meegenomen',
+          'Harmony-score en korte uitleg',
+          'Levensfase (student of professional) en levensstijl meegenomen',
           'Gedeelde interesses en gewoonten uitgelicht',
         ],
         gradient: 'from-purple-500/20 to-purple-600/10 border-purple-400/30',
@@ -190,7 +190,7 @@ const content = {
       {
         step: '04',
         icon: MessageSquare,
-        title: 'Chat veilig op het platform',
+        title: 'Chat hier eerst veilig',
         description:
           'Stuur berichten naar je matches binnen Domu Match. Alleen tekst, gemodereerd en met limieten zodat gesprekken respectvol en veilig blijven.',
         details: [
@@ -223,7 +223,7 @@ const content = {
         icon: Zap,
         title: 'Slimme matching',
         description:
-          '40+ compatibiliteitsfactoren helpen ons huisgenoten voor te stellen die beter bij elkaar passen - voordat er conflicten ontstaan.',
+          'We kijken naar hoe je dagelijks woont, zodat we mensen kunnen voorstellen met wie het zou klikken - vóór er gedoe ontstaat.',
       },
       {
         icon: Shield,
@@ -371,23 +371,7 @@ export function HowItWorksSection() {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight mb-4">
-            {locale === 'nl' ? (
-              <>
-                Klaar om je{' '}
-                <span className="text-slate-800">
-                  perfecte match
-                </span>{' '}
-                te vinden?
-              </>
-            ) : (
-              <>
-                Ready to find your{' '}
-                <span className="text-slate-800">
-                  perfect match
-                </span>
-                ?
-              </>
-            )}
+            {t.ctaTitle}
           </h2>
           <p className="text-base md:text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
             {t.ctaSubtitle}

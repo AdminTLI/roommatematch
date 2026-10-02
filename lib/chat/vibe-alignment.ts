@@ -5,19 +5,19 @@
 
 export function vibeAlignmentSubtitle(percent: number | null | undefined): string {
   if (percent == null || Number.isNaN(percent)) {
-    return 'Compare how your living preferences line up'
+    return 'Compare how your living habits line up'
   }
-  if (percent >= 75) return 'Closely aligned lifestyles'
-  if (percent >= 55) return 'Similar living rhythms'
-  if (percent >= 40) return 'Some overlap, worth a friendly chat'
-  return 'Different rhythms, good to compare early'
+  if (percent >= 75) return 'Living habits that fit closely'
+  if (percent >= 55) return 'Similar rhythm at home'
+  if (percent >= 40) return 'Some overlap – worth a friendly chat'
+  return 'Different rhythms – good to compare early'
 }
 
 /** Similarity band label (never Amazing/Great/Good/Low). */
 export function vibeAlignmentBand(percent: number | null | undefined): string {
-  if (percent == null || Number.isNaN(percent)) return 'Compatibility'
-  if (percent >= 75) return 'Strongly aligned'
-  if (percent >= 55) return 'Partly aligned'
+  if (percent == null || Number.isNaN(percent)) return 'Living fit'
+  if (percent >= 75) return 'Strong fit'
+  if (percent >= 55) return 'Partial fit'
   if (percent >= 40) return 'Some overlap'
   return 'Different rhythms'
 }
@@ -79,7 +79,7 @@ const LEGACY_DIMENSION_LABELS: Record<string, string> = {
   shared_spaces: 'Shared Spaces',
   substances: 'Substances',
   study_social: 'Study/Social Balance',
-  home_vibe: 'Home Vibe',
+  home_vibe: 'Life at home',
 }
 
 export function isV2DimensionPayload(raw: Record<string, unknown> | null | undefined): boolean {

@@ -14,7 +14,7 @@ const copy = {
   en: {
     title: 'Peek inside the app',
     subtitle:
-      'Tap around to flip the card and explore the breakdown. Use the Student / Professional toggle to see how profiles change by life stage. Detailed dimension scores show fit across five lifestyle areas based on your answers - higher means closer preferences.',
+      'Tap around to flip the card and explore the breakdown. Use the Student / Professional toggle to see how profiles change by life stage. Scores show fit across five living areas from your answers - higher means closer habits.',
     student: 'Student',
     professional: 'Professional',
     demo: 'Demo preview - sample profiles.',
@@ -35,7 +35,7 @@ const copy = {
   nl: {
     title: 'Kijk even in de app',
     subtitle:
-      'Klik rond om de kaart te flippen en de breakdown te bekijken. Gebruik de Student / Professional toggle om te zien hoe profielen per levensfase veranderen. Dimensiescores laten de fit zien over vijf leefstijlgebieden op basis van jullie antwoorden - hoe hoger, hoe dichter de voorkeuren.',
+      'Klik rond om de kaart te flippen en de breakdown te bekijken. Gebruik de Student / Professional toggle om te zien hoe profielen per levensfase veranderen. Scores laten de fit zien over vijf woongebieden op basis van jullie antwoorden - hoe hoger, hoe dichter de gewoonten.',
     student: 'Student',
     professional: 'Professional',
     demo: 'Demo preview - voorbeeldprofielen.',
@@ -68,8 +68,8 @@ export function PlatformPreview() {
       contextPercent: 88,
       highlights:
         locale === 'nl'
-          ? ['Gedeelde interesses', 'Vergelijkbare context', 'Fijne huisvibe']
-          : ['Shared interests', 'Similar context', 'Compatible home vibe'],
+          ? ['Gedeelde interesses', 'Vergelijkbare context', 'Zelfde ritme thuis']
+          : ['Shared interests', 'Similar context', 'Same rhythm at home'],
       dimensions: {
         environment: 88,
         cleanliness: 92,
@@ -105,8 +105,8 @@ export function PlatformPreview() {
           : 'Young professional • Hybrid • Breda',
       highlights:
         locale === 'nl'
-          ? ['Rustige communicatie', 'Gedeelde interesses', 'Fijne huisvibe']
-          : ['Calm communication', 'Shared interests', 'Similar home vibe'],
+          ? ['Rustige communicatie', 'Gedeelde interesses', 'Zelfde ritme thuis']
+          : ['Calm communication', 'Shared interests', 'Same rhythm at home'],
       dimensions: { ...base.dimensions, social: 82, communication: 91 },
     }
   }, [locale, mode])

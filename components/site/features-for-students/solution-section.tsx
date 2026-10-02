@@ -58,23 +58,7 @@ export function SolutionSection() {
             id="solution-heading"
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-800 mb-3 tracking-tight max-w-3xl mx-auto"
           >
-            {locale === 'en' ? (
-              <>
-                The{' '}
-                <span className="text-slate-800">
-                  Compatibility
-                </span>{' '}
-                Blueprint
-              </>
-            ) : (
-              <>
-                Het{' '}
-                <span className="text-slate-800">
-                  Compatibiliteits
-                </span>
-                plan
-              </>
-            )}
+            {t.title}
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             {t.subtitle}

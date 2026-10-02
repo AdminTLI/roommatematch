@@ -111,7 +111,7 @@ const dimensionConfig: { [key: string]: { label: string; description: string; ic
     icon: BookOpen
   },
   home_vibe: {
-    label: 'Home Vibe',
+    label: 'Life at home',
     description: 'Home atmosphere preference (quiet retreat vs social hub)',
     icon: Heart
   }
@@ -444,7 +444,7 @@ export function IndividualCompatibilityDisplay({
               Living together guide
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 sm:mb-3">
-              AI-generated summary for discussion — not the sole basis for your compatibility score.
+              AI-generated summary for discussion – not the sole basis for your compatibility score.
             </p>
             <MatchInsightMarkdown
               className="text-base sm:text-sm text-gray-600 dark:text-gray-400"
@@ -533,7 +533,7 @@ export function IndividualCompatibilityDisplay({
           Question this score?
         </Link>
         {' '}
-        — request a human review under your GDPR rights.
+        – ask someone on our team to look at it under your GDPR rights.
       </p>
 
       {/* Algorithm Version Badge - Subtle Footer */}

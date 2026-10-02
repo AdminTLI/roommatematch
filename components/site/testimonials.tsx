@@ -12,31 +12,31 @@ const content = {
     title: 'Why Domu Match works',
     titleHighlight: 'Domu Match',
     subtitle:
-      'Our compatibility-first approach helps you find roommates as compatible as your best friends.',
+      'We start with how you live - so home feels easier from day one.',
     benefits: [
       {
         icon: Brain,
-        title: 'Science-backed matching',
+        title: 'Matching on how you live',
         description:
-          'Our algorithm analyzes 40+ compatibility factors to predict roommate success before conflicts start. No more guessing - find your perfect fit.',
+          'Sleep, cleanliness, guests, study rhythm, and more - so you see fit before conflicts start. No more guessing.',
       },
       {
         icon: Shield,
         title: 'Verified & safe',
         description:
-          'Students and young professionals are verified with government ID and selfie verification. You can focus on compatibility, not safety concerns.',
+          'Students and young professionals are verified with government ID and selfie verification. You can focus on finding people you’d want to share a kitchen with.',
       },
       {
         icon: Zap,
         title: 'Save time & money',
         description:
-          'Find compatible roommates in days, not weeks. Prevent conflicts and disputes by connecting with ideal matches from the start.',
+          'Find housemates in days, not weeks. Skip the endless group chats and awkward interviews.',
       },
       {
         icon: Heart,
-        title: 'Find your ideal roommate',
+        title: 'See why you’d click',
         description:
-          "See exactly why you're compatible with transparent explanations. Connect based on lifestyle, habits, and values that matter.",
+          "Transparent reasons based on lifestyle, habits, and values that matter at home.",
       },
     ],
   },
@@ -44,31 +44,31 @@ const content = {
     title: 'Waarom Domu Match werkt',
     titleHighlight: 'Domu Match',
     subtitle:
-      'Onze compatibiliteit-eerst aanpak helpt je huisgenoten te vinden die zo compatibel zijn als je beste vrienden.',
+      'We beginnen bij hoe je woont - zodat thuis vanaf dag één fijner voelt.',
     benefits: [
       {
         icon: Brain,
-        title: 'Wetenschappelijk onderbouwde matching',
+        title: 'Matching op hoe je woont',
         description:
-          'Ons algoritme analyseert 40+ compatibiliteitsfactoren om het succes van huisgenoten te voorspellen voordat conflicten beginnen. Geen gokken meer - vind je perfecte match.',
+          'Slaap, netheid, gasten, studieritme en meer - zodat je de fit ziet vóór er gedoe ontstaat. Geen gokken meer.',
       },
       {
         icon: Shield,
         title: 'Geverifieerd en veilig',
         description:
-          'Studenten en young professionals zijn geverifieerd met overheids-ID en selfie-verificatie. Je kunt je focussen op compatibiliteit, niet op veiligheidszorgen.',
+          'Studenten en young professionals zijn geverifieerd met overheids-ID en selfie-verificatie. Jij focust op mensen met wie je een keuken wilt delen.',
       },
       {
         icon: Zap,
         title: 'Bespaar tijd en geld',
         description:
-          'Vind compatibele huisgenoten in dagen, niet weken. Voorkom conflicten en geschillen door vanaf het begin verbinding te maken met ideale matches.',
+          'Vind huisgenoten in dagen, niet weken. Skip eindeloze groepschats en awkward interviews.',
       },
       {
         icon: Heart,
-        title: 'Vind je ideale huisgenoot',
+        title: 'Zie waarom jullie klikken',
         description:
-          'Zie precies waarom je compatibel bent met transparante uitleg. Verbind op basis van levensstijl, gewoonten en waarden die ertoe doen.',
+          'Duidelijke redenen op basis van levensstijl, gewoonten en waarden die thuis ertoe doen.',
       },
     ],
   },

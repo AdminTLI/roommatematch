@@ -16,7 +16,7 @@ export default function CommunicationResolutionClient() {
       sectionKey="communication-resolution"
       items={items}
       moduleIndex={3}
-      moduleLabel="Communication and Resolution"
+      moduleLabel="Talking things through"
       nextUrl="/onboarding/social-spaces"
     />
   )

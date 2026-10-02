@@ -59,7 +59,7 @@ export function Hero() {
             <motion.div variants={fadeInUp} className="space-y-4">
               <Badge variant="accent" className="w-fit">
                 <Star className="w-3 h-3 mr-1" />
-                Science-backed matching
+                Matching on how you live
               </Badge>
               
               <h1 className="text-display text-ink-900">
@@ -68,7 +68,7 @@ export function Hero() {
               </h1>
               
               <p className="text-h4 text-ink-700 max-w-2xl">
-                Domu Match pairs you with compatible students based on lifestyle and study rhythm. Our algorithm analyzes 40+ factors to prevent conflicts before they start - so moving in feels easy.
+                Domu Match pairs you with students based on lifestyle and study rhythm - so you see why you’d click before you move in.
               </p>
             </motion.div>
 

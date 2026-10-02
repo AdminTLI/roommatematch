@@ -9,7 +9,6 @@ export interface DiscoveryFeedMatch {
   id: string
   userId?: string
   suggestionId?: string
-  name?: string
   score?: number
   harmonyScore?: number
   contextScore?: number
@@ -26,6 +25,8 @@ interface DiscoveryFeedMobileCarouselProps {
   onSkip?: (match: DiscoveryFeedMatch) => void
   onConnect?: (match: DiscoveryFeedMatch) => void
   onUnlockQuestionnaire?: () => void
+  /** Extra slide that links to /matches. Hide when a shared button sits under the cards. */
+  showViewAllSlide?: boolean
 }
 
 /** One full-width slide per viewport; slight peek of the next card encourages horizontal scroll. */
@@ -41,7 +42,6 @@ function matchProfile(match: DiscoveryFeedMatch) {
 
   return {
     id: match.userId || match.id,
-    name: match.name,
     matchPercentage,
     harmonyScore: match.harmonyScore,
     contextScore: match.contextScore,
@@ -58,6 +58,7 @@ export function DiscoveryFeedMobileCarousel({
   onSkip,
   onConnect,
   onUnlockQuestionnaire,
+  showViewAllSlide = true,
 }: DiscoveryFeedMobileCarouselProps) {
   const router = useRouter()
   const previewMatches = matches.slice(0, 3)
@@ -86,31 +87,33 @@ export function DiscoveryFeedMobileCarousel({
           </div>
         ))}
 
-        <button
-          type="button"
-          onClick={() => router.push('/matches')}
-          className={cn(
-            SLIDE_CLASS,
-            DISCOVERY_CARD_SHELL_HEIGHT_CLASS,
-            'group flex flex-col items-center justify-center rounded-2xl',
-            'border border-slate-700 bg-slate-800 p-8 text-left shadow-xl',
-            'transition-colors hover:border-violet-500/50 active:scale-[0.99]',
-          )}
-        >
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-violet-500/10 transition-transform duration-500 group-hover:scale-110">
-            <Users className="h-10 w-10 text-violet-400" />
-          </div>
-          <p className="max-w-[280px] text-center text-xl font-bold leading-snug text-white">
-            To find more matches, click here
-          </p>
-          <p className="mt-3 max-w-[280px] text-center text-sm text-slate-400">
-            View all your suggestions on the matches page.
-          </p>
-          <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-400 group-hover:text-violet-300">
-            Go to matches
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </span>
-        </button>
+        {showViewAllSlide && (
+          <button
+            type="button"
+            onClick={() => router.push('/matches')}
+            className={cn(
+              SLIDE_CLASS,
+              DISCOVERY_CARD_SHELL_HEIGHT_CLASS,
+              'group flex flex-col items-center justify-center rounded-2xl',
+              'border border-slate-700 bg-slate-800 p-8 text-left shadow-xl',
+              'transition-colors hover:border-violet-500/50 active:scale-[0.99]',
+            )}
+          >
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-violet-500/10 transition-transform duration-500 group-hover:scale-110">
+              <Users className="h-10 w-10 text-violet-400" />
+            </div>
+            <p className="max-w-[280px] text-center text-xl font-bold leading-snug text-white">
+              See everyone suggested for you
+            </p>
+            <p className="mt-3 max-w-[280px] text-center text-sm text-slate-400">
+              Open Matches for the full list.
+            </p>
+            <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-violet-400 group-hover:text-violet-300">
+              Go to Matches
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </button>
+        )}
       </div>
     </div>
   )

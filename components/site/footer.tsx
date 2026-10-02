@@ -8,7 +8,7 @@ import { useApp } from '@/app/providers'
 const content = {
   en: {
     brandDescription:
-      'The smartest way to find compatible roommates. Science-backed matching for better living.',
+      'Find housemates who fit how you live - verified people, clear reasons, calmer homes.',
     product: 'Product',
     company: 'Company',
     support: 'Support',
@@ -34,7 +34,7 @@ const content = {
   },
   nl: {
     brandDescription:
-      'De slimste manier om compatibele huisgenoten te vinden. Wetenschappelijk onderbouwde matching voor beter wonen.',
+      'Vind huisgenoten die passen bij hoe jij woont - geverifieerd, met duidelijke redenen, en meer rust thuis.',
     product: 'Product',
     company: 'Bedrijf',
     support: 'Ondersteuning',

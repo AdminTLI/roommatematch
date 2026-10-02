@@ -22,7 +22,7 @@ export default async function MatchesPage() {
     redirect(onboardingRedirect)
   }
 
-  // Email verification only — Persona is deferred until match accept
+  // Email verification only – Persona is deferred until match accept
   const verificationStatus = await checkUserVerificationStatus(user)
   const redirectUrl = getVerificationRedirectUrl(verificationStatus)
   if (redirectUrl) {

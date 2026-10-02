@@ -155,17 +155,18 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
         )}
 
         {status === 'pending' && (
-          <div className="space-y-2">
+          <div className="space-y-4">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              Your verification is being processed. This may take a few minutes.
+              Your verification session is open. Continue on the verification page to finish with Persona, or refresh if you already submitted.
             </p>
             {verification && (
               <div className="text-sm text-gray-500 dark:text-text-muted">
                 <p>Started on: {new Date(verification.createdAt).toLocaleDateString()}</p>
               </div>
             )}
-            <Button variant="outline" onClick={() => router.push('/verify?from=settings&redirect=/settings')}>
-              View Status
+            <Button onClick={() => router.push('/verify?from=settings&redirect=/settings&reason=persona_verification_required')}>
+              Continue verification
+              <ExternalLink className="h-4 w-4 ml-2" />
             </Button>
           </div>
         )}

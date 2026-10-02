@@ -20,8 +20,12 @@ export interface DashboardKPIs {
 export interface TopMatch {
   id: string
   userId: string
-  name: string
+  /** @deprecated Discovery stays anonymous; do not populate with peer PII */
+  name?: string
   score: number
+  harmonyScore?: number
+  contextScore?: number
+  dimensionScores?: { [key: string]: number } | null
   program: string
   university: string
   avatar?: string

@@ -107,7 +107,7 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
           Settings
         </h1>
         <p className="text-zinc-600 dark:text-zinc-400 mt-2">
-          Manage your account settings, profile information, and questionnaire responses.
+          Your profile, how you live, and account settings.
         </p>
         {isProfileHidden && (
           <div className="mt-6 rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4">
@@ -205,7 +205,7 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                   <div className="p-6">
                     <div className="mb-6">
                       <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Profile Information</h2>
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Update your personal information and preferences.</p>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Update your personal info and living details.</p>
                     </div>
                     <div className="mb-10">
                       <AvatarAndPhotoSettings
@@ -227,7 +227,7 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                   <div className="p-6">
                     <div className="mb-6">
                       <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Questionnaire Management</h2>
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">View and manage your compatibility questionnaire responses.</p>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">View and update how you answered about living together.</p>
                     </div>
                     <QuestionnaireSettings
                       progressData={progressData}
@@ -240,7 +240,7 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                   <div className="p-6">
                     <div className="mb-6">
                       <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Account Settings</h2>
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Manage your account preferences and security settings.</p>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Account, security, and login settings.</p>
                     </div>
                     <AccountSettings user={user} profile={profile} onVisibilityChange={router.refresh} />
                   </div>

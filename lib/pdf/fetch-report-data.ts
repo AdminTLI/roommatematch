@@ -132,7 +132,7 @@ function getAnswerMeta(key: string, options: any): SectionAnswer['meta'] {
 
 function getSectionTitle(sectionId: string): string {
   const titleMap: Record<string, string> = {
-    'sleep': 'Sleep & Circadian',
+    'sleep': 'Sleep & schedule',
     'lifestyle': 'Lifestyle & Habits',
     'social': 'Social Preferences',
     'logistics': 'Housing Logistics',

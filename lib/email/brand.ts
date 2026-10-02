@@ -12,14 +12,14 @@
 export const BRAND = {
   name: 'Domu Match',
   productUrl: 'https://domumatch.com',
-  /** Use www — bare domumatch.com 307-redirects and breaks images in email clients + Supabase preview. */
+  /** Use www – bare domumatch.com 307-redirects and breaks images in email clients + Supabase preview. */
   logoUrl: 'https://www.domumatch.com/images/logo.png',
 
   /** Long tagline shown across marketing + footer. Per user direction. */
   tagline:
-    'The smartest way to find compatible roommates. Science-backed matching for better living.',
+    'Find housemates who fit how you live - verified people, clear reasons, calmer homes.',
   /** Short slogan used on screenshot/legacy verify email. Reserved for tight spaces. */
-  sloganShort: 'Built for better living.',
+  sloganShort: 'Built for calmer homes.',
 
   address: 'Breda, The Netherlands',
   year: new Date().getFullYear(),

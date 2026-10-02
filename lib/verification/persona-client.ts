@@ -127,6 +127,95 @@ export async function fetchPersonaInquiry(inquiryId: string): Promise<unknown | 
   }
 }
 
+/** Persona inquiry statuses that mean the user still needs to finish the flow. */
+const RESUMABLE_PERSONA_STATUSES = new Set([
+  'created',
+  'pending',
+  'expired', // resume endpoint re-opens expired inquiries as pending
+])
+
+/** Terminal / non-resumable Persona statuses — caller should create a new inquiry. */
+const NON_RESUMABLE_PERSONA_STATUSES = new Set([
+  'completed',
+  'approved',
+  'failed',
+  'declined',
+  'needs_review',
+  'redacted',
+])
+
+export function extractPersonaInquiryStatus(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null
+  const data = (payload as { data?: { attributes?: { status?: string } } }).data
+  const status = data?.attributes?.status
+  return typeof status === 'string' ? status.toLowerCase() : null
+}
+
+/**
+ * Create/reuse a Persona inquiry session and return a fresh session token.
+ * Required when resuming a pending inquiry in the embedded flow.
+ */
+export async function resumePersonaInquiry(
+  inquiryId: string
+): Promise<PersonaInquirySession | null> {
+  const { apiKey, apiUrl } = getPersonaConfig()
+  if (!apiKey) {
+    safeLogger.error('[Persona] API key missing; cannot resume inquiry')
+    return null
+  }
+
+  try {
+    const response = await fetch(`${apiUrl}/inquiries/${inquiryId}/resume`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Persona-Version': '2023-01-05',
+      },
+    })
+
+    if (!response.ok) {
+      const body = await response.text()
+      safeLogger.warn('[Persona] Inquiry resume failed', {
+        inquiryId,
+        status: response.status,
+        body,
+      })
+      return null
+    }
+
+    const data = await response.json()
+    const sessionToken =
+      data?.meta?.['session-token'] ||
+      data?.meta?.session_token ||
+      data?.data?.attributes?.['session-token'] ||
+      data?.data?.attributes?.session_token
+
+    return {
+      sessionId: data?.data?.id || inquiryId,
+      clientToken: typeof sessionToken === 'string' ? sessionToken : undefined,
+    }
+  } catch (error) {
+    safeLogger.error('[Persona] Inquiry resume error', { inquiryId, error })
+    return null
+  }
+}
+
+/**
+ * Decide whether an existing Persona inquiry can still be opened in the embedded flow.
+ */
+export function classifyPersonaInquiryForReuse(
+  personaStatus: string | null
+): 'resume' | 'approved' | 'rejected' | 'awaiting_review' | 'create_new' {
+  if (!personaStatus) return 'resume' // optimistic: try resume if we cannot fetch status
+  if (personaStatus === 'approved' || personaStatus === 'completed') return 'approved'
+  if (personaStatus === 'failed' || personaStatus === 'declined') return 'rejected'
+  if (personaStatus === 'needs_review') return 'awaiting_review'
+  if (RESUMABLE_PERSONA_STATUSES.has(personaStatus)) return 'resume'
+  if (NON_RESUMABLE_PERSONA_STATUSES.has(personaStatus)) return 'create_new'
+  return 'resume'
+}
+
 export async function fetchPersonaIdentity(inquiryId: string): Promise<PersonaIdentity> {
   const data = await fetchPersonaInquiry(inquiryId)
   if (!data) return {}

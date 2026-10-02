@@ -2,19 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Users, RefreshCw } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { LabPromptCard } from '@/app/(components)/lab-prompt-card'
 import { cn } from '@/lib/utils'
 
 interface EmptyMatchesStateProps {
   hasCompletedQuestionnaire: boolean
-  onRefresh?: () => void
 }
 
 export function EmptyMatchesState({
   hasCompletedQuestionnaire,
-  onRefresh,
 }: EmptyMatchesStateProps) {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
@@ -52,22 +50,9 @@ export function EmptyMatchesState({
         {hasCompletedQuestionnaire ? (
           <>
             <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:mt-3 sm:text-[15px]">
-              Matching can take a few hours after your questionnaire. We only surface strong
-              compatibility fits. Quality over quantity.
+              Fresh suggestions roll in about every hour. Just updated your answers? Give it a little longer to catch up.
+              We&apos;re picky on purpose – better a few solid fits than a long list of maybes.
             </p>
-
-            <Button
-              onClick={onRefresh}
-              className={cn(
-                'mt-6 inline-flex h-11 w-full max-w-xs items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition-all sm:mt-7 sm:w-auto sm:min-w-[180px]',
-                'bg-indigo-500 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
-                'hover:bg-indigo-600 hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]',
-                'active:scale-[0.98]',
-              )}
-            >
-              <RefreshCw className="h-4 w-4" strokeWidth={2.25} aria-hidden />
-              Refresh Matches
-            </Button>
 
             <div className="mt-8 w-full sm:mt-10">
               <LabPromptCard eligibleKeys={['empty_matches']} variant="centered" />
@@ -76,8 +61,8 @@ export function EmptyMatchesState({
         ) : (
           <>
             <p className="mt-2 max-w-prose text-sm leading-relaxed text-slate-600 dark:text-slate-300 sm:mt-3 sm:text-[15px]">
-              Complete your questionnaire to start finding compatible roommates. The more you
-              answer, the better your matches.
+              Answer a few living questions so we can start showing people who fit how you live. The more
+              you share, the clearer the fit.
             </p>
 
             <Button
@@ -89,7 +74,7 @@ export function EmptyMatchesState({
                 'active:scale-[0.98]',
               )}
             >
-              Complete Questionnaire
+              Answer living questions
             </Button>
 
             <p className="mt-4 max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400 sm:mt-5 sm:text-[13px]">

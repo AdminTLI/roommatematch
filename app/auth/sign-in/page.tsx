@@ -34,15 +34,15 @@ export default async function SignInPage({
             <ul className="mt-8 space-y-3 text-sm text-slate-700">
               <li className="flex gap-2 items-baseline">
                 <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-600/70" />
-                <span><strong>Real Humans:</strong> A 100% verified student community.</span>
+                <span><strong>Real people:</strong> A 100% verified student community.</span>
               </li>
               <li className="flex gap-2 items-baseline">
                 <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-violet-600/70" />
-                <span><strong>Deeper Connections:</strong> Find people who truly &quot;get&quot; your routine.</span>
+                <span><strong>Living habits that fit:</strong> Find people who get your routine.</span>
               </li>
               <li className="flex gap-2 items-baseline">
                 <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-700/60" />
-                <span><strong>Seamless Chat:</strong> Coordinate viewings and meetups instantly.</span>
+                <span><strong>Chat in the app:</strong> Plan viewings and meetups without the awkward scramble.</span>
               </li>
             </ul>
           </div>

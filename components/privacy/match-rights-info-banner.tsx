@@ -43,8 +43,8 @@ export function MatchRightsInfoBanner() {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
-            Compatibility scores are suggestions, not automatic decisions. You can request a human
-            review in{' '}
+            Compatibility scores are a starting point, not a decision made for you. If you want
+            someone on the team to look at a match, head to{' '}
             <Link
               href="/settings?tab=privacy"
               className="font-semibold text-violet-700 underline-offset-2 hover:underline dark:text-violet-300"

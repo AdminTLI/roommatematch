@@ -723,7 +723,7 @@ export function NewChatModal({ isOpen, onClose, user, initialMode, onChatCreated
                     )}
                   </>
                 ) : (
-                  <p>No matches available. Complete your profile to get matched!</p>
+                  <p>No matches yet. Answer a few living questions to start finding people.</p>
                 )}
               </div>
             ) : filteredMatches.length === 0 ? (

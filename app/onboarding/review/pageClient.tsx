@@ -65,7 +65,7 @@ const V2_SECTION_LABELS: Record<string, string> = {
   'logistics-context': 'Logistics and Context',
   'environment-rhythms': 'Environment and Rhythms',
   'cleanliness-operations': 'Cleanliness and Operations',
-  'communication-resolution': 'Communication and Resolution',
+  'communication-resolution': 'Talking things through',
   'social-spaces': 'Social Life and Spaces',
 }
 

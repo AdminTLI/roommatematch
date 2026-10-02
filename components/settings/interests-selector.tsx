@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { Check, X, Search } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { Check, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Command,
@@ -45,11 +43,8 @@ export function InterestsSelector({
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  // Filter out selected interests from search results
+  // Featured suggestions when empty; search results when typing
   const filteredInterests = useMemo(() => {
-    if (!debouncedQuery.trim()) {
-      return []
-    }
     return searchInterests(debouncedQuery, value)
   }, [debouncedQuery, value])
 
@@ -77,10 +72,15 @@ export function InterestsSelector({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between px-1">
-        <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Interests</label>
+      <div className="flex items-start justify-between gap-3 px-1">
+        <div className="min-w-0">
+          <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Interests</label>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            Add up to {max}
+          </p>
+        </div>
         <span className={cn(
-          "text-[10px] font-bold uppercase tracking-widest",
+          "text-[10px] font-bold uppercase tracking-widest shrink-0 pt-0.5",
           isAtMin ? "text-zinc-500 dark:text-zinc-400" : "text-amber-600 dark:text-amber-500",
           isAtMax && "text-zinc-500 dark:text-zinc-400"
         )}>
@@ -89,24 +89,20 @@ export function InterestsSelector({
         </span>
       </div>
 
-      {/* Selected interests as badges */}
+      {/* Selected interests as pills — click to remove */}
       {value.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 p-3 rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/60 min-h-[52px]">
+        <div className="flex flex-wrap gap-1.5">
           {value.map((interest) => (
-            <div
+            <button
               key={interest}
-              className="group inline-flex items-center gap-1 rounded-lg border border-blue-200 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 px-2 py-0.5 text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-500/20 hover:border-blue-300 dark:hover:border-blue-500/50 transition-all duration-200 h-auto"
+              type="button"
+              onClick={() => handleRemove(interest)}
+              aria-label={`Remove ${interest}`}
+              title={`Remove ${interest}`}
+              className="inline-flex items-center rounded-full border border-blue-200/80 dark:border-blue-400/25 bg-blue-50 dark:bg-blue-500/15 text-blue-700 dark:text-blue-200 px-2.5 py-0.5 text-xs font-medium leading-none shadow-sm transition-colors hover:bg-red-50 dark:hover:bg-red-500/15 hover:border-red-200 dark:hover:border-red-400/30 hover:text-red-600 dark:hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
             >
-              <span className="whitespace-nowrap leading-none">{interest}</span>
-              <button
-                type="button"
-                onClick={() => handleRemove(interest)}
-                className="ml-0.5 hover:bg-blue-200 dark:hover:bg-blue-500/30 rounded-full transition-colors flex items-center justify-center opacity-70 group-hover:opacity-100 -mr-0.5 w-3 h-3 p-0"
-                aria-label={`Remove ${interest}`}
-              >
-                <X className="h-2.5 w-2.5" />
-              </button>
-            </div>
+              <span className="whitespace-nowrap">{interest}</span>
+            </button>
           ))}
         </div>
       )}
@@ -149,11 +145,9 @@ export function InterestsSelector({
             />
             <CommandList className="max-h-[300px] scrollbar-hide">
               <CommandEmpty className="py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-                {searchQuery.trim()
-                  ? "No interests found."
-                  : "Start typing to search..."}
+                No interests found.
               </CommandEmpty>
-              <CommandGroup>
+              <CommandGroup heading={!searchQuery.trim() ? 'Popular right now' : undefined}>
                 {filteredInterests.map((interest) => {
                   const isSelected = value.includes(interest)
                   return (
@@ -189,11 +183,6 @@ export function InterestsSelector({
         {!error && !isAtMin && (
           <p className="text-[10px] text-amber-600 dark:text-amber-500/80 font-bold uppercase tracking-wider">
             Minimum {min} interests required
-          </p>
-        )}
-        {!error && isAtMin && value.length < max && (
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest">
-            {remaining} slot{remaining !== 1 ? 's' : ''} available
           </p>
         )}
       </div>

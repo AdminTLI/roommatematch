@@ -29,15 +29,15 @@ const MODULE_INTROS: Record<
     intro: 'You can explore matches on context scores now. Harmony unlocks after four more modules.',
   },
   1: {
-    next: 'Cleanliness and Operations',
+    next: 'Chores & shared space',
     intro: 'Kitchen habits, chores, and household upkeep.',
   },
   2: {
-    next: 'Communication and Resolution',
+    next: 'Talking things through',
     intro: 'How you give feedback and handle conflict.',
   },
   3: {
-    next: 'Social Life and Spaces',
+    next: 'Guests & social life',
     intro: 'Guests, gatherings, and how you use shared areas.',
   },
   4: {
@@ -189,8 +189,8 @@ export function ModuleCompletionScreen({
 
             {contextSubmit ? (
               <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                You have finished the context questions. You can already see potential matches based on
-                university and logistics. Harmony scores unlock after you complete the remaining four
+                You have finished the context questions. You can already see people based on
+                university and logistics. Harmony scores unlock after you finish the remaining four
                 modules on the Matches page.
               </p>
             ) : !isLast && next && !isContextStep ? (

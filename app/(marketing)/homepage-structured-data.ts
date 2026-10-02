@@ -82,7 +82,7 @@ export const homepageStructuredData = {
           name: 'Is Domu Match free for students and young professionals?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. Domu Match is free for both students and young professionals in the Netherlands. Our platform helps you find compatible roommates at no cost.',
+            text: 'Yes. Domu Match is free for both students and young professionals in the Netherlands. Find housemates who fit how you live – at no cost.',
           },
         },
         {

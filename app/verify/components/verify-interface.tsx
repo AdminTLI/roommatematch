@@ -71,8 +71,11 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
   const [isStarting, setIsStarting] = useState(false)
   const [isPersonaReady, setIsPersonaReady] = useState(false)
   const [isPersonaActive, setIsPersonaActive] = useState(false)
+  const [awaitingReview, setAwaitingReview] = useState(false)
+  const [canContinue, setCanContinue] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
+  const personaOpenWatchdogRef = useRef<NodeJS.Timeout | null>(null)
   
   // Load Persona script
   useEffect(() => {
@@ -158,12 +161,12 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Poll status if pending
+  // Poll status if pending (faster when awaiting review; still useful if canContinue)
   useEffect(() => {
     if (status === 'pending') {
       const interval = setInterval(() => {
         fetchStatus()
-      }, 5000) // Poll every 5 seconds
+      }, awaitingReview ? 5000 : 15000)
       setPollingInterval(interval)
       return () => clearInterval(interval)
     } else {
@@ -173,7 +176,16 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status])
+  }, [status, awaitingReview])
+
+  useEffect(() => {
+    return () => {
+      if (personaOpenWatchdogRef.current) {
+        clearTimeout(personaOpenWatchdogRef.current)
+        personaOpenWatchdogRef.current = null
+      }
+    }
+  }, [])
 
   const handlePersonaComplete = async (inquiryId: string, personaStatus: string) => {
     setIsStarting(false)
@@ -292,6 +304,13 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
         console.log('[Verify] Status fetched:', { newStatus, fullData: data })
         setStatus(newStatus)
         statusRef.current = newStatus
+        setAwaitingReview(Boolean(data.awaitingReview))
+        // Default: pending sessions are resumable unless awaiting Persona review
+        setCanContinue(
+          newStatus === 'pending'
+            ? data.canContinue !== false && !data.awaitingReview
+            : false
+        )
 
         // Already verified: leave /verify immediately (fixes login redirect loops / white screens)
         if (newStatus === 'verified') {
@@ -302,6 +321,8 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
         // Profile doesn't exist yet - user is unverified
         console.log('[Verification] Status endpoint returned 404, treating as unverified')
         setStatus('unverified')
+        setAwaitingReview(false)
+        setCanContinue(false)
       } else if (response.status === 401) {
         // Unauthorized - session might have expired
         console.warn('[Verification] Status check unauthorized, redirecting to sign in')
@@ -318,6 +339,20 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
     }
   }
 
+  const clearPersonaOpenWatchdog = () => {
+    if (personaOpenWatchdogRef.current) {
+      clearTimeout(personaOpenWatchdogRef.current)
+      personaOpenWatchdogRef.current = null
+    }
+  }
+
+  const resetPersonaOverlay = () => {
+    clearPersonaOpenWatchdog()
+    setIsStarting(false)
+    setIsPersonaActive(false)
+    hasOpenedPersonaRef.current = false
+  }
+
   const startVerification = async () => {
     if (hasOpenedPersonaRef.current && isPersonaActive) {
       return
@@ -332,6 +367,9 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
     setIsStarting(true)
     setIsPersonaActive(true)
     setError(null)
+    setStatus('pending')
+    setCanContinue(true)
+    setAwaitingReview(false)
 
     try {
       let csrfToken: string | null = null
@@ -363,45 +401,85 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
           startData?.error ||
             'Could not start verification. Please complete your profile name and date of birth, then try again.'
         )
-        setIsStarting(false)
-        setIsPersonaActive(false)
+        resetPersonaOverlay()
+        await fetchStatus()
         return
       }
 
       if (startData.status === 'verified') {
         setStatus('verified')
-        setIsStarting(false)
-        setIsPersonaActive(false)
+        resetPersonaOverlay()
         window.location.replace(redirectTo)
         return
       }
 
+      // Submitted to Persona and waiting on review — do not open the widget again
+      if (startData.awaitingReview) {
+        setAwaitingReview(true)
+        setCanContinue(false)
+        setStatus('pending')
+        resetPersonaOverlay()
+        return
+      }
+
       const inquiryId = startData.inquiryId || startData.sessionId
+      const sessionToken = startData.clientToken as string | undefined
       if (!inquiryId) {
         setError('Could not create verification session. Please try again.')
-        setIsStarting(false)
-        setIsPersonaActive(false)
+        resetPersonaOverlay()
+        return
+      }
+
+      // Pending Persona inquiries require a fresh session token to open the embedded flow
+      if (!sessionToken) {
+        setError(
+          'Could not open verification securely. Please try again in a moment, or contact support if this keeps happening.'
+        )
+        resetPersonaOverlay()
+        setCanContinue(true)
         return
       }
 
       hasOpenedPersonaRef.current = true
 
       let client: InstanceType<typeof window.Persona.Client> | null = null
+      let personaDidOpen = false
+
+      clearPersonaOpenWatchdog()
+      // If the Persona modal never becomes ready (blocker, CSP, browser quirks),
+      // return the user to a recoverable state instead of an endless spinner.
+      personaOpenWatchdogRef.current = setTimeout(() => {
+        if (!personaDidOpen) {
+          console.error('[Verify] Persona widget failed to open within timeout')
+          setError(
+            'The verification window did not open. Disable ad blockers for this site, try another browser, then continue verification.'
+          )
+          resetPersonaOverlay()
+          setCanContinue(true)
+          setStatus('pending')
+        }
+      }, 20000)
 
       const clientConfig: ConstructorParameters<typeof window.Persona.Client>[0] = {
         environmentId,
         inquiryId,
+        sessionToken,
         referenceId: user.id,
         onReady: () => {
+          personaDidOpen = true
+          clearPersonaOpenWatchdog()
           client?.open()
         },
         onComplete: ({ inquiryId: completedId, status: personaStatus }) => {
+          clearPersonaOpenWatchdog()
           void handlePersonaComplete(completedId, personaStatus)
         },
         onCancel: () => {
-          setIsStarting(false)
-          setIsPersonaActive(false)
+          resetPersonaOverlay()
           setError(null)
+          setStatus('pending')
+          setCanContinue(true)
+          void fetchStatus()
         },
         onError: (error: any) => {
           let errorMessage = 'Verification failed. Please try again.'
@@ -412,14 +490,10 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
             errorMessage = `Verification error: ${error.message}. Please try again.`
           }
           setError(errorMessage)
-          setIsStarting(false)
-          setIsPersonaActive(false)
-          hasOpenedPersonaRef.current = false
+          resetPersonaOverlay()
+          setCanContinue(true)
+          setStatus('pending')
         },
-      }
-
-      if (startData.clientToken) {
-        clientConfig.sessionToken = startData.clientToken
       }
 
       client = new window.Persona.Client(clientConfig)
@@ -427,9 +501,8 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
     } catch (err) {
       console.error('Failed to open Persona verification:', err)
       setError('Failed to start verification. Please try again.')
-      setIsStarting(false)
-      setIsPersonaActive(false)
-      hasOpenedPersonaRef.current = false
+      resetPersonaOverlay()
+      setCanContinue(true)
     }
   }
 
@@ -479,9 +552,9 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  setIsPersonaActive(false)
-                  setIsStarting(false)
-                  hasOpenedPersonaRef.current = false
+                  resetPersonaOverlay()
+                  setCanContinue(true)
+                  setStatus('pending')
                 }}
               >
                 Back to verification page
@@ -546,7 +619,8 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
                 )}
                 <span>
                   {status === 'verified' && 'Identity verified'}
-                  {status === 'pending' && 'Verification pending'}
+                  {status === 'pending' &&
+                    (awaitingReview ? 'Verification pending' : 'Verification incomplete')}
                   {status === 'failed' && 'Verification failed'}
                   {status === 'unverified' && 'Not verified yet'}
                 </span>
@@ -554,7 +628,10 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
               <CardDescription className="text-base text-zinc-500 dark:text-zinc-400 pt-1">
                 {status === 'verified' &&
                   'Your identity has been confirmed. You can continue to profile setup when you are ready.'}
-                {status === 'pending' && 'We are processing your verification. This usually takes a few minutes.'}
+                {status === 'pending' &&
+                  (awaitingReview
+                    ? 'We are processing your verification. This usually takes a few minutes.'
+                    : 'You still need to finish the identity check with Persona.')}
                 {status === 'failed' && 'Something did not pass the check. You can try again below.'}
                 {status === 'unverified' &&
                   'Complete a quick identity check to unlock chat and accept matches.'}
@@ -596,15 +673,58 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
 
               {status === 'pending' && (
                 <div className="text-center space-y-5 py-2">
-                  <Loader2 className="h-14 w-14 animate-spin text-indigo-500 mx-auto" aria-hidden />
+                  {awaitingReview ? (
+                    <Loader2 className="h-14 w-14 animate-spin text-indigo-500 mx-auto" aria-hidden />
+                  ) : (
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl border border-indigo-500/20 bg-indigo-500/10">
+                      <Shield className="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                  )}
                   <div>
                     <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
-                      Verification in progress
+                      {awaitingReview
+                        ? 'Verification in progress'
+                        : 'Finish identity verification'}
                     </h3>
                     <p className="text-zinc-600 dark:text-zinc-400 mt-2 leading-relaxed">
-                      This page updates automatically when your check is complete.
+                      {awaitingReview
+                        ? 'This page updates automatically when your check is complete.'
+                        : 'Your session is ready, but you have not completed the Persona check yet. Continue below to submit your ID.'}
                     </p>
                   </div>
+                  {(canContinue || !awaitingReview) && (
+                    <Button
+                      onClick={startVerification}
+                      disabled={isStarting || !isPersonaReady}
+                      size="lg"
+                      className="w-full"
+                    >
+                      {isStarting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Opening Persona...
+                        </>
+                      ) : !isPersonaReady ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Preparing verification...
+                        </>
+                      ) : (
+                        'Continue with Persona'
+                      )}
+                    </Button>
+                  )}
+                  {awaitingReview && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => void fetchStatus()}
+                      className="w-full"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh status
+                    </Button>
+                  )}
                 </div>
               )}
 

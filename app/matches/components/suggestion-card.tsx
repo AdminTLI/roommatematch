@@ -117,7 +117,7 @@ const dimensionConfig: { [key: string]: { label: string; description: string; ic
     icon: BookOpen
   },
   home_vibe: {
-    label: 'Home Vibe',
+    label: 'Life at home',
     description: 'Home atmosphere preference (quiet retreat vs social hub)',
     icon: Heart
   }
@@ -422,11 +422,11 @@ export function SuggestionCard({
     const highlights: string[] = []
     
     if (compatibilityData?.top_alignment) {
-      highlights.push(`Strong alignment on ${formatTopAlignment(compatibilityData.top_alignment)}`)
+      highlights.push(`You’re alike on ${formatTopAlignment(compatibilityData.top_alignment)}`)
     }
     
     if (harmonyScore !== null && harmonyScore >= 70) {
-      highlights.push('Excellent day-to-day living compatibility')
+      highlights.push('You’d probably click day to day')
     }
     
     if (contextScore !== null && contextScore >= 70) {
@@ -546,7 +546,7 @@ export function SuggestionCard({
                           side="top"
                           className="max-w-xs border-zinc-700 bg-zinc-900 text-xs text-zinc-100 dark:bg-zinc-800"
                         >
-                          <p>Measures how well your day-to-day living preferences align - cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and home vibe.</p>
+                          <p>Measures how well your day-to-day living habits fit – cleanliness, sleep, noise, guests, shared spaces, substances, study/social balance, and life at home.</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>

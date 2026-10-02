@@ -35,6 +35,21 @@ export function isSuggestedForUser(
   return false
 }
 
+/**
+ * Discovery / Suggested feed: actionable for me AND not someone I'm already
+ * messaging in a 1:1 chat (confirmed or chat-opened early).
+ */
+export function isDiscoverableSuggestion(
+  suggestion: SuggestionTabFields,
+  userId: string,
+  existingChatPartnerIds: ReadonlySet<string>
+): boolean {
+  if (!isSuggestedForUser(suggestion, userId)) return false
+  const otherId = suggestion.memberIds?.find((id) => id !== userId)
+  if (otherId && existingChatPartnerIds.has(otherId)) return false
+  return true
+}
+
 /** I accepted; waiting on the other person. */
 export function isPendingForUser(
   suggestion: SuggestionTabFields,

@@ -46,7 +46,7 @@ export function HowItWorksMini() {
 
             <div className="mt-6 flex flex-wrap gap-2.5">
               {[
-                locale === 'nl' ? 'Geen woning-loterij vibes' : 'No housing lottery energy',
+                locale === 'nl' ? 'Geen woning-loterij chaos' : 'No housing lottery chaos',
                 locale === 'nl' ? 'Geen catfish' : 'No catfish',
                 locale === 'nl' ? 'Meer rust thuis' : 'More calm at home',
               ].map((b) => (

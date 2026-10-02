@@ -4,25 +4,24 @@ import { MarketingSubpageWrapperLight } from '../components/marketing-subpage-wr
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'For Students | Domu Match - Science-Backed Roommate Matching',
+  title: 'For Students | Domu Match - Roommate Matching That Fits How You Live',
   description:
-    'Your best years deserve the right roommates. Science-backed matching on lifestyle, sleep, and study habits. 100% ID verified. Built for students and internationals in the Netherlands.',
+    'Your best years deserve the right roommates. Matching on lifestyle, sleep, and study habits. 100% ID verified. Built for students and internationals in the Netherlands.',
   keywords: [
     'student roommate matching',
     'international student housing',
     'first year roommate finder',
     'compatibility matching students',
-    'ID verified roommate platform',
-    'science-backed roommate matching',
+    'ID verified roommate app',
     'student housing Netherlands',
     'roommate conflict prevention',
     'lifestyle matching students',
     'verified student roommates',
   ],
   openGraph: {
-    title: 'For Students | Domu Match - Find Your Perfect Roommate',
+    title: 'For Students | Domu Match - Find Housemates Who Fit',
     description:
-      "The only student platform that matches you on lifestyle, sleep schedules, and study habits. 100% ID Verified. Zero Scams.",
+      'Made for students. We match you on lifestyle, sleep schedules, and study habits. 100% ID Verified. Zero Scams.',
     type: 'website',
     url: 'https://domumatch.com/students',
     siteName: 'Domu Match',
@@ -40,7 +39,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Domu Match - For Students',
     description:
-      "The only student platform that matches you on lifestyle, sleep schedules, and study habits. 100% ID Verified.",
+      'Made for students. We match you on lifestyle, sleep schedules, and study habits. 100% ID Verified.',
     images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {
@@ -54,10 +53,10 @@ const faqSchema = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: 'How does the roommate matching algorithm work?',
+      name: 'How does roommate matching work?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: "Our algorithm analyzes 40+ compatibility factors including sleep schedules, cleanliness preferences, social habits, study routines, noise tolerance, and personality traits. We use science-backed research on roommate compatibility to weight these factors appropriately. You get a Harmony score showing how well you match before you even say hello.",
+        text: "We look at how you live day to day - sleep, cleanliness, guests, study rhythm, noise, and more. You get a Harmony score (how well you'd click living together) before you say hello, plus clear reasons why.",
       },
     },
     {

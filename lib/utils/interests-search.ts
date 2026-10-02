@@ -1,4 +1,4 @@
-import { INTERESTS_LIST } from '@/lib/constants/interests'
+import { FEATURED_INTERESTS, INTERESTS_LIST } from '@/lib/constants/interests'
 
 /**
  * Calculate Levenshtein distance between two strings
@@ -42,12 +42,13 @@ interface SearchResult {
 }
 
 /**
- * Search interests with fuzzy matching
- * Returns results sorted by relevance (exact matches first, then fuzzy matches)
+ * Search interests with fuzzy matching.
+ * With an empty query, returns a curated featured list so the picker feels populated.
+ * With a query, returns results sorted by relevance (exact matches first, then fuzzy).
  */
 export function searchInterests(query: string, excludeSelected: string[] = []): string[] {
   if (!query.trim()) {
-    return []
+    return FEATURED_INTERESTS.filter((interest) => !excludeSelected.includes(interest))
   }
 
   const normalizedQuery = query.toLowerCase().trim()

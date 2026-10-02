@@ -784,7 +784,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         <div className="text-center space-y-4">
           <h1 className="text-h1 text-gray-900">Messages</h1>
           <p className="text-body-lg text-gray-600">
-            Connect with your potential roommates
+            Chat with people you’ve matched with
           </p>
         </div>
 

@@ -311,11 +311,11 @@ export function VibeCheckClient() {
 
   const shareText = archetype
     ? buildVibeShareText(archetype, shareUrl)
-    : `Let's see if we'd actually survive living together. Take the Domu Match vibe check with me!\n${shareUrl}`
+    : `Let's see if we'd actually survive living together. Take the Domu Match living together check with me!\n${shareUrl}`
 
   const shareSubject = archetype
     ? buildVibeShareSubject(archetype)
-    : `Take the Domu Match vibe check with me`
+    : `Take the Domu Match living together check with me`
 
   const handleShareChannel = (channel: string) => {
     void trackVibeEvent('vibe_check_share', { channel })
@@ -329,7 +329,7 @@ export function VibeCheckClient() {
         // instead of grabbing random page images.
         const sharePayload: ShareData = {
           title: shareSubject,
-          text: `Let's see if we'd actually survive living together. Take the Domu Match vibe check with me!`,
+          text: `Let's see if we'd actually survive living together. Take the Domu Match living together check with me!`,
           url: shareUrl,
         }
         if (navigator.canShare && !navigator.canShare(sharePayload)) {
@@ -406,7 +406,7 @@ export function VibeCheckClient() {
               Find your roommate archetype
             </h1>
             <p className="mt-2 text-sm text-slate-600 sm:text-base">
-              Answer a few lifestyle questions, see who matches your vibe, and meet students in{' '}
+              Answer a few lifestyle questions, see who fits how you live, and meet students in{' '}
               {city} looking for roommates.
             </p>
           </div>
@@ -487,7 +487,7 @@ export function VibeCheckClient() {
                     setStep('quiz')
                   }}
                 >
-                  Start vibe check
+                  Start living together check
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </motion.div>
@@ -754,7 +754,7 @@ export function VibeCheckClient() {
                     ) : (
                       <Download className="mr-2 h-4 w-4" />
                     )}
-                    Download Vibe Passport PDF
+                    Download Living Passport PDF
                   </Button>
                 </div>
 

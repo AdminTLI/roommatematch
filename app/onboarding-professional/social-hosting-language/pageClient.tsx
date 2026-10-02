@@ -61,7 +61,7 @@ function SectionClientContent() {
     <QuestionnaireLayout
       stepIndex={6}
       totalSteps={11}
-      title="Social, Hosting & Language"
+      title="Guests, hanging out & language"
       subtitle="Guests, gatherings, and common-language norms."
       onPrev={() => {
         window.location.href = isEditMode

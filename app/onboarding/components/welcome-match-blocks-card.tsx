@@ -20,7 +20,7 @@ const MATCH_BLOCKS: { title: string; description: string; Icon: LucideIcon }[] =
     Icon: Brain,
   },
   {
-    title: 'Sleep and Circadian',
+    title: 'Sleep & schedule',
     description: 'Bedtimes, mornings, and rhythm with the household.',
     Icon: Moon,
   },
@@ -30,22 +30,22 @@ const MATCH_BLOCKS: { title: string; description: string; Icon: LucideIcon }[] =
     Icon: Volume2,
   },
   {
-    title: 'Home Operations',
+    title: 'Chores & shared space',
     description: 'Chores, cleanliness, and how shared spaces run day to day.',
     Icon: Home,
   },
   {
-    title: 'Social, Hosting, and Language',
+    title: 'Guests, hanging out & language',
     description: 'Guests, hosting style, and languages at home.',
     Icon: Users,
   },
   {
-    title: 'Communication and Conflict',
+    title: 'Talking things through',
     description: 'How you talk through friction, money, and house norms.',
     Icon: MessageCircle,
   },
   {
-    title: 'Privacy and Territoriality',
+    title: 'Privacy & personal space',
     description: 'Personal space, boundaries, and shared vs. private areas.',
     Icon: Lock,
   },

@@ -144,8 +144,8 @@ const dimensionConfig: { [key: string]: { label: string; description: string; ic
     icon: BookOpen
   },
   home_vibe: {
-    label: 'Home Vibe',
-    description: 'Compares home atmosphere preferences, whether you prefer a quiet retreat for focus or a social hub for interaction.',
+    label: 'Life at home',
+    description: 'Compares home atmosphere – quiet retreat for focus vs a more social hub.',
     icon: Heart
   }
 }

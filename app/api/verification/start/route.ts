@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { normalizeDateInput } from '@/lib/auth/age-verification'
-import { createPersonaInquiry } from '@/lib/verification/persona-client'
+import { markIdentityVerified } from '@/lib/auth/verification-check'
+import {
+  classifyPersonaInquiryForReuse,
+  createPersonaInquiry,
+  extractPersonaInquiryStatus,
+  fetchPersonaInquiry,
+  resumePersonaInquiry,
+} from '@/lib/verification/persona-client'
 
 type KYCProvider = 'veriff' | 'persona' | 'onfido'
 
@@ -32,6 +39,39 @@ async function resolveClaimedIdentity(
     )
 
   return { firstName, lastName, dateOfBirth }
+}
+
+async function markVerificationTerminal(
+  admin: ReturnType<typeof createAdminClient>,
+  verificationId: string,
+  userId: string,
+  status: 'rejected' | 'expired' | 'approved',
+  reviewReason?: string
+) {
+  const now = new Date().toISOString()
+  await admin
+    .from('verifications')
+    .update({
+      status,
+      review_reason: reviewReason || null,
+      updated_at: now,
+    })
+    .eq('id', verificationId)
+
+  if (status === 'approved') {
+    await admin
+      .from('profiles')
+      .update({ verification_status: 'verified', updated_at: now })
+      .eq('user_id', userId)
+  } else {
+    await admin
+      .from('profiles')
+      .update({
+        verification_status: status === 'rejected' ? 'failed' : 'unverified',
+        updated_at: now,
+      })
+      .eq('user_id', userId)
+  }
 }
 
 export async function POST(_request: NextRequest) {
@@ -94,7 +134,14 @@ export async function POST(_request: NextRequest) {
 
     const provider = (process.env.KYC_PROVIDER || 'persona') as KYCProvider
 
-    // Reuse pending Persona inquiry when possible
+    if (provider !== 'persona') {
+      return NextResponse.json(
+        { error: 'Only Persona verification is supported for new sessions' },
+        { status: 400 }
+      )
+    }
+
+    // Reuse pending Persona inquiry when possible — always refresh the session token
     const { data: existingVerification } = await admin
       .from('verifications')
       .select('id, provider_session_id, status, provider_data')
@@ -106,22 +153,89 @@ export async function POST(_request: NextRequest) {
       .maybeSingle()
 
     if (existingVerification?.provider_session_id) {
-      const clientToken =
-        (existingVerification.provider_data as { client_token?: string } | null)?.client_token
-      return NextResponse.json({
-        sessionId: existingVerification.provider_session_id,
-        inquiryId: existingVerification.provider_session_id,
-        clientToken,
-        status: 'pending',
-        provider,
-      })
-    }
+      const inquiryId = existingVerification.provider_session_id
+      const inquiryPayload = await fetchPersonaInquiry(inquiryId)
+      const personaStatus = extractPersonaInquiryStatus(inquiryPayload)
+      const reuseAction = classifyPersonaInquiryForReuse(personaStatus)
 
-    if (provider !== 'persona') {
-      return NextResponse.json(
-        { error: 'Only Persona verification is supported for new sessions' },
-        { status: 400 }
-      )
+      if (reuseAction === 'approved') {
+        await markVerificationTerminal(admin, existingVerification.id, user.id, 'approved')
+        await markIdentityVerified(user.id, 'persona', user.email)
+        return NextResponse.json({
+          status: 'verified',
+          message: 'Already verified',
+          inquiryId,
+        })
+      }
+
+      if (reuseAction === 'rejected') {
+        await markVerificationTerminal(
+          admin,
+          existingVerification.id,
+          user.id,
+          'rejected',
+          `persona_status:${personaStatus || 'unknown'}`
+        )
+        // Fall through to create a fresh inquiry below
+      } else if (reuseAction === 'awaiting_review') {
+        return NextResponse.json({
+          sessionId: inquiryId,
+          inquiryId,
+          status: 'pending',
+          awaitingReview: true,
+          provider,
+          message: 'Verification submitted and awaiting review.',
+        })
+      } else if (reuseAction === 'resume') {
+        const resumed = await resumePersonaInquiry(inquiryId)
+        if (resumed?.clientToken) {
+          const previousData =
+            (existingVerification.provider_data as Record<string, unknown> | null) || {}
+          await admin
+            .from('verifications')
+            .update({
+              provider_data: {
+                ...previousData,
+                client_token: resumed.clientToken,
+                resumed_at: new Date().toISOString(),
+              },
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existingVerification.id)
+
+          return NextResponse.json({
+            sessionId: inquiryId,
+            inquiryId,
+            clientToken: resumed.clientToken,
+            status: 'pending',
+            provider,
+            resumed: true,
+          })
+        }
+
+        // Resume failed (redacted / invalid) — expire and create a new inquiry
+        safeLogger.warn('[Verification] Could not resume pending inquiry; creating a new one', {
+          userId: user.id,
+          inquiryId,
+          personaStatus,
+        })
+        await markVerificationTerminal(
+          admin,
+          existingVerification.id,
+          user.id,
+          'expired',
+          'resume_failed'
+        )
+      } else {
+        // create_new — expire stale inquiry
+        await markVerificationTerminal(
+          admin,
+          existingVerification.id,
+          user.id,
+          'expired',
+          `persona_status:${personaStatus || 'unusable'}`
+        )
+      }
     }
 
     const sessionResult = await createPersonaInquiry({
@@ -138,13 +252,31 @@ export async function POST(_request: NextRequest) {
       )
     }
 
+    // Prefer a token from create; otherwise resume immediately so the embedded flow can open
+    let clientToken = sessionResult.clientToken
+    if (!clientToken) {
+      const resumed = await resumePersonaInquiry(sessionResult.sessionId)
+      clientToken = resumed?.clientToken
+    }
+
+    if (!clientToken) {
+      safeLogger.error('[Verification] Created inquiry but could not obtain a session token', {
+        userId: user.id,
+        inquiryId: sessionResult.sessionId,
+      })
+      return NextResponse.json(
+        { error: 'Failed to create a secure verification session. Please try again.' },
+        { status: 500 }
+      )
+    }
+
     const { error: insertError } = await admin.from('verifications').insert({
       user_id: user.id,
       provider: 'persona',
       provider_session_id: sessionResult.sessionId,
       status: 'pending',
       provider_data: {
-        client_token: sessionResult.clientToken,
+        client_token: clientToken,
         reference_id: user.id,
         prefilled_name_first: claimed.firstName,
         prefilled_name_last: claimed.lastName,
@@ -168,7 +300,7 @@ export async function POST(_request: NextRequest) {
     return NextResponse.json({
       sessionId: sessionResult.sessionId,
       inquiryId: sessionResult.sessionId,
-      clientToken: sessionResult.clientToken,
+      clientToken,
       provider: 'persona',
       status: 'pending',
     })

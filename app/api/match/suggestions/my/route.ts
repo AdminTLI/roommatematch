@@ -8,6 +8,7 @@ import {
   useStoredMatchScores,
 } from '@/lib/matching/score-read-config'
 import { enrichSuggestionsWithLiveCompatibility } from '@/lib/matching/enrich-suggestions-compatibility'
+import { getDirectChatPartnerIds } from '@/lib/matching/direct-chat-partners'
 
 export async function GET(request: NextRequest) {
   try {
@@ -157,7 +158,14 @@ export async function GET(request: NextRequest) {
         )
       )
 
-      const [{ data: submission }, { data: viewerUser }, verificationStatusResult, peerProfiles, peerSubs] =
+      const [
+        { data: submission },
+        { data: viewerUser },
+        verificationStatusResult,
+        peerProfiles,
+        peerSubs,
+        existingChatPartners,
+      ] =
         await Promise.all([
           admin
             .from('onboarding_submissions')
@@ -185,6 +193,7 @@ export async function GET(request: NextRequest) {
                 .select('user_id, completion_stage')
                 .in('user_id', otherIds)
             : Promise.resolve({ data: [] as { user_id: string; completion_stage: string | null }[] }),
+          getDirectChatPartnerIds(admin, user.id),
         ])
 
       const { isFullQuestionnaireComplete } = await import('@/lib/onboarding/completion-stage')
@@ -225,6 +234,8 @@ export async function GET(request: NextRequest) {
         peerMeta: {
           verification: peerVerification,
           harmonyComplete: peerHarmonyComplete,
+          /** Peers with an existing 1:1 chat — exclude from Suggested / dashboard discovery */
+          existingChatPartners,
         },
         pagination: {
           limit: limit || filteredSuggestions.length,

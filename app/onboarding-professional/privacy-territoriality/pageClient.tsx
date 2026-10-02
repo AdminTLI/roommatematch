@@ -60,7 +60,7 @@ function SectionClientContent() {
     <QuestionnaireLayout
       stepIndex={8}
       totalSteps={11}
-      title="Privacy & Territoriality"
+      title="Privacy & personal space"
       subtitle="Borrowing, door etiquette, photos, and personal zones."
       onPrev={() => {
         window.location.href = isEditMode

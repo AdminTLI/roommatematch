@@ -315,7 +315,7 @@ export async function createGroupMatchNotification(
   chatId: string
 ): Promise<void> {
   const title = 'Group Match Confirmed!';
-  const message = `Your group match is confirmed! You can now chat with your ${memberIds.length - 1} potential roommates.`;
+  const message = `Your group match is confirmed! You can now chat with your ${memberIds.length - 1} housemates-to-be.`;
   const metadata = { group_id: groupId, chat_id: chatId, member_count: memberIds.length };
 
   await createNotificationsForUsers(memberIds, 'match_confirmed', title, message, metadata);
@@ -401,7 +401,7 @@ export async function createQuestionnaireCompletionNotification(
   userId: string
 ): Promise<void> {
   const title = 'Questionnaire Complete!';
-  const message = 'Great! Your questionnaire is complete. We\'re finding matches for you.';
+  const message = 'Nice – your living questions are done. We’re finding people who fit.';
   const metadata = { completed_at: new Date().toISOString() };
 
   await createNotification({

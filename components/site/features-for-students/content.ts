@@ -92,7 +92,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
       headlineGradient: 'best years',
       headlineAfter: ' deserve the right roommates.',
       subheadline:
-        "The only student platform that matches you based on lifestyle, sleep schedules, and study habits. 100% ID Verified. Zero Scams.",
+        'Made for students. We match you on lifestyle, sleep schedules, and study habits. 100% ID Verified. Zero Scams.',
       oldWay: 'The Old Way',
       domuWay: 'The Domu Way',
       findMatch: 'Find My Match',
@@ -119,24 +119,24 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
       ],
     },
     solution: {
-      title: 'The Compatibility Blueprint',
-      subtitle: 'Science-backed matching that actually works',
-      blueprintLabel: 'Our 5–8 minute compatibility quiz',
+      title: 'How we match you',
+      subtitle: 'Matching based on how you actually live',
+      blueprintLabel: 'Our 5–8 minute living quiz',
       features: [
         {
-          title: 'The 5-dimension deep dive',
+          title: 'The questions you’d rather not ask',
           description:
             "We ask the questions you're too awkward to ask. From guest policies to thermostat preferences.",
         },
         {
           title: "The 'Harmony' Score",
           description:
-            'See exactly how compatible you are with a % score before you say hello.',
+            'Harmony = how well you’d click living together. See a % before you say hello.',
         },
         {
           title: 'Blind Matching',
           description:
-            "We hide photos initially so you connect on habits, not looks. No bias, just data.",
+            'We hide photos initially so you connect on habits, not looks.',
         },
       ],
     },
@@ -155,9 +155,9 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
       title: 'Frequently Asked Questions',
       items: [
         {
-          question: 'How does the roommate matching algorithm work?',
+          question: 'How does roommate matching work?',
           answer:
-            'Our algorithm analyzes 40+ compatibility factors including sleep schedules, cleanliness preferences, social habits, study routines, noise tolerance, and personality traits. We use science-backed research on roommate compatibility to weight these factors appropriately. You get a Harmony score showing how well you match before you even say hello.',
+            'We look at how you live day to day - sleep, cleanliness, guests, study rhythm, noise, and more. You get a Harmony score (how well you’d click living together) before you say hello, plus clear reasons why.',
         },
         {
           question: 'Is Domu Match free for students?',
@@ -167,7 +167,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
         {
           question: "Can I find a roommate if I don't have a room yet?",
           answer:
-            "Absolutely! You can use Domu Match whether you're looking for roommates for an existing apartment or searching for housing together with potential matches. Many users find their roommate first, then search for housing together. It's perfect for international students arriving without housing.",
+            'Absolutely! Whether you’ve got a place or you’re still looking, you can find people first and search for housing together. Especially handy for international students arriving without housing.',
         },
         {
           question: 'How do you prevent housing scams?',
@@ -177,27 +177,92 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
       ],
     },
     stickyCta: {
-      copy: 'Join {count} students finding their perfect match',
+      copy: 'Join {count} students finding housemates who fit',
       button: 'Get Started',
     },
     socialProof: {
-      universities: ['Tilburg University', 'Avans University of Applied Sciences', 'Breda University of Applied Sciences'],
+      universities: [
+        'Tilburg University',
+        'Avans University of Applied Sciences',
+        'Breda University of Applied Sciences',
+      ],
     },
     comparison: {
       title: 'How we compare',
-      subtitle: 'See why students choose Domu Match over traditional platforms',
+      subtitle:
+        'See why students choose Domu Match over random roommate ads and listing sites',
       competitors: ['Domu Match', 'Kamernet', 'Roomster', 'Room.nl'],
       rows: [
-        { feature: 'Lifestyle compatibility matching (40+ factors)', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'Government ID verification (100% verified users)', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'Blind matching (connect on habits, not looks)', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'Free for students', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'Harmony score (% compatibility before you chat)', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'University-only verified community', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'No user-posted listings (prevents fake ads)', domu: true, kamernet: false, roomster: false, roomnl: true },
-        { feature: 'Profile creation & preferences', domu: true, kamernet: true, roomster: true, roomnl: true },
-        { feature: 'In-app messaging', domu: true, kamernet: true, roomster: true, roomnl: false },
-        { feature: 'Search & filters', domu: true, kamernet: true, roomster: true, roomnl: true },
+        {
+          feature: 'Lifestyle matching (how you actually live)',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'Government ID verification (100% verified users)',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'Blind matching (connect on habits, not looks)',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'Free for students',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'Harmony score (% before you chat)',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'University-only verified community',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'No user-posted listings (prevents fake ads)',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: true,
+        },
+        {
+          feature: 'Profile creation & living answers',
+          domu: true,
+          kamernet: true,
+          roomster: true,
+          roomnl: true,
+        },
+        {
+          feature: 'In-app messaging',
+          domu: true,
+          kamernet: true,
+          roomster: true,
+          roomnl: false,
+        },
+        {
+          feature: 'Search & filters',
+          domu: true,
+          kamernet: true,
+          roomster: true,
+          roomnl: true,
+        },
       ],
     },
   },
@@ -207,14 +272,14 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
       headlineGradient: 'beste jaren',
       headlineAfter: ' verdienen de juiste huisgenoten.',
       subheadline:
-        "Het enige studentenplatform dat je matcht op basis van levensstijl, slaapschema's en studiegewoonten. 100% ID-geverifieerd. Geen oplichting.",
+        "Gemaakt voor studenten. We matchen je op levensstijl, slaapschema's en studiegewoonten. 100% ID-geverifieerd. Geen oplichting.",
       oldWay: 'De Oude Manier',
       domuWay: 'De Domu Manier',
       findMatch: 'Vind Mijn Match',
       howItWorks: 'Hoe het werkt',
     },
     why: {
-      title: "Samenwonen met vreemden zou geen gok moeten zijn.",
+      title: 'Samenwonen met vreemden zou geen gok moeten zijn.',
       painPoints: [
         {
           title: 'Het Feest vs. Studie Conflict',
@@ -224,34 +289,34 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
         {
           title: 'De Schoonmaakoorlog',
           description:
-            "Borden stapelen zich op, de prullenbak zit vol en jij staat te schrobben. In een kleine keuken groeit irritatie razendsnel.",
+            'Borden stapelen zich op, de prullenbak zit vol en jij staat te schrobben. In een kleine keuken groeit irritatie razendsnel.',
         },
         {
           title: 'De Geest',
           description:
-            "Je woont samen met iemand die je amper ziet - totdat rekeningen, chores of gasten ineens gedoe worden.",
+            'Je woont samen met iemand die je amper ziet - totdat rekeningen, chores of gasten ineens gedoe worden.',
         },
       ],
     },
     solution: {
-      title: 'Het Compatibiliteitsplan',
-      subtitle: 'Wetenschappelijk onderbouwde matching die echt werkt',
-      blueprintLabel: 'Onze compatibiliteitsquiz van 5–8 minuten',
+      title: 'Hoe we je matchen',
+      subtitle: 'Matching op hoe je écht woont',
+      blueprintLabel: 'Onze woonquiz van 5–8 minuten',
       features: [
         {
-          title: 'De 5-dimensie deep dive',
+          title: 'De vragen die je liever niet stelt',
           description:
-            "We stellen de vragen die je te ongemakkelijk vindt om te vragen. Van gastenbeleid tot thermostaatvoorkeuren.",
+            'We stellen de vragen die je te ongemakkelijk vindt om te vragen. Van gastenbeleid tot thermostaatvoorkeuren.',
         },
         {
           title: "De 'Harmony' Score",
           description:
-            'Zie precies hoe compatibel je bent met een %-score voordat je hallo zegt.',
+            'Harmony = hoe goed jullie zouden klikken als huisgenoten. Zie een % vóór je hallo zegt.',
         },
         {
           title: 'Blinde Matching',
           description:
-            "We verbergen foto's aanvankelijk zodat je verbindt op gewoonten, niet uiterlijk. Geen vooroordelen, alleen data.",
+            "We verbergen foto's eerst zodat je verbindt op gewoonten, niet op uiterlijk.",
         },
       ],
     },
@@ -264,15 +329,15 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
     },
     investment: {
       heading: '5–8 Minuten voor 12 Maanden Vrede.',
-      copy: "Ja, onze quiz gaat diep. Maar zou je 5–8 minuten nu niet ruilen om 9 maanden ruzie later te voorkomen?",
+      copy: 'Ja, onze quiz gaat diep. Maar zou je 5–8 minuten nu niet ruilen om 9 maanden ruzie later te voorkomen?',
     },
     faq: {
       title: 'Veelgestelde Vragen',
       items: [
         {
-          question: 'Hoe werkt het huisgenoot-matchingalgoritme?',
+          question: 'Hoe werkt huisgenoot-matching?',
           answer:
-            'Ons algoritme analyseert 40+ compatibiliteitsfactoren, waaronder slaapschema\'s, schoonmaakvoorkeuren, sociale gewoonten, studieroutines, geluidstolerantie en persoonlijkheidskenmerken. We gebruiken wetenschappelijk onderbouwde onderzoeken over huisgenootcompatibiliteit om deze factoren passend te wegen. Je krijgt een Harmony-score die laat zien hoe goed je matcht voordat je hallo zegt.',
+            'We kijken naar hoe je dagelijks woont - slaap, netheid, gasten, studieritme, geluid en meer. Je krijgt een Harmony-score (hoe goed jullie zouden klikken) vóór je hallo zegt, plus duidelijke redenen waarom.',
         },
         {
           question: 'Is Domu Match gratis voor studenten?',
@@ -282,7 +347,7 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
         {
           question: 'Kan ik een huisgenoot vinden als ik nog geen kamer heb?',
           answer:
-            'Absoluut! Je kunt Domu Match gebruiken of je nu op zoek bent naar huisgenoten voor een bestaand appartement of samen met potentiële matches naar huisvesting zoekt. Veel gebruikers vinden eerst hun huisgenoot en zoeken dan samen naar huisvesting. Het is perfect voor internationale studenten die zonder huisvesting aankomen.',
+            'Absoluut! Of je al een plek hebt of nog zoekt: je kunt eerst mensen vinden en daarna samen naar huisvesting zoeken. Extra handig voor internationale studenten die zonder woning aankomen.',
         },
         {
           question: 'Hoe voorkomen jullie huisvestingsfraude?',
@@ -292,27 +357,93 @@ export const content: Record<Locale, FeaturesForStudentsContent> = {
       ],
     },
     stickyCta: {
-      copy: 'Doe mee met {count} studenten die hun perfecte match vinden',
+      copy: 'Doe mee met {count} studenten die huisgenoten vinden die passen',
       button: 'Begin nu',
     },
     socialProof: {
-      universities: ['Tilburg University', 'Avans University of Applied Sciences', 'Breda University of Applied Sciences'],
+      universities: [
+        'Tilburg University',
+        'Avans University of Applied Sciences',
+        'Breda University of Applied Sciences',
+      ],
     },
     comparison: {
       title: 'Zo vergelijken we',
-      subtitle: 'Ontdek waarom studenten kiezen voor Domu Match boven traditionele platforms',
+      subtitle:
+        'Ontdek waarom studenten Domu Match kiezen boven random roommate-ads en listingsites',
       competitors: ['Domu Match', 'Kamernet', 'Roomster', 'Room.nl'],
       rows: [
-        { feature: 'Levensstijl compatibiliteitsmatching (40+ factoren)', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'Overheids-ID verificatie (100% geverifieerde gebruikers)', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'Blinde matching (verbind op gewoonten, niet uiterlijk)', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'Gratis voor studenten', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'Harmony-score (% compatibiliteit vóór je chat)', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'Alleen universiteits-geverifieerde community', domu: true, kamernet: false, roomster: false, roomnl: false },
-        { feature: 'Geen door gebruikers geplaatste advertenties (voorkomt nepadvertenties)', domu: true, kamernet: false, roomster: false, roomnl: true },
-        { feature: 'Profiel aanmaken & voorkeuren', domu: true, kamernet: true, roomster: true, roomnl: true },
-        { feature: 'In-app berichten', domu: true, kamernet: true, roomster: true, roomnl: false },
-        { feature: 'Zoeken & filters', domu: true, kamernet: true, roomster: true, roomnl: true },
+        {
+          feature: 'Levensstijl-matching (hoe je écht woont)',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'Overheids-ID verificatie (100% geverifieerde gebruikers)',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'Blinde matching (verbind op gewoonten, niet uiterlijk)',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'Gratis voor studenten',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'Harmony-score (% vóór je chat)',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature: 'Alleen universiteits-geverifieerde community',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: false,
+        },
+        {
+          feature:
+            'Geen door gebruikers geplaatste advertenties (voorkomt nepadvertenties)',
+          domu: true,
+          kamernet: false,
+          roomster: false,
+          roomnl: true,
+        },
+        {
+          feature: 'Profiel & woonantwoorden',
+          domu: true,
+          kamernet: true,
+          roomster: true,
+          roomnl: true,
+        },
+        {
+          feature: 'In-app berichten',
+          domu: true,
+          kamernet: true,
+          roomster: true,
+          roomnl: false,
+        },
+        {
+          feature: 'Zoeken & filters',
+          domu: true,
+          kamernet: true,
+          roomster: true,
+          roomnl: true,
+        },
       ],
     },
   },

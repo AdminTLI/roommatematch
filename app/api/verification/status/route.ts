@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
+import { markIdentityVerified } from '@/lib/auth/verification-check'
+import {
+  classifyPersonaInquiryForReuse,
+  extractPersonaInquiryStatus,
+  fetchPersonaInquiry,
+} from '@/lib/verification/persona-client'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -34,7 +40,7 @@ export async function GET(request: NextRequest) {
     // Check for ANY approved verification (critical: once verified, never re-prompt - saves Persona costs)
     const { data: approvedVerification } = await admin
       .from('verifications')
-      .select('id, provider, status, review_reason, created_at, updated_at')
+      .select('id, provider, status, review_reason, created_at, updated_at, provider_session_id')
       .eq('user_id', user.id)
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
@@ -46,7 +52,7 @@ export async function GET(request: NextRequest) {
       ? { data: approvedVerification, error: null }
       : await admin
           .from('verifications')
-          .select('id, provider, status, review_reason, created_at, updated_at')
+          .select('id, provider, status, review_reason, created_at, updated_at, provider_session_id')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -61,7 +67,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    const verification = approvedVerification || latestVerification
+    let verification = approvedVerification || latestVerification
 
     // Get user profile verification status (use admin for consistency - bypasses RLS)
     const { data: profile } = await admin
@@ -75,6 +81,8 @@ export async function GET(request: NextRequest) {
     // 2. Any approved verification record
     // 3. profiles.verification_status
     let verificationStatus: 'unverified' | 'pending' | 'verified' | 'failed' = 'unverified'
+    let canContinue = false
+    let awaitingReview = false
     
     if (
       userRow?.identity_verified_at ||
@@ -86,8 +94,76 @@ export async function GET(request: NextRequest) {
       verificationStatus = 'failed'
     } else if (latestVerification?.status === 'pending') {
       verificationStatus = 'pending'
+      canContinue = true
+
+      // Sync with Persona so users are not stuck forever on "pending" after a decision,
+      // and so we can tell "still needs to finish" vs "awaiting review".
+      if (
+        latestVerification.provider === 'persona' &&
+        latestVerification.provider_session_id
+      ) {
+        try {
+          const inquiryPayload = await fetchPersonaInquiry(
+            latestVerification.provider_session_id
+          )
+          const personaStatus = extractPersonaInquiryStatus(inquiryPayload)
+          const reuseAction = classifyPersonaInquiryForReuse(personaStatus)
+
+          if (reuseAction === 'approved') {
+            const now = new Date().toISOString()
+            await admin
+              .from('verifications')
+              .update({ status: 'approved', updated_at: now })
+              .eq('id', latestVerification.id)
+            await markIdentityVerified(user.id, 'persona', user.email)
+            verificationStatus = 'verified'
+            canContinue = false
+            verification = {
+              ...latestVerification,
+              status: 'approved',
+              updated_at: now,
+            }
+          } else if (reuseAction === 'rejected') {
+            const now = new Date().toISOString()
+            await admin
+              .from('verifications')
+              .update({
+                status: 'rejected',
+                review_reason: `persona_status:${personaStatus || 'unknown'}`,
+                updated_at: now,
+              })
+              .eq('id', latestVerification.id)
+            await admin
+              .from('profiles')
+              .update({ verification_status: 'failed', updated_at: now })
+              .eq('user_id', user.id)
+            verificationStatus = 'failed'
+            canContinue = false
+            verification = {
+              ...latestVerification,
+              status: 'rejected',
+              updated_at: now,
+            }
+          } else if (reuseAction === 'awaiting_review') {
+            awaitingReview = true
+            canContinue = false
+          } else {
+            // Still resumable — user must open Persona to finish
+            canContinue = true
+          }
+        } catch (syncError) {
+          safeLogger.warn('[Verification] Persona status sync failed; keeping pending', {
+            userId: user.id,
+            error: syncError,
+          })
+          canContinue = true
+        }
+      }
     } else if (profile?.verification_status && profile.verification_status !== 'unverified') {
       verificationStatus = profile.verification_status as 'unverified' | 'pending' | 'verified' | 'failed'
+      if (verificationStatus === 'pending') {
+        canContinue = true
+      }
     }
 
     return NextResponse.json(
@@ -104,6 +180,9 @@ export async function GET(request: NextRequest) {
             }
           : null,
         canRetry: verification?.status === 'rejected' || verification?.status === 'expired',
+        // Pending inquiries that are not awaiting review can be resumed in Persona
+        canContinue: canContinue && verificationStatus === 'pending',
+        awaitingReview,
       },
       { headers: NO_STORE_HEADERS }
     )
@@ -115,4 +194,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-

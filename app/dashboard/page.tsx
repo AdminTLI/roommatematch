@@ -10,7 +10,8 @@ import { calculateSectionProgress } from '@/lib/onboarding/sections'
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import matchModeConfig from '@/config/match-mode.json'
-import { isSuggestedForUser } from '@/lib/matching/suggestion-tabs'
+import { isDiscoverableSuggestion } from '@/lib/matching/suggestion-tabs'
+import { getDirectChatPartnerIds } from '@/lib/matching/direct-chat-partners'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -153,6 +154,7 @@ export default async function DashboardPage() {
 
 async function fetchDashboardData(userId: string): Promise<DashboardData> {
   const supabase = await createClient()
+  const service = createServiceClient()
 
   // Initialize with default values
   let profileCompletion = 0
@@ -316,8 +318,12 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
     // Fetch recent open suggestions (pending, or accepted by the other person only).
     // IMPORTANT: filter out matches where *this* user has already accepted — those
     // belong on the Pending tab, not the dashboard discovery strip.
+    // Also exclude anyone the user already shares a 1:1 chat with.
     const now = new Date().toISOString()
     const minFitIndex = matchModeConfig.minFitIndex || 0
+    const existingChatPartnerIds = new Set(
+      await getDirectChatPartnerIds(service, userId)
+    )
     const { data: suggestions, error: suggestionsError } = await supabase
       .from('match_suggestions')
       .select(`
@@ -358,21 +364,20 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
           return
         }
         
-        // CRITICAL FILTER: Skip if user has already accepted this suggestion
-        // These matches should appear in the "pending" tab (waiting for other user's response),
-        // NOT in the dashboard or "suggested" tab
+        // CRITICAL FILTER: Skip if user has already accepted, or already shares a chat.
         if (
-          !isSuggestedForUser(
+          !isDiscoverableSuggestion(
             {
               status: s.status,
               acceptedBy: s.accepted_by || [],
               memberIds,
             },
-            userId
+            userId,
+            existingChatPartnerIds
           )
         ) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('[Dashboard] Filtering out non-suggested suggestion:', {
+            console.log('[Dashboard] Filtering out non-discoverable suggestion:', {
               suggestionId: s.id,
               userId,
               acceptedBy: s.accepted_by,
@@ -398,7 +403,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
       })
 
       if (process.env.NODE_ENV === 'development' && filteredCount > 0) {
-        console.log('[Dashboard] Filtered out accepted suggestions:', filteredCount)
+        console.log('[Dashboard] Filtered out non-discoverable suggestions:', filteredCount)
       }
 
       const recentMatches = Array.from(matchMap.entries())
@@ -407,102 +412,18 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
         .slice(0, 3)
 
       if (recentMatches.length > 0) {
-        const recentEntries = recentMatches.map(({ userId, created_at, fit_score, fit_index }) => ({
-          userId,
-          created_at,
-          score: fit_score,
+        // Discovery stays anonymous — scores only, no peer PII.
+        topMatches = recentMatches.map(({ userId: otherUserId, fit_score: compatibilityScore }) => ({
+          id: otherUserId,
+          userId: otherUserId,
+          score: compatibilityScore,
           harmonyScore: 0,
           contextScore: 0,
-          dimensionScores: null as { [key: string]: number } | null,
-          fitIndex: fit_index,
+          dimensionScores: null,
+          program: '',
+          university: '',
+          avatar: undefined,
         }))
-
-        if (recentEntries.length > 0) {
-          const finalUserIds = recentEntries.map(m => m.userId)
-        
-          // Fetch profiles for matched users
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select(`
-              user_id,
-              first_name,
-              program,
-              university_id,
-              universities(name)
-            `)
-            .in('user_id', finalUserIds)
-
-          // Fetch program names
-          const { data: academicData } = await supabase
-            .from('user_academic')
-            .select(`
-              user_id,
-              program_id,
-              programs!user_academic_program_id_fkey(name)
-            `)
-            .in('user_id', finalUserIds)
-
-          const programMap = new Map<string, string>()
-          academicData?.forEach((academic: any) => {
-            if (academic.programs?.name) {
-              programMap.set(academic.user_id, academic.programs.name)
-            }
-          })
-
-          // Build recent matches array
-          // Helper function to check if a string is a UUID
-          const isUUID = (str: string): boolean => {
-            if (!str || typeof str !== 'string') return false
-            if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
-            if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
-            return false
-          }
-          
-          // Remove UUIDs from strings
-          const removeUUIDs = (str: string): string => {
-            if (!str || typeof str !== 'string') return str
-            return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
-          }
-          
-          topMatches = recentEntries.map(({ userId: otherUserId, score: compatibilityScore, harmonyScore, contextScore, dimensionScores }) => {
-          const profile = profiles?.find((p: any) => p.user_id === otherUserId)
-          const programName = programMap.get(otherUserId)
-          
-          // Clean name
-          let safeName = profile?.first_name || 'User'
-          safeName = removeUUIDs(safeName)
-          if (isUUID(safeName) || safeName === otherUserId || !safeName) {
-            safeName = 'User'
-          }
-          
-          // Clean program
-          let safeProgram = programName || profile?.program || ''
-          safeProgram = removeUUIDs(safeProgram)
-          if (isUUID(safeProgram) || safeProgram === otherUserId || !safeProgram) {
-            safeProgram = ''
-          }
-          
-          // Clean university
-          const universityName = (profile?.universities as any)?.name || ''
-          let safeUniversity = removeUUIDs(universityName)
-          if (isUUID(safeUniversity) || safeUniversity === otherUserId || !safeUniversity) {
-            safeUniversity = ''
-          }
-          
-          return {
-            id: otherUserId, // Use userId as id since we don't have suggestion id anymore
-            userId: otherUserId, // Also include as userId for client-side compatibility
-            name: safeName,
-            score: compatibilityScore, // Use new algorithm's compatibility_score (0-1 range)
-            harmonyScore: harmonyScore != null && harmonyScore !== undefined ? Number(harmonyScore) : 0,
-            contextScore: contextScore != null && contextScore !== undefined ? Number(contextScore) : 0,
-            dimensionScores: dimensionScores || null,
-            program: safeProgram,
-            university: safeUniversity,
-            avatar: undefined
-          }
-          })
-        }
 
         totalMatchesCount = matchMap.size
 
@@ -529,13 +450,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
           id, 
           score, 
           created_at, 
-          b_user,
-          profiles!matches_b_user_fkey(
-            first_name,
-            program,
-            university_id,
-            universities!profiles_university_id_fkey(name)
-          )
+          b_user
         `)
         .eq('a_user', userId)
         .order('score', { ascending: false })
@@ -547,13 +462,7 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
           id, 
           score, 
           created_at, 
-          a_user,
-          profiles!matches_a_user_fkey(
-            first_name,
-            program,
-            university_id,
-            universities!profiles_university_id_fkey(name)
-          )
+          a_user
         `)
         .eq('b_user', userId)
         .order('score', { ascending: false })
@@ -561,66 +470,31 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
 
       const allMatches = [
         ...(matchesAsA || []).map(match => ({
-          ...match,
-          otherUserId: match.b_user,
-          otherProfile: match.profiles
+          id: match.b_user,
+          userId: match.b_user,
+          score: match.score || 0,
         })),
         ...(matchesAsB || []).map(match => ({
-          ...match,
-          otherUserId: match.a_user,
-          otherProfile: match.profiles
-        }))
-      ].sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 3)
+          id: match.a_user,
+          userId: match.a_user,
+          score: match.score || 0,
+        })),
+      ]
+        .filter((match) => !existingChatPartnerIds.has(match.userId))
+        .sort((a, b) => (b.score || 0) - (a.score || 0))
+        .slice(0, 3)
 
-      if (allMatches.length > 0) {
-        // Helper function to check if a string is a UUID
-        const isUUID = (str: string): boolean => {
-          if (!str || typeof str !== 'string') return false
-          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
-          if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
-          return false
-        }
-        
-        // Remove UUIDs from strings
-        const removeUUIDs = (str: string): string => {
-          if (!str || typeof str !== 'string') return str
-          return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
-        }
-        
-        topMatches = allMatches.map(match => {
-          const otherUserId = (match as any).otherUserId
-          
-          // Clean name
-          let safeName = (match.otherProfile as any)?.first_name || 'User'
-          safeName = removeUUIDs(safeName)
-          if (isUUID(safeName) || safeName === otherUserId || !safeName) {
-            safeName = 'User'
-          }
-          
-          // Clean program
-          let safeProgram = (match.otherProfile as any)?.program || ''
-          safeProgram = removeUUIDs(safeProgram)
-          if (isUUID(safeProgram) || safeProgram === otherUserId || !safeProgram) {
-            safeProgram = ''
-          }
-          
-          // Clean university
-          let safeUniversity = (match.otherProfile as any)?.universities?.name || ''
-          safeUniversity = removeUUIDs(safeUniversity)
-          if (isUUID(safeUniversity) || safeUniversity === otherUserId || !safeUniversity) {
-            safeUniversity = ''
-          }
-          
-          return {
-            id: match.id,
-            name: safeName,
-            score: (match.score || 0), // Keep as 0-1 range for consistency
-            program: safeProgram,
-            university: safeUniversity,
-            avatar: undefined
-          }
-        })
-      }
+      topMatches = allMatches.map((match) => ({
+        id: match.id,
+        userId: match.userId,
+        score: match.score || 0,
+        harmonyScore: 0,
+        contextScore: 0,
+        dimensionScores: null,
+        program: '',
+        university: '',
+        avatar: undefined,
+      }))
     }
   } catch (error) {
     console.error('Error fetching top match suggestions:', error)

@@ -75,7 +75,7 @@ export function generateVibeCheckPassportHtml(data: VibeCheckPdfData): string {
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Domu Match - Roommate Compatibility Passport</title>
+  <title>Domu Match - Living together passport</title>
   <style>
     @page { size: A4; margin: 0; }
     body {
@@ -168,12 +168,12 @@ export function generateVibeCheckPassportHtml(data: VibeCheckPdfData): string {
 <body>
   <div class="page">
     <div class="header">
-      <div class="brand">Domu Match <span>| Compatibility Passport</span></div>
+      <div class="brand">Domu Match <span>| Living together passport</span></div>
       <div class="badge">${escapeHtml(city.toUpperCase())} COHORT</div>
     </div>
     <div class="meta-row">
       <span>${escapeHtml(university)}</span>
-      <span>Official Roommate Compatibility Passport</span>
+      <span>Your living together passport</span>
     </div>
     <div class="archetype-hero">
       <div class="archetype-title">${escapeHtml(archetype.title)}</div>

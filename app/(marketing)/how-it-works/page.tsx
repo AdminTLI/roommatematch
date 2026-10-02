@@ -6,26 +6,23 @@ import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'How Roommate Matching Works | Domu Match - Guide for Students & Young Professionals',
-  description: 'Discover how our science-backed roommate matching works in the Netherlands. From sign-up to move-in, for verified students and young professionals. Compatibility algorithm, ID verification, separate pools.',
+  description: 'See how Domu Match works in the Netherlands: sign up, answer living questions, meet verified people, chat safely, and plan move-in. Separate pools for students and young professionals.',
   keywords: [
     'how roommate matching works',
     'student housing process Netherlands',
     'roommate finder process',
     'young professionals flatmate',
-    'housing matching algorithm',
     'how to find roommate Netherlands',
-    'student housing platform process',
     'roommate matching steps',
     'verified roommate matching',
     'roommate matching guide',
     'how to use roommate app',
     'find roommate step by step',
     'roommate compatibility matching',
-    'verified platform',
   ],
   openGraph: {
     title: 'How Roommate Matching Works | Domu Match',
-    description: 'Discover how our science-backed roommate matching works in the Netherlands. For verified students and young professionals.',
+    description: 'From sign-up to move-in: verified people, clear reasons, and separate pools for students and young professionals.',
     type: 'website',
     url: 'https://domumatch.com/how-it-works',
     siteName: 'Domu Match',
@@ -42,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'How Roommate Matching Works | Domu Match',
-    description: 'Discover how our science-backed roommate matching works in the Netherlands.',
+    description: 'From sign-up to move-in for verified students and young professionals in the Netherlands.',
     images: ['https://domumatch.com/images/logo.png'],
   },
   alternates: {

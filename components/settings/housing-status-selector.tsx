@@ -28,16 +28,10 @@ export function HousingStatusSelector({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between px-1">
+      <div className="px-1">
         <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
           Housing Status
         </label>
-        <span className={cn(
-          "text-[10px] font-bold uppercase tracking-widest",
-          value.length > 0 ? "text-zinc-500 dark:text-zinc-400" : "text-zinc-500 dark:text-zinc-400"
-        )}>
-          {value.length} / {HOUSING_STATUSES.length} selected
-        </span>
       </div>
 
       {/* Status Cards */}

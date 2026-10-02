@@ -28,14 +28,14 @@ const SocialHeroPreviewCard = dynamic(
 const content = {
   en: {
     headline: 'Find a roommate you actually click with.',
-    subline: 'Meet verified people and see clear reasons.',
+    subline: 'Verified people, clear reasons, and homes that feel easier to live in.',
     ctaPrimary: 'Get started',
     ctaSecondary: 'See how it works',
     trustLine: 'No catfish. No awkward interviews. Just verified matches.',
   },
   nl: {
     headline: 'Vind een huisgenoot waar je echt mee klikt.',
-    subline: 'Ontmoet geverifieerde mensen en zie duidelijke redenen.',
+    subline: 'Geverifieerde mensen, duidelijke redenen, en een huis dat rustiger aanvoelt.',
     ctaPrimary: 'Begin nu',
     ctaSecondary: 'Bekijk hoe het werkt',
     trustLine: 'Geen catfish. Geen awkward interviews. Wel geverifieerde matches.',

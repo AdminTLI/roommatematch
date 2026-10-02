@@ -43,49 +43,49 @@ const openingTemplates = [
       const first = alignments[0]
       return `This looks like a promising match because ${first.description.toLowerCase()}.`
     }
-    return 'This looks like a promising match based on your profiles.'
+    return 'This looks like a promising match from your profiles.'
   },
   (alignments: TemplateContext['alignments']) => {
     if (alignments.length > 0) {
       const first = alignments[0]
       return `You two seem like a great fit because ${first.description.toLowerCase()}.`
     }
-    return 'You two seem like a great fit based on your questionnaire responses.'
+    return 'You two seem like a great fit from how you answered.'
   },
   (alignments: TemplateContext['alignments']) => {
     if (alignments.length > 0) {
       const first = alignments[0]
       return `Based on your answers, you're well-matched because ${first.description.toLowerCase()}.`
     }
-    return 'Based on your answers, you both share similar values and lifestyle preferences.'
+    return 'Based on your answers, you both share similar values and living habits.'
   },
   (alignments: TemplateContext['alignments']) => {
     if (alignments.length > 0) {
       const first = alignments[0]
-      return `What stands out here is that ${first.description.toLowerCase()}, which suggests good compatibility.`
+      return `What stands out here is that ${first.description.toLowerCase()}, which suggests you’d click at home.`
     }
-    return 'What stands out here is how well your preferences align.'
+    return 'What stands out here is how well your living habits fit.'
   },
   (alignments: TemplateContext['alignments']) => {
     if (alignments.length > 0) {
       const first = alignments[0]
-      return `Your profiles suggest you'd get along well, especially since ${first.description.toLowerCase()}.`
+      return `Your profiles suggest you’d share a place without much drama, especially since ${first.description.toLowerCase()}.`
     }
-    return "Your profiles suggest you'd get along well."
+    return 'Your profiles suggest you’d share a place without much drama.'
   },
   (alignments: TemplateContext['alignments']) => {
     if (alignments.length > 0) {
       const first = alignments[0]
-      return `There's clear alignment between you two - ${first.description.toLowerCase()}, which is always a good sign.`
+      return `There’s a clear fit between you two – ${first.description.toLowerCase()}, which is always a good sign.`
     }
-    return "There's clear alignment between you two based on your preferences."
+    return 'There’s a clear fit between you two from how you live.'
   },
   (alignments: TemplateContext['alignments']) => {
     if (alignments.length > 0) {
       const first = alignments[0]
       return `This match shows real potential because ${first.description.toLowerCase()}.`
     }
-    return 'This match shows real potential based on your shared values.'
+    return 'This match shows real potential based on what you both care about.'
   },
   (alignments: TemplateContext['alignments']) => {
     if (alignments.length > 0) {

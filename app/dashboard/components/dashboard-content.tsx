@@ -62,7 +62,7 @@ import { LabPromptCard } from '@/app/(components)/lab-prompt-card'
 import type { LabPromptKey } from '@/lib/lab/types'
 import { isDashboardActivityNotification } from '@/lib/notifications/dashboard-activity'
 import { anonymizeMatchNotificationMessage } from '@/lib/notifications/anonymize-match-message'
-import { isSuggestedForUser } from '@/lib/matching/suggestion-tabs'
+import { isDiscoverableSuggestion } from '@/lib/matching/suggestion-tabs'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { toast } from 'sonner'
 import { PersonaTrustDialog } from '@/components/verification/persona-trust-dialog'
@@ -78,7 +78,7 @@ const fadeInUp = {
  * Opacity-only fade for non-3D sections.
  * Never put this on a direct ancestor of DiscoveryCard: opacity / transform on
  * ancestors flattens preserve-3d and can leave backfaceVisibility faces invisible
- * (desktop grid wrapper bug — mobile carousel mounts cards without this wrapper).
+ * (desktop grid wrapper bug – mobile carousel mounts cards without this wrapper).
  */
 const fadeInOpacity = {
   initial: { opacity: 0 },
@@ -135,7 +135,6 @@ interface DashboardRecentMatch {
   contextScore: number
   dimensionScores: { [key: string]: number } | null
   avatar?: undefined
-  name?: string
   program: string
   university: string
   otherUserUnverified?: boolean
@@ -508,6 +507,11 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           : true
         const peerVerification: Record<string, boolean> = data.peerMeta?.verification || {}
         const peerHarmonyComplete: Record<string, boolean> = data.peerMeta?.harmonyComplete || {}
+        const existingChatPartnerIds = new Set<string>(
+          Array.isArray(data.peerMeta?.existingChatPartners)
+            ? data.peerMeta.existingChatPartners
+            : []
+        )
 
         logger.log('[loadRecentMatches] Raw suggestions from API:', {
           suggestionsCount: rawSuggestions.length,
@@ -570,14 +574,12 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         // Filter to only pending suggestions that user hasn't accepted (same filtering as matches page)
         // Also check localStorage cache to filter out processed suggestions
         const suggested = Array.from(deduped.values()).filter(s => {
-          // Skip if this was a stale entry we just cleared
-          if (staleEntries.includes(s.id)) {
-            return true // Include it since we cleared the stale cache
-          }
-
           // Check local cache first - if we've processed this suggestion, exclude it
           const processedStatus = processedSuggestions.get(s.id)
-          if (processedStatus === 'declined' || processedStatus === 'accepted' || processedStatus === 'confirmed') {
+          if (
+            !staleEntries.includes(s.id) &&
+            (processedStatus === 'declined' || processedStatus === 'accepted' || processedStatus === 'confirmed')
+          ) {
             logger.log('[loadRecentMatches] Excluding processed suggestion:', {
               id: s.id,
               processedStatus,
@@ -586,9 +588,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             return false
           }
 
-          // Keep visible if I haven't accepted yet — including when the other
+          // Keep visible if I haven't accepted yet – including when the other
           // person already accepted (status=accepted, I'm not in acceptedBy).
-          if (!isSuggestedForUser(s, user.id)) {
+          // Also exclude anyone we already share a 1:1 chat with.
+          if (!isDiscoverableSuggestion(s, user.id, existingChatPartnerIds)) {
             return false
           }
           return true
@@ -691,106 +694,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           dimensionScores: dimensionScoresMap.get(userId) || null
         }))
 
-        const finalUserIds = recentMatchEntries.map(m => m.userId)
-
-        // Add this check before querying profiles
-        if (finalUserIds.length === 0) {
-          logger.log('No user IDs to fetch profiles for')
-          return {
-            matches: [],
-            viewerPersonaVerified,
-            personaCelebrationSeen,
-            peerVerification,
-          }
-        }
-
-        // Fetch profiles for matched users (without relying on nested relationships).
-        // Profile rows may be blocked by RLS for pending suggestions; still show cards (same as /matches).
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select(`
-          user_id, 
-          first_name, 
-          last_name, 
-          university_id
-        `)
-          .in('user_id', finalUserIds)
-
-        if (profilesError) {
-          logger.warn(
-            'Error loading profiles for recent matches (likely RLS). Showing suggestion cards without profile details.',
-            { error: profilesError }
-          )
-        }
-
-        const profiles = profilesData ?? []
-
-        // Fetch university names separately to avoid nested relation issues
-        const universityMap = new Map<string, string>()
-        const universityIds = Array.from(
-          new Set(
-            (profiles || [])
-              .map((p: any) => p.university_id)
-              .filter((id: string | null | undefined): id is string => !!id)
-          )
-        )
-
-        if (universityIds.length > 0) {
-          const { data: universities, error: universitiesError } = await supabase
-            .from('universities')
-            .select('id, name')
-            .in('id', universityIds)
-
-          if (universitiesError) {
-            logger.warn('Error loading university data (non-critical):', universitiesError)
-          } else {
-            universities?.forEach((u: any) => {
-              if (u.id && u.name) {
-                universityMap.set(u.id, u.name)
-              }
-            })
-          }
-        }
-
-        // Fetch program names separately from user_academic
-        // Try with explicit foreign key first, fallback to simple join if that fails
-        const { data: academicData, error: academicError } = await supabase
-          .from('user_academic')
-          .select(`
-          user_id,
-          program_id,
-          programs(name)
-        `)
-          .in('user_id', finalUserIds)
-
-        if (academicError) {
-          logger.warn('Error loading academic data (non-critical):', academicError)
-        }
-
-        // Create a map of user_id to program name
-        const programMap = new Map<string, string>()
-        academicData?.forEach((academic: any) => {
-          if (academic.programs?.name) {
-            programMap.set(academic.user_id, academic.programs.name)
-          }
-        })
-
-        // Create a map of user_id to match score
-        const matchScoreMap = new Map(recentMatchEntries.map(m => [m.userId, m.score]))
-
-        const isUUID = (str: string): boolean => {
-          if (!str || typeof str !== 'string') return false
-          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)) return true
-          if (/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}/i.test(str)) return true
-          return false
-        }
-
-        const removeUUIDs = (str: string): string => {
-          if (!str || typeof str !== 'string') return str
-          return str.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '').trim()
-        }
-
-        const normalizeMatchScore = (rawScore: number, sug?: (typeof rawSuggestions)[0]): number => {
+        const normalizeMatchScore = (
+          rawScore: number,
+          sug?: (typeof rawSuggestions)[0]
+        ): number => {
           let normalizedScore = rawScore
           if (normalizedScore <= 0 && sug) {
             const fitIndex = Number(sug.fitIndex ?? 0)
@@ -806,13 +713,13 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           return Math.max(0, Math.min(normalizedScore, 1.0))
         }
 
-        // Format matches maintaining the order from recentMatchEntries (most recent first)
+        // Discovery cards stay anonymous — do not load peer names or other PII.
+        // Score/dimension data already comes from the suggestions API.
         const formattedMatches: DashboardRecentMatch[] = recentMatchEntries.map(({ userId, suggestionId, score, harmonyScore, contextScore, dimensionScores }) => {
           const sug = suggestionByUserId.get(userId)
-          const profile = profiles.find((p: { user_id: string }) => p.user_id === userId)
           const resolvedSuggestionId = suggestionId || sug?.id || userId
 
-          const baseMatch: DashboardRecentMatch = {
+          return {
             id: userId,
             userId,
             suggestionId: resolvedSuggestionId,
@@ -826,47 +733,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             otherUserUnverified:
               viewerPersonaVerified ? peerVerification[userId] === false : false,
             otherUserHarmonyIncomplete: peerHarmonyComplete[userId] === false,
-          }
-
-          if (!profile) {
-            logger.log(
-              '[loadRecentMatches] Peer profile unavailable (RLS or missing row); showing suggestion card without profile fields',
-              { userId }
-            )
-            return {
-              ...baseMatch,
-              name: undefined,
-              program: '',
-              university: '',
-            }
-          }
-
-          const fullName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-          const programDisplay = programMap.get(userId) || null
-          const universityName = profile.university_id
-            ? universityMap.get(profile.university_id) || 'University'
-            : 'University'
-
-          let safeName = removeUUIDs(fullName)
-          if (isUUID(safeName) || safeName === userId || safeName.includes(userId) || !safeName) {
-            safeName = 'User'
-          }
-
-          let safeUniversity = removeUUIDs(universityName)
-          if (isUUID(safeUniversity) || safeUniversity === userId || safeUniversity.includes(userId) || !safeUniversity) {
-            safeUniversity = 'University'
-          }
-
-          let safeProgram = removeUUIDs(programDisplay || '')
-          if (isUUID(safeProgram) || safeProgram === userId || safeProgram.includes(userId) || !safeProgram) {
-            safeProgram = ''
-          }
-
-          return {
-            ...baseMatch,
-            name: safeName,
-            program: safeProgram,
-            university: safeUniversity,
           }
         })
 
@@ -1495,19 +1361,19 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       >
         <div className="flex items-center gap-2 text-indigo-400 mb-1">
           <Sparkles className="w-5 h-5" />
-          <span className="text-sm font-medium uppercase tracking-wider">Discovery Feed</span>
+          <span className="text-sm font-medium uppercase tracking-wider">Suggested for you</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
           {timeGreeting} <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{displayFirstName}</span>
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 max-w-lg text-lg font-medium">
-          Here are your suggested matches. Complete your profile to discover more potential roommates.
+          Here are your latest roommate suggestions. Take a look and see who you’d click with.
         </p>
       </motion.div>
 
       <MatchRightsInfoBanner />
 
-      {/* Discovery Feed — mobile: horizontal carousel (up to 3 matches + view-all CTA) */}
+      {/* Discovery Feed – mobile: horizontal carousel (up to 3 matches) */}
       {recentMatches.length > 0 && (
         <motion.div
           variants={fadeInOpacity}
@@ -1521,11 +1387,12 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             onSkip={(match) => handleSkipMatch(match as DashboardRecentMatch)}
             onConnect={(match) => handleConnectMatch(match as DashboardRecentMatch)}
             onUnlockQuestionnaire={handleUnlockQuestionnaire}
+            showViewAllSlide={recentMatches.length < 3}
           />
         </motion.div>
       )}
 
-      {/* Discovery Feed — tablet/desktop grid */}
+      {/* Discovery Feed – tablet/desktop grid */}
       <motion.div
         variants={staggerChildren}
         initial="initial"
@@ -1543,7 +1410,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
               console.log('[Dashboard] Rendering match card:', {
                 matchId: match.id,
                 userId: match.userId,
-                name: match.name,
                 harmonyScore: match.harmonyScore,
                 contextScore: match.contextScore,
                 dimensionScores: match.dimensionScores,
@@ -1558,7 +1424,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                 <DiscoveryCard
                   profile={{
                     id: match.userId || match.id,
-                    name: match.name,
                     matchPercentage:
                       Math.round((match.score || 0) * 100) > 100
                         ? Math.round(match.score || 0)
@@ -1578,7 +1443,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             )
           })}
 
-        {/* Empty state — only when there are no matches (do not nudge questionnaire tweaks) */}
+        {/* Empty state – only when there are no matches (do not nudge questionnaire tweaks) */}
         {recentMatches.length === 0 && (
           <motion.div
             variants={fadeInUp}
@@ -1603,6 +1468,24 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           </motion.div>
         )}
       </motion.div>
+
+      {recentMatches.length === 3 && (
+        <motion.div
+          variants={fadeInUp}
+          initial="initial"
+          animate="animate"
+          className="mt-6 flex justify-center"
+        >
+          <Button
+            type="button"
+            onClick={() => router.push('/matches')}
+            className="gap-2"
+          >
+            See everyone suggested for you
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Button>
+        </motion.div>
+      )}
 
       {userType === 'student' && (
         <motion.div variants={fadeInUp} initial="initial" animate="animate" className="mt-6">
@@ -1721,10 +1604,10 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
       >
         <DialogContent className="max-w-md">
           <DialogHeader className="space-y-3">
-            <DialogTitle>Complete your questionnaire</DialogTitle>
+            <DialogTitle>Finish your living questions</DialogTitle>
             <DialogDescription className="text-sm leading-relaxed">
-              Finish the remaining harmony questions before you can accept a match. You will unlock
-              harmony scores, dimensions, and concerns for everyone you see.
+              Answer a few more questions about how you live before you can accept a match. That unlocks
+              Harmony scores and clearer reasons for everyone you see.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2 sm:flex-col sm:justify-stretch">
@@ -1736,7 +1619,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                 setHarmonyPromptOpen(false)
               }}
             >
-              Continue questionnaire
+              Keep going
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1748,7 +1631,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             <DialogTitle>This person is not identity-verified yet</DialogTitle>
             <DialogDescription>
               You can still accept the match. Chat stays closed until they complete Persona
-              verification — this keeps everyone safer.
+              verification – this keeps everyone safer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">

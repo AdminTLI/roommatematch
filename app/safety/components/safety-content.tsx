@@ -343,14 +343,14 @@ export function SafetyContent({
         {[
           {
             icon: Shield,
-            title: 'Verified community',
+            title: 'Real people only',
             body: 'University email + ID checks',
             tint: 'from-emerald-500/15 to-teal-500/10',
             iconColor: 'text-emerald-600 dark:text-emerald-400',
           },
           {
             icon: Eye,
-            title: 'Trust & review',
+            title: 'We’ve got your back',
             body: 'Manual checks when needed',
             tint: 'from-indigo-500/15 to-violet-500/10',
             iconColor: 'text-indigo-600 dark:text-indigo-400',
@@ -358,7 +358,7 @@ export function SafetyContent({
           {
             icon: Lock,
             title: 'Private by default',
-            body: 'Profile privacy controls',
+            body: 'You’re in control of your profile',
             tint: 'from-violet-500/15 to-fuchsia-500/10',
             iconColor: 'text-violet-600 dark:text-violet-400',
           },
@@ -405,10 +405,10 @@ export function SafetyContent({
               <div className="rounded-xl bg-gradient-to-br from-indigo-500/20 to-violet-500/15 p-2.5">
                 <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               </div>
-              Platform Safety Guide
+              Safety guide
             </CardTitle>
             <p className="mt-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-              Open a topic below for bios, chat, reporting, and blocking, covered step by step.
+              We’ve seen the scammy stuff – here’s how to stay safe on bios, chat, reporting, and blocking.
             </p>
           </CardHeader>
           <CardContent className="relative p-0">
@@ -504,7 +504,7 @@ export function SafetyContent({
                       tone="dont"
                       items={[
                         'Asking for money or financial assistance',
-                        'Pressuring you to move conversations off-platform',
+                        'Pressuring you to move chats off here too fast',
                         'Refusing to answer questions about themselves',
                         'Being overly aggressive or inappropriate',
                         'Making you feel uncomfortable or unsafe',
@@ -645,11 +645,11 @@ export function SafetyContent({
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-3 p-5 sm:p-6 md:grid-cols-2">
             {[
-              'Always meet in public places for initial meetings',
-              "Verify your potential roommate's identity",
-              'Trust your instincts. Stay safe',
-              'Keep friends and family informed',
-              'Use our secure messaging system',
+              'Meet in public the first few times',
+              "Double-check who you’re talking to",
+              'If a chat feels weird, trust that',
+              'Tell a friend where you’re going',
+              'Keep early chats here first',
             ].map((tip) => (
               <div
                 key={tip}

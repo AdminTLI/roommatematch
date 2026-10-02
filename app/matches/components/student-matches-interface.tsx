@@ -30,7 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { isPendingForUser, isSuggestedForUser } from '@/lib/matching/suggestion-tabs'
+import { isDiscoverableSuggestion, isPendingForUser } from '@/lib/matching/suggestion-tabs'
 
 /** Shown per page in the UI (desktop grid + mobile pager). API fetches in multiples of this. */
 const MATCHES_CARDS_PER_PAGE = 12
@@ -119,7 +119,7 @@ function DiscoveryCardWrapper({
     
     // Ensure we have at least 3 highlights
     while (highlights.length < 3) {
-      if (highlights.length === 0) highlights.push('Similar lifestyle preferences')
+      if (highlights.length === 0) highlights.push('Similar living habits')
       else if (highlights.length === 1) highlights.push('Compatible schedules')
       else highlights.push('Shared interests')
     }
@@ -371,6 +371,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           setPeerHarmonyComplete((prev) => ({ ...prev, ...data.peerMeta.harmonyComplete }))
         }
 
+        const existingChatPartnerIds = new Set<string>(
+          Array.isArray(data.peerMeta?.existingChatPartners)
+            ? data.peerMeta.existingChatPartners
+            : []
+        )
+
         setPagination(paginationData)
 
         // Client-side dedupe guard: keep only latest suggestion per otherId
@@ -446,14 +452,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         // Also check local processedSuggestions cache to filter out matches that were declined/accepted
         // even if API returns stale data
         const suggested = allSuggestions.filter(s => {
-          // Skip if this was a stale entry we just cleared
-          if (staleEntries.includes(s.id)) {
-            return true // Include it since we cleared the stale cache
-          }
-
           // Check local cache first - if we've processed this suggestion, exclude it from suggested
           const processedStatus = processedSuggestions.get(s.id)
-          if (processedStatus === 'declined' || processedStatus === 'accepted' || processedStatus === 'confirmed') {
+          if (
+            !staleEntries.includes(s.id) &&
+            (processedStatus === 'declined' || processedStatus === 'accepted' || processedStatus === 'confirmed')
+          ) {
             console.log('[Filter] Excluding from suggested - locally processed:', {
               id: s.id,
               processedStatus,
@@ -462,10 +466,11 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             return false
           }
 
-          // Keep visible if I haven't accepted yet — including when the other
+          // Keep visible if I haven't accepted yet – including when the other
           // person already accepted (status=accepted, I'm not in acceptedBy).
-          if (!isSuggestedForUser(s, user.id)) {
-            console.log('[Filter] Excluding from suggested - not actionable for viewer:', {
+          // Exclude anyone we already share a 1:1 chat with.
+          if (!isDiscoverableSuggestion(s, user.id, existingChatPartnerIds)) {
+            console.log('[Filter] Excluding from suggested - not discoverable for viewer:', {
               id: s.id,
               status: s.status,
               acceptedBy: s.acceptedBy
@@ -522,8 +527,8 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
                 })
                 continue
               }
-              if (!isSuggestedForUser(sug, user.id)) {
-                console.log('[Filter] Skipping non-actionable match in loadMore:', {
+              if (!isDiscoverableSuggestion(sug, user.id, existingChatPartnerIds)) {
+                console.log('[Filter] Skipping non-discoverable match in loadMore:', {
                   id: sug.id,
                   status: sug.status,
                   acceptedBy: sug.acceptedBy
@@ -554,14 +559,12 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           // Replace all suggestions with additional defensive filtering
           // Ensure no declined/accepted/confirmed matches slip through
           const finalSuggested = suggested.filter(s => {
-            // Skip if this was a stale entry we just cleared
-            if (staleEntries.includes(s.id)) {
-              return true // Include it since we cleared the stale cache
-            }
-
             // Check local cache
             const processedStatus = processedSuggestions.get(s.id)
-            if (processedStatus === 'declined' || processedStatus === 'accepted' || processedStatus === 'confirmed') {
+            if (
+              !staleEntries.includes(s.id) &&
+              (processedStatus === 'declined' || processedStatus === 'accepted' || processedStatus === 'confirmed')
+            ) {
               console.warn('[Filter] Removed locally processed match from suggested tab:', {
                 id: s.id,
                 processedStatus,
@@ -569,7 +572,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
               })
               return false
             }
-            const isValid = isSuggestedForUser(s, user.id)
+            const isValid = isDiscoverableSuggestion(s, user.id, existingChatPartnerIds)
             if (!isValid) {
               console.warn('[Filter] Removed invalid match from suggested tab:', {
                 id: s.id,
@@ -838,85 +841,6 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const isResponding = respondMutation.isPending
 
   // Refresh suggestions
-  const handleRefresh = async () => {
-    try {
-      const response = await fetchWithCSRF('/api/match/suggestions/refresh', {
-        method: 'POST',
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-
-        // Check for diagnostic information if no suggestions
-        if (data.diagnostic && (!data.suggestions || data.suggestions.length === 0) && !data.created) {
-          toast.info('No matches available right now.', {
-            duration: 6000,
-            description: 'Please try again later.'
-          })
-        } else if (typeof data.created === 'number' && data.created > 0) {
-          // Only count newly inserted suggestions — not already-accepted/pending pairs.
-          toast.success(
-            `Found ${data.created} new suggested match${data.created !== 1 ? 'es' : ''}`,
-            { duration: 3000 }
-          )
-        } else if (data.message === 'Using recent suggestions') {
-          // Cached recent suggestions — do not celebrate as new.
-        } else if (data.created === 0) {
-          toast.info('No new suggestions found. Try again later or check your preferences.', {
-            duration: 5000,
-          })
-        }
-
-        await fetchSuggestions()
-      } else {
-        // Read the error response to show helpful message
-        const errorData = await response.json().catch(() => ({ error: 'Failed to refresh suggestions' }))
-        const errorMessage = errorData.error || 'Failed to refresh suggestions'
-        const retryAfter = errorData.retryAfter
-        const requiresOnboarding = errorData.requiresOnboarding
-
-        console.error('Failed to refresh suggestions:', errorMessage, {
-          status: response.status,
-          errorData,
-          missingFields: errorData.missingFields,
-          details: errorData.details
-        })
-
-        // Handle CSRF token errors with a user-friendly message
-        if (response.status === 403 && (errorMessage.includes('CSRF') || errorMessage.includes('Invalid CSRF token'))) {
-          toast.error('Session expired', {
-            description: 'Please refresh the page and try again.',
-            duration: 7000,
-          })
-        } else if (response.status === 404 && requiresOnboarding) {
-          // Handle profile/onboarding incomplete errors
-          toast.error('Profile setup required', {
-            description: 'Please complete your profile to continue.',
-            duration: 8000,
-          })
-        } else if (retryAfter && retryAfter > 0) {
-          // Show error toast with retry information
-          const minutes = Math.ceil(retryAfter / 60)
-          toast.error('Please try again soon', {
-            description: `Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.`,
-            duration: 7000,
-          })
-        } else {
-          toast.error('Unable to refresh matches', {
-            description: 'Please try again later.',
-            duration: 5000,
-          })
-        }
-      }
-    } catch (error) {
-      console.error('Error refreshing suggestions:', error)
-      toast.error('Unable to refresh matches', {
-        description: 'Please try again later.',
-        duration: 5000,
-      })
-    }
-  }
-
   const filteredSuggestions = useMemo(() => {
     switch (activeTab) {
       case 'suggested':
@@ -1192,13 +1116,13 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       <div className="mb-5 sm:mb-8">
         <div className="flex items-center gap-2 text-indigo-400 mb-1">
           <Sparkles className="w-5 h-5" />
-          <span className="text-sm font-medium uppercase tracking-wider">Discovery Feed</span>
+          <span className="text-sm font-medium uppercase tracking-wider">Suggested for you</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           Hello <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{firstName}</span>,
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 max-w-lg text-lg font-medium">
-          Here are your top matches for today based on your preferences.
+          Here are your latest roommate suggestions. Take a look and see who you’d click with.
         </p>
       </div>
 
@@ -1248,15 +1172,6 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           </div>
         </div>
 
-        {/* Tab-specific description */}
-        <div className="mt-3 sm:mt-4 text-center px-2">
-          <p className="text-sm sm:text-sm text-text-secondary leading-relaxed">
-            {activeTab === 'suggested' && `You have ${suggestions.length} suggested match${suggestions.length !== 1 ? 'es' : ''}`}
-            {activeTab === 'pending' && `You have ${pendingSuggestions.length} pending match${pendingSuggestions.length !== 1 ? 'es' : ''}`}
-            {activeTab === 'confirmed' && `You have ${confirmedMatches.length} confirmed match${confirmedMatches.length !== 1 ? 'es' : ''}`}
-            {activeTab === 'history' && `You have ${historyMatches.length} match${historyMatches.length !== 1 ? 'es' : ''} in history`}
-          </p>
-        </div>
       </div>
 
       {/* Progress Banner for Pending Tab */}
@@ -1284,10 +1199,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         </div>
       ) : filteredSuggestions.length === 0 ? (
         activeTab === 'suggested' ? (
-          <EmptyMatchesState
-            hasCompletedQuestionnaire={true}
-            onRefresh={handleRefresh}
-          />
+          <EmptyMatchesState hasCompletedQuestionnaire={true} />
         ) : (
           <div className="text-center py-12">
             <div className="text-text-muted mb-4">
@@ -1429,18 +1341,10 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           )}
 
 
-          {/* Refresh button only shown on suggested tab */}
           {activeTab === 'suggested' && (
             <div className="flex flex-col items-center">
-              <button
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className="px-4 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? 'Loading...' : 'Refresh Suggestions'}
-              </button>
-              <p className="text-xs sm:text-sm text-text-secondary mt-3 text-center leading-relaxed">
-                Suggestions refresh automatically every 6 hours, or instantly via Refresh Suggestions. After you update your questionnaire, matching can take up to an hour.
+              <p className="text-xs sm:text-sm text-text-secondary text-center leading-relaxed max-w-md">
+                Fresh suggestions roll in about every hour. Just updated your answers? Give it a little longer to catch up.
               </p>
             </div>
           )}
@@ -1501,10 +1405,10 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
       >
         <DialogContent className="max-w-md">
           <DialogHeader className="space-y-3">
-            <DialogTitle>Complete your questionnaire</DialogTitle>
+            <DialogTitle>Finish your living questions</DialogTitle>
             <DialogDescription className="text-sm leading-relaxed">
-              Finish the remaining harmony questions before you can accept a match. You will unlock
-              harmony scores, dimensions, and concerns for everyone you see.
+              Answer a few more questions about how you live before you can accept a match. That unlocks
+              Harmony scores and clearer reasons for everyone you see.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-2 sm:flex-col sm:justify-stretch">
@@ -1516,7 +1420,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
                 setHarmonyPromptOpen(false)
               }}
             >
-              Continue questionnaire
+              Keep going
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1528,7 +1432,7 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
             <DialogTitle>This person is not identity-verified yet</DialogTitle>
             <DialogDescription>
               You can still accept the match. Chat stays closed until they complete Persona
-              verification — this keeps everyone safer.
+              verification – this keeps everyone safer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">

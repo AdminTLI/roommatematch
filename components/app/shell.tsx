@@ -227,9 +227,9 @@ export function AppShell({
           <Dialog open={showQuestionnaire} onOpenChange={setShowQuestionnaire}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Complete your compatibility profile</DialogTitle>
+                <DialogTitle>Finish a few living questions</DialogTitle>
                 <DialogDescription>
-                  Answer a few questions to enable accurate matching. You can update answers later.
+                  Tell us how you live so we can show better fits. You can update answers later.
                 </DialogDescription>
               </DialogHeader>
               <div className="mt-6 flex flex-col sm:flex-row gap-3">

@@ -18,12 +18,12 @@ import type { UserType } from '@/types/profile'
 
 const welcomeCopy: Record<UserType, { title: string; subtitle: string }> = {
   student: {
-    title: 'Join the Student Network.',
-    subtitle: 'Match exclusively with other verified students. We match you with roommates who fit your lifestyle, not just your budget.',
+    title: 'Made for students.',
+    subtitle: 'Match only with other verified students. We look at how you live - not just your budget.',
   },
   professional: {
-    title: 'Join the Professional Network.',
-    subtitle: 'Match with other working professionals and graduates. Find roommates who get your schedule and priorities.',
+    title: 'Made for young professionals.',
+    subtitle: 'Match with other working professionals and graduates. Find people who fit your schedule and priorities.',
   },
 }
 
@@ -31,11 +31,11 @@ const leftColumnDefault = {
   brand: 'Domu Match',
   headline: "Find your roommate.",
   headlineHighlight: "your roommate.",
-  body: 'Join a verified community of students and young professionals. We match you with roommates who fit your lifestyle, not just your budget.',
+  body: 'Join a verified community of students and young professionals. We match you on how you live - not just your budget.',
   bullets: [
-    { strong: 'Real Humans:', text: 'A 100% verified community.' },
-    { strong: 'Deeper Connections:', text: 'Find people who truly "get" your routine.' },
-    { strong: 'Seamless Chat:', text: 'Coordinate viewings and meetups instantly.' },
+    { strong: 'Real people:', text: 'Everyone is ID verified.' },
+    { strong: 'Living habits that fit:', text: 'Find people who get your routine.' },
+    { strong: 'Chat in the app:', text: 'Plan viewings and meetups without the awkward scramble.' },
   ] as const,
 }
 
@@ -43,7 +43,7 @@ export function SignUpSection() {
   const searchParams = useSearchParams()
   const typeFromUrl = useMemo(() => {
     const t = searchParams?.get('type')
-    // Professional cohort is locked / coming soon — ignore deep-links
+    // Professional cohort is locked / coming soon – ignore deep-links
     if (t === 'student') return t
     return null
   }, [searchParams])

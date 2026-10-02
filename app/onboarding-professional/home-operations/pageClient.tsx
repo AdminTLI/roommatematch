@@ -61,7 +61,7 @@ function SectionClientContent() {
     <QuestionnaireLayout
       stepIndex={5}
       totalSteps={11}
-      title="Home Operations"
+      title="Chores & shared space"
       subtitle="Cleanliness standards, chores, kitchen & bathroom habits."
       onPrev={() => {
         window.location.href = isEditMode

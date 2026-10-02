@@ -63,7 +63,7 @@ function SectionClientContent() {
     <QuestionnaireLayout
       stepIndex={3}
       totalSteps={11}
-      title="Sleep & Circadian"
+      title="Sleep & schedule"
       subtitle="Daily rhythms and quiet-hour expectations."
       onPrev={() => {
         window.location.href = isEditMode

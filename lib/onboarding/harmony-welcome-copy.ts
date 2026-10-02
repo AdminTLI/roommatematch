@@ -21,10 +21,10 @@ export const HARMONY_MODULES: {
 ]
 
 export const HARMONY_WELCOME_COPY = {
-  title: 'Unlock your full match profile',
-  subtitle: 'Answer a few living-habit questions to see harmony scores and deeper compatibility.',
+  title: 'See how well you’d click at home',
+  subtitle: 'Answer a few living-habit questions to unlock Harmony scores and clearer reasons.',
   badgeModules: '5 Quick Modules',
   badgeTime: '~6-8 Minutes',
   coverLabel: "What we'll cover",
-  tip: 'Tip: Authentic answers unlock the best matches',
+  tip: 'Tip: Honest answers lead to better fits',
 } as const
