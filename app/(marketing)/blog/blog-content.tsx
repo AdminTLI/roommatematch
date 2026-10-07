@@ -36,6 +36,16 @@ const content = {
     noResults: 'No articles in this category yet.',
     posts: [
       {
+        slug: 'dutch-student-bike-culture-housemates',
+        title: 'How Bike Culture Shapes Dutch Student Houses',
+        excerpt:
+          'CBS cycling data and campus research show why the bicycle sets the rhythm of Dutch student houses—especially as autumn pulls life indoors.',
+        readTime: '8 min read',
+        date: '2026-10-07',
+        category: 'Lifestyle',
+        icon: Calendar,
+      },
+      {
         slug: 'international-students-dutch-housemates-language',
         title: 'Language Gaps With Dutch Housemates',
         excerpt:
@@ -359,6 +369,16 @@ const content = {
     pageOf: (page: number, total: number) => `Pagina ${page} van ${total}`,
     noResults: 'Nog geen artikelen in deze categorie.',
     posts: [
+      {
+        slug: 'dutch-student-bike-culture-housemates',
+        title: 'Hoe fietscultuur Nederlandse studentenhuizen vormt',
+        excerpt:
+          'CBS-fietscijfers en campusonderzoek laten zien waarom de fiets het ritme van studentenhuizen zet - vooral als de herfst het leven naar binnen trekt.',
+        readTime: '8 min lezen',
+        date: '2026-10-07',
+        category: 'Lifestyle',
+        icon: Calendar,
+      },
       {
         slug: 'international-students-dutch-housemates-language',
         title: 'Taalkloven met Nederlandse huisgenoten',
