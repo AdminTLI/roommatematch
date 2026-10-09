@@ -48,6 +48,7 @@ const content = {
           <BlogHeroImage
             imageKey="studyLateNight"
             alt="Student studying late at night with a laptop in a dark room"
+            priority
           />
           <figcaption>
             When one person’s normal is 2 a.m. and the other’s is 7 a.m., the walls of a student room are too
@@ -118,6 +119,7 @@ const content = {
           <BlogHeroImage
             imageKey="quietRoommate"
             alt="Quiet living room after late study — sleep schedule clashes hit shared houses hardest"
+            priority
           />
           <figcaption>
             Chronic 2 a.m. bedtimes plus 8 a.m. lectures is not a personality quirk - it is an academic risk

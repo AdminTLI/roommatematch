@@ -17,15 +17,9 @@ import {
   UserPen,
   Users,
 } from 'lucide-react'
-import { Plus_Jakarta_Sans } from 'next/font/google'
 import { cn } from '@/lib/utils'
 import type { Notification } from '@/lib/notifications/types'
 import { NOTIFICATION_CONFIG } from '@/lib/notifications/types'
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  display: 'swap',
-})
 
 const iconMap = {
   Users,
@@ -222,7 +216,6 @@ export function LiveNotificationCard({
         }
       }}
       className={cn(
-        plusJakarta.className,
         'live-notif-toast relative w-full cursor-pointer rounded-2xl outline-none backdrop-blur-xl focus-visible:ring-2 focus-visible:ring-violet-500/40',
         className
       )}

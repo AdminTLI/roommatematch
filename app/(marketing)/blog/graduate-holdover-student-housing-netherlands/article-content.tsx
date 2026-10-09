@@ -60,6 +60,7 @@ const content = {
           <BlogHeroImage
             imageKey="contractSigning"
             alt="Graduate reviewing rental documents at a desk, transition from student room to general housing market"
+            priority
           />
           <figcaption>
             A signed lease is only the first step. When graduates cannot move on, the room behind them never
@@ -203,6 +204,7 @@ const content = {
           <BlogHeroImage
             imageKey="sharedKitchen"
             alt="Shared student kitchen with multiple place settings, turnover depends on who can move in next"
+            priority
           />
           <figcaption>
             Student rooms are a conveyor belt. When the exit is blocked, the entrance jams for the cohort

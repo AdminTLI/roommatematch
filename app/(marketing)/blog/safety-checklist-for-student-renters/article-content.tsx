@@ -65,6 +65,7 @@ const content = {
           <BlogHeroImage
             imageKey="contractSigning"
             alt="Rental contract and paperwork on a desk with a pen"
+            priority
           />
           <figcaption>Before signing any rental agreement, verify the landlord and inspect the property in person.</figcaption>
         </figure>
@@ -102,6 +103,7 @@ const content = {
           <BlogHeroImage
             imageKey="housingCityscape"
             alt="Modern apartment building facade — always verify the address with an in-person viewing"
+            priority
           />
           <figcaption>Always review rental contracts carefully and seek legal advice if something seems unclear.</figcaption>
         </figure>

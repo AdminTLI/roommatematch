@@ -45,6 +45,7 @@ const content = {
           <BlogHeroImage
             imageKey="quietRoommate"
             alt="Quiet shared living room - student housing loneliness and the loss of everyday neighbour contact in the Netherlands"
+            priority
           />
           <figcaption>
             Loneliness in student life is increasingly tied to housing supply and building form, not only to individual coping skills.
@@ -179,6 +180,7 @@ const content = {
           <BlogHeroImage
             imageKey="internationalCampus"
             alt="Students on a university campus - social infrastructure and neighbour contact in Dutch student cities"
+            priority
           />
           <figcaption>
             Campus master plans that prioritise self-contained studios can deliver beds while quietly removing the shared kitchens and corridors where everyday friendships start.

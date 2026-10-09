@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Plus_Jakarta_Sans } from 'next/font/google'
 import {
   Dialog,
   DialogClose,
@@ -15,12 +14,6 @@ import { Label } from '@/components/ui/label'
 import { HeartPulse, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-onboarding',
-  display: 'swap',
-})
 
 type TriggerType = 'day_14' | 'day_30' | null
 
@@ -208,8 +201,7 @@ export function WellnessSurveyModal() {
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(
-          plusJakarta.variable,
-          'font-[family-name:var(--font-onboarding)] antialiased',
+          'antialiased',
           'max-w-md gap-0 overflow-hidden rounded-2xl border-0 bg-white p-0',
           'shadow-[0_10px_40px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-200/80',
           'dark:bg-slate-800 dark:shadow-black/50 dark:ring-slate-700',

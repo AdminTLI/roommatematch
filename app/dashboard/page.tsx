@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { redirect } from 'next/navigation'
 import { DashboardContent } from './components/dashboard-content'
-import { DomuChatWidget } from './components/domu-chat-widget'
+import { LazyDomuChatWidget } from './components/lazy-domu-chat-widget'
 import type { DashboardData } from '@/types/dashboard'
 import { checkQuestionnaireCompletion, questionSchemas } from '@/lib/onboarding/validation'
 import { calculateSectionProgress } from '@/lib/onboarding/sections'
@@ -147,7 +147,7 @@ export default async function DashboardPage() {
           userType={profile?.user_type === 'student' || profile?.user_type === 'professional' ? profile.user_type : undefined}
         />
       </AppShell>
-      <DomuChatWidget />
+      <LazyDomuChatWidget />
     </>
   )
 }

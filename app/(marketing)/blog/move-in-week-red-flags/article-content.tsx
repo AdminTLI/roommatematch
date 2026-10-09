@@ -49,6 +49,7 @@ const content = {
           <BlogHeroImage
             imageKey="cityBikeStudent"
             alt="Amsterdam canal houses at dusk — arriving in a Dutch student city for move-in week"
+            priority
           />
           <figcaption>
             Move‑in week is when you see the raw version of how people actually live - before everyone starts

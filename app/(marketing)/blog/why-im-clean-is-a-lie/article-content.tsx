@@ -48,6 +48,7 @@ const content = {
           <BlogHeroImage
             imageKey="sharedKitchen"
             alt="Person wiping down a kitchen counter in a shared flat"
+            priority
           />
           <figcaption>
             Most cleaning conflict starts with mismatched definitions, not malice.
@@ -118,6 +119,7 @@ const content = {
           <BlogHeroImage
             imageKey="sharedKitchen"
             alt="Clean shared kitchen counters with cookware and towels"
+            priority
           />
           <figcaption>
             A shared system for dishes and cleaning is less about perfection and more about fairness.

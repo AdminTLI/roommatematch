@@ -111,7 +111,7 @@ export function ListPane({
 
       {/* Listings grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {listings.map((listing) => (
+        {listings.map((listing, index) => (
           <ListingCard
             key={listing.id}
             listing={listing}
@@ -121,6 +121,7 @@ export function ListPane({
             onReport={onReport}
             isSaved={savedListings.has(listing.id)}
             isHighlighted={highlightedId === listing.id}
+            imagePriority={index < 2}
           />
         ))}
       </div>

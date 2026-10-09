@@ -49,6 +49,7 @@ const content = {
           <BlogHeroImage
             imageKey="cityBikeStudent"
             alt="Amsterdam canal at twilight — the cost of a bad roommate often ends in another move across a Dutch student city"
+            priority
           />
           <figcaption>
             Moving out of a bad living situation costs more than just time and stress - it often comes with a
@@ -147,6 +148,7 @@ const content = {
           <BlogHeroImage
             imageKey="studyLateNight"
             alt="Student studying with a laptop at a cafe, looking tired"
+            priority
           />
           <figcaption>
             When home is exhausting rather than restorative, your brain is already half burnt out before you

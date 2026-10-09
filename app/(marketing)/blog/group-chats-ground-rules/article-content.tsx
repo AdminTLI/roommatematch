@@ -48,6 +48,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Housemates at a shared table with laptops, chatting and coordinating"
+            priority
           />
           <figcaption>
             Group chats are great for memes and logistics - but terrible as the only place to negotiate house

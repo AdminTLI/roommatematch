@@ -85,6 +85,8 @@ export function saveClientConsents(preferences: Partial<ClientConsentPreferences
 
   try {
     localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(updated))
+    // Notify same-tab listeners (analytics, Sentry) without a full page reload.
+    window.dispatchEvent(new Event('consent-changed'))
   } catch (error) {
     console.error('Failed to save consent preferences', error)
   }

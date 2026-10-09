@@ -59,6 +59,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Group of students talking around a table in a shared study or living space"
+            priority
           />
           <figcaption>
             Shared housing can buffer stress when housemates agree on how support, quiet, and privacy actually work.
@@ -281,6 +282,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Groep studenten in gesprek rond een tafel in een gedeelde studie- of woonruimte"
+            priority
           />
           <figcaption>
             Samenwonen kan stress dempen als huisgenoten afspreken hoe steun, stilte en privacy echt werken.

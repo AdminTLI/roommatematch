@@ -7,7 +7,11 @@ import { GlobalRealtimeCleanupHandler } from '@/components/realtime/global-clean
 import { AuthHashRedirect } from '@/components/auth/auth-hash-redirect'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+})
 
 import { getPlatformSettings } from '@/lib/platform-settings'
 
@@ -53,8 +57,27 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const supabaseOrigin = (() => {
+    try {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+      return url ? new URL(url).origin : null
+    } catch {
+      return null
+    }
+  })()
+
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        {supabaseOrigin ? (
+          <>
+            <link rel="preconnect" href={supabaseOrigin} crossOrigin="anonymous" />
+            <link rel="dns-prefetch" href={supabaseOrigin} />
+          </>
+        ) : null}
+      </head>
       <body className={`${inter.className} antialiased`}>
         <ErrorBoundaryWrapper>
           <RouteProviders>

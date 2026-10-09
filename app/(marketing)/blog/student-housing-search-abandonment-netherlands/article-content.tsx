@@ -68,6 +68,7 @@ const content = {
           <BlogHeroImage
             imageKey="housingCityscape"
             alt="Apartment block in a student city — housing search abandonment rises when room supply keeps shrinking"
+            priority
           />
           <figcaption>
             When search effort falls, vacancy dashboards look calmer than student life on the ground.
@@ -442,6 +443,7 @@ const content = {
           <BlogHeroImage
             imageKey="housingCityscape"
             alt="Appartementencomplex in een studentenstad — minder studenten zoeken een kamer bij aanhoudend tekort"
+            priority
           />
           <figcaption>
             Wanneer zoekgedrag afneemt, zien dashboards rustiger dan het studentenleven op straat.

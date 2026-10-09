@@ -51,6 +51,7 @@ const content = {
           <BlogHeroImage
             imageKey="sharedKitchen"
             alt="Shared kitchen interior with counters, cabinets, and cooking space"
+            priority
           />
           <figcaption>
             Shared kitchens make unequal contribution visible fast: the same sink can look “fine” to one person and
@@ -276,6 +277,7 @@ const content = {
           <BlogHeroImage
             imageKey="sharedKitchen"
             alt="Interieur van een gedeelde keuken met aanrechten, kastjes en kookruimte"
+            priority
           />
           <figcaption>
             In gedeelde keukens wordt ongelijke bijdrage snel zichtbaar: dezelfde gootsteen kan voor de één “prima”

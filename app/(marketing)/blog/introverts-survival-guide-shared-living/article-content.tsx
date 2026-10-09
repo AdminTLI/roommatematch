@@ -48,6 +48,7 @@ const content = {
           <BlogHeroImage
             imageKey="quietRoommate"
             alt="Bright quiet living room — introverts need recoverable shared space, not constant company"
+            priority
           />
           <figcaption>
             For many introverts, a quiet evening alone is not antisocial - it is basic maintenance.
@@ -140,6 +141,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Two students quietly working at a table with laptops and notebooks"
+            priority
           />
           <figcaption>
             Compatible roommates do not have to be identical - they just need compatible rhythms and respect.

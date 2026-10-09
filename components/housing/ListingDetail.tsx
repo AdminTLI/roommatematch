@@ -204,6 +204,8 @@ export function ListingDetail({
                   src={listing.photos[imageIndex]}
                   alt={`${listing.title} - Image ${imageIndex + 1}`}
                   fill
+                  sizes="(max-width: 768px) 100vw, 80vw"
+                  priority
                   className="object-cover"
                 />
                 

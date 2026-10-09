@@ -49,6 +49,7 @@ const content = {
           <BlogHeroImage
             imageKey="quietRoommate"
             alt="Quiet living room with a large window — winter blues hit harder in socially thin shared houses"
+            priority
           />
           <figcaption>
             In winter, isolation hits harder - the people you live with have a direct impact on how heavy it
@@ -122,6 +123,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Group of students drinking hot drinks together indoors"
+            priority
           />
           <figcaption>
             In winter, even small rituals - tea in the kitchen, a shared series - can help keep you connected.

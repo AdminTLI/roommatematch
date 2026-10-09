@@ -59,6 +59,7 @@ const content = {
           <BlogHeroImage
             imageKey="internationalCampus"
             alt="Graduate in academic gown at a university ceremony — Dutch study choice and field concentration"
+            priority
           />
           <figcaption>
             Study choice is decided long before a first lecture: field concentration and calendar deadlines shape the
@@ -366,6 +367,7 @@ const content = {
           <BlogHeroImage
             imageKey="internationalCampus"
             alt="Afgestudeerde in toga tijdens een ceremonie — Nederlandse studiekeuze en studierichtingen"
+            priority
           />
           <figcaption>
             Studiekeuze wordt beslist lang voor het eerste college: veldconcentratie en kalenderdeadlines bepalen

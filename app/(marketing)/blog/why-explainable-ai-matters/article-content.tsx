@@ -56,6 +56,7 @@ const content = {
           <BlogHeroImage
             imageKey="studyLateNight"
             alt="Hands writing in a planner beside a laptop — explainable decisions need clear, inspectable steps"
+            priority
           />
           <figcaption>
             Explainability turns “because the model said so” into reasons you can evaluate and challenge.
@@ -143,6 +144,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Students collaborating at laptops — matching signals should be discussable in plain language"
+            priority
           />
           <figcaption>
             In a healthy system, data is not a mystery ingredient. You can see what is used and why it

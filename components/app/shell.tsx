@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { TopNav } from './TopNav'
 import { FloatingDock } from './navigation/floating-dock'
 import { useState } from 'react'
@@ -14,7 +14,15 @@ import { ThemeProvider } from '@/lib/theme/theme-provider'
 import Link from 'next/link'
 import { Users, AlertCircle, Mail, ArrowRight } from 'lucide-react'
 import { MessageNotificationPopup } from '@/app/(components)/notifications/message-notification-popup'
-import { BugReportWidget } from '@/components/bugs/bug-report-widget'
+import dynamic from 'next/dynamic'
+
+const BugReportWidget = dynamic(
+  () =>
+    import('@/components/bugs/bug-report-widget').then((m) => ({
+      default: m.BugReportWidget,
+    })),
+  { ssr: false }
+)
 import { usePathname } from 'next/navigation'
 import { useAppVisualViewportTopInset } from '@/hooks/use-app-visual-viewport-top-inset'
 import { AppFooter } from './app-footer'
@@ -200,9 +208,9 @@ export function AppShell({
                     </div>
                   ) : (
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
                       className="max-w-7xl mx-auto h-full"
                     >
                       {children}

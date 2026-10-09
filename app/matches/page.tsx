@@ -7,7 +7,7 @@ import { getUserProfile } from '@/lib/auth/user-profile'
 import { resolveStoredProfileName } from '@/lib/auth/identity-name'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { getOnboardingRedirectUrlIfIncomplete } from '@/lib/onboarding/server-redirect'
-import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
+import { LazyDomuChatWidget } from '../dashboard/components/lazy-domu-chat-widget'
 
 export default async function MatchesPage() {
   const supabase = await createClient()
@@ -67,7 +67,7 @@ export default async function MatchesPage() {
           <StudentMatchesInterface user={userWithName} />
         </Suspense>
       </AppShell>
-      <DomuChatWidget />
+      <LazyDomuChatWidget />
     </>
   )
 }

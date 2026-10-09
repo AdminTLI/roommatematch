@@ -190,8 +190,10 @@ export function CookiePreferenceCenter({
         })
       }
 
-      // Reload page to apply consent
-      window.location.reload()
+      // Consent applied via saveClientConsents → consent-changed (no full reload)
+      if (onClose) {
+        onClose()
+      }
     } catch (error) {
       console.error('Failed to save consent', error)
       if (onClose) {

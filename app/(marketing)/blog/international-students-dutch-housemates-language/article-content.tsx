@@ -58,6 +58,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Group of students sitting around a table with laptops, collaborating on a shared project"
+            priority
           />
           <figcaption>
             Mixed houses run on everyday talk. When that talk defaults to Dutch without a bridge, the room can feel
@@ -348,6 +349,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Groep studenten rond een tafel met laptops, samenwerkend aan een gedeeld project"
+            priority
           />
           <figcaption>
             Gemengde huizen draaien op alledaags praten. Als dat gesprek standaard Nederlands is zonder brug, kan de

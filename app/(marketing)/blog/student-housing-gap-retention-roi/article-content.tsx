@@ -51,6 +51,8 @@ const content = {
             alt="Modern residential apartment building — student housing scarcity and retention pressure"
             width={1200}
             height={630}
+            sizes="(max-width: 768px) 100vw, min(100vw, 72rem)"
+            priority
             className="w-full rounded-2xl"
           />
           <figcaption>
@@ -302,6 +304,8 @@ const content = {
             alt="Modern appartementencomplex — kamertekort en retentiedruk in studentensteden"
             width={1200}
             height={630}
+            sizes="(max-width: 768px) 100vw, min(100vw, 72rem)"
+            priority
             className="w-full rounded-2xl"
           />
           <figcaption>

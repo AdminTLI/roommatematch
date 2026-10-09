@@ -52,6 +52,7 @@ const content = {
           <BlogHeroImage
             imageKey="sharedKitchen"
             alt="Shared kitchen in a Dutch student house - co-living rules and municipal permits shape how many rooms are legally rentable"
+            priority
           />
           <figcaption>
             A spare bedroom only counts as housing supply if local rules allow three independent tenants behind one
@@ -198,6 +199,7 @@ const content = {
           <BlogHeroImage
             imageKey="contractSigning"
             alt="Rental contract and keys on a desk - Dutch student renters navigate national rent law and local co-living permits"
+            priority
           />
           <figcaption>
             National rent law sets the price ceiling. Local permits decide whether three signed contracts are legal in

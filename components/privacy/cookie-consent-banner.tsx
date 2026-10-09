@@ -103,17 +103,16 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
         })
       })
       
-      if (response.ok) {
-        // Reload page to apply consent
-        window.location.reload()
+      // Consent applied via saveClientConsents → consent-changed (no full reload)
+      if (!response.ok) {
+        console.error('Failed to persist consent grant', response.status)
       }
     } catch (error) {
       console.error('Failed to save consent', error)
-      // Still hide banner even if server save fails
-      setShowBanner(false)
     }
 
     setShowBanner(false)
+    setShowReopenControl(true)
   }
 
   const handleRejectAll = async () => {
@@ -137,17 +136,16 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
         })
       })
       
-      if (response.ok) {
-        // Reload page to apply consent
-        window.location.reload()
+      // Consent applied via saveClientConsents → consent-changed (no full reload)
+      if (!response.ok) {
+        console.error('Failed to persist consent withdraw', response.status)
       }
     } catch (error) {
       console.error('Failed to save consent', error)
-      // Still hide banner even if server save fails
-      setShowBanner(false)
     }
 
     setShowBanner(false)
+    setShowReopenControl(true)
   }
 
   const handleCustomize = () => {

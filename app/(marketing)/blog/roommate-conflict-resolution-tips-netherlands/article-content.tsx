@@ -52,6 +52,7 @@ const content = {
           <BlogHeroImage
             imageKey="sharedKitchen"
             alt="Shared student kitchen where chore and noise disputes often begin among Dutch housemates"
+            priority
           />
           <figcaption>
             Kitchens and common rooms are where small frictions repeat until they feel like disrespect.
@@ -353,6 +354,7 @@ const content = {
           <BlogHeroImage
             imageKey="sharedKitchen"
             alt="Gedeelde studentenkeuken waar klusjes- en geluidsconflicten vaak beginnen"
+            priority
           />
           <figcaption>
             Keukens en gemeenschappelijke ruimtes zijn plekken waar kleine fricties zich opstapelen tot disrespect.

@@ -49,6 +49,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Two students laughing together on a sofa in a shared apartment"
+            priority
           />
           <figcaption>
             Great chemistry at brunch does not automatically mean compatible habits on a Tuesday morning.
@@ -221,6 +222,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Twee studenten die lachen op een bank in een gedeeld appartement"
+            priority
           />
           <figcaption>
             Een goede klik op het terras betekent niet automatisch dat je ook elkaars leefritme aankunt.

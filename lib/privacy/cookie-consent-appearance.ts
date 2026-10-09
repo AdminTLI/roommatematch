@@ -8,26 +8,26 @@ export type CookieConsentAppearanceVariant = 'light' | 'dark'
 export const cookieConsentGlass = {
   light: {
     panel:
-      'rounded-3xl !border-slate-200/90 !bg-white/97 !text-slate-900 shadow-[0_20px_60px_rgba(15,23,42,0.14)] backdrop-blur-xl supports-[backdrop-filter]:!bg-white/95',
-    overlay: 'bg-slate-900/40 backdrop-blur-md',
-    icon: 'text-blue-600',
+      'rounded-3xl !border-slate-200 !bg-white !text-slate-900 shadow-[0_12px_40px_rgba(15,23,42,0.1)]',
+    overlay: 'bg-slate-900/35',
+    icon: 'text-indigo-600',
     title: '!text-slate-950',
-    body: '!text-slate-800',
-    muted: '!text-slate-700',
-    link: 'text-blue-600 hover:text-blue-700',
-    headerBorder: 'border-slate-200/90',
-    footer: 'border-slate-200/90 !bg-white backdrop-blur-xl',
-    row: 'border-slate-200/90 !bg-white',
-    rowMuted: 'border-slate-200/90 !bg-slate-50',
+    body: '!text-slate-700',
+    muted: '!text-slate-600',
+    link: 'text-indigo-600 hover:text-indigo-700',
+    headerBorder: 'border-slate-200',
+    footer: 'border-slate-200 !bg-white',
+    row: 'border-slate-200 !bg-white',
+    rowMuted: 'border-slate-200 !bg-slate-50',
     primaryBtn:
-      'rounded-full !bg-indigo-500 !text-white font-semibold shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:!bg-indigo-600',
+      'rounded-full !bg-indigo-500 !text-white font-semibold shadow-sm hover:!bg-indigo-600',
     outlineBtn:
       'rounded-full !border-slate-300 !bg-white !text-slate-900 shadow-sm hover:!bg-slate-50 hover:!border-slate-400',
     ghostBtn:
       'rounded-full !text-slate-700 hover:!bg-slate-100 hover:!text-slate-900',
     closeBtn: '!text-slate-600 hover:!bg-slate-100 hover:!text-slate-900',
     reopenBtn:
-      '!border-slate-300 !bg-white/95 !text-slate-900 shadow-[0_10px_24px_rgba(15,23,42,0.1)] backdrop-blur-xl',
+      '!border-slate-300 !bg-white !text-slate-900 shadow-[0_8px_20px_rgba(15,23,42,0.08)]',
     scrollbar: '[&::-webkit-scrollbar-thumb]:bg-slate-300',
   },
   dark: {

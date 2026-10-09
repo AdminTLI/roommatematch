@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getUserProfile } from '@/lib/auth/user-profile'
 import { SafetyContent } from './components/safety-content'
-import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
+import { LazyDomuChatWidget } from '../dashboard/components/lazy-domu-chat-widget'
 
 export default async function SafetyPage() {
   const supabase = await createClient()
@@ -69,7 +69,7 @@ export default async function SafetyPage() {
           universityName={universityName}
         />
       </AppShell>
-      <DomuChatWidget />
+      <LazyDomuChatWidget />
     </>
   )
 }

@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Plus_Jakarta_Sans } from 'next/font/google'
 import { Bug, X, Send, Lightbulb } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -23,12 +22,6 @@ import {
   collectBugDiagnosticsSnapshot,
   capDiagnosticsPayload,
 } from '@/lib/bugs/diagnostics'
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-onboarding',
-  display: 'swap',
-})
 
 const MIN_DESCRIPTION = 20
 const MAX_DESCRIPTION = 4000
@@ -330,12 +323,7 @@ export function BugReportWidget() {
   )
 
   return (
-    <div
-      className={cn(
-        plusJakarta.variable,
-        'font-[family-name:var(--font-onboarding)] antialiased',
-      )}
-    >
+    <div className="antialiased">
       <AnimatePresence>
         {open && (
           <>

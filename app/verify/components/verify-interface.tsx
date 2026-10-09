@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Script from 'next/script'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,6 +29,10 @@ const fadeInUp = {
 
 const verifyCardClass =
   'bg-background/40 dark:bg-white/5 backdrop-blur-lg border-border/50 shadow-xl overflow-hidden'
+
+const PERSONA_SCRIPT_SRC = 'https://cdn.withpersona.com/dist/persona-v5.1.2.js'
+const PERSONA_SCRIPT_INTEGRITY =
+  'sha384-nuMfOsYXMwp5L13VJicJkSs8tObai/UtHEOg3f7tQuFWU5j6LAewJbjbF5ZkfoDo'
 
 // Declare Persona types for TypeScript
 declare global {
@@ -77,77 +82,65 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
   const personaOpenWatchdogRef = useRef<NodeJS.Timeout | null>(null)
   
-  // Load Persona script
-  useEffect(() => {
-    if (scriptLoadedRef.current) return
+  const initializePersona = useCallback(() => {
+    const environmentId = process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID
+    const templateId = process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID
 
-    const script = document.createElement('script')
-    script.src = 'https://cdn.withpersona.com/dist/persona-v5.1.2.js'
-    // Note: Integrity check may fail in some environments, but script will still load
-    // If integrity fails, browser will still execute the script but log a warning
-    script.integrity = 'sha384-nuMfOsYXMwp5L13VJicJkSs8tObai/UtHEOg3f7tQuFWU5j6LAewJbjbF5ZkfoDo'
-    script.crossOrigin = 'anonymous'
-    script.async = true
-    
-    let loadTimeout: NodeJS.Timeout | null = null
-    
-    script.onload = () => {
-      if (loadTimeout) {
-        clearTimeout(loadTimeout)
-        loadTimeout = null
-      }
-      scriptLoadedRef.current = true
-      // Wait a bit for Persona to be fully available, then initialize
-      // Retry mechanism in case Persona isn't immediately available
-      let retries = 0
-      const maxRetries = 15 // Increased retries
-      const checkPersona = () => {
-        if (window.Persona && window.Persona.Client) {
-          initializePersona()
-        } else if (retries < maxRetries) {
-          retries++
-          setTimeout(checkPersona, 100)
-        } else {
-          console.error('[Verify] Persona not available after script load')
-          setError('Persona verification service not available. Please refresh the page.')
-          setIsLoading(false)
-        }
-      }
-      // Start checking immediately, but also after a small delay
-      checkPersona()
-    }
-    
-    script.onerror = (error) => {
-      if (loadTimeout) {
-        clearTimeout(loadTimeout)
-        loadTimeout = null
-      }
-      console.error('[Verify] Script load error:', error)
-      setError('Failed to load verification service. Please refresh the page.')
+    if (!environmentId || !templateId) {
+      setError(
+        'Identity verification is not configured. Set NEXT_PUBLIC_PERSONA_TEMPLATE_ID and NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID.'
+      )
       setIsLoading(false)
+      return
     }
-    
-    // Set a timeout in case script never loads or errors
-    loadTimeout = setTimeout(() => {
+
+    if (!window.Persona) {
+      setError('Persona verification service not available. Please refresh the page.')
+      setIsLoading(false)
+      return
+    }
+
+    // Script is ready; inquiry is created on Start via /api/verification/start
+    setIsPersonaReady(true)
+    setIsLoading(false)
+  }, [])
+
+  const handlePersonaScriptLoad = useCallback(() => {
+    scriptLoadedRef.current = true
+    let retries = 0
+    const maxRetries = 15
+    const checkPersona = () => {
+      if (window.Persona?.Client) {
+        initializePersona()
+      } else if (retries < maxRetries) {
+        retries++
+        setTimeout(checkPersona, 100)
+      } else {
+        console.error('[Verify] Persona not available after script load')
+        setError('Persona verification service not available. Please refresh the page.')
+        setIsLoading(false)
+      }
+    }
+    checkPersona()
+  }, [initializePersona])
+
+  const handlePersonaScriptError = useCallback(() => {
+    console.error('[Verify] Script load error')
+    setError('Failed to load verification service. Please refresh the page.')
+    setIsLoading(false)
+  }, [])
+
+  // Timeout if Persona script never loads
+  useEffect(() => {
+    const loadTimeout = setTimeout(() => {
       if (!scriptLoadedRef.current) {
         console.error('[Verify] Script load timeout')
         setError('Verification service is taking too long to load. Please refresh the page.')
         setIsLoading(false)
       }
-    }, 10000) // 10 second timeout
-    
-    document.head.appendChild(script)
-    
-    return () => {
-      // Cleanup: remove script if component unmounts
-      const existingScript = document.querySelector('script[src*="persona"]')
-      if (existingScript) {
-        existingScript.remove()
-      }
-      if (loadTimeout) {
-        clearTimeout(loadTimeout)
-      }
-    }
+    }, 10000)
+
+    return () => clearTimeout(loadTimeout)
   }, [])
 
   // Update status ref whenever status changes
@@ -261,29 +254,6 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
         'Verification completed but failed to update status. Please refresh the page or contact support.'
       )
     }
-  }
-
-  const initializePersona = () => {
-    const environmentId = process.env.NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID
-    const templateId = process.env.NEXT_PUBLIC_PERSONA_TEMPLATE_ID
-
-    if (!environmentId || !templateId) {
-      setError(
-        'Identity verification is not configured. Set NEXT_PUBLIC_PERSONA_TEMPLATE_ID and NEXT_PUBLIC_PERSONA_ENVIRONMENT_ID.'
-      )
-      setIsLoading(false)
-      return
-    }
-
-    if (!window.Persona) {
-      setError('Persona verification service not available. Please refresh the page.')
-      setIsLoading(false)
-      return
-    }
-
-    // Script is ready; inquiry is created on Start via /api/verification/start
-    setIsPersonaReady(true)
-    setIsLoading(false)
   }
 
   const fetchStatus = async () => {
@@ -510,20 +480,34 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
     startVerification()
   }
 
+  const personaScript = (
+    <Script
+      src={PERSONA_SCRIPT_SRC}
+      strategy="afterInteractive"
+      integrity={PERSONA_SCRIPT_INTEGRITY}
+      crossOrigin="anonymous"
+      onLoad={handlePersonaScriptLoad}
+      onError={handlePersonaScriptError}
+    />
+  )
+
   if (isLoading) {
     return (
-      <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6">
-        <Card className={cn(verifyCardClass)}>
-          <CardContent className="pt-8 pb-8">
-            <div className="flex flex-col items-center justify-center gap-4 text-center">
-              <Loader2 className="h-10 w-10 animate-spin text-indigo-500" aria-hidden />
-              <p className="text-zinc-600 dark:text-zinc-400 font-medium">
-                Loading verification service...
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        {personaScript}
+        <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6">
+          <Card className={cn(verifyCardClass)}>
+            <CardContent className="pt-8 pb-8">
+              <div className="flex flex-col items-center justify-center gap-4 text-center">
+                <Loader2 className="h-10 w-10 animate-spin text-indigo-500" aria-hidden />
+                <p className="text-zinc-600 dark:text-zinc-400 font-medium">
+                  Loading verification service...
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </>
     )
   }
 
@@ -531,6 +515,8 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
   // CSP/widget failures never leave users on a blank white screen.
   if (isPersonaActive) {
     return (
+      <>
+        {personaScript}
       <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6">
         <Card className={cn(verifyCardClass)}>
           <CardContent className="pt-8 pb-8">
@@ -563,11 +549,13 @@ export function VerifyInterface({ user, redirectTo = '/dashboard' }: VerifyInter
           </CardContent>
         </Card>
       </div>
+      </>
     )
   }
 
   return (
     <>
+      {personaScript}
       <VerificationFeedback />
       <div className="max-w-3xl mx-auto w-full space-y-8 pb-24 md:pb-6">
         <motion.div {...fadeInUp} className="flex flex-col gap-2">

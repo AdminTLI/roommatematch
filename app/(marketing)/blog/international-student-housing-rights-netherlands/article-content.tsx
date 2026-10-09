@@ -57,6 +57,7 @@ const content = {
           <BlogHeroImage
             imageKey="contractSigning"
             alt="Rental documents and keys on a desk - international student tenant rights and contract review in the Netherlands"
+            priority
           />
           <figcaption>
             A signed contract does not end housing risk for international students when enforcement pathways are unclear or fear of eviction silences complaints.
@@ -330,6 +331,7 @@ const content = {
           <BlogHeroImage
             imageKey="contractSigning"
             alt="Huurcontract en sleutels op een bureau - huurrechten en contractcontrole voor internationale studenten in Nederland"
+            priority
           />
           <figcaption>
             Een getekend contract beëindigt het woonrisico niet als handhavingsroutes onduidelijk zijn of angst voor ontruiming klachten dempt.

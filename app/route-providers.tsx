@@ -10,7 +10,7 @@ export function RouteProviders({ children }: { children: React.ReactNode }) {
   const marketing = isMarketingRoute(pathname)
 
   return (
-    <CoreProviders>
+    <CoreProviders forcedTheme={marketing ? 'light' : undefined}>
       {marketing ? children : <AppProvidersAddon>{children}</AppProvidersAddon>}
     </CoreProviders>
   )

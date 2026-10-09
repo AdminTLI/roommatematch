@@ -55,6 +55,7 @@ const content = {
           <BlogHeroImage
             imageKey="contractSigning"
             alt="Rental contract and documents on a desk - private landlord rules and student tenancy in the Netherlands"
+            priority
           />
           <figcaption>
             Regulatory change is reshaping the private student rental sector, not only the price on the contract.
@@ -253,6 +254,7 @@ const content = {
           <BlogHeroImage
             imageKey="housingCityscape"
             alt="Apartment buildings in a Dutch city - student housing supply in university towns"
+            priority
           />
           <figcaption>
             City-level policy choices on woningdelen and newbuild targets now shape national shortage figures.

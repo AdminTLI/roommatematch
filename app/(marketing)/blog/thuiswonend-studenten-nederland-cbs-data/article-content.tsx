@@ -67,6 +67,7 @@ const content = {
           <BlogHeroImage
             imageKey="studyLateNight"
             alt="Student studying late at a desk at home - thuiswonend students and delayed move-out in the Netherlands"
+            priority
           />
           <figcaption>
             When leaving home slips from year one to year three, campus social life and commute patterns
@@ -183,6 +184,7 @@ const content = {
           <BlogHeroImage
             imageKey="housingCityscape"
             alt="Residential housing in a Dutch city - student room shortage and thuiswonend students"
+            priority
           />
           <figcaption>
             Policy responses now include satellite student cities such as Almere and Assen, but national

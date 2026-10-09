@@ -58,6 +58,7 @@ const content = {
           <BlogHeroImage
             imageKey="studyLateNight"
             alt="Top-down view of a wooden desk at night with hands writing in a planner beside a laptop, books, glasses, and a cup of coffee"
+            priority
           />
           <figcaption>
             Exam weeks turn shared houses into competing calendars: focus blocks, kitchen timing, and sleep all collide.
@@ -292,6 +293,7 @@ const content = {
           <BlogHeroImage
             imageKey="studyLateNight"
             alt="Bovenaanzicht van een houten bureau 's avonds met handen die in een planner schrijven naast laptop, boeken, bril en een kop koffie"
+            priority
           />
           <figcaption>
             Tentamenweken maken van studentenhuizen concurrerende agenda’s: focusblokken, keukentijden en slaap botsen.

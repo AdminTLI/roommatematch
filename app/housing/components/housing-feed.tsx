@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -454,8 +454,10 @@ export function HousingFeed({ user }: HousingFeedProps) {
                   <Checkbox
                     id="verified_only"
                     checked={filters.verified_only}
-                    onCheckedChange={(checked) => 
-                      setFilters(prev => ({ ...prev, verified_only: !!checked }))
+                    onCheckedChange={(checked) =>
+                      startTransition(() =>
+                        setFilters((prev) => ({ ...prev, verified_only: !!checked }))
+                      )
                     }
                   />
                   <Label htmlFor="verified_only">University verified only</Label>
@@ -465,8 +467,13 @@ export function HousingFeed({ user }: HousingFeedProps) {
                   <Label>Minimum Compatibility</Label>
                   <Select
                     value={filters.min_compatibility?.toString() || '0.5'}
-                    onValueChange={(value) => 
-                      setFilters(prev => ({ ...prev, min_compatibility: parseFloat(value) }))
+                    onValueChange={(value) =>
+                      startTransition(() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          min_compatibility: parseFloat(value),
+                        }))
+                      )
                     }
                   >
                     <SelectTrigger>
@@ -506,7 +513,7 @@ export function HousingFeed({ user }: HousingFeedProps) {
         </div>
       ) : filteredListings.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredListings.map(listing => (
+          {filteredListings.map((listing, index) => (
             <HousingListingCard
               key={listing.id}
               listing={listing}
@@ -515,6 +522,7 @@ export function HousingFeed({ user }: HousingFeedProps) {
               onSaveListing={handleSaveListing}
               onShareListing={handleShareListing}
               onContactLandlord={handleContactLandlord}
+              imagePriority={index < 2}
             />
           ))}
         </div>
@@ -529,8 +537,10 @@ export function HousingFeed({ user }: HousingFeedProps) {
               Try adjusting your search criteria or filters to find more options.
             </p>
             <Button onClick={() => {
-              setSearchQuery('')
-              setFilters({ min_compatibility: 0.5, verified_only: false })
+              startTransition(() => {
+                setSearchQuery('')
+                setFilters({ min_compatibility: 0.5, verified_only: false })
+              })
             }}>
               Clear Filters
             </Button>

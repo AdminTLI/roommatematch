@@ -49,6 +49,7 @@ const content = {
           <BlogHeroImage
             imageKey="quietRoommate"
             alt="Bright calm living room with a blue sofa, armchair, plants, and wooden floor"
+            priority
           />
           <figcaption>
             Shared living rooms make overnight guest load visible: privacy, quiet hours, and sofa space are part of the
@@ -285,6 +286,7 @@ const content = {
           <BlogHeroImage
             imageKey="quietRoommate"
             alt="Lichte, rustige woonkamer met blauwe bank, fauteuil, planten en houten vloer"
+            priority
           />
           <figcaption>
             In gedeelde woonkamers wordt de last van overnachtingen zichtbaar: privacy, nachtrust en bankruimte horen

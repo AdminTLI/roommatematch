@@ -48,6 +48,7 @@ const content = {
           <BlogHeroImage
             imageKey="sharedKitchen"
             alt="Sink full of dirty dishes in a shared student kitchen"
+            priority
           />
           <figcaption>
             A sink like this is rarely about “forgetfulness” alone; it often signals unequal emotional and
@@ -114,6 +115,7 @@ const content = {
           <BlogHeroImage
             imageKey="sharedKitchen"
             alt="Shared kitchen counters and cookware where dish disputes often start"
+            priority
           />
           <figcaption>
             You do not need identical standards - just a shared sense of fairness and a system that everyone

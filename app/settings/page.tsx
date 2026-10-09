@@ -6,7 +6,7 @@ import { getUserProfile } from '@/lib/auth/user-profile'
 import { resolveAuthIdentityName, resolveStoredProfileName } from '@/lib/auth/identity-name'
 import { checkUserVerificationStatus, getVerificationRedirectUrl } from '@/lib/auth/verification-check'
 import { getUserType } from '@/lib/auth/cohort-visibility'
-import { DomuChatWidget } from '../dashboard/components/domu-chat-widget'
+import { LazyDomuChatWidget } from '../dashboard/components/lazy-domu-chat-widget'
 import { Suspense } from 'react'
 import { V2_SECTION_KEYS } from '@/types/questionnaire'
 
@@ -758,7 +758,7 @@ export default async function SettingsPage() {
           />
         </Suspense>
       </AppShell>
-      <DomuChatWidget />
+      <LazyDomuChatWidget />
     </>
   )
 }

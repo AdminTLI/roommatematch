@@ -13,13 +13,15 @@ import { AppToaster } from '@/components/app/app-toaster'
 
 interface CoreProvidersProps {
   children: React.ReactNode
+  /** Force a theme (e.g. light on marketing) to avoid first-paint flash. */
+  forcedTheme?: 'light' | 'dark'
 }
 
 /**
  * Shared shell: theme + locale. Dictionary loads one locale at a time (async).
  * English is inlined as the initial fallback so marketing pages can paint copy immediately.
  */
-export function CoreProviders({ children }: CoreProvidersProps) {
+export function CoreProviders({ children, forcedTheme }: CoreProvidersProps) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE)
   const [dictionary, setDictionary] = useState<Dictionary>(en)
   const [dictionaryReady, setDictionaryReady] = useState(locale === DEFAULT_LOCALE)
@@ -82,7 +84,12 @@ export function CoreProviders({ children }: CoreProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme={forcedTheme ?? 'dark'}
+        forcedTheme={forcedTheme}
+        enableSystem={!forcedTheme}
+      >
         <AppContext.Provider value={value}>{children}</AppContext.Provider>
         <CookieConsentBanner />
         <AppToaster />

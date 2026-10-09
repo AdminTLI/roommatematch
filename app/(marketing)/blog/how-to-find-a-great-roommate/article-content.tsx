@@ -48,6 +48,7 @@ const content = {
           <BlogHeroImage
             imageKey="studentsCollaborating"
             alt="Students studying together in a shared living space"
+            priority
           />
           <figcaption>
             A good roommate fit is mostly about routines you can rely on, not personality tests.
@@ -129,6 +130,7 @@ const content = {
           <BlogHeroImage
             imageKey="quietRoommate"
             alt="Calm shared living room — compatibility talks work better in a settled home base"
+            priority
           />
           <figcaption>
             A 20-minute conversation about routines can prevent a semester of passive-aggressive tension.

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -322,7 +322,11 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
       </div>
 
       {/* Matches Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => startTransition(() => setActiveTab(value))}
+        className="space-y-4 sm:space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-3 h-auto">
           <TabsTrigger value="individuals" className="flex items-center gap-1 sm:gap-2 min-h-[44px] text-xs sm:text-sm px-2 sm:px-4">
             <UserIcon className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -396,7 +400,11 @@ export function MatchesInterface({ user }: MatchesInterfaceProps) {
                 <CardDescription className="mb-4">
                   We're working on finding compatible groups for you. Individual matches are available above.
                 </CardDescription>
-                <Button variant="outline" onClick={() => setActiveTab('individuals')} className="min-h-[44px] w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  onClick={() => startTransition(() => setActiveTab('individuals'))}
+                  className="min-h-[44px] w-full sm:w-auto"
+                >
                   View Individual Matches
                 </Button>
               </CardContent>

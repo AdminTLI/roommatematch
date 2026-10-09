@@ -45,6 +45,8 @@ interface ListingCardProps {
   onReport: (id: string) => void
   isSaved?: boolean
   isHighlighted?: boolean
+  /** Prioritize LCP for the first visible card(s) only. */
+  imagePriority?: boolean
 }
 
 export function ListingCard({
@@ -54,7 +56,8 @@ export function ListingCard({
   onShare,
   onReport,
   isSaved = false,
-  isHighlighted = false
+  isHighlighted = false,
+  imagePriority = false,
 }: ListingCardProps) {
   const [imageIndex, setImageIndex] = useState(0)
   const [isImageLoading, setIsImageLoading] = useState(true)
@@ -132,6 +135,8 @@ export function ListingCard({
               src={listing.photos[imageIndex]}
               alt={`${listing.title} - Image ${imageIndex + 1}`}
               fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              priority={imagePriority}
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               onLoad={() => setIsImageLoading(false)}
               onError={() => setIsImageLoading(false)}

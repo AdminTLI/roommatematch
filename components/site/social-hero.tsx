@@ -1,13 +1,11 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
-import { useMemo } from 'react'
-import { BETA_SIGNUP_GOOGLE_FORM_URL } from '@/lib/marketing/beta-signup'
+import { useMemo, type ReactNode } from 'react'
 import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
-import { Button } from '@/components/ui/button'
 import { useApp } from '@/app/providers'
+import { SocialHeroCopy } from '@/components/site/social-hero-copy'
 import type { SocialHeroPreviewCardData } from '@/components/site/social-hero-preview-card'
 
 const SocialHeroPreviewCard = dynamic(
@@ -25,31 +23,17 @@ const SocialHeroPreviewCard = dynamic(
   }
 )
 
-const content = {
-  en: {
-    headline: 'Find a roommate you actually click with.',
-    subline: 'Verified people, clear reasons, and homes that feel easier to live in.',
-    ctaPrimary: 'Get started',
-    ctaSecondary: 'See how it works',
-    trustLine: 'No catfish. No awkward interviews. Just verified matches.',
-  },
-  nl: {
-    headline: 'Vind een huisgenoot waar je echt mee klikt.',
-    subline: 'Geverifieerde mensen, duidelijke redenen, en een huis dat rustiger aanvoelt.',
-    ctaPrimary: 'Begin nu',
-    ctaSecondary: 'Bekijk hoe het werkt',
-    trustLine: 'Geen catfish. Geen awkward interviews. Wel geverifieerde matches.',
-  },
-}
-
-export function SocialHero() {
+/**
+ * Client shell: locale-aware copy swap + deferred preview card.
+ * Pass server-rendered English copy as `englishCopy` for a fast LCP text path.
+ */
+export function SocialHero({ englishCopy }: { englishCopy: ReactNode }) {
   const { locale } = useApp()
-  const t = content[locale]
 
   const previewData: SocialHeroPreviewCardData = useMemo(() => {
     const isNl = locale === 'nl'
     return {
-      name: isNl ? 'Noor van Dijk' : 'Noor van Dijk',
+      name: 'Noor van Dijk',
       matchPercent: 89,
       harmonyPercent: 92,
       contextPercent: 86,
@@ -73,37 +57,7 @@ export function SocialHero() {
     <Section className="min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-5rem)] flex items-center py-8 md:py-10">
       <Container className="relative z-10 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center lg:-mt-10">
-          <div className="max-w-xl space-y-6">
-            <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.02]">
-              {t.headline}
-            </h1>
-
-            <p className="text-lg sm:text-xl text-slate-700">
-              {t.subline}
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <Button
-                size="lg"
-                className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-full px-8 py-4 shadow-lg transition-transform hover:-translate-y-1"
-                asChild
-              >
-                <a href={BETA_SIGNUP_GOOGLE_FORM_URL}>{t.ctaPrimary}</a>
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-white/90 backdrop-blur-2xl border-white/80 text-slate-900 hover:bg-white dark:bg-white/90 dark:hover:bg-white dark:text-slate-900 dark:border-white/80 rounded-full px-8 py-4 shadow-sm"
-                asChild
-              >
-                <Link href="/how-it-works">{t.ctaSecondary}</Link>
-              </Button>
-            </div>
-
-            <p className="text-sm sm:text-base text-slate-700">
-              {t.trustLine}
-            </p>
-          </div>
+          {locale === 'nl' ? <SocialHeroCopy locale="nl" /> : englishCopy}
 
           <div className="relative">
             <div className="relative mx-auto max-w-[420px] h-[660px] overflow-visible scale-[0.86] lg:scale-95 origin-center">
@@ -127,4 +81,3 @@ export function SocialHero() {
     </Section>
   )
 }
-

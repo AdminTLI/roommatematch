@@ -34,6 +34,8 @@ interface HousingListingCardProps {
   onSaveListing: (listingId: string) => void
   onShareListing: (listingId: string) => void
   onContactLandlord: (listingId: string) => void
+  /** Prioritize LCP for the first visible card(s) only. */
+  imagePriority?: boolean
 }
 
 export function HousingListingCard({
@@ -42,7 +44,8 @@ export function HousingListingCard({
   onViewDetails,
   onSaveListing,
   onShareListing,
-  onContactLandlord
+  onContactLandlord,
+  imagePriority = false,
 }: HousingListingCardProps) {
   const [imageIndex, setImageIndex] = useState(0)
   const [isSaved, setIsSaved] = useState(false)
@@ -94,6 +97,8 @@ export function HousingListingCard({
               src={listing.photos[imageIndex]}
               alt={`${listing.title} - Image ${imageIndex + 1}`}
               fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              priority={imagePriority}
               className="object-cover"
             />
             
