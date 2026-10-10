@@ -5,7 +5,7 @@
  * This file is safe to import in client components
  */
 
-export type ConsentType = 'essential' | 'analytics' | 'error_tracking' | 'session_replay' | 'marketing'
+export type ConsentType = 'essential' | 'analytics' | 'error_tracking' | 'session_replay'
 export type ConsentStatus = 'granted' | 'withdrawn' | 'pending'
 
 // Consent categories that require opt-in (non-essential)
@@ -13,7 +13,15 @@ export const NON_ESSENTIAL_CONSENTS: ConsentType[] = [
   'analytics',
   'error_tracking',
   'session_replay',
-  'marketing'
+]
+
+/**
+ * UI purpose “Error monitoring & session replay” maps to both storage flags.
+ * Kept as separate ConsentType values for DB/Sentry gating compatibility.
+ */
+export const DIAGNOSTICS_CONSENTS: ConsentType[] = [
+  'error_tracking',
+  'session_replay',
 ]
 
 // Essential consents are always granted (required for site functionality)
@@ -23,7 +31,8 @@ export const ESSENTIAL_CONSENTS: ConsentType[] = ['essential']
  * Client-side consent storage (for anonymous users)
  */
 export const CONSENT_STORAGE_KEY = 'domu_consent_preferences'
-export const CONSENT_VERSION = '1.0'
+/** Bumped when optional categories change so stale localStorage prefs are re-collected. */
+export const CONSENT_VERSION = '1.2'
 export const SESSION_ID_STORAGE_KEY = 'domu_anonymous_session_id'
 
 export interface ClientConsentPreferences {
@@ -32,7 +41,6 @@ export interface ClientConsentPreferences {
   analytics: boolean
   error_tracking: boolean
   session_replay: boolean
-  marketing: boolean
   last_updated: string
 }
 
@@ -73,13 +81,30 @@ export function saveClientConsents(preferences: Partial<ClientConsentPreferences
   }
 
   const existing = getClientConsents()
+
+  // Diagnostics is one UI purpose: keep error_tracking and session_replay in sync.
+  let errorTracking =
+    preferences.error_tracking ?? existing?.error_tracking ?? false
+  let sessionReplay =
+    preferences.session_replay ?? existing?.session_replay ?? false
+  if (
+    preferences.error_tracking !== undefined ||
+    preferences.session_replay !== undefined
+  ) {
+    const diagnosticsOn =
+      preferences.error_tracking ??
+      preferences.session_replay ??
+      false
+    errorTracking = diagnosticsOn
+    sessionReplay = diagnosticsOn
+  }
+
   const updated: ClientConsentPreferences = {
     version: CONSENT_VERSION,
     essential: true, // Always true
     analytics: preferences.analytics ?? existing?.analytics ?? false,
-    error_tracking: preferences.error_tracking ?? existing?.error_tracking ?? false,
-    session_replay: preferences.session_replay ?? existing?.session_replay ?? false,
-    marketing: preferences.marketing ?? existing?.marketing ?? false,
+    error_tracking: errorTracking,
+    session_replay: sessionReplay,
     last_updated: new Date().toISOString()
   }
 

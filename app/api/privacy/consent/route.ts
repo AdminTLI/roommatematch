@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { grantConsent, withdrawConsent } from '@/lib/privacy/cookie-consent-server'
-import type { ConsentType } from '@/lib/privacy/cookie-consent-client'
+import {
+  NON_ESSENTIAL_CONSENTS,
+  type ConsentType,
+} from '@/lib/privacy/cookie-consent-client'
 import { safeLogger } from '@/lib/utils/logger'
 import { getTruncatedClientIpFromNextRequest } from '@/lib/privacy/truncate-client-ip'
 
@@ -18,6 +21,15 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(consents) || !['grant', 'withdraw'].includes(action)) {
       return NextResponse.json(
         { error: 'Invalid request. consents must be an array and action must be "grant" or "withdraw"' },
+        { status: 400 }
+      )
+    }
+
+    const allowed = new Set<string>(NON_ESSENTIAL_CONSENTS)
+    const invalid = consents.filter((c: unknown) => typeof c !== 'string' || !allowed.has(c))
+    if (invalid.length > 0) {
+      return NextResponse.json(
+        { error: 'Invalid consent type(s)', invalid },
         { status: 400 }
       )
     }

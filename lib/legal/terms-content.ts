@@ -24,7 +24,7 @@ export type TermsDocument = {
   sections: SectionItem[]
 }
 
-export const LAST_UPDATED = 'September 2026'
+export const LAST_UPDATED = 'October 2026'
 
 export const termsContent: Record<'en' | 'nl', TermsDocument> = {
   en: {
@@ -86,7 +86,7 @@ export const termsContent: Record<'en' | 'nl', TermsDocument> = {
             {
               left: 'What about my data?',
               right:
-                'See the Privacy Policy at domumatch.com/privacy, including the beta-specific section.',
+                'See the Privacy Policy at domumatch.com/privacy (including the beta-specific section) and the Cookie & Local Storage Statement at domumatch.com/cookies.',
             },
           ],
         },
@@ -356,8 +356,17 @@ export const termsContent: Record<'en' | 'nl', TermsDocument> = {
         ],
       },
       {
+        id: 'privacy-cookies',
+        title: '16. Privacy and Cookies',
+        bullets: [
+          'Personal data is processed under the GDPR and our Privacy Policy at domumatch.com/privacy.',
+          'We use cookies, local storage, and similar technologies as described in our Cookie & Local Storage Statement at domumatch.com/cookies.',
+          'Essential cookies and storage always apply. Optional purposes (Analytics; Error monitoring & session replay) require your prior choice via the cookie banner or preference centre. We do not use marketing or advertising cookies in our production application.',
+        ],
+      },
+      {
         id: 'contact',
-        title: '16. Contact and Legal Inquiries',
+        title: '17. Contact and Legal Inquiries',
         bullets: [
           'Support and DSA notices: domumatch@gmail.com',
           'Privacy / DPO: domumatch@gmail.com',
@@ -389,6 +398,7 @@ export const termsContent: Record<'en' | 'nl', TermsDocument> = {
           'Je bent zelf verantwoordelijk voor wat je plaatst (profiel, foto’s, chat). Geen discriminatie, intimidatie, scams of commercieel gebruik.',
           'De WWS-calculator is bedoeld ter informatie/empowerment en is geen juridisch advies of besluit van de Huurcommissie.',
           'Domu Match kan offline gedrag of je fysieke veiligheid niet garanderen. Conflicten en contracten zijn in de eerste plaats tussen jou, je huisgenoten en je verhuurder.',
+          'Persoonsgegevens: zie het Privacybeleid (domumatch.com/privacy). Cookies en vergelijkbare technologieën: zie de Cookie- en localStorage-verklaring (domumatch.com/cookies).',
         ],
       },
       {
@@ -550,10 +560,20 @@ export const termsContent: Record<'en' | 'nl', TermsDocument> = {
         ],
       },
       {
+        id: 'privacy-cookies',
+        title: '16. Privacy en cookies',
+        bullets: [
+          'Persoonsgegevens worden verwerkt onder de AVG en ons Privacybeleid op domumatch.com/privacy.',
+          'We gebruiken cookies, local storage en vergelijkbare technologieën zoals beschreven in onze Cookie- en localStorage-verklaring op domumatch.com/cookies.',
+          'Essentiële cookies en opslag gelden altijd. Optionele doelen (Analyse; Foutopsporing & sessieherhaling) vragen eerst uw keuze via de cookiebanner of het voorkeurencentrum. We gebruiken geen marketing- of advertentiecookies in onze productie-applicatie.',
+        ],
+      },
+      {
         id: 'contact',
-        title: '16. Contact & juridische vragen',
+        title: '17. Contact & juridische vragen',
         bullets: [
           'Support en DSA-meldingen: domumatch@gmail.com',
+          'Privacy / FG: domumatch@gmail.com',
           'Adres: DMS Enterprise (handelend onder de naam Domu Match), Breda, Nederland · KvK 97573337',
           'Juridische en AI/DSA-vragen: domumatch@gmail.com',
           'Als er een Nederlandse vertaling is, gaat die voor bij verschillen met de Engelse tekst.',

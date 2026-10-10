@@ -7,7 +7,7 @@ import { useApp } from '@/app/providers'
 
 export default function PrivacyPage({ embedded = false }: { embedded?: boolean } = {}) {
   const { locale: _locale } = useApp()
-  const lastUpdated = 'March 2026'
+  const lastUpdated = 'October 2026'
 
   const document = (
             <div className={embedded ? 'text-[#0F172A]' : 'rounded-3xl border border-white/60 bg-white/45 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] p-6 sm:p-10'}>
@@ -108,6 +108,14 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                         <td className="px-4 py-3 align-top">§ Beta-Specific Data</td>
                       </tr>
                       <tr>
+                        <td className="px-4 py-3 align-top">Cookies &amp; similar tech?</td>
+                        <td className="px-4 py-3 align-top">
+                          Essential always on; optional Analytics and Error monitoring &amp; session replay via the
+                          banner. Details in the Cookie &amp; Local Storage Statement.
+                        </td>
+                        <td className="px-4 py-3 align-top">§ Cookies</td>
+                      </tr>
+                      <tr>
                         <td className="px-4 py-3 align-top">Your rights?</td>
                         <td className="px-4 py-3 align-top">
                           Access, rectify, delete, port, withdraw consent, object.
@@ -186,15 +194,19 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                   launches.
                 </p>
                 <ul className="list-disc pl-6 text-slate-700 mb-6 space-y-1">
-                  <li>Crash reports and error logs (automatically captured when something breaks).</li>
                   <li>
-                    Session recordings or heatmaps (if enabled) - you will be informed at sign-up and can opt out
-                    in Settings.
+                    Browser crash reports and error logs (via Sentry) when you allow Error monitoring &amp; session
+                    replay in the cookie banner or preference centre.
+                  </li>
+                  <li>
+                    Session replay recordings (via Sentry) under the same optional purpose - only after you opt in;
+                    you can change this later via Cookie settings. Replay may capture on-screen text.
                   </li>
                   <li>In-app feedback submissions and bug reports you submit voluntarily.</li>
                   <li>Usability survey responses.</li>
                   <li>
-                    Feature interaction logs (e.g., which screens you visit, how long you spend on steps).
+                    Feature interaction / journey logs (e.g., which screens you visit) when you allow Analytics in the
+                    cookie banner or preference centre.
                   </li>
                 </ul>
                 <p className="text-slate-700 mb-6">
@@ -222,10 +234,13 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
 
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">3.6 Usage and Technical Data</h3>
                 <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
-                  <li>Device type, OS, browser type, IP address, timestamps, pages viewed.</li>
                   <li>
-                    Approximate location (country/region) derived from IP - used for security and anonymized
-                    analytics only.
+                    Device type, OS, browser type, IP address, timestamps, and pages viewed as needed to operate and
+                    secure the service.
+                  </li>
+                  <li>
+                    Approximate location (country/region) derived from IP - used for security and, where you have
+                    allowed Analytics, for anonymized or aggregated usage reporting.
                   </li>
                 </ul>
               </section>
@@ -262,9 +277,12 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                       <tr>
                         <td className="px-4 py-3 align-top">Beta testing &amp; product improvement</td>
                         <td className="px-4 py-3 align-top">
-                          Bug logs, crash reports, session data, feedback forms, usability surveys
+                          Feedback forms, usability surveys; optional browser analytics and error monitoring /
+                          session replay when allowed via the cookie banner
                         </td>
-                        <td className="px-4 py-3 align-top">Art. 6(1)(a) - Consent (at sign-up)</td>
+                        <td className="px-4 py-3 align-top">
+                          Art. 6(1)(a) - Consent (feedback at sign-up / in-product; optional cookies via banner)
+                        </td>
                       </tr>
                       <tr>
                         <td className="px-4 py-3 align-top">Platform security &amp; fraud prevention</td>
@@ -293,9 +311,10 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                   </table>
                 </div>
                 <p className="text-slate-700 mt-4">
-                  You can withdraw consent for the lifestyle compatibility quiz or beta data collection at any time in
-                  Settings. We will stop using those data for new purposes and delete or anonymize them within a
-                  reasonable period.
+                  You can withdraw consent for the lifestyle compatibility quiz or beta feedback collection at any time
+                  in Settings, and change optional cookie purposes (Analytics; Error monitoring &amp; session replay)
+                  via Cookie settings. We will stop using those data for new purposes and delete or anonymize them
+                  within a reasonable period.
                 </p>
               </section>
 
@@ -384,14 +403,21 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                 </ul>
 
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                  Beta Tooling (e.g., crash reporting, session recording tools)
+                  Monitoring and analytics tooling (e.g., Sentry, Vercel Analytics)
                 </h3>
                 <ul className="list-disc pl-6 text-slate-700 mb-6 space-y-1">
                   <li>
-                    Where third-party tools are used for beta monitoring (e.g., Sentry, or similar), these act as
-                    data processors under GDPR-compliant agreements.
+                    Where third-party tools are used for error monitoring, session replay, or analytics (e.g., Sentry,
+                    Vercel), they act as data processors under GDPR-compliant agreements.
                   </li>
-                  <li>We will list active beta tools in our Cookie/Tracking Notice.</li>
+                  <li>
+                    Optional browser tools load only after the matching purpose is allowed in our cookie banner or
+                    preference centre. Full detail is in our{' '}
+                    <a href="/cookies" className="text-violet-600 underline">
+                      Cookie &amp; Local Storage Statement
+                    </a>
+                    .
+                  </li>
                 </ul>
 
                 <h3 className="text-xl font-semibold text-slate-900 mb-2">Pilot Universities</h3>
@@ -405,10 +431,44 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                 We do not sell your personal data to any third party, ever.
               </p>
 
-              {/* 8. Data Retention */}
+              {/* 8. Cookies and similar technologies */}
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-                  8. Data Retention
+                  8. Cookies and Similar Technologies
+                </h2>
+                <p className="text-slate-700 mb-4">
+                  We use cookies, local storage, and similar technologies as described in our{' '}
+                  <a href="/cookies" className="text-violet-600 underline">
+                    Cookie &amp; Local Storage Statement
+                  </a>
+                  . In short:
+                </p>
+                <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
+                  <li>
+                    Essential cookies and storage (for example secure login, CSRF protection, language/theme, and
+                    remembering your cookie choices) always apply; they are not optional.
+                  </li>
+                  <li>
+                    Optional purposes you can accept or refuse in the cookie banner or preference centre:{' '}
+                    <span className="font-semibold">Analytics</span>, and{' '}
+                    <span className="font-semibold">Error monitoring &amp; session replay</span>.
+                  </li>
+                  <li>
+                    We do not use marketing or advertising cookies or remarketing pixels in our production
+                    application.
+                  </li>
+                </ul>
+                <p className="text-slate-700">
+                  You can change optional choices at any time via Cookie settings (where shown) or by clearing site
+                  data in your browser. Rejecting optional cookies does not prevent you from using the core Domu
+                  Match service.
+                </p>
+              </section>
+
+              {/* 9. Data Retention */}
+              <section className="mb-12">
+                <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+                  9. Data Retention
                 </h2>
                 <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
                   <li>Most personal data: kept while your account is active.</li>
@@ -425,10 +485,10 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                 </ul>
               </section>
 
-              {/* 9. Data Breach Notification */}
+              {/* 10. Data Breach Notification */}
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-                  9. Data Breach Notification
+                  10. Data Breach Notification
                 </h2>
                 <p className="text-slate-700 mb-3">
                   In the event of a personal data breach that is likely to result in a risk to your rights and
@@ -444,10 +504,10 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                 </ul>
               </section>
 
-              {/* 10. Your Rights */}
+              {/* 11. Your Rights */}
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-                  10. Your Rights
+                  11. Your Rights
                 </h2>
                 <p className="text-slate-700 mb-4">
                   Under the GDPR and UAVG, you have the following rights, typically exercisable through Settings or
@@ -479,7 +539,8 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                       <tr>
                         <td className="px-4 py-3 align-top">Withdraw consent</td>
                         <td className="px-4 py-3 align-top">
-                          Withdraw consent for lifestyle compatibility quiz or beta data collection at any time.
+                          Withdraw consent for the lifestyle compatibility quiz or beta feedback at any time in
+                          Settings, and change optional cookie purposes via Cookie settings.
                         </td>
                       </tr>
                       <tr>
@@ -519,10 +580,10 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                 </p>
               </section>
 
-              {/* 11. Minors */}
+              {/* 12. Minors */}
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-                  11. Minors (Under 18)
+                  12. Minors (Under 18)
                 </h2>
                 <p className="text-slate-700">
                   Domu Match is only open to users aged 18 and above. We do not knowingly collect personal data from
@@ -536,10 +597,10 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                 </p>
               </section>
 
-              {/* 12. Security Measures */}
+              {/* 13. Security Measures */}
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-                  12. Security Measures
+                  13. Security Measures
                 </h2>
                 <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
                   <li>Encryption in transit (TLS/HTTPS) and at rest for all databases and storage.</li>
@@ -551,14 +612,14 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                 </ul>
                 <p className="text-slate-700">
                   No system is perfectly secure. We will notify you promptly if a breach affects you (see Section
-                  9).
+                  10).
                 </p>
               </section>
 
-              {/* 13. Contact and Complaints */}
+              {/* 14. Contact and Complaints */}
               <section className="mb-12">
                 <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-                  13. Contact and Complaints
+                  14. Contact and Complaints
                 </h2>
                 <ul className="list-disc pl-6 text-slate-700 mb-4 space-y-1">
                   <li>Privacy contact / DPO: domumatch@gmail.com</li>
@@ -573,10 +634,10 @@ export default function PrivacyPage({ embedded = false }: { embedded?: boolean }
                 </p>
               </section>
 
-              {/* 14. Definitions */}
+              {/* 15. Definitions */}
               <section className="mb-16">
                 <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-                  14. Definitions
+                  15. Definitions
                 </h2>
                 <dl className="space-y-4 text-slate-700">
                   <div>

@@ -5,7 +5,7 @@ import Container from '@/components/ui/primitives/container'
 import Section from '@/components/ui/primitives/section'
 import { useApp } from '@/app/providers'
 
-const LAST_UPDATED_ISO = '2026-04-06'
+const LAST_UPDATED_ISO = '2026-10-10'
 
 const content = {
   en: {
@@ -31,7 +31,7 @@ const content = {
     categoriesIntro: {
       title: 'How we group choices in the preference centre',
       description:
-        'Our cookie banner and Cookie Preference Centre use the same categories: Essential (always on), Analytics, Error tracking, Session replay, and Marketing. Only Essential is active without your opt-in. You can Accept all, Reject all, or Customize. Reject all is shown with equal prominence to Accept all, in line with Dutch DPA guidance.'
+        'Essential cookies always run and are explained in the banner (they are not an optional toggle). Optional choices are Analytics and Error monitoring & session replay. You can Accept all, Reject all, or Customize. Reject all is shown with equal prominence to Accept all, in line with Dutch DPA guidance. We do not use marketing or advertising cookies.'
     },
     strictlyNecessary: {
       title: 'Category A - Strictly necessary cookies, local storage & platform integrity',
@@ -161,31 +161,22 @@ const content = {
         ]
       ]
     },
-    errorTracking: {
-      title: 'Error tracking',
+    diagnostics: {
+      title: 'Error monitoring & session replay',
       description:
-        'Client-side error monitoring through Sentry (Functional Software Inc.). When enabled, Sentry may collect error payloads, performance traces, and technical context needed to diagnose bugs. We strip cookies and sensitive headers from events in our SDK configuration where possible.',
+        'One optional purpose in the preference centre. When you enable it, we turn on both browser error monitoring and Sentry Session Replay (they are stored as linked consent flags). When you disable it, both stop.',
       bullets: [
-        'The browser Sentry SDK initializes only when Error tracking consent is granted and NEXT_PUBLIC_SENTRY_DSN is configured.',
-        'Separately, Sentry on our servers and edge runtime may record unhandled errors and performance data to keep the service secure and available. We rely on our legitimate interests (and, where applicable, our contract with you) for that processing - not on advertising or profiling. It is not used for behavioural marketing. Sub-processors and details are listed in our Privacy Policy.'
+        'Client-side error monitoring through Sentry (Functional Software Inc.). When enabled, Sentry may collect error payloads, performance traces, and technical context. We strip cookies and sensitive headers from events in our SDK configuration where possible.',
+        'The browser Sentry SDK initializes only when this purpose is granted and NEXT_PUBLIC_SENTRY_DSN is configured.',
+        'Sentry Session Replay may record short clips of how the interface is used. Replay can capture on-screen text; only enable this purpose if you are comfortable with that risk.',
+        'Separately, Sentry on our servers and edge runtime may record unhandled errors and performance data to keep the service secure and available. We rely on our legitimate interests (and, where applicable, our contract with you) for that processing - not on advertising or profiling. Sub-processors and details are listed in our Privacy Policy.'
       ]
     },
-    sessionReplay: {
-      title: 'Session replay',
-      description:
-        'Sentry Session Replay may record short clips of how the interface is used to debug complex issues. Replay is attached only when Session replay consent is on; sampling rates are configured in our Sentry client setup.',
-      bullets: [
-        'Replay can capture on-screen text you type or see. Only enable this if you are comfortable with that risk, or leave it off.',
-        'Requires Error tracking consent path to be meaningful in our current client bundle (Sentry initializes only with Error tracking consent).'
-      ]
-    },
-    marketing: {
-      title: 'Marketing',
-      description:
-        'We provide a Marketing toggle so we can turn on measurement or advertising tags in a consent-aware way in the future.',
-      bullets: [
-        'We have confirmed that we do not load third-party advertising or remarketing pixels (such as Meta Pixel, Google Ads tags, or similar) in our production application code.',
-        'If we add marketing technologies later, we will update this statement and map them to the Marketing category before activation.'
+    noMarketing: {
+      title: 'Marketing cookies',
+      paragraphs: [
+        'We do not load third-party advertising or remarketing pixels (such as Meta Pixel, Google Ads tags, or similar) in our production application code, so there is no Marketing toggle in the preference centre.',
+        'If we add marketing technologies later, we will update this statement and ask for a separate Marketing consent before activation.'
       ]
     },
     consentProof: {
@@ -209,10 +200,10 @@ const content = {
         'After you save a choice, a small Cookie settings control appears so you can reopen the preference centre at any time.'
       ],
       bullets: [
-        'Non-essential toggles default to off; we do not use pre-ticked boxes for optional categories.',
-        'If you choose Customize on your first visit (before any choice is saved), the preference centre opens with Analytics, Error tracking, Session replay, and Marketing all switched off until you actively enable them - matching GDPR / AP expectations.',
+        'Optional toggles default to off; we do not use pre-ticked boxes for optional categories.',
+        'If you choose Customize on your first visit (before any choice is saved), the preference centre opens with Analytics and Error monitoring & session replay both switched off until you actively enable them - matching GDPR / AP expectations.',
         'Reject all is as easy as Accept all (no dark patterns or forced scrolling).',
-        'Saving preferences may reload the page so technologies align with your choice.'
+        'Saving preferences applies choices via a consent-changed event so technologies align without a full page reload where possible.'
       ]
     },
     manage: {
@@ -222,8 +213,8 @@ const content = {
       onSiteTitle: 'On Domu Match',
       onSiteItems: [
         'Click the Cookie settings button (lower-left on screen once you have saved a choice) to reopen the Cookie Preference Centre.',
-        'Use Customize to switch Analytics, Error tracking, Session replay, or Marketing on or off, then Save preferences.',
-        'Withdrawing consent updates our records and stops loading the related optional technologies on your device after reload where applicable.'
+        'Use Customize to switch Analytics and/or Error monitoring & session replay on or off, then Save preferences.',
+        'Withdrawing consent updates our records and stops loading the related optional technologies on your device where applicable.'
       ],
       browserTitle: 'In your browser',
       browserIntro:
@@ -304,7 +295,7 @@ const content = {
     categoriesIntro: {
       title: 'Hoe we keuzes groeperen in het voorkeurencentrum',
       description:
-        'Onze cookiebanner en het Cookie-voorkeurencentrum gebruiken dezelfde categorieën: Essentieel (altijd aan), Analyse, Foutopsporing, Sessie-opname en Marketing. Alleen Essentieel staat aan zonder uw actieve keuze. U kunt Alles accepteren, Alles weigeren of Aanpassen. “Alles weigeren” heeft dezelfde zichtbaarheid als “Alles accepteren”, conform de lijn van de Autoriteit Persoonsgegevens.'
+        'Essentiële cookies draaien altijd en worden in de banner uitgelegd (geen optionele schakelaar). Optionele keuzes zijn Analyse en Foutopsporing & sessieherhaling. U kunt Alles accepteren, Alles weigeren of Aanpassen. “Alles weigeren” heeft dezelfde zichtbaarheid als “Alles accepteren”, conform de lijn van de Autoriteit Persoonsgegevens. We gebruiken geen marketing- of advertentiecookies.'
     },
     strictlyNecessary: {
       title: 'Categorie A - Strikt noodzakelijke cookies, localStorage & platformintegriteit',
@@ -434,31 +425,22 @@ const content = {
         ]
       ]
     },
-    errorTracking: {
-      title: 'Foutopsporing (error tracking)',
+    diagnostics: {
+      title: 'Foutopsporing & sessieherhaling',
       description:
+        'Eén optioneel doel in het voorkeurencentrum. Als u dit aanzet, schakelen we zowel browser-foutmonitoring als Sentry Session Replay in (als gekoppelde toestemmingsvlaggen). Als u het uitzet, stoppen beide.',
+      bullets: [
         'Client-side foutmonitoring via Sentry (Functional Software Inc.). Indien ingeschakeld kan Sentry foutmeldingen, performance-traces en technische context verzamelen. We strippen cookies en gevoelige headers in onze SDK-configuratie waar mogelijk.',
-      bullets: [
-        'De browser-Sentry-SDK start alleen bij toestemming voor Foutopsporing en als NEXT_PUBLIC_SENTRY_DSN is ingesteld.',
-        'Daarnaast kan Sentry op onze servers en edge-runtime niet-afgehandelde fouten en prestatiegegevens vastleggen om de dienst veilig en beschikbaar te houden. Daarvoor steunen we op onze gerechtvaardigde belangen (en waar van toepassing op de overeenkomst met u) - niet op advertenties of profilering. Het wordt niet gebruikt voor gedragsmarketing. Subverwerkers en details staan in ons Privacybeleid.'
+        'De browser-Sentry-SDK start alleen bij toestemming voor dit doel en als NEXT_PUBLIC_SENTRY_DSN is ingesteld.',
+        'Sentry Session Replay kan korte opnames maken van hoe de interface wordt gebruikt. Replay kan tekst op het scherm vastleggen; zet dit doel alleen aan als u daarmee instemt.',
+        'Daarnaast kan Sentry op onze servers en edge-runtime niet-afgehandelde fouten en prestatiegegevens vastleggen om de dienst veilig en beschikbaar te houden. Daarvoor steunen we op onze gerechtvaardigde belangen (en waar van toepassing op de overeenkomst met u) - niet op advertenties of profilering. Subverwerkers en details staan in ons Privacybeleid.'
       ]
     },
-    sessionReplay: {
-      title: 'Sessie-opname (session replay)',
-      description:
-        'Sentry Session Replay kan korte opnames maken van hoe de interface wordt gebruikt om complexe problemen te debuggen. Alleen actief bij toestemming voor Sessie-opname; sampling volgt onze Sentry-clientconfiguratie.',
-      bullets: [
-        'Replay kan tekst op het scherm vastleggen. Schakel dit alleen in als u daarmee instemt.',
-        'In de huidige clientbundle is zinvolle werking verbonden aan de Foutopsporing-pad (Sentry start alleen met Foutopsporing-toestemming).'
-      ]
-    },
-    marketing: {
-      title: 'Marketing',
-      description:
-        'We bieden een Marketing-schakelaar zodat we later meet- of advertentietags op een toestemmingsbewuste manier kunnen toevoegen.',
-      bullets: [
-        'We hebben bevestigd dat we geen third-party advertentie- of remarketingpixels (zoals Meta Pixel, Google Ads-tags of vergelijkbaar) laden in onze productie-applicatiecode.',
-        'Als we later marketingtechnologieën toevoegen, werken we deze verklaring bij en koppelen we ze aan de categorie Marketing vóór activatie.'
+    noMarketing: {
+      title: 'Marketingcookies',
+      paragraphs: [
+        'We laden geen third-party advertentie- of remarketingpixels (zoals Meta Pixel, Google Ads-tags of vergelijkbaar) in onze productie-applicatiecode; daarom is er geen Marketing-schakelaar in het voorkeurencentrum.',
+        'Als we later marketingtechnologieën toevoegen, werken we deze verklaring bij en vragen we aparte Marketing-toestemming vóór activatie.'
       ]
     },
     consentProof: {
@@ -483,9 +465,9 @@ const content = {
       ],
       bullets: [
         'Optionele schakelaars staan standaard uit; geen vooraf aangevinkte vakjes.',
-        'Kiest u bij het eerste bezoek voor Aanpassen (voordat een keuze is opgeslagen), dan opent het voorkeurencentrum met Analyse, Foutopsporing, Sessie-opname en Marketing allemaal uit - tot u ze zelf aanzet. Dit sluit aan bij de verwachtingen van de AVG en de AP.',
+        'Kiest u bij het eerste bezoek voor Aanpassen (voordat een keuze is opgeslagen), dan opent het voorkeurencentrum met Analyse en Foutopsporing & sessieherhaling allebei uit - tot u ze zelf aanzet. Dit sluit aan bij de verwachtingen van de AVG en de AP.',
         'Weigeren is net zo eenvoudig als accepteren.',
-        'Na opslaan kan de pagina vernieuwen zodat technologieën aansluiten op uw keuze.'
+        'Na opslaan passen we technologieën toe via een consent-changed-event, zonder volledige herlaad waar mogelijk.'
       ]
     },
     manage: {
@@ -495,8 +477,8 @@ const content = {
       onSiteTitle: 'Op Domu Match',
       onSiteItems: [
         'Klik op Cookie-instellingen (linksonder zodra u een keuze heeft opgeslagen) om het voorkeurencentrum te openen.',
-        'Gebruik Aanpassen om Analyse, Foutopsporing, Sessie-opname of Marketing aan of uit te zetten en sla op.',
-        'Intrekken werkt door onze registratie bij te werken en laadt gerelateerde optionele technologieën na vernieuwen niet op uw apparaat (voor zover van toepassing).'
+        'Gebruik Aanpassen om Analyse en/of Foutopsporing & sessieherhaling aan of uit te zetten en sla op.',
+        'Intrekken werkt door onze registratie bij te werken en laadt gerelateerde optionele technologieën niet meer op uw apparaat (voor zover van toepassing).'
       ],
       browserTitle: 'In uw browser',
       browserIntro:
@@ -742,33 +724,22 @@ export default function CookiePolicyPage() {
                       </div>
 
                       <div>
-                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{t.errorTracking.title}</h4>
-                        <p className="text-slate-700 mb-3">{t.errorTracking.description}</p>
+                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{t.diagnostics.title}</h4>
+                        <p className="text-slate-700 mb-3">{t.diagnostics.description}</p>
                         <ul className="list-disc pl-6 space-y-2 text-slate-700">
-                          {t.errorTracking.bullets.map((item, index) => (
+                          {t.diagnostics.bullets.map((item, index) => (
                             <li key={index}>{item}</li>
                           ))}
                         </ul>
                       </div>
 
                       <div>
-                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{t.sessionReplay.title}</h4>
-                        <p className="text-slate-700 mb-3">{t.sessionReplay.description}</p>
-                        <ul className="list-disc pl-6 space-y-2 text-slate-700">
-                          {t.sessionReplay.bullets.map((item, index) => (
-                            <li key={index}>{item}</li>
+                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{t.noMarketing.title}</h4>
+                        <div className="space-y-3 text-slate-700">
+                          {t.noMarketing.paragraphs.map((item, index) => (
+                            <p key={index}>{item}</p>
                           ))}
-                        </ul>
-                      </div>
-
-                      <div>
-                        <h4 className="text-lg font-semibold text-slate-900 mb-2">{t.marketing.title}</h4>
-                        <p className="text-slate-700 mb-3">{t.marketing.description}</p>
-                        <ul className="list-disc pl-6 space-y-2 text-slate-700">
-                          {t.marketing.bullets.map((item, index) => (
-                            <li key={index}>{item}</li>
-                          ))}
-                        </ul>
+                        </div>
                       </div>
                     </div>
                   </div>

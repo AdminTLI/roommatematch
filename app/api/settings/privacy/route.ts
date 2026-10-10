@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
   // When Data Sharing is turned OFF, withdraw non-essential cookie consents
   // so analytics/tracking stop via existing consent gating.
   if (privacy_settings.dataSharing === false) {
-    const consentTypes = ['analytics', 'error_tracking', 'session_replay', 'marketing'] as const
+    const consentTypes = ['analytics', 'error_tracking', 'session_replay'] as const
     try {
       await Promise.all(
         consentTypes.map((type) => withdrawConsent(type, user.id))

@@ -46,7 +46,6 @@ export async function getUserConsents(
     analytics: false,
     error_tracking: false,
     session_replay: false,
-    marketing: false
   }
 
   if (!userId && !sessionId) {
@@ -67,7 +66,10 @@ export async function getUserConsents(
       
       if (data) {
         data.forEach(record => {
-          consents[record.consent_type as ConsentType] = true
+          const type = record.consent_type as ConsentType
+          if (type in consents) {
+            consents[type] = true
+          }
         })
       }
     } else if (sessionId) {
@@ -83,7 +85,10 @@ export async function getUserConsents(
       
       if (data) {
         data.forEach(record => {
-          consents[record.consent_type as ConsentType] = true
+          const type = record.consent_type as ConsentType
+          if (type in consents) {
+            consents[type] = true
+          }
         })
       }
     }
@@ -231,7 +236,7 @@ export async function grantMultipleConsents(
 export async function withdrawAllConsents(userId?: string, sessionId?: string): Promise<void> {
   const supabase = await createClient()
   // Non-essential consent types
-  const nonEssentialTypes: ConsentType[] = ['analytics', 'error_tracking', 'session_replay', 'marketing']
+  const nonEssentialTypes: ConsentType[] = ['analytics', 'error_tracking', 'session_replay']
 
   const sessionIdHash = sessionId ? hashSessionId(sessionId) : null
 

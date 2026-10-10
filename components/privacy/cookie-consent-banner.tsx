@@ -10,6 +10,7 @@ import {
   saveClientConsents, 
   getClientConsents,
   getOrCreateAnonymousSessionId,
+  NON_ESSENTIAL_CONSENTS,
 } from '@/lib/privacy/cookie-consent-client'
 import { CookiePreferenceCenter } from './cookie-preference-center'
 import { useCookieConsentAppearance } from '@/lib/privacy/cookie-consent-appearance'
@@ -87,23 +88,20 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
       analytics: true,
       error_tracking: true,
       session_replay: true,
-      marketing: true
     })
 
-    // Save to server (for both authenticated and anonymous users)
     try {
       const sessionId = getOrCreateAnonymousSessionId()
       const response = await fetch('/api/privacy/consent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          consents: ['analytics', 'error_tracking', 'session_replay', 'marketing'],
+          consents: [...NON_ESSENTIAL_CONSENTS],
           action: 'grant',
           sessionId: sessionId || undefined
         })
       })
       
-      // Consent applied via saveClientConsents → consent-changed (no full reload)
       if (!response.ok) {
         console.error('Failed to persist consent grant', response.status)
       }
@@ -120,23 +118,20 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
       analytics: false,
       error_tracking: false,
       session_replay: false,
-      marketing: false
     })
 
-    // Save to server (for both authenticated and anonymous users)
     try {
       const sessionId = getOrCreateAnonymousSessionId()
       const response = await fetch('/api/privacy/consent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          consents: ['analytics', 'error_tracking', 'session_replay', 'marketing'],
+          consents: [...NON_ESSENTIAL_CONSENTS],
           action: 'withdraw',
           sessionId: sessionId || undefined
         })
       })
       
-      // Consent applied via saveClientConsents → consent-changed (no full reload)
       if (!response.ok) {
         console.error('Failed to persist consent withdraw', response.status)
       }

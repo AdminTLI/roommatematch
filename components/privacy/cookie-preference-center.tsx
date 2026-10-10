@@ -6,12 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { X, Cookie, Info } from 'lucide-react'
-import { 
-  saveClientConsents, 
+import {
+  saveClientConsents,
   getClientConsents,
   getOrCreateAnonymousSessionId,
   type ConsentType,
-  NON_ESSENTIAL_CONSENTS 
+  NON_ESSENTIAL_CONSENTS,
+  DIAGNOSTICS_CONSENTS,
 } from '@/lib/privacy/cookie-consent-client'
 import { useCookieConsentAppearance } from '@/lib/privacy/cookie-consent-appearance'
 import { cn } from '@/lib/utils'
@@ -22,85 +23,156 @@ interface CookiePreferenceCenterProps {
   locale?: 'en' | 'nl'
   onClose?: () => void
   /**
-   * `customize_first_visit`: user opened the centre from “Customize” before any saved prefs  -  keep every
-   * non-essential toggle off (never hydrate stale storage into toggles).
+   * `customize_first_visit`: user opened the centre from “Customize” before any saved prefs —
+   * keep every non-essential toggle off (never hydrate stale storage into toggles).
    * `from_storage`: load prior choices from localStorage when present.
    */
   consentBaseline?: ConsentBaselineMode
 }
 
-const consentDescriptions = {
+const copy = {
   en: {
-    essential: {
-      title: 'Essential Cookies',
-      description: 'Required for the website to function. These cannot be disabled.',
-      alwaysOn: true
-    },
+    title: 'Cookie Preferences',
+    intro:
+      'Manage optional cookies. Essential cookies for login, security, and core site operation always run and are not optional.',
+    essentialNote:
+      'Essential cookies and storage (authentication, CSRF protection, language/theme, and storing these choices) always apply. They cannot be turned off.',
     analytics: {
-      title: 'Analytics Cookies',
-      description: 'Help us understand how visitors interact with our website by collecting and reporting information anonymously.'
+      title: 'Analytics',
+      description:
+        'Help us understand how visitors use Domu Match (aggregate traffic, performance, and product funnels).',
     },
-    error_tracking: {
-      title: 'Error Tracking',
-      description: 'Help us identify and fix technical issues by reporting errors and performance problems.'
+    diagnostics: {
+      title: 'Error monitoring & session replay',
+      description:
+        'Allow Sentry to report browser errors and record short session replays so we can fix bugs. Replay may capture on-screen text; only enable if you are comfortable with that.',
     },
-    session_replay: {
-      title: 'Session Replay',
-      description: 'Record user sessions to help us improve the user experience and debug issues. May capture sensitive information.'
-    },
-    marketing: {
-      title: 'Marketing Cookies',
-      description: 'Used to track visitors across websites for marketing and advertising purposes.'
-    }
+    save: 'Save Preferences',
+    cancel: 'Cancel',
+    close: 'Close',
   },
   nl: {
-    essential: {
-      title: 'Essentiële Cookies',
-      description: 'Vereist voor de website om te functioneren. Deze kunnen niet worden uitgeschakeld.',
-      alwaysOn: true
-    },
+    title: 'Cookie Voorkeuren',
+    intro:
+      'Beheer optionele cookies. Essentiële cookies voor inloggen, beveiliging en de kern van de site draaien altijd en zijn niet optioneel.',
+    essentialNote:
+      'Essentiële cookies en opslag (authenticatie, CSRF-bescherming, taal/thema en het bewaren van deze keuzes) gelden altijd. Ze kunnen niet worden uitgeschakeld.',
     analytics: {
-      title: 'Analytische Cookies',
-      description: 'Helpen ons begrijpen hoe bezoekers met onze website interageren door informatie anoniem te verzamelen en te rapporteren.'
+      title: 'Analyse',
+      description:
+        'Helpen ons te begrijpen hoe bezoekers Domu Match gebruiken (verkeer, prestaties en productfunnels).',
     },
-    error_tracking: {
-      title: 'Foutopsporing',
-      description: 'Helpen ons technische problemen te identificeren en op te lossen door fouten en prestatieproblemen te rapporteren.'
+    diagnostics: {
+      title: 'Foutopsporing & sessieherhaling',
+      description:
+        'Sta toe dat Sentry browserfouten rapporteert en korte sessieherhalingen opneemt om bugs te verhelpen. Replay kan tekst op het scherm vastleggen; zet dit alleen aan als u daarmee akkoord gaat.',
     },
-    session_replay: {
-      title: 'Sessieherhaling',
-      description: 'Neem gebruikerssessies op om ons te helpen de gebruikerservaring te verbeteren en problemen op te lossen. Kan gevoelige informatie vastleggen.'
-    },
-    marketing: {
-      title: 'Marketing Cookies',
-      description: 'Gebruikt om bezoekers op verschillende websites te volgen voor marketing- en advertentiedoeleinden.'
-    }
+    save: 'Voorkeuren Opslaan',
+    cancel: 'Annuleren',
+    close: 'Sluiten',
+  },
+}
+
+type OptionalPreferences = {
+  analytics: boolean
+  /** Mirrors both error_tracking and session_replay server/client flags. */
+  diagnostics: boolean
+}
+
+const DEFAULT_PREFERENCES: OptionalPreferences = {
+  analytics: false,
+  diagnostics: false,
+}
+
+function toStoragePrefs(prefs: OptionalPreferences) {
+  return {
+    analytics: prefs.analytics,
+    error_tracking: prefs.diagnostics,
+    session_replay: prefs.diagnostics,
   }
 }
 
-type CookiePreferences = {
-  essential: true
-  analytics: boolean
-  error_tracking: boolean
-  session_replay: boolean
-  marketing: boolean
-}
+async function persistConsents(
+  prefs: OptionalPreferences,
+  mode: 'toggle' | 'save',
+  toggled?: { analytics?: boolean; diagnostics?: boolean }
+) {
+  const sessionId = getOrCreateAnonymousSessionId()
 
-const DEFAULT_PREFERENCES: CookiePreferences = {
-  essential: true,
-  analytics: false,
-  error_tracking: false,
-  session_replay: false,
-  marketing: false,
+  if (mode === 'toggle' && toggled) {
+    const consents: ConsentType[] = []
+    let action: 'grant' | 'withdraw' = 'grant'
+
+    if (toggled.analytics !== undefined) {
+      consents.push('analytics')
+      action = toggled.analytics ? 'grant' : 'withdraw'
+    } else if (toggled.diagnostics !== undefined) {
+      consents.push(...DIAGNOSTICS_CONSENTS)
+      action = toggled.diagnostics ? 'grant' : 'withdraw'
+    }
+
+    if (consents.length === 0) return
+
+    const response = await fetch('/api/privacy/consent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        consents,
+        action,
+        sessionId: sessionId || undefined,
+      }),
+    })
+    if (!response.ok) {
+      console.error('Failed to save consent to server')
+    }
+    return
+  }
+
+  const granted: ConsentType[] = []
+  const withdrawn: ConsentType[] = []
+
+  NON_ESSENTIAL_CONSENTS.forEach((type) => {
+    const on =
+      type === 'analytics' ? prefs.analytics : prefs.diagnostics
+    if (on) granted.push(type)
+    else withdrawn.push(type)
+  })
+
+  if (granted.length > 0) {
+    await fetch('/api/privacy/consent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        consents: granted,
+        action: 'grant',
+        sessionId: sessionId || undefined,
+      }),
+    })
+  }
+
+  if (withdrawn.length > 0) {
+    await fetch('/api/privacy/consent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        consents: withdrawn,
+        action: 'withdraw',
+        sessionId: sessionId || undefined,
+      }),
+    })
+  }
 }
 
 export function CookiePreferenceCenter({
   locale = 'en',
   onClose,
-  consentBaseline = 'from_storage'
+  consentBaseline = 'from_storage',
 }: CookiePreferenceCenterProps) {
   const appearance = useCookieConsentAppearance()
-  const [preferences, setPreferences] = useState<CookiePreferences>({ ...DEFAULT_PREFERENCES })
+  const [preferences, setPreferences] = useState<OptionalPreferences>({
+    ...DEFAULT_PREFERENCES,
+  })
+  const t = copy[locale]
 
   useEffect(() => {
     if (consentBaseline === 'customize_first_visit') {
@@ -110,108 +182,73 @@ export function CookiePreferenceCenter({
     const existing = getClientConsents()
     if (existing) {
       setPreferences({
-        essential: true,
         analytics: Boolean(existing.analytics),
-        error_tracking: Boolean(existing.error_tracking),
-        session_replay: Boolean(existing.session_replay),
-        marketing: Boolean(existing.marketing)
+        diagnostics: Boolean(existing.error_tracking || existing.session_replay),
       })
     }
   }, [consentBaseline])
 
-  const handleToggle = async (consentType: ConsentType, value: boolean) => {
-    if (consentType === 'essential') {
-      return // Cannot toggle essential
-    }
+  const handleToggle = async (
+    group: 'analytics' | 'diagnostics',
+    value: boolean
+  ) => {
+    const updated =
+      group === 'analytics'
+        ? { ...preferences, analytics: value }
+        : { ...preferences, diagnostics: value }
 
-    const updated = { ...preferences, [consentType]: value }
     setPreferences(updated)
-    saveClientConsents(updated)
+    saveClientConsents(toStoragePrefs(updated))
 
-    // Save to server (for both authenticated and anonymous users)
     try {
-      const sessionId = getOrCreateAnonymousSessionId()
-      const response = await fetch('/api/privacy/consent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          consents: [consentType],
-          action: value ? 'grant' : 'withdraw',
-          sessionId: sessionId || undefined
-        })
+      await persistConsents(updated, 'toggle', {
+        [group]: value,
       })
-      
-      if (!response.ok) {
-        console.error('Failed to save consent to server')
-      }
     } catch (error) {
       console.error('Failed to save consent', error)
     }
   }
 
   const handleSave = async () => {
-    saveClientConsents(preferences)
+    saveClientConsents(toStoragePrefs(preferences))
 
-    // Save all preferences to server (for both authenticated and anonymous users)
     try {
-      const sessionId = getOrCreateAnonymousSessionId()
-      const granted: ConsentType[] = []
-      const withdrawn: ConsentType[] = []
-
-      NON_ESSENTIAL_CONSENTS.forEach(type => {
-        if (preferences[type]) {
-          granted.push(type)
-        } else {
-          withdrawn.push(type)
-        }
-      })
-
-      if (granted.length > 0) {
-        await fetch('/api/privacy/consent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            consents: granted,
-            action: 'grant',
-            sessionId: sessionId || undefined
-          })
-        })
-      }
-
-      if (withdrawn.length > 0) {
-        await fetch('/api/privacy/consent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            consents: withdrawn,
-            action: 'withdraw',
-            sessionId: sessionId || undefined
-          })
-        })
-      }
-
-      // Consent applied via saveClientConsents → consent-changed (no full reload)
-      if (onClose) {
-        onClose()
-      }
+      await persistConsents(preferences, 'save')
     } catch (error) {
       console.error('Failed to save consent', error)
-      if (onClose) {
-        onClose()
-      }
     }
+
+    onClose?.()
   }
 
-  const t = consentDescriptions[locale]
-
   return (
-    <div className={cn('fixed inset-0 z-[80] flex items-end justify-center p-2 sm:items-center sm:p-4', appearance.overlay)}>
-      <Card className={cn('flex w-full max-w-2xl flex-col overflow-hidden max-h-[calc(100dvh-0.75rem)] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl', appearance.panel)}>
-        <CardHeader className={cn('flex flex-shrink-0 flex-row items-center justify-between space-y-0 border-b pb-4', appearance.headerBorder)}>
+    <div
+      className={cn(
+        'fixed inset-0 z-[80] flex items-end justify-center p-2 sm:items-center sm:p-4',
+        appearance.overlay
+      )}
+    >
+      <Card
+        className={cn(
+          'flex w-full max-w-2xl flex-col overflow-hidden max-h-[calc(100dvh-0.75rem)] sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl',
+          appearance.panel
+        )}
+      >
+        <CardHeader
+          className={cn(
+            'flex flex-shrink-0 flex-row items-center justify-between space-y-0 border-b pb-4',
+            appearance.headerBorder
+          )}
+        >
           <div className="flex items-center gap-3">
             <Cookie className={cn('h-6 w-6', appearance.icon)} />
-            <CardTitle className={cn('text-xl font-bold tracking-tight sm:text-2xl', appearance.title)}>
-              {locale === 'nl' ? 'Cookie Voorkeuren' : 'Cookie Preferences'}
+            <CardTitle
+              className={cn(
+                'text-xl font-bold tracking-tight sm:text-2xl',
+                appearance.title
+              )}
+            >
+              {t.title}
             </CardTitle>
           </div>
           {onClose && (
@@ -221,40 +258,47 @@ export function CookiePreferenceCenter({
               size="sm"
               onClick={onClose}
               className={cn('h-10 w-10 shrink-0 rounded-full p-0', appearance.closeBtn)}
-              aria-label={locale === 'nl' ? 'Sluiten' : 'Close'}
+              aria-label={t.close}
             >
               <X className="h-4 w-4" />
             </Button>
           )}
         </CardHeader>
-        <CardContent className={cn('flex-1 space-y-6 overflow-y-auto px-6 pb-6 pt-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent', appearance.scrollbar)}>
-          <CardDescription className={appearance.body}>
-            {locale === 'nl'
-              ? 'Beheer uw cookie voorkeuren. U kunt deze instellingen op elk moment wijzigen.'
-              : 'Manage your cookie preferences. You can change these settings at any time.'}
-          </CardDescription>
+        <CardContent
+          className={cn(
+            'flex-1 space-y-6 overflow-y-auto px-6 pb-6 pt-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent',
+            appearance.scrollbar
+          )}
+        >
+          <CardDescription className={appearance.body}>{t.intro}</CardDescription>
 
-          {/* Essential Cookies */}
-          <div className={cn('flex items-start justify-between rounded-2xl border p-4', appearance.rowMuted)}>
-            <div className="flex-1 pr-4">
-              <div className="mb-2 flex items-center gap-2">
-                <Label className={cn('text-base font-semibold', appearance.title)}>{t.essential.title}</Label>
-                <Info className={cn('h-4 w-4', appearance.muted)} />
-              </div>
-              <p className={cn('text-sm leading-relaxed', appearance.body)}>{t.essential.description}</p>
-            </div>
-            <Switch
-              checked={preferences.essential}
-              disabled
-              className="opacity-50"
-            />
+          <div
+            className={cn(
+              'flex items-start gap-3 rounded-2xl border p-4',
+              appearance.rowMuted
+            )}
+          >
+            <Info className={cn('mt-0.5 h-4 w-4 shrink-0', appearance.muted)} />
+            <p className={cn('text-sm leading-relaxed', appearance.body)}>
+              {t.essentialNote}
+            </p>
           </div>
 
-          {/* Analytics */}
-          <div className={cn('flex items-start justify-between rounded-2xl border p-4', appearance.row)}>
+          <div
+            className={cn(
+              'flex items-start justify-between rounded-2xl border p-4',
+              appearance.row
+            )}
+          >
             <div className="flex-1 pr-4">
-              <Label className={cn('mb-2 block text-base font-semibold', appearance.title)}>{t.analytics.title}</Label>
-              <p className={cn('text-sm leading-relaxed', appearance.body)}>{t.analytics.description}</p>
+              <Label
+                className={cn('mb-2 block text-base font-semibold', appearance.title)}
+              >
+                {t.analytics.title}
+              </Label>
+              <p className={cn('text-sm leading-relaxed', appearance.body)}>
+                {t.analytics.description}
+              </p>
             </div>
             <Switch
               checked={preferences.analytics}
@@ -262,49 +306,40 @@ export function CookiePreferenceCenter({
             />
           </div>
 
-          {/* Error Tracking */}
-          <div className={cn('flex items-start justify-between rounded-2xl border p-4', appearance.row)}>
+          <div
+            className={cn(
+              'flex items-start justify-between rounded-2xl border p-4',
+              appearance.row
+            )}
+          >
             <div className="flex-1 pr-4">
-              <Label className={cn('mb-2 block text-base font-semibold', appearance.title)}>{t.error_tracking.title}</Label>
-              <p className={cn('text-sm leading-relaxed', appearance.body)}>{t.error_tracking.description}</p>
+              <Label
+                className={cn('mb-2 block text-base font-semibold', appearance.title)}
+              >
+                {t.diagnostics.title}
+              </Label>
+              <p className={cn('text-sm leading-relaxed', appearance.body)}>
+                {t.diagnostics.description}
+              </p>
             </div>
             <Switch
-              checked={preferences.error_tracking}
-              onCheckedChange={(checked) => handleToggle('error_tracking', checked)}
-            />
-          </div>
-
-          {/* Session Replay */}
-          <div className={cn('flex items-start justify-between rounded-2xl border p-4', appearance.row)}>
-            <div className="flex-1 pr-4">
-              <Label className={cn('mb-2 block text-base font-semibold', appearance.title)}>{t.session_replay.title}</Label>
-              <p className={cn('text-sm leading-relaxed', appearance.body)}>{t.session_replay.description}</p>
-            </div>
-            <Switch
-              checked={preferences.session_replay}
-              onCheckedChange={(checked) => handleToggle('session_replay', checked)}
-            />
-          </div>
-
-          {/* Marketing */}
-          <div className={cn('flex items-start justify-between rounded-2xl border p-4', appearance.row)}>
-            <div className="flex-1 pr-4">
-              <Label className={cn('mb-2 block text-base font-semibold', appearance.title)}>{t.marketing.title}</Label>
-              <p className={cn('text-sm leading-relaxed', appearance.body)}>{t.marketing.description}</p>
-            </div>
-            <Switch
-              checked={preferences.marketing}
-              onCheckedChange={(checked) => handleToggle('marketing', checked)}
+              checked={preferences.diagnostics}
+              onCheckedChange={(checked) => handleToggle('diagnostics', checked)}
             />
           </div>
         </CardContent>
-        <div className={cn('flex flex-shrink-0 flex-col gap-3 border-t px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:flex-row', appearance.footer)}>
+        <div
+          className={cn(
+            'flex flex-shrink-0 flex-col gap-3 border-t px-6 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 sm:flex-row',
+            appearance.footer
+          )}
+        >
           <Button
             type="button"
             onClick={handleSave}
             className={cn('flex-1', appearance.primaryBtn)}
           >
-            {locale === 'nl' ? 'Voorkeuren Opslaan' : 'Save Preferences'}
+            {t.save}
           </Button>
           {onClose && (
             <Button
@@ -313,7 +348,7 @@ export function CookiePreferenceCenter({
               onClick={onClose}
               className={cn('w-full sm:w-auto', appearance.outlineBtn)}
             >
-              {locale === 'nl' ? 'Annuleren' : 'Cancel'}
+              {t.cancel}
             </Button>
           )}
         </div>
@@ -321,4 +356,3 @@ export function CookiePreferenceCenter({
     </div>
   )
 }
-
