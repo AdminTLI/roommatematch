@@ -31,7 +31,7 @@ const content = {
     categoriesIntro: {
       title: 'How we group choices in the preference centre',
       description:
-        'Essential cookies always run and are explained in the banner (they are not an optional toggle). Optional choices are Analytics and Error monitoring & session replay. You can Accept all, Reject all, or Customize. Reject all is shown with equal prominence to Accept all, in line with Dutch DPA guidance. We do not use marketing or advertising cookies.'
+        'Essential cookies always run and appear in the preference centre as always on (cannot be turned off). Optional choices are Analytics and Error monitoring & session replay - these default to off until you opt in. You can Accept all, Reject all, or Customize. Reject all is shown with equal prominence to Accept all, in line with Dutch DPA guidance. We do not use marketing or advertising cookies.'
     },
     strictlyNecessary: {
       title: 'Category A - Strictly necessary cookies, local storage & platform integrity',
@@ -295,7 +295,7 @@ const content = {
     categoriesIntro: {
       title: 'Hoe we keuzes groeperen in het voorkeurencentrum',
       description:
-        'Essentiële cookies draaien altijd en worden in de banner uitgelegd (geen optionele schakelaar). Optionele keuzes zijn Analyse en Foutopsporing & sessieherhaling. U kunt Alles accepteren, Alles weigeren of Aanpassen. “Alles weigeren” heeft dezelfde zichtbaarheid als “Alles accepteren”, conform de lijn van de Autoriteit Persoonsgegevens. We gebruiken geen marketing- of advertentiecookies.'
+        'Essentiële cookies draaien altijd en staan in het voorkeurencentrum als altijd aan (niet uit te zetten). Optionele keuzes zijn Analyse en Foutopsporing & sessieherhaling - die staan standaard uit tot u ze aanzet. U kunt Alles accepteren, Alles weigeren of Aanpassen. “Alles weigeren” heeft dezelfde zichtbaarheid als “Alles accepteren”, conform de lijn van de Autoriteit Persoonsgegevens. We gebruiken geen marketing- of advertentiecookies.'
     },
     strictlyNecessary: {
       title: 'Categorie A - Strikt noodzakelijke cookies, localStorage & platformintegriteit',

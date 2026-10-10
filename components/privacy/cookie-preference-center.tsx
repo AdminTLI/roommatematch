@@ -33,10 +33,12 @@ interface CookiePreferenceCenterProps {
 const copy = {
   en: {
     title: 'Cookie Preferences',
-    intro:
-      'Manage optional cookies. Essential cookies for login, security, and core site operation always run and are not optional.',
-    essentialNote:
-      'Essential cookies and storage (authentication, CSRF protection, language/theme, and storing these choices) always apply. They cannot be turned off.',
+    intro: 'Manage your cookie preferences. You can change optional settings at any time.',
+    essential: {
+      title: 'Essential',
+      description:
+        'Required for secure login, CSRF protection, language/theme, and storing these choices. Always on and cannot be turned off.',
+    },
     analytics: {
       title: 'Analytics',
       description:
@@ -53,10 +55,12 @@ const copy = {
   },
   nl: {
     title: 'Cookie Voorkeuren',
-    intro:
-      'Beheer optionele cookies. Essentiële cookies voor inloggen, beveiliging en de kern van de site draaien altijd en zijn niet optioneel.',
-    essentialNote:
-      'Essentiële cookies en opslag (authenticatie, CSRF-bescherming, taal/thema en het bewaren van deze keuzes) gelden altijd. Ze kunnen niet worden uitgeschakeld.',
+    intro: 'Beheer uw cookievoorkeuren. Optionele instellingen kunt u op elk moment wijzigen.',
+    essential: {
+      title: 'Essentieel',
+      description:
+        'Vereist voor veilig inloggen, CSRF-bescherming, taal/thema en het bewaren van deze keuzes. Altijd aan en kan niet worden uitgeschakeld.',
+    },
     analytics: {
       title: 'Analyse',
       description:
@@ -274,14 +278,22 @@ export function CookiePreferenceCenter({
 
           <div
             className={cn(
-              'flex items-start gap-3 rounded-2xl border p-4',
+              'flex items-start justify-between rounded-2xl border p-4',
               appearance.rowMuted
             )}
           >
-            <Info className={cn('mt-0.5 h-4 w-4 shrink-0', appearance.muted)} />
-            <p className={cn('text-sm leading-relaxed', appearance.body)}>
-              {t.essentialNote}
-            </p>
+            <div className="flex-1 pr-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Label className={cn('text-base font-semibold', appearance.title)}>
+                  {t.essential.title}
+                </Label>
+                <Info className={cn('h-4 w-4', appearance.muted)} aria-hidden />
+              </div>
+              <p className={cn('text-sm leading-relaxed', appearance.body)}>
+                {t.essential.description}
+              </p>
+            </div>
+            <Switch checked disabled className="opacity-50" aria-label={t.essential.title} />
           </div>
 
           <div
