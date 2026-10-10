@@ -1,19 +1,27 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 
 /**
  * Adds a scoped body class for the redesigned light landing page only.
- * This avoids disturbing the existing dark marketing pages that rely on `marketing-page`.
+ * Inline script applies the HTML marker before paint; layout effect keeps
+ * SPA navigations in sync without waiting for useEffect.
  */
 export function MarketingLayoutFixLight() {
-  useEffect(() => {
+  useLayoutEffect(() => {
+    document.documentElement.dataset.mkt = 'light'
     document.body.classList.add('marketing-page-light')
     return () => {
+      delete document.documentElement.dataset.mkt
       document.body.classList.remove('marketing-page-light')
     }
   }, [])
 
-  return null
+  return (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `document.documentElement.dataset.mkt="light";`,
+      }}
+    />
+  )
 }
-

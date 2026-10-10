@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google'
 import { ErrorBoundaryWrapper } from '@/components/ErrorBoundaryWrapper'
 import { RouteProviders } from '@/app/route-providers'
 import { ConditionalAnalytics } from '@/components/privacy/conditional-analytics'
-import { GlobalRealtimeCleanupHandler } from '@/components/realtime/global-cleanup-handler'
+import { RouteGatedRealtimeCleanup } from '@/components/realtime/route-gated-realtime-cleanup'
 import { AuthHashRedirect } from '@/components/auth/auth-hash-redirect'
 import './globals.css'
 
@@ -11,6 +11,7 @@ const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   preload: true,
+  adjustFontFallback: true,
 })
 
 import { getPlatformSettings } from '@/lib/platform-settings'
@@ -57,27 +58,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabaseOrigin = (() => {
-    try {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-      return url ? new URL(url).origin : null
-    } catch {
-      return null
-    }
-  })()
-
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
-      <head>
-        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://images.unsplash.com" />
-        {supabaseOrigin ? (
-          <>
-            <link rel="preconnect" href={supabaseOrigin} crossOrigin="anonymous" />
-            <link rel="dns-prefetch" href={supabaseOrigin} />
-          </>
-        ) : null}
-      </head>
       <body className={`${inter.className} antialiased`}>
         <ErrorBoundaryWrapper>
           <RouteProviders>
@@ -86,7 +68,7 @@ export default function RootLayout({
           </RouteProviders>
         </ErrorBoundaryWrapper>
         <ConditionalAnalytics />
-        <GlobalRealtimeCleanupHandler />
+        <RouteGatedRealtimeCleanup />
       </body>
     </html>
   )

@@ -215,6 +215,12 @@
     position: relative;
   }
 
+  /* Marketing light pages: no color transition (non-composited) on first paint */
+  html[data-mkt="light"] body,
+  body.marketing-page-light {
+    transition: none;
+  }
+
   /* Date input styling - ensure white calendar icon on dark backgrounds */
   #dob {
     color-scheme: dark;
@@ -236,7 +242,8 @@
     min-height: 0; /* allow page to end at footer; base body has min-h-screen */
   }
 
-  /* Redesigned marketing homepage: light background */
+  /* Redesigned marketing homepage: light background (dataset set before paint) */
+  html[data-mkt="light"],
   html:has(body.marketing-page-light),
   body.marketing-page-light {
     background: #f8fafc;
@@ -1009,10 +1016,52 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
     100% { transform: translate3d(-50%, -50%, 0) scale(1); }
   }
 
-  .dm-mesh-drift-1 { animation: dmMeshDrift1 16s ease-in-out infinite; }
-  .dm-mesh-drift-2 { animation: dmMeshDrift2 18s ease-in-out infinite; }
-  .dm-mesh-drift-3 { animation: dmMeshDrift3 20s ease-in-out infinite; }
-  .dm-mesh-drift-4 { animation: dmMeshDrift4 22s ease-in-out infinite; }
+  /* Drift only after idle class is applied — keeps first paint cheaper */
+  .dm-mesh-animated .dm-mesh-drift-1 { animation: dmMeshDrift1 16s ease-in-out infinite; }
+  .dm-mesh-animated .dm-mesh-drift-2 { animation: dmMeshDrift2 18s ease-in-out infinite; }
+  .dm-mesh-animated .dm-mesh-drift-3 { animation: dmMeshDrift3 20s ease-in-out infinite; }
+  .dm-mesh-animated .dm-mesh-drift-4 { animation: dmMeshDrift4 22s ease-in-out infinite; }
+
+  @keyframes dmHeroFloat {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(0, -10px, 0); }
+  }
+
+  .dm-hero-float {
+    animation: dmHeroFloat 7.5s ease-in-out infinite;
+  }
+
+  .dm-hero-flip-inner {
+    transition: transform 0.65s ease-in-out;
+    transform: rotateY(0deg);
+  }
+
+  .dm-hero-flip-inner.is-flipped {
+    transform: rotateY(180deg);
+  }
+
+  @keyframes dmHeroBarFill {
+    from { width: 0; }
+    to { width: var(--dm-bar-width, 0%); }
+  }
+
+  .dm-hero-bar-fill {
+    width: 0;
+    animation: dmHeroBarFill 0.7s ease-out forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dm-hero-float,
+    .dm-hero-bar-fill {
+      animation: none;
+    }
+    .dm-hero-bar-fill {
+      width: var(--dm-bar-width, 0%);
+    }
+    .dm-hero-flip-inner {
+      transition: none;
+    }
+  }
 
   .dm-noise-soft {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");

@@ -3,7 +3,7 @@
 import Container from '@/components/ui/primitives/container'
 import Link from 'next/link'
 import { Twitter, Linkedin, Instagram } from 'lucide-react'
-import { useApp } from '@/app/providers'
+import { useApp } from '@/app/app-context'
 
 const content = {
   en: {

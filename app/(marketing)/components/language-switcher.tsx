@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { useApp } from '@/app/providers'
+import { useApp } from '@/app/app-context'
 import { Languages, Check } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import type { Locale } from '@/lib/i18n'

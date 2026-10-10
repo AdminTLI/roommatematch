@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { ChevronDown, Menu, X, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from '@/app/(marketing)/components/language-switcher'
-import { useApp } from '@/app/providers'
+import { useApp } from '@/app/app-context'
 import { cn } from '@/lib/utils'
 import {
   DropdownMenu,

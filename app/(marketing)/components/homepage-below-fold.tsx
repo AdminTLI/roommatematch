@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import { LazySection } from './lazy-section'
 
 const StatusQuoSection = dynamic(
   () => import('@/components/site/status-quo-section').then((m) => ({ default: m.StatusQuoSection })),
@@ -57,14 +58,30 @@ function SectionPlaceholder({ minHeight }: { minHeight: string }) {
 export function HomepageBelowFold() {
   return (
     <>
-      <StatusQuoSection />
-      <LifestyleFeatures />
-      <PlatformPreview />
-      <IdVerificationPrivacySection />
-      <Partners />
-      <SocialProof />
-      <SocialFinalCTA />
-      <Footer />
+      <LazySection minHeight="28rem">
+        <StatusQuoSection />
+      </LazySection>
+      <LazySection minHeight="24rem">
+        <LifestyleFeatures />
+      </LazySection>
+      <LazySection minHeight="32rem">
+        <PlatformPreview />
+      </LazySection>
+      <LazySection minHeight="24rem">
+        <IdVerificationPrivacySection />
+      </LazySection>
+      <LazySection minHeight="12rem">
+        <Partners />
+      </LazySection>
+      <LazySection minHeight="20rem">
+        <SocialProof />
+      </LazySection>
+      <LazySection minHeight="16rem">
+        <SocialFinalCTA />
+      </LazySection>
+      <LazySection minHeight="12rem">
+        <Footer />
+      </LazySection>
     </>
   )
 }
