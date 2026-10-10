@@ -90,7 +90,7 @@ function MiniBar({ value, className }: { value: number; className?: string }) {
     <div className={cn('h-2 bg-white/70 rounded-full overflow-hidden border border-white/60', className)}>
       <div
         className={cn('h-full rounded-full dm-hero-bar-fill', bar)}
-        style={{ ['--dm-bar-width' as string]: `${v}%` }}
+        style={{ ['--dm-bar-scale' as string]: String(v / 100) }}
       />
     </div>
   )

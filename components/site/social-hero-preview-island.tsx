@@ -19,7 +19,7 @@ const SocialHeroPreviewCard = dynamic(
 function PreviewPlaceholder() {
   return (
     <div
-      className="relative mx-auto max-w-[420px] h-[660px] w-full rounded-3xl bg-white/50 animate-pulse"
+      className="relative mx-auto max-w-[420px] h-[660px] w-full rounded-3xl bg-white/45 border border-white/70 shadow-[0_18px_70px_rgba(15,23,42,0.08)]"
       aria-hidden
     />
   )
@@ -38,14 +38,20 @@ export function SocialHeroPreviewIsland() {
     let timeoutId: ReturnType<typeof setTimeout> | undefined
 
     const enable = () => setReady(true)
-    const ric = window.requestIdleCallback
-    if (typeof ric === 'function') {
-      idleId = ric(enable, { timeout: 1200 })
-    } else {
-      timeoutId = setTimeout(enable, 400)
+    const start = () => {
+      const ric = window.requestIdleCallback
+      if (typeof ric === 'function') {
+        idleId = ric(enable, { timeout: 2500 })
+      } else {
+        timeoutId = setTimeout(enable, 1200)
+      }
     }
+    // Wait for window load so LCP text paints before card JS/CSS work.
+    if (document.readyState === 'complete') start()
+    else window.addEventListener('load', start, { once: true })
 
     return () => {
+      window.removeEventListener('load', start)
       if (idleId !== undefined && typeof window.cancelIdleCallback === 'function') {
         window.cancelIdleCallback(idleId)
       }

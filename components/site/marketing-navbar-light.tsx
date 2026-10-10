@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { ChevronDown, Menu, X, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -140,16 +139,16 @@ export function MarketingNavbarLight() {
               className="flex min-w-0 max-w-[min(100%,calc(100%-11rem))] items-center gap-2 hover:opacity-80 transition-opacity"
               onClick={closeMobileMenu}
             >
-              <div className="relative h-8 w-8 shrink-0">
-                <Image
-                  src="/images/logo.png"
-                  alt="Domu Match"
-                  fill
-                  className="object-contain rounded-lg"
-                  priority
-                  sizes="32px"
-                />
-              </div>
+              {/* Static img avoids /_next/image cache + oversized srcset on a tiny logo */}
+              <img
+                src="/images/logo.png"
+                alt="Domu Match"
+                width={32}
+                height={32}
+                className="h-8 w-8 shrink-0 rounded-lg object-contain"
+                decoding="async"
+                fetchPriority="high"
+              />
               <span className="truncate text-base font-bold text-slate-800 drop-shadow-sm">
                 Domu Match
               </span>
@@ -192,16 +191,15 @@ export function MarketingNavbarLight() {
               className="flex shrink-0 items-center gap-2.5 hover:opacity-80 transition-opacity max-w-[min(100%,14rem)] sm:max-w-none"
               onClick={closeMobileMenu}
             >
-              <div className="relative h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
-                <Image
-                  src="/images/logo.png"
-                  alt="Domu Match"
-                  fill
-                  className="object-contain rounded-lg"
-                  priority
-                  sizes="(max-width: 768px) 32px, 40px"
-                />
-              </div>
+              <img
+                src="/images/logo.png"
+                alt="Domu Match"
+                width={40}
+                height={40}
+                className="h-8 w-8 md:h-10 md:w-10 shrink-0 rounded-lg object-contain"
+                decoding="async"
+                fetchPriority="high"
+              />
               <span className="text-base sm:text-lg md:text-xl font-bold text-slate-800 truncate drop-shadow-sm">
                 Domu Match
               </span>

@@ -1,10 +1,10 @@
 /**
  * Consent-aware Sentry client lifecycle.
- * Allows granting/withdrawing error tracking without a full page reload.
+ * Sentry is dynamically imported so marketing pages do not pay for the SDK
+ * on the LCP / TBT critical path.
  */
 
 import type { Integration } from '@sentry/core'
-import * as Sentry from '@sentry/nextjs'
 import { getClientConsents } from '@/lib/privacy/cookie-consent-client'
 
 const isClientSentryEnabled =
@@ -26,8 +26,16 @@ function hasPIIConsent(): boolean {
 
 let syncInFlight: Promise<void> | null = null
 let listenerInstalled = false
+let sentryActive = false
 
-function buildInitOptions(): Parameters<typeof Sentry.init>[0] {
+async function loadSentry() {
+  return import('@sentry/nextjs')
+}
+
+async function buildInitOptions(): Promise<
+  Parameters<Awaited<ReturnType<typeof loadSentry>>['init']>[0]
+> {
+  const Sentry = await loadSentry()
   const integrations: Integration[] = [
     Sentry.consoleLoggingIntegration({ levels: ['log', 'warn', 'error'] }),
   ]
@@ -99,51 +107,66 @@ function buildInitOptions(): Parameters<typeof Sentry.init>[0] {
 
 /**
  * Init or tear down the browser Sentry client to match current consent.
+ * Returns true when a client is (or remains) active.
  */
-export async function syncSentryWithConsent(): Promise<void> {
-  if (typeof window === 'undefined') return
+export async function syncSentryWithConsent(): Promise<boolean> {
+  if (typeof window === 'undefined') return false
   if (!isClientSentryEnabled || !process.env.NEXT_PUBLIC_SENTRY_DSN) {
-    return
+    return false
   }
 
   if (syncInFlight) {
-    return syncInFlight
+    await syncInFlight
+    return sentryActive
   }
 
   syncInFlight = (async () => {
     const wantsTracking = hasErrorTrackingConsent()
-    const client = Sentry.getClient()
 
     if (!wantsTracking) {
-      if (client) {
-        await Sentry.close(2000)
+      // Do not download the SDK just to discover there is nothing to tear down.
+      if (sentryActive) {
+        const Sentry = await loadSentry()
+        if (Sentry.getClient()) {
+          await Sentry.close(2000)
+        }
+        sentryActive = false
       }
       return
     }
 
-    // Re-init when already running so replay / PII options match latest consent.
-    if (client) {
+    const Sentry = await loadSentry()
+    if (Sentry.getClient()) {
       await Sentry.close(2000)
     }
-
-    Sentry.init(buildInitOptions())
+    Sentry.init(await buildInitOptions())
+    sentryActive = true
   })().finally(() => {
     syncInFlight = null
   })
 
-  return syncInFlight
+  await syncInFlight
+  return sentryActive
 }
 
-/** Listen for same-tab consent updates (and run an initial sync). */
-export function installSentryConsentListener(): void {
-  if (typeof window === 'undefined' || listenerInstalled) return
-  listenerInstalled = true
+/**
+ * Listen for same-tab consent updates (and run an initial sync).
+ * Returns whether Sentry is active after the initial pass.
+ */
+export async function installSentryConsentListener(): Promise<boolean> {
+  if (typeof window === 'undefined') return false
 
-  void syncSentryWithConsent().catch(() => {
-    // Non-fatal: consent sync must not break the page
-  })
+  if (!listenerInstalled) {
+    listenerInstalled = true
+    window.addEventListener('consent-changed', () => {
+      void syncSentryWithConsent().catch(() => {})
+    })
+  }
 
-  window.addEventListener('consent-changed', () => {
-    void syncSentryWithConsent().catch(() => {})
-  })
+  // Skip the SDK download entirely until consent exists (or is granted later).
+  if (!hasErrorTrackingConsent()) {
+    return false
+  }
+
+  return syncSentryWithConsent().catch(() => false)
 }

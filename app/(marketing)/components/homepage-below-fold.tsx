@@ -48,7 +48,7 @@ const Footer = dynamic(() => import('@/components/site/footer'), {
 function SectionPlaceholder({ minHeight }: { minHeight: string }) {
   return (
     <div
-      className="w-full animate-pulse rounded-3xl bg-white/40 mx-auto max-w-7xl my-8"
+      className="w-full rounded-3xl bg-white/30 mx-auto max-w-7xl my-8"
       style={{ minHeight }}
       aria-hidden
     />
