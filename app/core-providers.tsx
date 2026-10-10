@@ -89,8 +89,11 @@ export function CoreProviders({ children, forcedTheme }: CoreProvidersProps) {
         forcedTheme={forcedTheme}
         enableSystem={!forcedTheme}
       >
-        <AppContext.Provider value={value}>{children}</AppContext.Provider>
-        <DeferredAppChrome />
+        <AppContext.Provider value={value}>
+          {children}
+          {/* Must stay inside AppContext so cookie banner can read locale */}
+          <DeferredAppChrome />
+        </AppContext.Provider>
       </ThemeProvider>
     </QueryClientProvider>
   )
