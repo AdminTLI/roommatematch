@@ -4,7 +4,7 @@ import { DutchStudentBikeCultureHousematesArticle } from './article-content'
 export const metadata: Metadata = {
   title: 'How Bike Culture Shapes Dutch Student Houses | Domu Match',
   description:
-    'CBS cycling data and campus research show why the bicycle sets the rhythm of Dutch student houses—especially as autumn pulls life indoors.',
+    'CBS cycling data and campus research show why the bicycle sets the rhythm of Dutch student houses - especially as autumn pulls life indoors.',
   keywords:
     'dutch student bike culture housemates, bike culture Dutch student house, fiets studentenhuis, autumn housemate bonding Netherlands, CBS fietsen studenten',
   openGraph: {

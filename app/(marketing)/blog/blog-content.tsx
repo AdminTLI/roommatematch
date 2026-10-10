@@ -39,7 +39,7 @@ const content = {
         slug: 'dutch-student-bike-culture-housemates',
         title: 'How Bike Culture Shapes Dutch Student Houses',
         excerpt:
-          'CBS cycling data and campus research show why the bicycle sets the rhythm of Dutch student houses—especially as autumn pulls life indoors.',
+          'CBS cycling data and campus research show why the bicycle sets the rhythm of Dutch student houses - especially as autumn pulls life indoors.',
         readTime: '8 min read',
         date: '2026-10-07',
         category: 'Lifestyle',

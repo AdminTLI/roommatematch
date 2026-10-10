@@ -9,7 +9,7 @@ const content = {
   en: {
     title: 'How Bike Culture Shapes Dutch Student Houses',
     excerpt:
-      'CBS cycling data and campus research show why the bicycle sets the rhythm of Dutch student houses—especially as autumn pulls life indoors.',
+      'CBS cycling data and campus research show why the bicycle sets the rhythm of Dutch student houses - especially as autumn pulls life indoors.',
     publishDate: '2026-10-07',
     readTime: '8 min read',
     relatedLinks: [
@@ -70,7 +70,7 @@ const content = {
         <p>
           Ask a Dutch student what &quot;being late&quot; means and you will often hear a bike story: a flat tyre,
           stolen lights, a chain that only fails when it rains sideways. CBS data for 2023 show people aged{' '}
-          <strong>18–25</strong> still average about <strong>2.6 kilometres</strong> by bike per day, while shopping,
+          <strong>18-25</strong> still average about <strong>2.6 kilometres</strong> by bike per day, while shopping,
           going out, sport, and hobbies together make up more than four in ten bicycle trips (
           <a
             href="https://www.cbs.nl/nl-nl/visualisaties/verkeer-en-vervoer/personen/fietsen"
