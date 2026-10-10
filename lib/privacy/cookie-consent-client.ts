@@ -32,7 +32,7 @@ export const ESSENTIAL_CONSENTS: ConsentType[] = ['essential']
  */
 export const CONSENT_STORAGE_KEY = 'domu_consent_preferences'
 /** Bumped when optional categories change so stale localStorage prefs are re-collected. */
-export const CONSENT_VERSION = '1.2'
+export const CONSENT_VERSION = '1.3'
 export const SESSION_ID_STORAGE_KEY = 'domu_anonymous_session_id'
 
 export interface ClientConsentPreferences {

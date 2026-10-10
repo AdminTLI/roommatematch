@@ -8,6 +8,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Loader2, ImageIcon, Sparkles, Trash2 } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { prepareProfileImage } from '@/lib/utils/prepare-profile-image'
+import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 import { PRESET_SEEDS } from '@/lib/avatars/preset-seeds'
 
@@ -67,10 +69,13 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
         throw new Error(j.error || 'Failed to save avatar')
       }
       setSuccess('Avatar updated')
+      showSuccessToast('Avatar updated')
       router.refresh()
       setTimeout(() => setSuccess(null), 2500)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to save')
+      const message = e instanceof Error ? e.message : 'Failed to save'
+      setError(message)
+      showErrorToast('Could not save avatar', message)
     } finally {
       setSavingAvatar(false)
     }
@@ -82,23 +87,35 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
     setError(null)
     setSuccess(null)
     try {
+      // Compress/convert on-device first. iPhone gallery photos are often HEIC and/or
+      // larger than the serverless request body limit, which otherwise looks like a generic failure.
+      const prepared = await prepareProfileImage(file)
       const fd = new FormData()
-      fd.append('file', file)
+      fd.append('file', prepared)
       const res = await fetchWithCSRF('/api/settings/profile/picture', {
         method: 'POST',
         body: fd,
       })
       if (!res.ok) {
         const j = await res.json().catch(() => ({}))
-        throw new Error(j.error || 'Upload failed')
+        const message =
+          typeof j.error === 'string' && j.error
+            ? j.error
+            : res.status === 413
+              ? 'Photo is too large to upload. Try a smaller image.'
+              : 'Upload failed. Please try again.'
+        throw new Error(message)
       }
       const data = await res.json()
       setAfterRevealPreview(typeof data.preview_signed_url === 'string' ? data.preview_signed_url : null)
       setSuccess('Profile picture saved securely')
+      showSuccessToast('Photo uploaded', 'Your profile picture was saved securely.')
       router.refresh()
       setTimeout(() => setSuccess(null), 3000)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Upload failed')
+      const message = e instanceof Error ? e.message : 'Upload failed. Please try again.'
+      setError(message)
+      showErrorToast('Upload failed', message)
     } finally {
       setUploading(false)
     }
@@ -121,10 +138,13 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
       }
       setAfterRevealPreview(null)
       setSuccess('Profile picture removed')
+      showSuccessToast('Photo removed')
       router.refresh()
       setTimeout(() => setSuccess(null), 3000)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to remove profile picture')
+      const message = e instanceof Error ? e.message : 'Failed to remove profile picture'
+      setError(message)
+      showErrorToast('Could not remove photo', message)
     } finally {
       setRemovingPicture(false)
     }
@@ -248,7 +268,7 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
           <input
             id="profile-photo"
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*"
             className="block w-full max-w-md text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-500 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-indigo-600 dark:text-zinc-300"
             disabled={uploading}
             onChange={(e) => {
@@ -260,7 +280,7 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
           {uploading && (
             <p className="flex items-center gap-2 text-sm text-zinc-500">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Uploading…
+              Preparing and uploading…
             </p>
           )}
           {hasProfilePicture && (

@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server'
-import { createCSRFTokenCookie, validateCSRFToken } from '@/lib/csrf'
+import { createCSRFTokenCookie, validateCSRFToken, verifySignedToken } from '@/lib/csrf'
 import {
   createMiddlewareSupabaseClient,
   getMiddlewareAuthUser,
@@ -36,20 +36,6 @@ async function getCachedPlatformSettings(): Promise<PlatformSettings> {
   return settings
 }
 
-// CSRF token cache - only regenerate if missing or expired
-const csrfTokenCache = new Map<string, { token: string; expiresAt: number }>()
-const CSRF_CACHE_TTL_MS = 23 * 60 * 60 * 1000 // 23 hours (slightly less than 24h cookie)
-
-// Helper to get cache key from request
-function getCacheKey(req: NextRequest): string {
-  // Use session cookie or auth header as cache key
-  const sessionCookie = req.cookies.get('sb-access-token')?.value || 
-                       req.cookies.get('sb-refresh-token')?.value ||
-                       req.headers.get('authorization') ||
-                       'anonymous'
-  return sessionCookie
-}
-
 function requestHasSupabaseAuthCookies(request: NextRequest): boolean {
   return request.cookies.getAll().some(({ name }) => name.startsWith('sb-'))
 }
@@ -62,11 +48,6 @@ if (typeof global !== 'undefined') {
     for (const [key, cached] of adminCheckCache.entries()) {
       if (cached.expiresAt < now) {
         adminCheckCache.delete(key)
-      }
-    }
-    for (const [key, cached] of csrfTokenCache.entries()) {
-      if (cached.expiresAt < now) {
-        csrfTokenCache.delete(key)
       }
     }
   }, 60000) // Clean up every minute
@@ -289,7 +270,6 @@ export async function middleware(req: NextRequest) {
   let res = getResponse()
   const redirect = (url: URL) => redirectWithSupabaseSession(url, res)
 
-  const cacheKey = getCacheKey(req)
   const now = Date.now()
 
   // Refresh via getClaims() first (official SSR pattern), then load user from refreshed session.
@@ -322,43 +302,24 @@ export async function middleware(req: NextRequest) {
     return redirect(url)
   }
 
-  // Set CSRF token cookie for authenticated users (only if missing or expired)
+  // Ensure authenticated users have a CSRF cookie. Never rotate a still-valid cookie:
+  // serverless/edge instances do not share memory, so regenerating on cache miss would
+  // overwrite the browser cookie while the client still holds the previous header token.
   if (user) {
-    const csrfCacheKey = cacheKey
-    const cachedCSRF = csrfTokenCache.get(csrfCacheKey)
-    const csrfExpires = now + CSRF_CACHE_TTL_MS
+    const existingCsrf = req.cookies.get('csrf-token')?.value
+    const existingValid = existingCsrf ? await verifySignedToken(existingCsrf) : false
 
-    let csrfCookie
-    
-    if (cachedCSRF && cachedCSRF.expiresAt > now) {
-      // Reuse existing token
-      csrfCookie = {
-        httpOnlyCookie: {
-          name: 'csrf-token',
-          value: cachedCSRF.token,
-          options: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax' as const, // Changed from 'strict' to 'lax' for better compatibility
-        maxAge: 60 * 60 * 24 // 24 hours
-          }
-        },
-        exposedToken: cachedCSRF.token
-      }
-    } else {
-      // Generate new token
-      csrfCookie = await createCSRFTokenCookie()
-      // Cache the token
-      csrfTokenCache.set(csrfCacheKey, {
-        token: csrfCookie.exposedToken,
-        expiresAt: csrfExpires
-      })
+    if (!existingValid) {
+      const csrfCookie = await createCSRFTokenCookie()
+      res.cookies.set(
+        csrfCookie.httpOnlyCookie.name,
+        csrfCookie.httpOnlyCookie.value,
+        {
+          ...csrfCookie.httpOnlyCookie.options,
+          path: '/',
+        }
+      )
     }
-
-    // Set httpOnly cookie for server-side validation only
-    // Client should fetch token from /api/csrf-token endpoint (requires authentication)
-    // This prevents XSS attacks from reading the CSRF token
-    res.cookies.set(csrfCookie.httpOnlyCookie.name, csrfCookie.httpOnlyCookie.value, csrfCookie.httpOnlyCookie.options)
   }
 
   // Define routes that are always allowed (verification pages, auth pages)

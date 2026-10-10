@@ -30,24 +30,26 @@ interface CookiePreferenceCenterProps {
   consentBaseline?: ConsentBaselineMode
 }
 
+/** Bump when preference-centre categories change so clients drop stale bundles. */
+export const COOKIE_PREFERENCE_UI_VERSION = 3
+
 const copy = {
   en: {
     title: 'Cookie Preferences',
-    intro: 'Manage your cookie preferences. You can change optional settings at any time.',
+    intro: 'Manage your cookie preferences. You can change these settings at any time.',
     essential: {
-      title: 'Essential',
-      description:
-        'Required for secure login, CSRF protection, language/theme, and storing these choices. Always on and cannot be turned off.',
+      title: 'Essential Cookies',
+      description: 'Required for the website to function. These cannot be disabled.',
     },
     analytics: {
-      title: 'Analytics',
+      title: 'Analytics Cookies',
       description:
-        'Help us understand how visitors use Domu Match (aggregate traffic, performance, and product funnels).',
+        'Help us understand how visitors interact with our website by collecting and reporting information anonymously.',
     },
     diagnostics: {
       title: 'Error monitoring & session replay',
       description:
-        'Allow Sentry to report browser errors and record short session replays so we can fix bugs. Replay may capture on-screen text; only enable if you are comfortable with that.',
+        'Help us identify and fix technical issues by reporting errors and recording short session replays. Replay may capture on-screen text.',
     },
     save: 'Save Preferences',
     cancel: 'Cancel',
@@ -55,21 +57,20 @@ const copy = {
   },
   nl: {
     title: 'Cookie Voorkeuren',
-    intro: 'Beheer uw cookievoorkeuren. Optionele instellingen kunt u op elk moment wijzigen.',
+    intro: 'Beheer uw cookievoorkeuren. U kunt deze instellingen op elk moment wijzigen.',
     essential: {
-      title: 'Essentieel',
-      description:
-        'Vereist voor veilig inloggen, CSRF-bescherming, taal/thema en het bewaren van deze keuzes. Altijd aan en kan niet worden uitgeschakeld.',
+      title: 'Essentiële Cookies',
+      description: 'Vereist voor de website om te functioneren. Deze kunnen niet worden uitgeschakeld.',
     },
     analytics: {
-      title: 'Analyse',
+      title: 'Analytische Cookies',
       description:
-        'Helpen ons te begrijpen hoe bezoekers Domu Match gebruiken (verkeer, prestaties en productfunnels).',
+        'Helpen ons begrijpen hoe bezoekers met onze website interageren door informatie anoniem te verzamelen en te rapporteren.',
     },
     diagnostics: {
       title: 'Foutopsporing & sessieherhaling',
       description:
-        'Sta toe dat Sentry browserfouten rapporteert en korte sessieherhalingen opneemt om bugs te verhelpen. Replay kan tekst op het scherm vastleggen; zet dit alleen aan als u daarmee akkoord gaat.',
+        'Helpen ons technische problemen te identificeren en op te lossen door fouten te rapporteren en korte sessieherhalingen op te nemen. Replay kan tekst op het scherm vastleggen.',
     },
     save: 'Voorkeuren Opslaan',
     cancel: 'Annuleren',
@@ -293,7 +294,13 @@ export function CookiePreferenceCenter({
                 {t.essential.description}
               </p>
             </div>
-            <Switch checked disabled className="opacity-50" aria-label={t.essential.title} />
+            {/* Keep the filled “on” look; only block interaction (AP: essential is not optional). */}
+            <Switch
+              checked
+              disabled
+              className="!opacity-100 cursor-not-allowed"
+              aria-label={t.essential.title}
+            />
           </div>
 
           <div

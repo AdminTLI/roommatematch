@@ -5,6 +5,14 @@ import { createAdminClient, createClient } from '@/lib/supabase/server'
 const ALLOWED = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const MAX_BYTES = 5 * 1024 * 1024
 
+function mimeFromFileName(name: string): string | null {
+  const ext = name.split('.').pop()?.toLowerCase()
+  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg'
+  if (ext === 'png') return 'image/png'
+  if (ext === 'webp') return 'image/webp'
+  return null
+}
+
 export async function GET() {
   const supabase = await createClient()
   const {
@@ -57,12 +65,18 @@ export async function POST(request: NextRequest) {
   }
 
   if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: 'File too large (max 5MB)' }, { status: 400 })
+    return NextResponse.json({ error: 'File too large (max 5MB). Try a smaller photo.' }, { status: 400 })
   }
 
-  const mime = file.type || 'application/octet-stream'
+  // iOS gallery picks often omit MIME type; fall back to extension.
+  const mime = (file.type && ALLOWED.has(file.type) ? file.type : null)
+    || mimeFromFileName(file.name)
+    || (file.type || 'application/octet-stream')
   if (!ALLOWED.has(mime)) {
-    return NextResponse.json({ error: 'Only JPEG, PNG, or WebP images are allowed.' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Only JPEG, PNG, or WebP images are allowed. HEIC photos should be converted before upload.' },
+      { status: 400 }
+    )
   }
 
   const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg'

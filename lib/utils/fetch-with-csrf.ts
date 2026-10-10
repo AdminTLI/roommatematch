@@ -31,7 +31,7 @@ export function invalidateCsrfTokenCache() {
  * This is more secure than reading from cookie (prevents XSS attacks)
  * Includes retry logic for transient failures and a short-lived in-memory cache
  */
-async function getCSRFToken(retries = 2): Promise<string | null> {
+export async function getCSRFToken(retries = 2): Promise<string | null> {
   if (typeof window === 'undefined') return null
 
   const cached = getCachedCsrfToken()
@@ -109,9 +109,20 @@ async function getCSRFToken(retries = 2): Promise<string | null> {
   }
 }
 
+async function isCsrfFailure(response: Response): Promise<boolean> {
+  if (response.status !== 403) return false
+  try {
+    const errorData = await response.clone().json()
+    const message = typeof errorData?.error === 'string' ? errorData.error : ''
+    return message === 'Invalid CSRF token' || message.includes('CSRF')
+  } catch {
+    return false
+  }
+}
+
 /**
  * Fetch with CSRF token automatically included
- * Handles CSRF token failures gracefully with retry logic
+ * Handles CSRF token failures gracefully with a single automatic retry
  */
 export async function fetchWithCSRF(
   url: string,
@@ -120,44 +131,43 @@ export async function fetchWithCSRF(
   const isStateChanging = options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method.toUpperCase())
 
   try {
-    let token: string | null = null
+    const performRequest = async (forceRefreshToken: boolean) => {
+      let token: string | null = null
 
-    // Only fetch CSRF token for state-changing requests
-    if (isStateChanging) {
-      token = await getCSRFToken()
-
-      // If we couldn't get a token, try one more time after a short delay
-      // This handles cases where the cookie might not be set yet
-      if (!token) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-        token = await getCSRFToken()
-      }
-    }
-
-    const headers = new Headers(options.headers)
-
-    // Only add CSRF token for state-changing requests
-    if (token && isStateChanging) {
-      headers.set('x-csrf-token', token)
-    }
-
-    const response = await fetch(url, {
-      ...options,
-      headers,
-      credentials: 'include', // Include cookies
-    })
-
-    // Handle CSRF token errors with a helpful message
-    if (response.status === 403) {
-      try {
-        const errorData = await response.clone().json()
-        if (errorData.error === 'Invalid CSRF token' || errorData.error?.includes('CSRF')) {
+      if (isStateChanging) {
+        if (forceRefreshToken) {
           invalidateCsrfTokenCache()
-          console.warn('[fetchWithCSRF] CSRF token validation failed, this might be a temporary issue')
         }
-      } catch {
-        // If we can't parse the error response, just return it
+
+        token = await getCSRFToken()
+
+        // If we couldn't get a token, try one more time after a short delay
+        // This handles cases where the cookie might not be set yet
+        if (!token) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+          token = await getCSRFToken()
+        }
       }
+
+      const headers = new Headers(options.headers)
+
+      if (token && isStateChanging) {
+        headers.set('x-csrf-token', token)
+      }
+
+      return fetch(url, {
+        ...options,
+        headers,
+        credentials: 'include',
+      })
+    }
+
+    let response = await performRequest(false)
+
+    // Stale client cache vs rotated cookie: refresh token and retry once
+    if (isStateChanging && (await isCsrfFailure(response))) {
+      console.warn('[fetchWithCSRF] CSRF token validation failed, retrying with a fresh token')
+      response = await performRequest(true)
     }
 
     return response

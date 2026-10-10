@@ -14,6 +14,7 @@ import { HousingBudgetSlider,
 import { CoCreatorBadgeSettings } from '@/components/lab/co-creator-badge-settings'
 import { trackProfileUpdate } from '@/lib/notifications/activity-tracker'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import { showErrorToast, showSuccessToast } from '@/lib/toast'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { type HousingStatusKey } from '@/lib/constants/housing-status'
@@ -109,13 +110,17 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
 
     // Validate interests before submitting
     if (formData.interests.length < 3) {
-      setInterestsError('Please select at least 3 interests')
+      const message = 'Please select at least 3 interests'
+      setInterestsError(message)
+      showErrorToast('Could not save changes', message)
       setIsLoading(false)
       return
     }
 
     if (formData.interests.length > 10) {
-      setInterestsError('Maximum 10 interests allowed')
+      const message = 'Maximum 10 interests allowed'
+      setInterestsError(message)
+      showErrorToast('Could not save changes', message)
       setIsLoading(false)
       return
     }
@@ -128,7 +133,9 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
       : (formData.budgetMax ?? (formData.budgetMin != null ? HOUSING_BUDGET_DEFAULT[1] : null))
 
     if (!formData.budgetUnknown && (resolvedBudgetMin != null) !== (resolvedBudgetMax != null)) {
-      setBudgetError('Please set both a minimum and maximum budget, or check that you don\'t know your budget yet')
+      const message = 'Please set both a minimum and maximum budget, or check that you don\'t know your budget yet'
+      setBudgetError(message)
+      showErrorToast('Could not save changes', message)
       setIsLoading(false)
       return
     }
@@ -139,7 +146,9 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
       resolvedBudgetMax != null &&
       resolvedBudgetMin > resolvedBudgetMax
     ) {
-      setBudgetError('Minimum budget cannot be higher than maximum budget')
+      const message = 'Minimum budget cannot be higher than maximum budget'
+      setBudgetError(message)
+      showErrorToast('Could not save changes', message)
       setIsLoading(false)
       return
     }
@@ -161,14 +170,15 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error || 'Failed to update profile'
         // Check if error is related to interests
-        if (errorData.error?.includes('interests')) {
-          setInterestsError(errorData.error)
-        } else if (errorData.error?.toLowerCase?.().includes('budget')) {
-          setBudgetError(errorData.error)
+        if (typeof errorMessage === 'string' && errorMessage.includes('interests')) {
+          setInterestsError(errorMessage)
+        } else if (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('budget')) {
+          setBudgetError(errorMessage)
         }
-        throw new Error(errorData.error || 'Failed to update profile')
+        throw new Error(errorMessage)
       }
 
       // Track profile update activity
@@ -198,9 +208,12 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
       }
 
       setIsSuccess(true)
+      showSuccessToast('Profile updated', 'Your changes were saved successfully.')
       setTimeout(() => setIsSuccess(false), 3000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const message = err instanceof Error ? err.message : 'An error occurred'
+      setError(message)
+      showErrorToast('Could not save changes', message)
     } finally {
       setIsLoading(false)
     }
@@ -209,24 +222,6 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
   return (
     <>
       <CoCreatorBadgeSettings />
-      {error && (
-        <div className="py-6">
-          <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        </div>
-      )}
-
-      {isSuccess && (
-        <div className="py-6">
-          <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-            <Check className="h-4 w-4" />
-            <AlertDescription>
-              Profile updated successfully!
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
 
       <SettingsSection
         title="Personal information"
@@ -421,21 +416,40 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
         </SettingsSection>
       )}
 
-      <div className="flex justify-end py-6">
-        <Button
-          onClick={handleSave}
-          disabled={isLoading}
-          className="w-full sm:w-auto min-w-[160px] h-11 text-sm font-semibold bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save changes'
-          )}
-        </Button>
+      <div className="space-y-3 py-6">
+        {(error || isSuccess) && (
+          <div className="sm:flex sm:justify-end">
+            {error && (
+              <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400 sm:max-w-md">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {isSuccess && (
+              <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 sm:max-w-md">
+                <Check className="h-4 w-4" />
+                <AlertDescription>
+                  Profile updated successfully!
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSave}
+            disabled={isLoading}
+            className="w-full sm:w-auto min-w-[160px] h-11 text-sm font-semibold bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save changes'
+            )}
+          </Button>
+        </div>
       </div>
     </>
   )

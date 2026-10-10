@@ -12,7 +12,10 @@ import {
   getOrCreateAnonymousSessionId,
   NON_ESSENTIAL_CONSENTS,
 } from '@/lib/privacy/cookie-consent-client'
-import { CookiePreferenceCenter } from './cookie-preference-center'
+import {
+  CookiePreferenceCenter,
+  COOKIE_PREFERENCE_UI_VERSION,
+} from './cookie-preference-center'
 import { useCookieConsentAppearance } from '@/lib/privacy/cookie-consent-appearance'
 import { cn } from '@/lib/utils'
 
@@ -61,6 +64,8 @@ export function CookieConsentBanner({ locale = 'en' }: CookieConsentBannerProps)
   const [showPreferences, setShowPreferences] = useState(false)
   const [showReopenControl, setShowReopenControl] = useState(false)
   const t = translations[locale]
+  // Reference UI version so HMR/build always pull the latest preference centre.
+  void COOKIE_PREFERENCE_UI_VERSION
 
   const onChat = isChatPath(pathname)
   const onDashboard = isDashboardPath(pathname)
