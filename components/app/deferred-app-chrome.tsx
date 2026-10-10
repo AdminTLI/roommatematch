@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
+import { useApp } from '@/app/app-context'
 
 const CookieConsentBanner = dynamic(
   () =>
@@ -21,8 +22,10 @@ const AppToaster = dynamic(
 
 /**
  * Cookie banner + toaster are not needed for LCP; mount after idle.
+ * Uses the same CookiePreferenceCenter for logged-in and logged-out routes.
  */
 export function DeferredAppChrome() {
+  const { locale } = useApp()
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -47,9 +50,11 @@ export function DeferredAppChrome() {
 
   if (!ready) return null
 
+  const bannerLocale = locale === 'nl' ? 'nl' : 'en'
+
   return (
     <>
-      <CookieConsentBanner />
+      <CookieConsentBanner locale={bannerLocale} />
       <AppToaster />
     </>
   )
