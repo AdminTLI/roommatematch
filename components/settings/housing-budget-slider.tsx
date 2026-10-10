@@ -66,13 +66,13 @@ export function HousingBudgetSlider({
   }
 
   return (
-    <div className="space-y-4 pt-5 border-t border-zinc-200 dark:border-white/5">
+    <div className="space-y-4 border-t border-zinc-200/70 pt-8 dark:border-white/[0.06]">
       <div className="flex items-start justify-between gap-3 px-1">
         <div>
-          <Label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
             Monthly room budget
           </Label>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="mt-1 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
             What you&apos;re willing to spend on a room (min – max, euros).
           </p>
         </div>

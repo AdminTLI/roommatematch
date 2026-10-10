@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Check, User, Mail, GraduationCap, Phone, Info, CheckCircle, AlertTriangle } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
@@ -19,6 +18,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { type HousingStatusKey } from '@/lib/constants/housing-status'
 import { resolveStoredProfileName } from '@/lib/auth/identity-name'
+import {
+  SettingsSection,
+  settingsEditableLabelClass,
+  settingsFieldLabelClass,
+  settingsFieldValueClass,
+} from '@/components/settings/settings-section'
 
 interface ProfileSettingsProps {
   user: any
@@ -202,86 +207,82 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
   }
 
   return (
-    <div className="space-y-10">
+    <>
       <CoCreatorBadgeSettings />
       {error && (
-        <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="py-6">
+          <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
       )}
 
       {isSuccess && (
-        <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-          <Check className="h-4 w-4" />
-          <AlertDescription>
-            Profile updated successfully!
-          </AlertDescription>
-        </Alert>
+        <div className="py-6">
+          <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+            <Check className="h-4 w-4" />
+            <AlertDescription>
+              Profile updated successfully!
+            </AlertDescription>
+          </Alert>
+        </div>
       )}
 
-      {/* Personal Information Group  -  PII is read-only; changes go through support */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Personal Information</h3>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1 leading-relaxed">
-          For safety and privacy, your name, phone number, and email cannot be changed in the app. To update any of these,{' '}
-          <a
-            href="mailto:domumatch@gmail.com?subject=Request%20to%20update%20account%20information"
-            className="text-blue-600 dark:text-blue-400 underline underline-offset-2 hover:text-blue-700 dark:hover:text-blue-300"
-          >
-            email us
-          </a>
-          .
-        </p>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl shadow-sm">
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
-            <div className="flex items-center gap-3 sm:w-1/3">
-              <User className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-              <Label className="text-zinc-600 dark:text-zinc-400 font-medium">First Name</Label>
+      <SettingsSection
+        title="Personal information"
+        description={
+          <>
+            For safety and privacy, your name, phone number, and email cannot be changed in the app. To update any of these,{' '}
+            <a
+              href="mailto:domumatch@gmail.com?subject=Request%20to%20update%20account%20information"
+              className="text-indigo-600 dark:text-indigo-400 underline underline-offset-2 hover:text-indigo-700 dark:hover:text-indigo-300"
+            >
+              email us
+            </a>
+            .
+          </>
+        }
+      >
+        <div className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
+          <div className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:gap-6">
+            <div className="flex items-center gap-2.5 sm:w-40 sm:shrink-0">
+              <User className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+              <Label className={settingsFieldLabelClass}>First name</Label>
             </div>
-            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-              {displayFirstName || '-'}
-            </div>
+            <div className={settingsFieldValueClass}>{displayFirstName || '—'}</div>
           </div>
-
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
-            <div className="flex items-center gap-3 sm:w-1/3">
-              <User className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-              <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Last Name</Label>
+          <div className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:gap-6">
+            <div className="flex items-center gap-2.5 sm:w-40 sm:shrink-0">
+              <User className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+              <Label className={settingsFieldLabelClass}>Last name</Label>
             </div>
-            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-              {displayLastName || '-'}
-            </div>
+            <div className={settingsFieldValueClass}>{displayLastName || '—'}</div>
           </div>
-
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
-            <div className="flex items-center gap-3 sm:w-1/3">
-              <Phone className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-              <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Phone</Label>
+          <div className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:gap-6">
+            <div className="flex items-center gap-2.5 sm:w-40 sm:shrink-0">
+              <Phone className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+              <Label className={settingsFieldLabelClass}>Phone</Label>
             </div>
-            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-              {displayPhone || '-'}
-            </div>
+            <div className={settingsFieldValueClass}>{displayPhone || '—'}</div>
           </div>
-
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
-            <div className="flex items-center gap-3 sm:w-1/3">
-              <Mail className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-              <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Email</Label>
+          <div className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:gap-6">
+            <div className="flex items-center gap-2.5 sm:w-40 sm:shrink-0">
+              <Mail className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+              <Label className={settingsFieldLabelClass}>Email</Label>
             </div>
-            <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3 break-all">
-              {displayEmail || '-'}
-            </div>
+            <div className={`${settingsFieldValueClass} break-all`}>{displayEmail || '—'}</div>
           </div>
         </div>
-      </div>
+      </SettingsSection>
 
-      {/* Bio & Interests Group */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">About You</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden p-6 space-y-6 backdrop-blur-xl shadow-sm">
-          <div className="space-y-3">
+      <SettingsSection
+        title="About you"
+        description="Tell potential roommates a bit about how you live and what you enjoy."
+      >
+        <div className="space-y-8">
+          <div className="space-y-2.5">
             <div className="flex items-center gap-2">
-              <Label htmlFor="bio" className="text-zinc-900 dark:text-zinc-100 font-medium">Bio</Label>
+              <Label htmlFor="bio" className={settingsEditableLabelClass}>Bio</Label>
               <TooltipProvider>
                 <Tooltip>
                   <Popover>
@@ -292,7 +293,7 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
                           className="inline-flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                           aria-label="Bio guidelines"
                         >
-                          <Info className="w-4 h-4 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200" />
+                          <Info className="w-4 h-4 text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300" />
                         </button>
                       </PopoverTrigger>
                     </TooltipTrigger>
@@ -301,20 +302,18 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
                     </TooltipContent>
                     <PopoverContent className="w-80 p-4 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/10 z-[9999]" align="start">
                       <div className="space-y-4">
-                        <h4 className="font-semibold text-sm text-zinc-900 dark:text-white">Bio Guidelines</h4>
-                        
+                        <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">Bio guidelines</h4>
                         <div className="space-y-2">
                           <div className="flex items-start gap-2">
                             <CheckCircle className="w-4 h-4 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                            <div className="text-xs text-zinc-700 dark:text-zinc-300">
-                              <span className="font-medium">Include:</span> lifestyle preferences, living habits, your work/study routine, hobbies, what you're looking for in a roommate
+                            <div className="text-sm text-zinc-600 dark:text-zinc-300">
+                              <span className="font-medium text-zinc-800 dark:text-zinc-200">Include:</span> lifestyle preferences, living habits, your work/study routine, hobbies, what you&apos;re looking for in a roommate
                             </div>
                           </div>
-                          
                           <div className="flex items-start gap-2">
                             <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                            <div className="text-xs text-zinc-700 dark:text-zinc-300">
-                              <span className="font-medium">Don't include:</span> contact info, exact address, financial info, links, or anything that could compromise your safety
+                            <div className="text-sm text-zinc-600 dark:text-zinc-300">
+                              <span className="font-medium text-zinc-800 dark:text-zinc-200">Don&apos;t include:</span> contact info, exact address, financial info, links, or anything that could compromise your safety
                             </div>
                           </div>
                         </div>
@@ -330,11 +329,11 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
               onChange={(e) => handleInputChange('bio', e.target.value)}
               placeholder="Tell us about yourself..."
               rows={4}
-              className="resize-none bg-zinc-50 dark:bg-white/5 border-zinc-200 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-blue-500/20 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+              className="resize-none bg-zinc-50 dark:bg-white/5 border-zinc-200 dark:border-white/10 focus-visible:ring-2 focus-visible:ring-blue-500/20 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
             />
           </div>
 
-          <div className="pt-4 border-t border-zinc-200 dark:border-white/5">
+          <div className="space-y-2.5 border-t border-zinc-200/70 pt-8 dark:border-white/[0.06]">
             <InterestsSelector
               value={formData.interests}
               onChange={handleInterestsChange}
@@ -344,12 +343,13 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
             />
           </div>
         </div>
-      </div>
+      </SettingsSection>
 
-      {/* Housing Status Group */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Housing Status</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden p-6 backdrop-blur-xl shadow-sm space-y-0">
+      <SettingsSection
+        title="Housing status"
+        description="Share where you are in your housing search and your budget range."
+      >
+        <div className="space-y-6">
           <HousingStatusSelector
             value={formData.housingStatus}
             onChange={handleHousingStatusChange}
@@ -362,44 +362,41 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
             error={budgetError || undefined}
           />
         </div>
-      </div>
+      </SettingsSection>
 
       {isProfessional ? (
-        /* Work Context Group (young professionals) */
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Work Context</h3>
-          <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl shadow-sm">
+        <SettingsSection
+          title="Work context"
+          description="To update your work arrangement, edit your questionnaire responses."
+        >
+          <div className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
             {[
               {
-                label: 'WFH Arrangement',
+                label: 'WFH arrangement',
                 value: formatWfhStatus(professionalContext?.wfh_status),
                 icon: Info,
               },
             ].map((item, i) => (
-              <div key={i} className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
-                <div className="flex items-center gap-3 sm:w-1/3">
-                  <item.icon className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-                  <Label className="text-zinc-600 dark:text-zinc-400 font-medium">{item.label}</Label>
+              <div key={i} className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:gap-6">
+                <div className="flex items-center gap-2.5 sm:w-40 sm:shrink-0">
+                  <item.icon className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+                  <Label className={settingsFieldLabelClass}>{item.label}</Label>
                 </div>
-                <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-                  {item.value || 'Not specified'}
-                </div>
+                <div className={settingsFieldValueClass}>{item.value || 'Not specified'}</div>
               </div>
             ))}
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1 mt-2">
-            To update your work arrangement, please edit your questionnaire responses.
-          </p>
-        </div>
+        </SettingsSection>
       ) : (
-        /* Academic Information Group (students) */
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Academic Info</h3>
-          <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl shadow-sm">
+        <SettingsSection
+          title="Academic info"
+          description="To update your academic information, edit your questionnaire responses."
+        >
+          <div className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
             {[
               { label: 'University', value: academic?.universities?.name || academic?.university_id, icon: GraduationCap },
               {
-                label: 'Degree Level',
+                label: 'Degree level',
                 value: academic?.degree_level
                   ? academic.degree_level.charAt(0).toUpperCase() + academic.degree_level.slice(1)
                   : null,
@@ -412,28 +409,23 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
               },
               { label: 'Graduation', value: academic?.expected_graduation_year ? `Class of ${academic.expected_graduation_year}` : null, icon: GraduationCap },
             ].map((item, i) => (
-              <div key={i} className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
-                <div className="flex items-center gap-3 sm:w-1/3">
-                  <item.icon className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-                  <Label className="text-zinc-600 dark:text-zinc-400 font-medium">{item.label}</Label>
+              <div key={i} className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:gap-6">
+                <div className="flex items-center gap-2.5 sm:w-40 sm:shrink-0">
+                  <item.icon className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+                  <Label className={settingsFieldLabelClass}>{item.label}</Label>
                 </div>
-                <div className="flex-1 text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3">
-                  {item.value || 'Not specified'}
-                </div>
+                <div className={settingsFieldValueClass}>{item.value || 'Not specified'}</div>
               </div>
             ))}
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 px-1 mt-2">
-            To update your academic information, please edit your questionnaire responses.
-          </p>
-        </div>
+        </SettingsSection>
       )}
 
-      <div className="flex justify-end pt-6">
+      <div className="flex justify-end py-6">
         <Button
           onClick={handleSave}
           disabled={isLoading}
-          className="w-full sm:w-auto min-w-[160px] h-11 text-base bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
+          className="w-full sm:w-auto min-w-[160px] h-11 text-sm font-semibold bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
         >
           {isLoading ? (
             <>
@@ -441,10 +433,10 @@ export function ProfileSettings({ user, profile, academic, userType, professiona
               Saving...
             </>
           ) : (
-            'Save Changes'
+            'Save changes'
           )}
         </Button>
       </div>
-    </div>
+    </>
   )
 }

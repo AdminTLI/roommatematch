@@ -3,23 +3,22 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import Link from 'next/link'
 import { MatchingRightsSection } from '@/components/privacy/matching-rights-section'
 import {
-  Eye,
-  EyeOff,
+  SettingsSection,
+  settingsCaptionClass,
+  settingsToggleDescClass,
+  settingsToggleLabelClass,
+} from '@/components/settings/settings-section'
+import {
   Download,
-  Trash2,
   AlertTriangle,
   Loader2,
   Check,
   Clock,
-  FileText,
-  ChevronRight
 } from 'lucide-react'
 import { downloadBlob } from '@/lib/pdf/download-blob'
 
@@ -220,37 +219,41 @@ export function PrivacySettings({ user, profile, openReviewOnMount }: PrivacySet
   }
 
   return (
-    <div className="space-y-10">
-      {error && (
-        <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+    <div className="divide-y divide-zinc-200/80 dark:divide-white/[0.06]">
+      {(error || isSuccess) && (
+        <div className="space-y-3 py-6">
+          {error && (
+            <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {isSuccess && (
+            <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+              <Check className="h-4 w-4" />
+              <AlertDescription>
+                Privacy settings saved successfully!
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
       )}
 
-      {isSuccess && (
-        <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-          <Check className="h-4 w-4" />
-          <AlertDescription>
-            Privacy settings saved successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Privacy Controls Group */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Privacy Controls</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 px-4 backdrop-blur-xl">
+      <SettingsSection
+        title="Privacy controls"
+        description="Decide what others can see and how Domu uses your data."
+      >
+        <div className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
           {[
-            { id: 'profileVisible', label: 'Make Profile Visible', desc: 'Allow other users to see your profile in search results' },
-            { id: 'showInMatches', label: 'Show in Matches', desc: 'Include your profile in roommate matching algorithm' },
-            { id: 'allowMessages', label: 'Allow Messages', desc: 'Let other users send you messages' },
-            { id: 'dataSharing', label: 'Data Sharing', desc: 'Allow anonymized data to be used for research' },
+            { id: 'profileVisible', label: 'Make profile visible', desc: 'Allow other users to see your profile in search results' },
+            { id: 'showInMatches', label: 'Show in matches', desc: 'Include your profile in the roommate matching algorithm' },
+            { id: 'allowMessages', label: 'Allow messages', desc: 'Let other users send you messages' },
+            { id: 'dataSharing', label: 'Data sharing', desc: 'Allow anonymized data to be used for research' },
           ].map((item) => (
             <div key={item.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-              <div className="min-w-0 flex-1 pr-0 sm:pr-2">
-                <Label className="mb-0.5 block font-medium text-zinc-900 dark:text-zinc-100">{item.label}</Label>
-                <p className="text-pretty text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 break-words">
+              <div className="min-w-0 flex-1 space-y-0.5 pr-0 sm:pr-2">
+                <Label className={settingsToggleLabelClass}>{item.label}</Label>
+                <p className={`${settingsToggleDescClass} text-pretty break-words`}>
                   {item.desc}
                 </p>
               </div>
@@ -262,33 +265,33 @@ export function PrivacySettings({ user, profile, openReviewOnMount }: PrivacySet
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="flex justify-end pt-2">
-        <Button
-          onClick={handleSavePrivacy}
-          disabled={isLoading}
-          className="w-full sm:w-auto min-w-[140px] h-11 text-base bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save Settings'
-          )}
-        </Button>
-      </div>
+        <div className="flex justify-end pt-2">
+          <Button
+            onClick={handleSavePrivacy}
+            disabled={isLoading}
+            className="h-11 w-full min-w-[140px] rounded-xl bg-indigo-500 text-sm font-semibold text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 sm:w-auto"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save settings'
+            )}
+          </Button>
+        </div>
+      </SettingsSection>
 
       <MatchingRightsSection openReviewOnMount={openReviewOnMount} />
 
-      {/* Data Management Group */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Data Management</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden p-6 space-y-6 backdrop-blur-xl">
+      <SettingsSection
+        title="Data management"
+        description="Export a copy of your information whenever you need it."
+      >
+        <div className="space-y-5">
           {getPendingExportRequest() && (
-            <Alert className="bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400">
+            <Alert className="border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Clock className="h-4 w-4" />
               <AlertDescription>
                 <strong>Export in progress:</strong> Your data export request is being processed.
@@ -297,28 +300,28 @@ export function PrivacySettings({ user, profile, openReviewOnMount }: PrivacySet
             </Alert>
           )}
 
-          <div className="flex flex-col gap-4 p-5 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-white/5">
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-zinc-900 dark:text-white mb-2">Download Your Data</h4>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-lg">
-                Get a copy of all your data in a portable JSON format (GDPR Article 15 - Right of Access), or a human-readable PDF summary of your profile and compatibility report.
+          <div className="flex flex-col gap-4">
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">Download your data</h4>
+              <p className={`${settingsCaptionClass} max-w-lg`}>
+                Get a copy of all your data in a portable JSON format (GDPR Article 15 — Right of Access), or a human-readable PDF summary of your profile and compatibility report.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Button
                 variant="outline"
                 onClick={handleDownloadData}
                 disabled={exportLoading || isLoading || !!getPendingExportRequest()}
-                className="w-full sm:w-auto min-w-[160px] h-11 text-sm border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
+                className="h-11 w-full min-w-[160px] rounded-xl border-zinc-200 text-sm text-zinc-900 hover:bg-zinc-100 dark:border-white/10 dark:text-zinc-100 dark:hover:bg-white/5 sm:w-auto"
               >
                 {exportLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Exporting JSON...
                   </>
                 ) : (
                   <>
-                    <Download className="w-4 h-4 mr-2" />
+                    <Download className="mr-2 h-4 w-4" />
                     Download JSON
                   </>
                 )}
@@ -327,16 +330,16 @@ export function PrivacySettings({ user, profile, openReviewOnMount }: PrivacySet
                 variant="outline"
                 onClick={handleDownloadPdf}
                 disabled={pdfLoading || isLoading}
-                className="w-full sm:w-auto min-w-[160px] h-11 text-sm border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
+                className="h-11 w-full min-w-[160px] rounded-xl border-zinc-200 text-sm text-zinc-900 hover:bg-zinc-100 dark:border-white/10 dark:text-zinc-100 dark:hover:bg-white/5 sm:w-auto"
               >
                 {pdfLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Generating PDF...
                   </>
                 ) : (
                   <>
-                    <Download className="w-4 h-4 mr-2" />
+                    <Download className="mr-2 h-4 w-4" />
                     Download PDF
                   </>
                 )}
@@ -344,8 +347,7 @@ export function PrivacySettings({ user, profile, openReviewOnMount }: PrivacySet
             </div>
           </div>
         </div>
-      </div>
-
+      </SettingsSection>
     </div>
   )
 }

@@ -74,8 +74,8 @@ export function InterestsSelector({
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3 px-1">
         <div className="min-w-0">
-          <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Interests</label>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+          <label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Interests</label>
+          <p className="mt-0.5 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
             Add up to {max}
           </p>
         </div>

@@ -22,6 +22,15 @@ import {
 import { EmailVerification } from './email-verification'
 import { getCSRFHeaders } from '@/lib/utils/csrf-client'
 import Link from 'next/link'
+import {
+  SettingsSection,
+  settingsCaptionClass,
+  settingsEditableLabelClass,
+  settingsFieldLabelClass,
+  settingsFieldValueClass,
+  settingsToggleDescClass,
+  settingsToggleLabelClass,
+} from '@/components/settings/settings-section'
 
 const DEFAULT_NOTIFICATIONS = {
   emailMatches: true,
@@ -150,92 +159,95 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
   }
 
   return (
-    <div className="space-y-10">
-      {error && (
-        <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {isSuccess && (
-        <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-          <Check className="h-4 w-4" />
-          <AlertDescription>
-            Settings saved successfully!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Profile visibility - show when profile exists */}
-      {profile != null && (
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Profile visibility</h3>
-          <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl">
-            <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex items-center gap-3 sm:w-1/3">
-                {isProfileHidden ? (
-                  <EyeOff className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-                ) : (
-                  <Eye className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                )}
-                <Label className="text-zinc-900 dark:text-zinc-100 font-medium">
-                  Search &amp; matches
-                </Label>
-              </div>
-              <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {isProfileHidden
-                    ? 'Your profile is hidden. You won\'t appear in search or receive match notifications.'
-                    : 'Your profile is visible. You appear in search and can receive match notifications.'}
-                </p>
-                {isProfileHidden && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleMakeVisible}
-                    disabled={visibilityLoading}
-                    className="shrink-0 border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-                  >
-                    {visibilityLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Eye className="w-4 h-4 mr-1.5" />
-                        Make visible again
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
+    <div className="divide-y divide-zinc-200/80 dark:divide-white/[0.06]">
+      {(error || isSuccess) && (
+        <div className="space-y-3 py-6">
+          {error && (
+            <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {isSuccess && (
+            <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+              <Check className="h-4 w-4" />
+              <AlertDescription>
+                Settings saved successfully!
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
       )}
 
-      {/* Email Verification Group - Always visible */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Verification</h3>
-        <EmailVerification user={user} />
-      </div>
-
-      {/* Security Group */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Security</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl">
-          {/* Email Address  -  read-only; changes via support only */}
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4 bg-zinc-50 dark:bg-zinc-900/60">
-            <div className="flex items-center gap-3 sm:w-1/3">
-              <Mail className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-              <Label className="text-zinc-600 dark:text-zinc-400 font-medium">Email Address</Label>
+      {profile != null && (
+        <SettingsSection
+          title="Profile visibility"
+          description="Control whether you appear in search and match notifications."
+        >
+          <div className="flex flex-col gap-3 py-1 sm:flex-row sm:items-start sm:gap-6">
+            <div className="flex items-center gap-2.5 sm:w-40 sm:shrink-0">
+              {isProfileHidden ? (
+                <EyeOff className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+              ) : (
+                <Eye className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+              )}
+              <Label className={settingsToggleLabelClass}>
+                Search &amp; matches
+              </Label>
             </div>
-            <div className="flex-1 px-0 sm:px-3 space-y-2">
-              <div className="text-sm text-zinc-600 dark:text-zinc-400 break-all">{user.email}</div>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+            <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <p className={settingsCaptionClass}>
+                {isProfileHidden
+                  ? 'Your profile is hidden. You won\'t appear in search or receive match notifications.'
+                  : 'Your profile is visible. You appear in search and can receive match notifications.'}
+              </p>
+              {isProfileHidden && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMakeVisible}
+                  disabled={visibilityLoading}
+                  className="shrink-0 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-600 dark:text-amber-300 dark:hover:bg-amber-500/10"
+                >
+                  {visibilityLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Eye className="mr-1.5 h-4 w-4" />
+                      Make visible again
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        </SettingsSection>
+      )}
+
+      <SettingsSection
+        title="Verification"
+        description="Confirm your email and identity to unlock the full platform."
+      >
+        <EmailVerification user={user} />
+      </SettingsSection>
+
+      <SettingsSection
+        title="Security"
+        description="Manage how you sign in to Domu."
+      >
+        <div className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
+          <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-start sm:gap-6">
+            <div className="flex items-center gap-2.5 sm:w-40 sm:shrink-0 sm:pt-0.5">
+              <Mail className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+              <Label className={settingsFieldLabelClass}>Email address</Label>
+            </div>
+            <div className="flex-1 space-y-1.5">
+              <div className={`${settingsFieldValueClass} break-all`}>{user.email}</div>
+              <p className={settingsCaptionClass}>
                 Your sign-in email cannot be changed in the app. To update it for safety or account reasons,{' '}
                 <a
                   href="mailto:domumatch@gmail.com?subject=Request%20to%20change%20account%20email"
-                  className="text-blue-600 dark:text-blue-400 underline underline-offset-2 hover:text-blue-700 dark:hover:text-blue-300"
+                  className="text-indigo-600 underline underline-offset-2 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                 >
                   contact us by email
                 </a>
@@ -244,39 +256,39 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
             </div>
           </div>
 
-          {/* Password */}
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="flex items-center gap-3 sm:w-1/3">
-              <Key className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-              <Label className="text-zinc-900 dark:text-zinc-100 font-medium">Password</Label>
+          <div className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:gap-6">
+            <div className="flex items-center gap-2.5 sm:w-40 sm:shrink-0">
+              <Key className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+              <Label className={settingsEditableLabelClass}>Password</Label>
             </div>
-            <div className="flex-1 flex items-center justify-between gap-4">
-              <span className="text-sm text-zinc-600 dark:text-zinc-400 px-0 sm:px-3 tracking-widest">••••••••</span>
+            <div className="flex flex-1 items-center justify-between gap-4">
+              <span className={`${settingsFieldValueClass} tracking-widest`}>••••••••</span>
               <Button
                 variant="ghost"
                 onClick={handleChangePassword}
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-zinc-100 dark:hover:bg-white/5 h-8 px-3 text-xs font-medium"
+                className="h-8 px-3 text-sm font-medium text-indigo-600 hover:bg-zinc-100 hover:text-indigo-700 dark:text-indigo-400 dark:hover:bg-white/5 dark:hover:text-indigo-300"
               >
                 Change
               </Button>
             </div>
           </div>
         </div>
-      </div>
+      </SettingsSection>
 
-      {/* Notifications Group */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Email Notifications</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 px-4 backdrop-blur-xl">
+      <SettingsSection
+        title="Email notifications"
+        description="Choose which emails Domu can send you."
+      >
+        <div className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
           {[
-            { id: 'emailMatches', label: 'New Matches', desc: 'Get notified when you have new compatible matches' },
-            { id: 'emailMessages', label: 'New Messages', desc: 'Get notified when you receive new messages' },
-            { id: 'emailUpdates', label: 'Platform Updates', desc: 'Get notified about new features and updates' },
+            { id: 'emailMatches', label: 'New matches', desc: 'Get notified when you have new compatible matches' },
+            { id: 'emailMessages', label: 'New messages', desc: 'Get notified when you receive new messages' },
+            { id: 'emailUpdates', label: 'Platform updates', desc: 'Get notified about new features and updates' },
           ].map((item) => (
-            <div key={item.id} className="py-4 flex items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <Label className="text-zinc-900 dark:text-zinc-100 block mb-0.5 font-medium">{item.label}</Label>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 truncate">{item.desc}</p>
+            <div key={item.id} className="flex items-center justify-between gap-4 py-4">
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <Label className={settingsToggleLabelClass}>{item.label}</Label>
+                <p className={settingsToggleDescClass}>{item.desc}</p>
               </div>
               <Switch
                 checked={notifications[item.id as keyof typeof notifications]}
@@ -286,19 +298,21 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
             </div>
           ))}
         </div>
-      </div>
+      </SettingsSection>
 
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Push Notifications</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 px-4 backdrop-blur-xl">
+      <SettingsSection
+        title="Push notifications"
+        description="Alerts delivered to your device when you allow them."
+      >
+        <div className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
           {[
-            { id: 'pushMatches', label: 'New Matches', desc: 'Receive push notifications for new matches' },
-            { id: 'pushMessages', label: 'New Messages', desc: 'Receive push notifications for new messages' },
+            { id: 'pushMatches', label: 'New matches', desc: 'Receive push notifications for new matches' },
+            { id: 'pushMessages', label: 'New messages', desc: 'Receive push notifications for new messages' },
           ].map((item) => (
-            <div key={item.id} className="py-4 flex items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <Label className="text-zinc-900 dark:text-zinc-100 block mb-0.5 font-medium">{item.label}</Label>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 truncate">{item.desc}</p>
+            <div key={item.id} className="flex items-center justify-between gap-4 py-4">
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <Label className={settingsToggleLabelClass}>{item.label}</Label>
+                <p className={settingsToggleDescClass}>{item.desc}</p>
               </div>
               <Switch
                 checked={notifications[item.id as keyof typeof notifications]}
@@ -308,43 +322,44 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
             </div>
           ))}
         </div>
-      </div>
+        <div className="flex justify-end pt-2">
+          <Button
+            onClick={handleSaveNotifications}
+            disabled={isLoading}
+            className="h-11 w-full min-w-[160px] rounded-xl bg-indigo-500 text-sm font-semibold text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600 sm:w-auto"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save preferences'
+            )}
+          </Button>
+        </div>
+      </SettingsSection>
 
-      <div className="flex justify-end pt-6">
-        <Button
-          onClick={handleSaveNotifications}
-          disabled={isLoading}
-          className="w-full sm:w-auto min-w-[160px] h-11 text-base bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            'Save Preferences'
-          )}
-        </Button>
-      </div>
-
-      <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-zinc-900/40 p-4 mb-6">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">
-          Help us build Domu — share what is missing and upvote ideas from other students.
-        </p>
+      <SettingsSection
+        title="Domu Lab"
+        description="Help us build Domu — share what is missing and upvote ideas from other students."
+      >
         <Link
           href="/forum"
-          className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+          className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
         >
           Open Domu Lab
         </Link>
-      </div>
+      </SettingsSection>
 
-      {/* Danger Zone Group */}
-      <div className="space-y-4 pt-4">
-        <h3 className="text-sm font-medium text-red-600 dark:text-red-500 uppercase tracking-wider px-1">Danger Zone</h3>
-        <div className="bg-red-50/80 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20 rounded-2xl overflow-hidden p-6 space-y-6 backdrop-blur-xl">
+      <SettingsSection
+        title="Danger zone"
+        description="Irreversible account actions."
+        tone="danger"
+      >
+        <div className="space-y-5 rounded-2xl border border-red-200 bg-red-50/80 p-5 dark:border-red-500/20 dark:bg-red-500/5">
           {deletionScheduled && (
-            <Alert className="bg-orange-500/10 border-orange-500/20 text-orange-600 dark:text-orange-400">
+            <Alert className="border-orange-500/20 bg-orange-500/10 text-orange-600 dark:text-orange-400">
               <Clock className="h-4 w-4" />
               <AlertDescription>
                 <strong>Deletion scheduled:</strong> Your account is scheduled for deletion on{' '}
@@ -353,11 +368,11 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
             </Alert>
           )}
 
-          <div className="flex items-start gap-4">
-            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-500 flex-shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-zinc-900 dark:text-white mb-1">Delete Account</h4>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-500" />
+            <div className="min-w-0 flex-1 space-y-1">
+              <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">Delete account</h4>
+              <p className={settingsCaptionClass}>
                 Permanently delete your profile and all data. You will be asked to confirm and can choose to hide your profile instead.
               </p>
             </div>
@@ -367,15 +382,15 @@ export function AccountSettings({ user, profile, onVisibilityChange }: AccountSe
             <Button
               variant="destructive"
               disabled={!!deletionScheduled}
-              className="w-full sm:w-auto min-w-[160px] h-11 text-sm bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-lg shadow-red-500/20"
+              className="h-11 w-full min-w-[160px] rounded-xl bg-red-500 text-sm font-semibold text-white shadow-lg shadow-red-500/20 hover:bg-red-600 sm:w-auto"
             >
-              <Trash2 className="w-4 h-4 mr-2" />
-              {deletionScheduled ? 'Deletion Scheduled' : 'Delete My Account'}
-              <ChevronRight className="w-4 h-4 ml-1" />
+              <Trash2 className="mr-2 h-4 w-4" />
+              {deletionScheduled ? 'Deletion scheduled' : 'Delete my account'}
+              <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           </Link>
         </div>
-      </div>
+      </SettingsSection>
     </div>
   )
 }

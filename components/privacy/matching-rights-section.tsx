@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Loader2, Scale, Check, Clock } from 'lucide-react'
 import Link from 'next/link'
+import { SettingsSection } from '@/components/settings/settings-section'
 
 interface MatchingRightsSectionProps {
   /** Open review modal on mount (e.g. ?review=1 from compatibility UI). */
@@ -78,24 +79,24 @@ export function MatchingRightsSection({ openReviewOnMount = false }: MatchingRig
   }
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">
-        Matching &amp; your rights
-      </h3>
-      <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl p-6 space-y-4 backdrop-blur-xl">
+    <SettingsSection
+      title="Matching & your rights"
+      description="How compatibility works, and what you can ask us to review."
+    >
+      <div className="space-y-4">
         <div className="flex gap-3">
-          <Scale className="w-5 h-5 text-violet-500 shrink-0 mt-0.5" />
-          <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          <Scale className="mt-0.5 h-5 w-5 shrink-0 text-violet-500" />
+          <div className="space-y-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
             <p>
-              Compatibility scores are a <strong className="text-zinc-800 dark:text-zinc-200">starting point</strong> based on
+              Compatibility scores are a <span className="font-medium text-zinc-800 dark:text-zinc-200">starting point</span> based on
               how you answered. You always choose who to contact. The score breakdown shows the main
               factors; optional &quot;Living together&quot; text is an AI summary and is not the sole basis for matching.
             </p>
             <p>
               Under GDPR Article 22 you may ask someone on our team to{' '}
-              <strong className="text-zinc-800 dark:text-zinc-200">look at a match</strong>,
+              <span className="font-medium text-zinc-800 dark:text-zinc-200">look at a match</span>,
               explain it, or challenge a suggestion. See our{' '}
-              <Link href="/privacy" className="text-violet-600 underline">
+              <Link href="/privacy" className="text-indigo-600 underline underline-offset-2 dark:text-indigo-400">
                 Privacy Policy
               </Link>{' '}
               (Section 6).
@@ -180,6 +181,6 @@ export function MatchingRightsSection({ openReviewOnMount = false }: MatchingRig
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </SettingsSection>
   )
 }

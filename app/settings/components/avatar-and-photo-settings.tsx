@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Loader2, ImageIcon, Sparkles, Trash2 } from 'lucide-react'
@@ -132,17 +131,18 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
   }
 
   return (
-    <Card className="border-zinc-200 dark:border-white/10 shadow-sm">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
+    <div className="space-y-8">
+      <header className="space-y-1.5">
+        <h3 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
           <Sparkles className="h-5 w-5 text-violet-500" />
           Match identity & photo
-        </CardTitle>
-        <CardDescription>
+        </h3>
+        <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
           Matches see a neutral programmatic avatar until you both opt in to share more. Your profile picture lives in a private bucket and is only shown after mutual consent.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-8">
+        </p>
+      </header>
+
+      <div className="space-y-8">
         {error && (
           <Alert variant="destructive" className="bg-red-500/10 border-red-500/20">
             <AlertDescription>{error}</AlertDescription>
@@ -154,21 +154,21 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
           </Alert>
         )}
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-3 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-white/10 dark:bg-zinc-900/40">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">How your match sees you initially</p>
+        <div className="grid gap-8 md:grid-cols-2">
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">How your match sees you initially</p>
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20 border border-white shadow-md dark:border-zinc-700">
                 <AvatarImage src={matchSeesUrl} alt="" />
                 <AvatarFallback>RM</AvatarFallback>
               </Avatar>
-              <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                Programmatic avatar - consistent and anonymous until you both choose to reveal profile details.
+              <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                Programmatic avatar — consistent and anonymous until you both choose to reveal profile details.
               </p>
             </div>
           </div>
-          <div className="space-y-3 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 dark:border-white/10 dark:bg-zinc-900/40">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">After mutual reveal (profile picture)</p>
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">After mutual reveal</p>
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20 border border-white shadow-md dark:border-zinc-700">
                 {afterRevealPreview ? (
@@ -179,17 +179,17 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
                   </AvatarFallback>
                 )}
               </Avatar>
-              <p className="text-sm text-zinc-600 dark:text-zinc-300">
-                Upload a photo below. In each chat, open the ⋯ menu → Photo sharing preferences when you are ready for your match to see it (both of you must opt in).
+              <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                Upload a photo below. In each chat, open the ⋯ menu → Photo sharing preferences when you are ready (both of you must opt in).
               </p>
             </div>
           </div>
         </div>
 
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-100">Choose your avatar</Label>
+          <Label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Choose your avatar</Label>
           {!PRESET_SEEDS.includes(selectedSeed) && (
-            <p className="text-xs text-amber-600 dark:text-amber-400">
+            <p className="text-sm text-amber-600 dark:text-amber-400">
               Your saved avatar uses a legacy seed. Pick any option below to update it.
             </p>
           )}
@@ -237,9 +237,14 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
         </div>
 
         <div className="space-y-3">
-          <Label htmlFor="profile-photo" className="text-sm font-medium text-zinc-800 dark:text-zinc-100">
-            Profile picture (private storage)
-          </Label>
+          <div className="space-y-1">
+            <Label htmlFor="profile-photo" className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              Profile picture
+            </Label>
+            <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+              Stored privately and only shown after mutual consent.
+            </p>
+          </div>
           <input
             id="profile-photo"
             type="file"
@@ -280,7 +285,7 @@ export function AvatarAndPhotoSettings({ profile, profilePicturePreviewUrl }: Av
             </Button>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

@@ -29,9 +29,12 @@ export function HousingStatusSelector({
   return (
     <div className="space-y-4">
       <div className="px-1">
-        <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-          Housing Status
+        <label className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+          Housing status
         </label>
+        <p className="mt-0.5 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+          Select all that apply
+        </p>
       </div>
 
       {/* Status Cards */}
@@ -76,10 +79,10 @@ export function HousingStatusSelector({
                   </h4>
                 </div>
                 <p className={cn(
-                  "text-xs leading-relaxed",
+                  "text-sm leading-relaxed",
                   isSelected
                     ? "text-blue-700 dark:text-blue-300"
-                    : "text-zinc-600 dark:text-zinc-400"
+                    : "text-zinc-500 dark:text-zinc-400"
                 )}>
                   {status.subtitle}
                 </p>
@@ -94,12 +97,6 @@ export function HousingStatusSelector({
         <p className="text-xs text-red-600 dark:text-red-400 font-medium px-1">{error}</p>
       )}
 
-      {/* Helper text */}
-      {!error && (
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest px-1">
-          Select all that apply
-        </p>
-      )}
     </div>
   )
 }

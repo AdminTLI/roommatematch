@@ -106,7 +106,7 @@ export function EmailVerification({ user }: EmailVerificationProps) {
   return (
     <div className="space-y-6">
       {/* Email Verification Row */}
-      <div className={`bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl p-6 transition-all duration-300 backdrop-blur-xl ${needsEmailVerification ? 'border-amber-500/30 bg-amber-50/80 dark:bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.05)]' : ''
+      <div className={`transition-all duration-300 ${needsEmailVerification ? 'rounded-2xl border border-amber-500/30 bg-amber-50/80 dark:bg-amber-500/5 p-6 shadow-[0_0_20px_rgba(245,158,11,0.05)]' : ''
         }`}>
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -116,9 +116,9 @@ export function EmailVerification({ user }: EmailVerificationProps) {
                   <Mail className={`w-6 h-6 ${isEmailVerified ? 'text-emerald-600 dark:text-emerald-500' : 'text-amber-600 dark:text-amber-500'
                     }`} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Email registration</p>
-                  <p className="text-base font-semibold text-zinc-900 dark:text-white break-all">{user.email}</p>
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Email registration</p>
+                  <p className="break-all text-base font-semibold tracking-tight text-zinc-900 dark:text-white">{user.email}</p>
                 </div>
               </div>
             {isEmailVerified ? (
@@ -136,11 +136,9 @@ export function EmailVerification({ user }: EmailVerificationProps) {
 
           {needsEmailVerification && (
             <div className="pt-6 border-t border-zinc-200 dark:border-white/5 space-y-4">
-              <div className="bg-zinc-50 dark:bg-white/5 rounded-xl p-4 border border-zinc-200 dark:border-white/5">
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  You must verify your email address to access all features of the platform. We've sent a verification link to your inbox.
-                </p>
-              </div>
+              <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                You must verify your email address to access all features of the platform. We&apos;ve sent a verification link to your inbox.
+              </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   onClick={handleCompleteEmailVerification}
@@ -195,7 +193,7 @@ export function EmailVerification({ user }: EmailVerificationProps) {
 
       {/* Identity Verification Row */}
       {isEmailVerified && (
-        <div className={`bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl p-6 transition-all duration-300 backdrop-blur-xl ${needsPersonaVerification ? 'border-amber-500/30 bg-amber-50/80 dark:bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.05)]' : ''
+        <div className={`transition-all duration-300 ${needsPersonaVerification ? 'rounded-2xl border border-amber-500/30 bg-amber-50/80 dark:bg-amber-500/5 p-6 shadow-[0_0_20px_rgba(245,158,11,0.05)]' : ''
           }`}>
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -205,9 +203,9 @@ export function EmailVerification({ user }: EmailVerificationProps) {
                   <Shield className={`w-6 h-6 ${isPersonaVerified ? 'text-emerald-600 dark:text-emerald-500' : 'text-amber-600 dark:text-amber-500'
                     }`} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Identity security</p>
-                  <p className="text-base font-semibold text-zinc-900 dark:text-white">Persona verification</p>
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Identity security</p>
+                  <p className="text-base font-semibold tracking-tight text-zinc-900 dark:text-white">Persona verification</p>
                 </div>
               </div>
               {isPersonaVerified ? (
@@ -225,11 +223,9 @@ export function EmailVerification({ user }: EmailVerificationProps) {
 
             {needsPersonaVerification && (
               <div className="pt-6 border-t border-zinc-200 dark:border-white/5 space-y-4">
-                <div className="bg-zinc-50 dark:bg-white/5 rounded-xl p-4 border border-zinc-200 dark:border-white/5">
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    Identity verification is required to build trust and security within the community. This process only takes 2 minutes.
-                  </p>
-                </div>
+                <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                  Identity verification is required to build trust and security within the community. This process only takes 2 minutes.
+                </p>
                 <Button
                   onClick={handleCompletePersonaVerification}
                   className="bg-indigo-500 hover:bg-indigo-600 text-white h-11 px-8 rounded-xl font-semibold shadow-lg shadow-blue-500/20 w-full sm:w-auto"

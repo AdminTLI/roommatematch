@@ -3,12 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import {
-  FileText,
   FileDown,
   Edit,
   RotateCcw,
@@ -19,6 +17,7 @@ import {
 } from 'lucide-react'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { downloadBlob } from '@/lib/pdf/download-blob'
+import { SettingsSection } from '@/components/settings/settings-section'
 
 interface QuestionnaireSettingsProps {
   progressData: {
@@ -209,32 +208,36 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
   }
 
   return (
-    <div className="space-y-10">
-      {error && (
-        <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+    <div className="divide-y divide-zinc-200/80 dark:divide-white/[0.06]">
+      {(error || success) && (
+        <div className="space-y-3 py-6">
+          {error && (
+            <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {success && (
+            <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
+          )}
+        </div>
       )}
 
-      {success && (
-        <Alert className="bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-          <CheckCircle className="h-4 w-4" />
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Progress Overview Group */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Progress Overview</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden p-6 space-y-6 backdrop-blur-xl">
+      <SettingsSection
+        title="Progress overview"
+        description="How far you are through the living-together questionnaire."
+      >
+        <div className="space-y-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
-            <div className="min-w-0 space-y-1">
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">Overall Completion</p>
-              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="text-4xl font-bold text-zinc-900 dark:text-white">{progressPercentage}%</span>
-                <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
-                  {completedSections.length} / {totalSections} Modules
+            <div className="min-w-0 space-y-1.5">
+              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Overall completion</p>
+              <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                <span className="text-4xl font-semibold tracking-tight text-zinc-900 dark:text-white">{progressPercentage}%</span>
+                <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                  {completedSections.length} of {totalSections} modules
                 </span>
               </div>
             </div>
@@ -252,100 +255,98 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
           </div>
 
           <div className="space-y-2">
-            <Progress value={progressPercentage} className="h-2 bg-zinc-200 dark:bg-white/5 overflow-hidden">
-              {/* Note: In a real app, the inner div would have bg-blue-500 */}
-            </Progress>
-            <div className="flex justify-between text-xs text-zinc-600 dark:text-zinc-400">
+            <Progress value={progressPercentage} className="h-2 bg-zinc-200 dark:bg-white/5 overflow-hidden" />
+            <div className="flex justify-between text-sm text-zinc-500 dark:text-zinc-400">
               <span>Start</span>
               <span>Submit</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 pt-4 border-t border-zinc-200 dark:border-white/5">
+          <div className="grid grid-cols-2 gap-8 border-t border-zinc-200/70 pt-5 dark:border-white/[0.06]">
             <div className="space-y-1">
-              <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Last updated</p>
+              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Last updated</p>
               <p className="text-sm text-zinc-900 dark:text-zinc-100">{formatDate(lastUpdatedMostRecent)}</p>
             </div>
             {submittedAt && (
               <div className="space-y-1 text-right">
-                <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Submitted</p>
+                <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Submitted</p>
                 <p className="text-sm text-zinc-900 dark:text-zinc-100">{formatDate(submittedAt)}</p>
               </div>
             )}
           </div>
         </div>
-      </div>
+      </SettingsSection>
 
-      {/* Questionnaire Modules */}
       {moduleSections.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">
-            Questionnaire Modules
-          </h3>
-          <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden divide-y divide-zinc-200 dark:divide-white/5 backdrop-blur-xl">
+        <SettingsSection
+          title="Questionnaire modules"
+          description="Jump into any module to review or edit your answers."
+        >
+          <div className="divide-y divide-zinc-200/70 dark:divide-white/[0.06]">
             {moduleSections.map((section) => {
               const isComplete = completedSectionSet.has(section)
               return (
                 <button
                   key={section}
                   onClick={() => handleEditSection(section)}
-                  className="w-full flex items-center justify-between p-4 hover:bg-zinc-100 dark:hover:bg-white/5 transition-all duration-300 group text-left"
+                  className="group flex w-full items-center justify-between py-4 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.03]"
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg ${
                         isComplete
                           ? 'bg-emerald-500/10'
-                          : 'bg-zinc-200/80 dark:bg-white/5'
+                          : 'bg-zinc-100 dark:bg-white/5'
                       }`}
                       aria-label={isComplete ? 'Completed' : 'Not completed'}
                     >
                       {isComplete ? (
-                        <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                       ) : (
-                        <Clock className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+                        <Clock className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                       )}
                     </div>
                     <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                       {getSectionDisplayName(section)}
                     </span>
                   </div>
-                  <Edit className="w-4 h-4 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+                  <Edit className="h-4 w-4 text-zinc-400 transition-colors group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-200" />
                 </button>
               )
             })}
           </div>
-        </div>
+        </SettingsSection>
       )}
 
-      {/* Actions Group */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-medium text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-1">Quick Actions</h3>
-        <div className="bg-white/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/10 rounded-2xl p-6 space-y-6 backdrop-blur-xl">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <SettingsSection
+        title="Quick actions"
+        description="Edit answers, export a PDF, or start the questionnaire over."
+      >
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Button
               onClick={handleEditAnswers}
-              className="h-12 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] font-semibold"
+              className="h-11 rounded-xl bg-indigo-500 text-sm font-semibold text-white shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] hover:bg-indigo-600"
             >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Responses
+              <Edit className="mr-2 h-4 w-4" />
+              Edit responses
             </Button>
 
             <Button
               onClick={handleDownloadResponsesPdf}
               variant="outline"
               disabled={isDownloadingPdf}
-              className="h-12 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
+              className="h-11 rounded-xl border-zinc-200 text-sm text-zinc-900 hover:bg-zinc-100 dark:border-white/10 dark:text-zinc-100 dark:hover:bg-white/5"
             >
               {isDownloadingPdf ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Generating PDF...
                 </>
               ) : (
                 <>
-                  <FileDown className="w-4 h-4 mr-2" />
-                  Download Responses PDF
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Download responses PDF
                 </>
               )}
             </Button>
@@ -354,35 +355,35 @@ export function QuestionnaireSettings({ progressData, userType }: QuestionnaireS
               onClick={handleRetakeQuestionnaire}
               variant="outline"
               disabled={isResetting}
-              className="h-12 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-zinc-100 rounded-xl"
+              className="h-11 rounded-xl border-zinc-200 text-sm text-zinc-900 hover:bg-zinc-100 dark:border-white/10 dark:text-zinc-100 dark:hover:bg-white/5"
             >
               {isResetting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Resetting...
                 </>
               ) : (
                 <>
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Retake All
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Retake all
                 </>
               )}
             </Button>
           </div>
 
-          <div className="bg-zinc-50 dark:bg-zinc-900/60 p-4 rounded-xl border border-zinc-200 dark:border-white/5 space-y-3">
-            <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
-              <strong className="text-zinc-900 dark:text-zinc-100">Edit Responses:</strong> Open the review page to see all your answers, then jump into any module to change one. Your current matches will be updated automatically.
+          <div className="space-y-3 border-t border-zinc-200/70 pt-6 dark:border-white/[0.06]">
+            <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+              <span className="font-medium text-zinc-800 dark:text-zinc-200">Edit responses:</span> Open the review page to see all your answers, then jump into any module to change one. Your current matches will be updated automatically.
             </p>
-            <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
-              <strong className="text-zinc-900 dark:text-zinc-100">Retake All:</strong> This will archive your current responses and start the matching process from scratch.
+            <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+              <span className="font-medium text-zinc-800 dark:text-zinc-200">Retake all:</span> Archives your current responses and starts the matching process from scratch.
             </p>
-            <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
-              <strong className="text-zinc-900 dark:text-zinc-100">Download Responses PDF:</strong> Export your latest questionnaire answers as a PDF document.
+            <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+              <span className="font-medium text-zinc-800 dark:text-zinc-200">Download responses PDF:</span> Export your latest questionnaire answers as a PDF.
             </p>
           </div>
         </div>
-      </div>
+      </SettingsSection>
     </div>
   )
 }

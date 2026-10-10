@@ -2,15 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { User, FileText, Shield, Settings as SettingsIcon, EyeOff, Eye, Loader2 } from 'lucide-react'
 import { ProfileSettings } from './profile-settings'
 import { AvatarAndPhotoSettings } from './avatar-and-photo-settings'
@@ -102,11 +94,11 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 pb-24 lg:pb-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+      <div className="mb-10">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
           Settings
         </h1>
-        <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+        <p className="mt-2 text-base leading-relaxed text-zinc-500 dark:text-zinc-400">
           Your profile, how you live, and account settings.
         </p>
         {isProfileHidden && (
@@ -186,7 +178,7 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
 
         {/* Main Content Area - only render Radix UI after mount to avoid hydration mismatch */}
         <div className="flex-1">
-          <div className="bg-white/80 dark:bg-zinc-900/40 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-sm">
+          <div className="overflow-hidden">
             {!mounted ? (
               <div className="p-6 min-h-[320px] flex items-center justify-center">
                 <div className="animate-pulse flex flex-col gap-3 w-full max-w-sm">
@@ -202,33 +194,43 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                 className="w-full"
               >
                 <TabsContent value="profile" className="mt-0 focus-visible:outline-none">
-                  <div className="p-6">
-                    <div className="mb-6">
-                      <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Profile Information</h2>
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Update your personal info and living details.</p>
-                    </div>
-                    <div className="mb-10">
-                      <AvatarAndPhotoSettings
-                        profile={profile || {}}
-                        profilePicturePreviewUrl={profilePicturePreviewUrl}
+                  <div className="space-y-0 lg:pl-2">
+                    <header className="space-y-1.5 pb-8">
+                      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                        Profile
+                      </h2>
+                      <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        Update your personal info and living details.
+                      </p>
+                    </header>
+                    <div className="divide-y divide-zinc-200/80 dark:divide-white/[0.06]">
+                      <section className="space-y-5 py-10 first:pt-0">
+                        <AvatarAndPhotoSettings
+                          profile={profile || {}}
+                          profilePicturePreviewUrl={profilePicturePreviewUrl}
+                        />
+                      </section>
+                      <ProfileSettings
+                        user={user}
+                        profile={profile}
+                        academic={academic}
+                        userType={userType}
+                        professionalContext={professionalContext}
                       />
                     </div>
-                    <ProfileSettings
-                      user={user}
-                      profile={profile}
-                      academic={academic}
-                      userType={userType}
-                      professionalContext={professionalContext}
-                    />
                   </div>
                 </TabsContent>
 
                 <TabsContent value="questionnaire" className="mt-0 focus-visible:outline-none">
-                  <div className="p-6">
-                    <div className="mb-6">
-                      <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Questionnaire Management</h2>
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">View and update how you answered about living together.</p>
-                    </div>
+                  <div className="space-y-0 lg:pl-2">
+                    <header className="space-y-1.5 pb-8">
+                      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                        Questionnaire
+                      </h2>
+                      <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        View and update how you answered about living together.
+                      </p>
+                    </header>
                     <QuestionnaireSettings
                       progressData={progressData}
                       userType={userType}
@@ -237,21 +239,29 @@ export function SettingsContent({ user, profile, academic, professionalContext, 
                 </TabsContent>
 
                 <TabsContent value="account" className="mt-0 focus-visible:outline-none">
-                  <div className="p-6">
-                    <div className="mb-6">
-                      <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Account Settings</h2>
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Account, security, and login settings.</p>
-                    </div>
+                  <div className="space-y-0 lg:pl-2">
+                    <header className="space-y-1.5 pb-8">
+                      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                        Account
+                      </h2>
+                      <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        Security, notifications, and login settings.
+                      </p>
+                    </header>
                     <AccountSettings user={user} profile={profile} onVisibilityChange={router.refresh} />
                   </div>
                 </TabsContent>
 
                 <TabsContent value="privacy" className="mt-0 focus-visible:outline-none">
-                  <div className="p-6">
-                    <div className="mb-6">
-                      <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Privacy & Data</h2>
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Control your data visibility and privacy settings.</p>
-                    </div>
+                  <div className="space-y-0 lg:pl-2">
+                    <header className="space-y-1.5 pb-8">
+                      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                        Privacy & data
+                      </h2>
+                      <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+                        Control your visibility, matching rights, and data exports.
+                      </p>
+                    </header>
                     <PrivacySettings
                       user={user}
                       profile={profile}
