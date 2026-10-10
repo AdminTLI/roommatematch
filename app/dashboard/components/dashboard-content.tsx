@@ -620,6 +620,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           return {
             matches: [],
             viewerPersonaVerified,
+            viewerIsVerified,
             personaCelebrationSeen,
             peerVerification,
           }

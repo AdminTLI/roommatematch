@@ -127,28 +127,31 @@ export function MessengerProfilePane({ chatId, isOpen, onClose }: MessengerProfi
   )
 
   const dimensionRows = useMemo(() => {
-    if (!dimObj) return [] as Array<{ key: string; label: string; pct: number }>
+    const rows: Array<{ key: string; label: string; pct: number }> = []
+    if (!dimObj) return rows
     if (useV2Modules) {
-      return V2_CHAT_MODULES.map(mod => {
+      for (const mod of V2_CHAT_MODULES) {
         const pct = pctFromFraction(toDimNumber(dimObj[mod.key]))
-        if (pct == null) return null
-        return { key: mod.key, label: mod.label, pct }
-      }).filter((row): row is { key: string; label: string; pct: number } => row != null)
+        if (pct == null) continue
+        rows.push({ key: mod.key, label: mod.label, pct })
+      }
+      return rows
     }
-    return Object.entries(dimObj)
-      .map(([key, score]) => {
-        if (key === 'gate_conflicts' || key === 'soft_gate_override') return null
-        const pct = pctFromFraction(toDimNumber(score))
-        if (pct == null) return null
-        return { key, label: legacyDimensionLabel(key), pct }
-      })
-      .filter((row): row is { key: string; label: string; pct: number } => row != null)
+    for (const [key, score] of Object.entries(dimObj)) {
+      if (key === 'gate_conflicts' || key === 'soft_gate_override') continue
+      const pct = pctFromFraction(toDimNumber(score))
+      if (pct == null) continue
+      rows.push({ key, label: legacyDimensionLabel(key), pct })
+    }
+    return rows
   }, [dimObj, useV2Modules])
 
-  const insightByModule = useMemo(
-    () => new Map((moduleInsights?.modules || []).map(m => [m.key, m] as const)),
-    [moduleInsights],
-  )
+  const insightByModule = useMemo(() => {
+    const entries = (moduleInsights?.modules || []).map(
+      m => [m.key, m] as [string, (typeof m)]
+    )
+    return new Map<string, (typeof entries)[number][1]>(entries)
+  }, [moduleInsights])
 
   if (!isOpen) return null
 

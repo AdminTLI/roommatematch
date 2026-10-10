@@ -307,7 +307,8 @@ export async function POST(request: Request) {
       const { recordFunnelMilestone, maybeTrackSettingsFilled } = await import(
         '@/lib/admin/registration-funnel-track'
       )
-      if (body.section === 'intro' || body.section === 'academic') {
+      // Academic fields live in the intro section (legacy `academic` key removed from SectionKey).
+      if (body.section === 'intro') {
         await recordFunnelMilestone(user.id, 'academic_filled', {
           source: 'api/onboarding/save',
           metadata: { section: body.section },
