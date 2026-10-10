@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
         const { data: byReporter } = await admin
           .from('reports')
           .select('id')
-          .in('status', ['open', 'pending'])
+          .eq('status', 'open')
           .in('reporter_id', part)
         for (const r of byReporter || []) {
           if (r.id) seen.add(r.id)
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
         const { data: byTarget } = await admin
           .from('reports')
           .select('id')
-          .in('status', ['open', 'pending'])
+          .eq('status', 'open')
           .in('target_user_id', part)
         for (const r of byTarget || []) {
           if (r.id) seen.add(r.id)

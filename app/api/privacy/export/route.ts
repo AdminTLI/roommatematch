@@ -348,6 +348,31 @@ export async function GET(req: NextRequest) {
         }
       }
 
+      // 13b. Registration funnel milestones (analysis trail)
+      try {
+        const adminExport = createAdminClient()
+        const [{ data: funnelMilestones }, { data: funnelProgress }] = await Promise.all([
+          adminExport
+            .from('registration_funnel_milestones')
+            .select('stage_key, kind, step_number, reached_at, source, metadata')
+            .eq('user_id', user.id)
+            .order('reached_at', { ascending: true }),
+          adminExport
+            .from('registration_funnel_progress')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+        ])
+        if (funnelMilestones?.length || funnelProgress) {
+          exportData.registration_funnel = {
+            milestones: funnelMilestones || [],
+            progress: funnelProgress || null,
+          }
+        }
+      } catch {
+        // optional — do not fail full export
+      }
+
       // 14. User vectors (matching data)
       const { data: userVector } = await supabase
         .from('user_vectors')

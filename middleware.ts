@@ -587,13 +587,12 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Enforce email verification for protected routes. Persona is required only for chat
-  // (and for accepting matches, enforced in the accept API / UI — not as a route wall).
+  // Enforce email verification for protected routes.
+  // Persona / student verification is optional (soft nudge on accept); not a route wall.
   // Institution admins skip student onboarding verification gates.
   if (user && isProtectedRoute && !isAllowedRoute && !isInstitutionRoute) {
     const verificationStatus = await checkUserVerificationStatus(user)
-    const requirePersona = pathname.startsWith('/chat')
-    const redirectUrl = getVerificationRedirectUrl(verificationStatus, { requirePersona })
+    const redirectUrl = getVerificationRedirectUrl(verificationStatus)
 
     if (redirectUrl) {
       const url = req.nextUrl.clone()

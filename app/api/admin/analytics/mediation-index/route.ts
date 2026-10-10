@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
     }
 
     const totalReports = rows.length
-    const pendingReports = rows.filter((r) => r.status === 'open' || r.status === 'pending').length
+    const pendingReports = rows.filter((r) => r.status === 'open').length
 
     const resolved = rows.filter((r) => RESOLVED_STATUSES.includes(r.status))
     let totalHours = 0

@@ -176,6 +176,17 @@ export function VerifyEmailForm() {
           setIsVerified(false)
           return
         }
+
+        // Academic signup emails → auto-claim verified student badge
+        try {
+          await fetch('/api/auth/finalize-email-verification', {
+            method: 'POST',
+            credentials: 'include',
+            cache: 'no-store',
+          })
+        } catch {
+          // Non-fatal: onboarding can still proceed; academic gate may offer retry
+        }
         
         // After email OTP, continue onboarding.
         // /onboarding/path skips "Which best describes you?" when user_type was

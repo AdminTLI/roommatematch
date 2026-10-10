@@ -187,6 +187,15 @@ export async function POST(request: Request) {
       })
     }
 
+    try {
+      const { maybeTrackSettingsFilled } = await import(
+        '@/lib/admin/registration-funnel-track'
+      )
+      await maybeTrackSettingsFilled(user.id, 'api/settings/profile', serviceSupabase as any)
+    } catch {
+      // non-fatal
+    }
+
     return NextResponse.json({ 
       success: true,
       message: 'Profile updated successfully' 

@@ -16,8 +16,13 @@ import type { StudentProfile } from '@/lib/matching/answer-map'
 import { canViewCohortProfile } from '@/lib/auth/cohort-visibility'
 import { isUuidString, viewerMayRequestCompatibilityScore } from '@/lib/auth/compatibility-pair-access'
 import { filterCompatibilityPeerIds } from '@/lib/matching/compatibility-peer-access'
-import { isV2QuestionnaireComplete, type OnboardingSectionRow } from '@/lib/matching/v2-eligibility'
+import {
+  extractV2ItemAnswers,
+  isV2QuestionnaireComplete,
+  type OnboardingSectionRow,
+} from '@/lib/matching/v2-eligibility'
 import { V2_SECTION_KEYS } from '@/types/questionnaire'
+import { buildMatchModuleInsights } from '@/lib/chat/match-module-feedback'
 
 /** Hobby / Free tier friendly ceiling (Gemini + RPC + DB). */
 export const maxDuration = 10
@@ -459,6 +464,19 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    const viewerAnswers = extractV2ItemAnswers(viewerSections)
+    const targetAnswers = extractV2ItemAnswers(targetSections)
+    const moduleInsights = buildMatchModuleInsights({
+      dimensionScores:
+        score.dimension_scores_json && typeof score.dimension_scores_json === 'object'
+          ? (score.dimension_scores_json as Record<string, unknown>)
+          : null,
+      answersA: viewerAnswers,
+      answersB: targetAnswers,
+      overallScore: Number(score.compatibility_score) || 0,
+      seed: `${userLow}:${userHigh}`,
+    })
+
     const responseData = {
       // Existing fields
       compatibility_score: Number(score.compatibility_score) || 0,
@@ -480,6 +498,9 @@ export async function GET(request: NextRequest) {
       dimension_scores_json: score.dimension_scores_json || null,
       is_valid_match: score.is_valid_match !== false, // Default to true if null/undefined
       algorithm_version: score.algorithm_version || 'v1.0',
+
+      // Curated strengths / watch-outs from questionnaire answer gaps (no raw answers)
+      module_insights: moduleInsights,
 
       // Flag to explain lower context score: other user has incomplete university info
       other_user_has_incomplete_academic: otherUserHasIncompleteAcademic,

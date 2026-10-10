@@ -39,6 +39,8 @@ import {
 } from 'lucide-react'
 import {
   normalizeRegistrationStages,
+  REGISTRATION_FUNNEL_FINAL_REQUIRED_STAGE_ID,
+  type FunnelSideMetric,
   type FunnelStage,
 } from '@/lib/admin/registration-funnel'
 import { AdminEmptyState } from '@/components/admin/empty-state'
@@ -53,17 +55,20 @@ interface JourneyUser {
   email_confirmed_at: string | null
   is_active: boolean
   stages: Record<number, boolean>
+  side_metrics?: Record<string, boolean>
   furthest_stage: number
   last_activity_at: string | null
 }
 
 interface FunnelResponse {
   stages: FunnelStage[]
+  sideMetrics?: FunnelSideMetric[]
   total_users: number
   users: JourneyUser[]
   stats: {
     stageCounts: Record<number, number>
     stageRates: Record<number, number>
+    sideMetricCounts?: Record<string, number>
     dropOffs: { from: number; to: number; lost: number; dropOffRate: number }[]
     biggestBottleneck: { stageId: number; dropOffRate: number; lost: number } | null
   }
@@ -132,13 +137,15 @@ export function RegistrationWorkflowPanel() {
 
   const handleExportCSV = () => {
     if (!data) return
+    const sideMetrics = data.sideMetrics || []
     const header = [
       'email',
       'first_name',
       'last_name',
       'signed_up_at',
       'furthest_stage',
-      ...data.stages.map((s) => `stage_${s.id}_${s.key}`),
+      ...data.stages.map((s) => `step_${s.step}_${s.key}`),
+      ...sideMetrics.map((m) => `side_${m.key}`),
     ]
     const rows = data.users.map((u) => [
       u.email,
@@ -147,6 +154,7 @@ export function RegistrationWorkflowPanel() {
       u.signed_up_at,
       String(u.furthest_stage),
       ...data.stages.map((s) => (u.stages[s.id] ? '1' : '0')),
+      ...sideMetrics.map((m) => (u.side_metrics?.[m.key] ? '1' : '0')),
     ])
     const csv = [header, ...rows]
       .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
@@ -196,7 +204,7 @@ export function RegistrationWorkflowPanel() {
                   <SelectItem value="all">All stages</SelectItem>
                   {data.stages.map((s) => (
                     <SelectItem key={s.id} value={String(s.id)}>
-                      Stuck at: {s.id}. {s.shortLabel}
+                      Stuck at: {s.step}. {s.shortLabel}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -250,15 +258,15 @@ export function RegistrationWorkflowPanel() {
               />
               <StatCard
                 label="Completed journey"
-                value={data.stats.stageCounts[11] || 0}
-                hint={`${formatPct(data.stats.stageRates[11] || 0)} of users`}
+                value={data.stats.stageCounts[REGISTRATION_FUNNEL_FINAL_REQUIRED_STAGE_ID] || 0}
+                hint={`${formatPct(data.stats.stageRates[REGISTRATION_FUNNEL_FINAL_REQUIRED_STAGE_ID] || 0)} of users`}
                 icon={<CheckCircle2 className="h-4 w-4" />}
                 tint="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300"
               />
               <StatCard
-                label="Email-verified"
-                value={data.stats.stageCounts[1] || 0}
-                hint={`${formatPct(data.stats.stageRates[1] || 0)} of users`}
+                label="Settings filled"
+                value={data.stats.sideMetricCounts?.settings_filled || 0}
+                hint="Side metric — can happen anytime"
                 icon={<ActivitySquare className="h-4 w-4" />}
                 tint="bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300"
               />
@@ -287,16 +295,20 @@ export function RegistrationWorkflowPanel() {
                   Funnel overview
                 </CardTitle>
                 <CardDescription>
-                  Each bar is the number of users who reached that stage at least once. The red
-                  number below shows how many users dropped off before reaching the next stage.
+                  Numbered steps 1–10 in chronological signup order. Settings is tracked separately
+                  (anytime) and is not part of this path.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {data.stages.map((stage, idx) => {
+                  {data.stages.map((stage) => {
                     const count = data.stats.stageCounts[stage.id] || 0
                     const rate = data.stats.stageRates[stage.id] || 0
-                    const drop = idx < data.stats.dropOffs.length ? data.stats.dropOffs[idx] : null
+                    const drop =
+                      data.stats.dropOffs.find((d) => d.from === stage.id) ?? null
+                    const nextLabel = drop
+                      ? data.stages.find((s) => s.id === drop.to)?.shortLabel
+                      : null
                     const isWorst =
                       data.stats.biggestBottleneck &&
                       drop &&
@@ -305,11 +317,11 @@ export function RegistrationWorkflowPanel() {
                     return (
                       <div key={stage.id} className="group">
                         <div className="flex items-center justify-between mb-1 text-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-semibold">
-                              {stage.id}
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-semibold">
+                              {stage.step}
                             </span>
-                            <span className="font-medium">{stage.label}</span>
+                            <span className="font-medium truncate">{stage.label}</span>
                           </div>
                           <div className="flex items-center gap-3 text-xs text-gray-500">
                             <span>{count} users</span>
@@ -331,7 +343,8 @@ export function RegistrationWorkflowPanel() {
                             }`}
                           >
                             <TrendingDown className="h-3 w-3" />
-                            {drop.lost} users dropped before next step ({drop.dropOffRate.toFixed(1)}%)
+                            {drop.lost} users dropped before {nextLabel ?? 'next step'} (
+                            {drop.dropOffRate.toFixed(1)}%)
                             {isWorst && (
                               <Badge className="ml-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">
                                 Biggest bottleneck
@@ -377,7 +390,7 @@ export function RegistrationWorkflowPanel() {
                               <TooltipTrigger asChild>
                                 <div className="flex cursor-help flex-col items-center gap-1">
                                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-[10px] font-semibold dark:bg-gray-800">
-                                    {s.id}
+                                    {s.step}
                                   </span>
                                   <span className="whitespace-nowrap text-[10px] font-medium text-gray-600 dark:text-gray-300">
                                     {s.shortLabel}
@@ -386,9 +399,29 @@ export function RegistrationWorkflowPanel() {
                               </TooltipTrigger>
                               <TooltipContent side="bottom" className="max-w-xs">
                                 <div className="mb-1 font-semibold">
-                                  {s.id}. {s.label}
+                                  {s.step}. {s.label}
                                 </div>
                                 <div className="text-xs opacity-80">{s.description}</div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </th>
+                        ))}
+                        {(data.sideMetrics || []).map((m) => (
+                          <th key={m.key} className={ADMIN_TABLE_CELL}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex cursor-help flex-col items-center gap-1">
+                                  <span className="inline-flex h-6 items-center justify-center rounded-full bg-slate-100 px-1.5 text-[9px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                    Side
+                                  </span>
+                                  <span className="whitespace-nowrap text-[10px] font-medium text-gray-600 dark:text-gray-300">
+                                    {m.shortLabel}
+                                  </span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" className="max-w-xs">
+                                <div className="mb-1 font-semibold">{m.label}</div>
+                                <div className="text-xs opacity-80">{m.description}</div>
                               </TooltipContent>
                             </Tooltip>
                           </th>
@@ -399,7 +432,12 @@ export function RegistrationWorkflowPanel() {
                     <tbody>
                       {filteredUsers.length === 0 ? (
                         <tr>
-                          <td colSpan={data.stages.length + 3} className="p-0">
+                          <td
+                            colSpan={
+                              data.stages.length + (data.sideMetrics?.length || 0) + 3
+                            }
+                            className="p-0"
+                          >
                             <AdminEmptyState
                               icon={Users2}
                               title="No users match the current filters"
@@ -451,9 +489,40 @@ export function RegistrationWorkflowPanel() {
                                       </TooltipTrigger>
                                       <TooltipContent side="top">
                                         <div className="text-xs">
-                                          <span className="font-semibold">{s.label}</span>
+                                          <span className="font-semibold">
+                                            {s.step}. {s.label}
+                                          </span>
                                           <br />
                                           {reached ? '✓ Reached' : '⏳ Not yet'}
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </td>
+                                )
+                              })}
+                              {(data.sideMetrics || []).map((m) => {
+                                const reached = Boolean(u.side_metrics?.[m.key])
+                                return (
+                                  <td key={m.key} className={`${ADMIN_TABLE_CELL} text-center`}>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <div className="inline-flex cursor-help items-center justify-center">
+                                          {reached ? (
+                                            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-teal-500/15 ring-1 ring-teal-500/30">
+                                              <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                            </div>
+                                          ) : (
+                                            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gray-100 ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700">
+                                              <Circle className="h-3.5 w-3.5 text-gray-300 dark:text-gray-600" />
+                                            </div>
+                                          )}
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">
+                                        <div className="text-xs">
+                                          <span className="font-semibold">{m.label}</span>
+                                          <br />
+                                          {reached ? '✓ Yes' : '— Not yet'}
                                         </div>
                                       </TooltipContent>
                                     </Tooltip>
@@ -477,7 +546,7 @@ export function RegistrationWorkflowPanel() {
                                       style={{ width: `${progressPct}%` }}
                                     />
                                   </div>
-                                  {stuckBadge && progressPct < 100 && u.furthest_stage <= 2 && (
+                                  {stuckBadge && progressPct < 100 && u.furthest_stage < 4 && (
                                     <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
                                   )}
                                 </div>

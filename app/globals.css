@@ -1150,14 +1150,32 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
     height: 100% !important;
     max-height: 100% !important;
     min-height: 0 !important;
+    max-width: 100% !important;
     overflow: hidden !important;
+    overflow-x: hidden !important;
+    overscroll-behavior-x: none !important;
+    touch-action: pan-y !important;
     display: flex !important;
     flex-direction: column !important;
   }
 
   body.chat-page [data-messenger-messages],
   body:has([data-chat-page]) [data-messenger-messages] {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
     overscroll-behavior: contain !important;
+    overscroll-behavior-x: none !important;
+    touch-action: pan-y !important;
+  }
+
+  /* Active thread only: lock horizontal panning so the chat is not an infinite canvas */
+  body.mobile-chat-active-conversation [data-messenger-conversation],
+  body:has([data-chat-page]).mobile-chat-active-conversation [data-messenger-conversation],
+  body.mobile-chat-active-conversation [data-messenger-messages],
+  body:has([data-chat-page]).mobile-chat-active-conversation [data-messenger-messages] {
+    overflow-x: hidden !important;
+    overscroll-behavior-x: none !important;
+    touch-action: pan-y !important;
   }
   
   /* Match Insights column shell */
@@ -1199,14 +1217,16 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
   [data-mobile-profile-sheet] [data-profile-pane-scroll] {
     flex: 1 1 0% !important;
     min-height: 0 !important;
-    max-height: 100% !important;
+    /* Avoid max-height:100% clipping the scrollport inside mobile sheets */
+    max-height: none !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
+    overscroll-behavior-y: contain !important;
     pointer-events: auto !important;
-    /* manipulation keeps clicks usable; pan-y alone can interfere with button taps */
-    touch-action: manipulation !important;
+    /* Vertical scroll + taps; no horizontal canvas drag inside the panel */
+    touch-action: pan-y manipulation !important;
   }
 
   /* Edge fade hint for horizontal scroll areas */

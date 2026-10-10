@@ -79,21 +79,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Accept requires full questionnaire + Persona (decline does not)
+    // Accept requires full questionnaire (verification is optional soft-nudge in UI)
     if (action === 'accept') {
       const adminForGates = await createAdminClient()
-      const { checkUserVerificationStatus } = await import('@/lib/auth/verification-check')
       const { isFullQuestionnaireComplete } = await import('@/lib/onboarding/completion-stage')
-      const verificationStatus = await checkUserVerificationStatus(user)
-      if (verificationStatus.needsPersonaVerification) {
-        return NextResponse.json(
-          {
-            error: 'Identity verification required before accepting a match.',
-            requiresPersonaVerification: true,
-          },
-          { status: 403 }
-        )
-      }
       const { data: submission } = await adminForGates
         .from('onboarding_submissions')
         .select('completion_stage')
@@ -387,6 +376,18 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      try {
+        const { recordFunnelMilestone } = await import(
+          '@/lib/admin/registration-funnel-track'
+        )
+        await recordFunnelMilestone(user.id, 'accepted_match', {
+          source: 'api/match/suggestions/respond',
+          metadata: { suggestion_id: suggestionId, repaired: true },
+        })
+      } catch {
+        // non-fatal
+      }
+
       return NextResponse.json({ ok: true, suggestion, repaired: true })
     }
 
@@ -417,6 +418,18 @@ export async function POST(request: NextRequest) {
       (s.acceptedBy || []).forEach(a => unionAccepted.add(a))
     }
     unionAccepted.add(user.id)
+
+    try {
+      const { recordFunnelMilestone } = await import(
+        '@/lib/admin/registration-funnel-track'
+      )
+      await recordFunnelMilestone(user.id, 'accepted_match', {
+        source: 'api/match/suggestions/respond',
+        metadata: { suggestion_id: suggestionId },
+      })
+    } catch {
+      // non-fatal
+    }
 
     safeLogger.debug(`[DEBUG] Accept action - Union acceptedBy count: ${unionAccepted.size}`)
     
@@ -551,14 +564,6 @@ export async function POST(request: NextRequest) {
             }
           }
           
-          const { assertBothUsersPersonaVerified } = await import('@/lib/chat/persona-chat-gate')
-          const personaGate = await assertBothUsersPersonaVerified(admin, userA, userB)
-          if (!personaGate.ok) {
-            safeLogger.info('[Match Respond] Skipping chat creation until both users are Persona-verified', {
-              suggestionId: suggestion.id,
-              unverifiedUserIds: personaGate.unverifiedUserIds,
-            })
-          } else {
           const ensured = await ensureDirectChat(admin, userA, userB, { createdBy: userA })
           chatId = ensured.chatId
           safeLogger.info(
@@ -572,7 +577,6 @@ export async function POST(request: NextRequest) {
               suggestionId: suggestion.id,
             }
           )
-          }
         } catch (chatError) {
           safeLogger.error('Failed to create chat on confirmation', {
             error: chatError,
@@ -702,14 +706,6 @@ export async function POST(request: NextRequest) {
               }
             }
             
-            const { assertBothUsersPersonaVerified } = await import('@/lib/chat/persona-chat-gate')
-            const personaGate = await assertBothUsersPersonaVerified(admin, userA, userB)
-            if (!personaGate.ok) {
-              safeLogger.info('[Match Respond] Skipping chat creation (re-check) until both users are Persona-verified', {
-                suggestionId: suggestion.id,
-                unverifiedUserIds: personaGate.unverifiedUserIds,
-              })
-            } else {
             const ensured = await ensureDirectChat(admin, userA, userB, { createdBy: userA })
             chatId = ensured.chatId
             safeLogger.info(
@@ -723,7 +719,6 @@ export async function POST(request: NextRequest) {
                 suggestionId: suggestion.id,
               }
             )
-            }
             
             // Create notifications
             try {

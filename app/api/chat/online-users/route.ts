@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
 
     const { data: activityRows, error: activityError } = await admin
       .from('users')
-      .select('id, last_activity_at')
+      .select('id, last_activity_at, identity_verified_at, is_verified_student')
       .in('id', allowedPartnerIds)
       .gte('last_activity_at', threeHoursAgo.toISOString())
 
@@ -122,11 +122,19 @@ export async function GET(request: NextRequest) {
     }
 
     const latestByUser = new Map<string, Date>()
+    const userVerificationById = new Map<
+      string,
+      { identity_verified_at?: string | null; is_verified_student?: boolean | null }
+    >()
     let activeTodayCount = 0
     for (const row of activityRows || []) {
       if (!row.last_activity_at) continue
       const at = new Date(row.last_activity_at)
       latestByUser.set(row.id, at)
+      userVerificationById.set(row.id, {
+        identity_verified_at: row.identity_verified_at,
+        is_verified_student: row.is_verified_student,
+      })
       if (at >= startOfToday) {
         activeTodayCount++
       }
@@ -153,7 +161,7 @@ export async function GET(request: NextRequest) {
 
     const { data: profiles, error: profilesError } = await admin
       .from('profiles')
-      .select('user_id, first_name, last_name, avatar_id')
+      .select('user_id, first_name, last_name, avatar_id, verification_status, is_verified_student')
       .in('user_id', presenceIds)
 
     if (profilesError) {
@@ -166,11 +174,18 @@ export async function GET(request: NextRequest) {
       .map(row => {
         const profile = profileMap.get(row.id)
         if (!profile) return null
+        const userFlags = userVerificationById.get(row.id)
+        const isVerified =
+          Boolean(userFlags?.identity_verified_at) ||
+          userFlags?.is_verified_student === true ||
+          profile.verification_status === 'verified' ||
+          profile.is_verified_student === true
         return {
           id: profile.user_id,
           firstName: profile.first_name?.trim() || 'User',
           avatar: programmaticAvatarUrl(profile.avatar_id, profile.user_id),
           presence: row.tier as PresenceTier,
+          isVerified,
         }
       })
       .filter(Boolean)

@@ -4,14 +4,15 @@ import {
   normalizeRegistrationStages,
   furthestRegistrationStage,
 } from '@/lib/admin/registration-funnel'
-import { questionSchemas } from '@/lib/onboarding/validation'
+import {
+  hasDashboardAccess,
+  isFullQuestionnaireComplete,
+} from '@/lib/onboarding/completion-stage'
 import {
   studentPseudoId,
   suppressSmallCount,
   suppressSmallRate,
 } from '@/lib/institution/anonymization'
-
-const TOTAL_REQUIRED_QUESTIONS = Object.keys(questionSchemas).length
 
 export interface InstitutionJourneyStudent {
   student_pseudo_id: string
@@ -142,27 +143,45 @@ export async function computeInstitutionMetrics(
   }
 
   const [
+    usersRes,
     verificationsApprovedRes,
     academicRes,
-    responsesRes,
+    onboardingSectionsRes,
     onboardingDoneRes,
     matchSuggestionsRes,
-    chatMembersRes,
     messageSendersRes,
-    settingsProfilesRes,
+    nudgeRes,
+    profilesExtraRes,
   ] = await Promise.all([
+    admin
+      .from('users')
+      .select('id, is_verified_student, identity_verified_at')
+      .in('id', userIds),
     admin.from('verifications').select('user_id').eq('status', 'approved').in('user_id', userIds),
     admin.from('user_academic').select('user_id').in('user_id', userIds),
-    admin.from('responses').select('user_id').in('user_id', userIds),
-    admin.from('onboarding_submissions').select('user_id').in('user_id', userIds),
+    admin
+      .from('onboarding_sections')
+      .select('user_id, section, answers')
+      .in('user_id', userIds)
+      .in('section', ['intro', 'logistics-context', 'academic']),
+    admin
+      .from('onboarding_submissions')
+      .select('user_id, completion_stage')
+      .in('user_id', userIds),
     admin.from('match_suggestions').select('member_ids, accepted_by, status, fit_score, fit_index'),
-    admin.from('chat_members').select('user_id').in('user_id', userIds),
     admin
       .from('messages')
       .select('user_id, created_at')
       .in('user_id', userIds)
       .order('created_at', { ascending: false }),
-    admin.from('profiles').select('user_id, bio, phone, languages').in('user_id', userIds),
+    admin
+      .from('verification_nudge_state')
+      .select('user_id, last_action')
+      .in('user_id', userIds),
+    admin
+      .from('profiles')
+      .select('user_id, is_verified_student, verification_status')
+      .in('user_id', userIds),
   ])
 
   const profileMap = new Map(workingProfiles.map((p) => [p.user_id, p]))
@@ -172,17 +191,47 @@ export async function computeInstitutionMetrics(
   workingProfiles.forEach((p) => {
     if (p.verification_status === 'verified') verifiedSet.add(p.user_id)
   })
+  ;(profilesExtraRes.data || []).forEach(
+    (p: { user_id: string; is_verified_student?: boolean | null; verification_status?: string | null }) => {
+      if (p.verification_status === 'verified' || p.is_verified_student === true) {
+        verifiedSet.add(p.user_id)
+      }
+    }
+  )
+  ;(usersRes.data || []).forEach(
+    (u: {
+      id: string
+      is_verified_student?: boolean | null
+      identity_verified_at?: string | null
+    }) => {
+      if (u.identity_verified_at || u.is_verified_student === true) verifiedSet.add(u.id)
+    }
+  )
 
   const academicSet = new Set<string>(
     (academicRes.data || []).map((a: { user_id: string }) => a.user_id)
   )
-  const responseCountMap = new Map<string, number>()
-  for (const r of responsesRes.data || []) {
-    responseCountMap.set(r.user_id, (responseCountMap.get(r.user_id) || 0) + 1)
+  const logisticsContextSet = new Set<string>()
+  for (const row of onboardingSectionsRes.data || []) {
+    const answers = row.answers
+    const hasAnswers = Array.isArray(answers) && answers.length > 0
+    if (!hasAnswers) continue
+    if (row.section === 'logistics-context') logisticsContextSet.add(row.user_id)
+    if (row.section === 'intro' || row.section === 'academic') academicSet.add(row.user_id)
   }
-  const submittedSet = new Set<string>(
-    (onboardingDoneRes.data || []).map((o: { user_id: string }) => o.user_id)
-  )
+
+  const submissionStageMap = new Map<string, string | null>()
+  for (const o of onboardingDoneRes.data || []) {
+    submissionStageMap.set(o.user_id, o.completion_stage ?? null)
+  }
+
+  const verificationDecisionSet = new Set<string>(verifiedSet)
+  for (const row of nudgeRes.data || []) {
+    const action = row.last_action
+    if (action === 'skipped' || action === 'verified_uni' || action === 'verified_persona') {
+      verificationDecisionSet.add(row.user_id)
+    }
+  }
 
   const userIdSet = new Set(userIds)
   const receivedMatchesSet = new Set<string>()
@@ -223,9 +272,6 @@ export async function computeInstitutionMetrics(
     }
   }
 
-  const chatMemberSet = new Set<string>(
-    (chatMembersRes.data || []).map((c: { user_id: string }) => c.user_id)
-  )
   const senderSet = new Set<string>()
   const lastMessageMap = new Map<string, string>()
   for (const m of messageSendersRes.data || []) {
@@ -233,36 +279,27 @@ export async function computeInstitutionMetrics(
     if (!lastMessageMap.has(m.user_id)) lastMessageMap.set(m.user_id, m.created_at)
   }
 
-  const settingsFilledSet = new Set<string>()
-  for (const p of settingsProfilesRes.data || []) {
-    const bioFilled = typeof p.bio === 'string' && p.bio.trim().length > 0
-    const extra =
-      (typeof p.phone === 'string' && p.phone.trim().length > 0) ||
-      (Array.isArray(p.languages) && p.languages.length > 0)
-    if (bioFilled && extra) settingsFilledSet.add(p.user_id)
-  }
-
-  const halfwayThreshold = Math.ceil(TOTAL_REQUIRED_QUESTIONS / 2)
-  const startedCeiling = Math.ceil(TOTAL_REQUIRED_QUESTIONS * 0.2)
-
   const studentsOut: InstitutionJourneyStudent[] = userIds.map((uid) => {
     const authUser = authUsersById.get(uid)
     const profile = profileMap.get(uid)
-    const responseCount = responseCountMap.get(uid) || 0
+    const hasSubmission = submissionStageMap.has(uid)
+    const completionStage = submissionStageMap.get(uid)
+    const usingPlatform = hasDashboardAccess(completionStage, hasSubmission)
+    const harmonyDone = hasSubmission && isFullQuestionnaireComplete(completionStage)
+    const contextLogistics =
+      logisticsContextSet.has(uid) || usingPlatform || harmonyDone
 
     const stages = normalizeRegistrationStages({
       0: true,
       1: !!authUser?.email_confirmed_at,
-      2: verifiedSet.has(uid),
-      3: academicSet.has(uid),
-      4: responseCount > 0 && responseCount < startedCeiling,
-      5: responseCount > halfwayThreshold,
-      6: submittedSet.has(uid),
-      7: receivedMatchesSet.has(uid),
+      2: academicSet.has(uid) || contextLogistics,
+      3: contextLogistics,
+      4: usingPlatform,
+      5: receivedMatchesSet.has(uid),
+      6: harmonyDone,
+      7: verificationDecisionSet.has(uid),
       8: acceptedMatchSet.has(uid),
-      9: chatMemberSet.has(uid),
-      10: senderSet.has(uid),
-      11: settingsFilledSet.has(uid),
+      9: senderSet.has(uid),
     })
 
     return {
@@ -287,7 +324,9 @@ export async function computeInstitutionMetrics(
   }
 
   const verifiedCount = verifiedSet.size
-  const questionnaireDone = submittedSet.size
+  const questionnaireDone = [...submissionStageMap.entries()].filter(([, stage]) =>
+    isFullQuestionnaireComplete(stage)
+  ).length
   const withMatches = receivedMatchesSet.size
   const activeMatches = matchConfirmed
 

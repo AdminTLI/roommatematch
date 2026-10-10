@@ -20,7 +20,7 @@ import {
   type LiveCompatibilitySnapshot,
 } from '@/lib/matching/live-compatibility'
 import { generateDiscussionNotes } from '@/lib/matching/discussion-notes'
-import { PersonaTrustDialog } from '@/components/verification/persona-trust-dialog'
+import { VerifyChoiceDialog } from '@/components/verification/verify-choice-dialog'
 import { PersonaSuccessDialog } from '@/components/verification/persona-success-dialog'
 import {
   Dialog,
@@ -61,6 +61,7 @@ function DiscoveryCardWrapper({
   liveCompatLoading,
   viewerHasFullQuestionnaire,
   otherUserUnverified,
+  otherUserVerified,
   otherUserHarmonyIncomplete,
   onSkip,
   onConnect,
@@ -74,6 +75,7 @@ function DiscoveryCardWrapper({
   liveCompatLoading?: boolean
   viewerHasFullQuestionnaire: boolean
   otherUserUnverified?: boolean
+  otherUserVerified?: boolean
   otherUserHarmonyIncomplete?: boolean
   onSkip?: () => void
   onConnect?: () => void
@@ -166,6 +168,7 @@ function DiscoveryCardWrapper({
           gateConflicts: compatibilityData.gate_conflicts,
           softGateOverride: compatibilityData.soft_gate_override,
           otherUserUnverified,
+          otherUserVerified,
           otherUserHarmonyIncomplete,
         }}
         viewerHasFullQuestionnaire={viewerHasFullQuestionnaire}
@@ -218,14 +221,14 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [viewerHasFullQuestionnaire, setViewerHasFullQuestionnaire] = useState(true)
   const [viewerPersonaVerified, setViewerPersonaVerified] = useState(true)
+  const [viewerIsVerified, setViewerIsVerified] = useState(true)
   const [viewerUserType, setViewerUserType] = useState<'student' | 'professional' | null>('student')
   const [peerVerification, setPeerVerification] = useState<Record<string, boolean>>({})
   const [peerHarmonyComplete, setPeerHarmonyComplete] = useState<Record<string, boolean>>({})
-  const [personaDialogOpen, setPersonaDialogOpen] = useState(false)
+  const [verifyChoiceOpen, setVerifyChoiceOpen] = useState(false)
   const [personaSuccessOpen, setPersonaSuccessOpen] = useState(false)
   const [personaCelebrationSeen, setPersonaCelebrationSeen] = useState(true)
   const [pendingAcceptSuggestion, setPendingAcceptSuggestion] = useState<MatchWithStatus | null>(null)
-  const [unverifiedPeerDialogOpen, setUnverifiedPeerDialogOpen] = useState(false)
   const [harmonyPromptOpen, setHarmonyPromptOpen] = useState(false)
 
   const harmonyContinueUrl =
@@ -350,6 +353,11 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         if (data.viewerGates) {
           setViewerHasFullQuestionnaire(Boolean(data.viewerGates.hasFullQuestionnaire))
           setViewerPersonaVerified(Boolean(data.viewerGates.personaVerified))
+          setViewerIsVerified(
+            Boolean(
+              data.viewerGates.isVerified ?? data.viewerGates.personaVerified
+            )
+          )
           setPersonaCelebrationSeen(Boolean(data.viewerGates.personaCelebrationSeen))
           if (
             data.viewerGates.personaVerified &&
@@ -803,16 +811,21 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         setHarmonyPromptOpen(true)
         return
       }
-      if (!viewerPersonaVerified) {
-        setPendingAcceptSuggestion(suggestion || null)
-        setPersonaDialogOpen(true)
-        return
-      }
-      const otherId = suggestion?.memberIds?.find((id) => id !== user.id)
-      if (otherId && peerVerification[otherId] === false) {
-        setPendingAcceptSuggestion(suggestion || null)
-        setUnverifiedPeerDialogOpen(true)
-        return
+      if (!viewerIsVerified) {
+        try {
+          const nudgeRes = await fetch('/api/verification/nudge', {
+            credentials: 'include',
+            cache: 'no-store',
+          })
+          const nudgeData = await nudgeRes.json().catch(() => ({}))
+          if (nudgeRes.ok && nudgeData.shouldShow) {
+            setPendingAcceptSuggestion(suggestion || null)
+            setVerifyChoiceOpen(true)
+            return
+          }
+        } catch {
+          // Soft nudge must not hard-block accept
+        }
       }
     }
     try {
@@ -824,7 +837,6 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
 
   const confirmAcceptAfterGates = async (suggestion: MatchWithStatus | null) => {
     if (!suggestion) return
-    setUnverifiedPeerDialogOpen(false)
     try {
       await respondMutation.mutateAsync({
         suggestionId: suggestion.id,
@@ -1080,10 +1092,9 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         liveCompatibility={otherUserId ? liveCompatByPeer?.get(otherUserId) : undefined}
         liveCompatLoading={liveCompatLoading}
         viewerHasFullQuestionnaire={viewerHasFullQuestionnaire}
-        otherUserUnverified={
-          viewerPersonaVerified && otherUserId
-            ? peerVerification[otherUserId] === false
-            : false
+        otherUserUnverified={false}
+        otherUserVerified={
+          otherUserId ? peerVerification[otherUserId] === true : false
         }
         otherUserHarmonyIncomplete={
           otherUserId ? peerHarmonyComplete[otherUserId] === false : false
@@ -1351,24 +1362,24 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         </>
       )}
 
-      <PersonaTrustDialog
-        open={personaDialogOpen}
-        onOpenChange={setPersonaDialogOpen}
+      <VerifyChoiceDialog
+        open={verifyChoiceOpen}
+        onOpenChange={setVerifyChoiceOpen}
         userId={user.id}
-        onVerified={() => {
-          setViewerPersonaVerified(true)
-          setPersonaDialogOpen(false)
-          if (!personaCelebrationSeen) {
+        onContinue={(result) => {
+          if (result !== 'skipped') {
+            setViewerIsVerified(true)
+            if (result === 'verified_persona') {
+              setViewerPersonaVerified(true)
+            }
+          }
+          setVerifyChoiceOpen(false)
+          if (result === 'verified_persona' && !personaCelebrationSeen) {
             setPersonaSuccessOpen(true)
             return
           }
           const suggestion = pendingAcceptSuggestion
           if (suggestion) {
-            const otherId = suggestion.memberIds.find((id) => id !== user.id)
-            if (otherId && peerVerification[otherId] === false) {
-              setUnverifiedPeerDialogOpen(true)
-              return
-            }
             void confirmAcceptAfterGates(suggestion)
           }
         }}
@@ -1381,11 +1392,6 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
           setPersonaCelebrationSeen(true)
           const suggestion = pendingAcceptSuggestion
           if (suggestion) {
-            const otherId = suggestion.memberIds.find((id) => id !== user.id)
-            if (otherId && peerVerification[otherId] === false) {
-              setUnverifiedPeerDialogOpen(true)
-              return
-            }
             void confirmAcceptAfterGates(suggestion)
           }
         }}
@@ -1426,32 +1432,6 @@ export function StudentMatchesInterface({ user }: StudentMatchesInterfaceProps) 
         </DialogContent>
       </Dialog>
 
-      <Dialog open={unverifiedPeerDialogOpen} onOpenChange={setUnverifiedPeerDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>This person is not identity-verified yet</DialogTitle>
-            <DialogDescription>
-              You can still accept the match. Chat stays closed until they complete Persona
-              verification – this keeps everyone safer.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setUnverifiedPeerDialogOpen(false)
-                setPendingAcceptSuggestion(null)
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type="button" onClick={() => void confirmAcceptAfterGates(pendingAcceptSuggestion)}>
-              Accept anyway
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

@@ -25,6 +25,7 @@ import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 import { preferStableAvatarUrl } from '@/lib/avatars/stable-url'
 import { dedupeDirectChatsByPartner } from '@/lib/chat/dedupe-direct-chats'
+import { VerifiedBadge } from '@/components/verification/verified-badge'
 
 interface ChatRoom {
   id: string
@@ -42,6 +43,7 @@ interface ChatRoom {
     name: string
     avatar?: string
     isOnline: boolean
+    isVerified?: boolean
   }>
   unreadCount: number
   isRecentlyMatched: boolean
@@ -639,7 +641,8 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
               id: p.user_id,
               name: fullName,
               avatar: profile?.avatar_url || undefined,
-              isOnline: false
+              isOnline: false,
+              isVerified: Boolean(profile?.is_verified),
             }
           }) || [],
           unreadCount: unreadMap.get(room.id) || 0,
@@ -690,6 +693,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                       name: partnerName,
                       avatar: partnerAvatar,
                       isOnline: false,
+                      isVerified: Boolean(profilesMap.get(partnerId)?.is_verified),
                     },
                   ]
 
@@ -759,7 +763,10 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
 
   // Extract online users from chats (legacy - for "Online Now" carousel)
   const onlineUsers = useMemo(() => {
-    const onlineUsersMap = new Map<string, { id: string; name: string; avatar?: string }>()
+    const onlineUsersMap = new Map<
+      string,
+      { id: string; name: string; avatar?: string; isVerified?: boolean }
+    >()
     chats.forEach(chat => {
       chat.participants.forEach(participant => {
         if (participant.isOnline && participant.id !== user.id) {
@@ -767,13 +774,25 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
             onlineUsersMap.set(participant.id, {
               id: participant.id,
               name: participant.name,
-              avatar: participant.avatar
+              avatar: participant.avatar,
+              isVerified: participant.isVerified,
             })
           }
         }
       })
     })
     return Array.from(onlineUsersMap.values())
+  }, [chats, user.id])
+
+  const verifiedByUserId = useMemo(() => {
+    const map = new Map<string, boolean>()
+    for (const chat of chats) {
+      for (const p of chat.participants) {
+        if (p.id === user.id) continue
+        if (p.isVerified) map.set(p.id, true)
+      }
+    }
+    return map
   }, [chats, user.id])
 
   // Fetch presence: online (15m) + recent (3h), plus active-today count
@@ -785,7 +804,13 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
         throw new Error('Failed to fetch online users')
       }
       return response.json() as Promise<{
-        users: Array<{ id: string; firstName: string; avatar?: string; presence?: 'online' | 'recent' }>
+        users: Array<{
+          id: string
+          firstName: string
+          avatar?: string
+          presence?: 'online' | 'recent'
+          isVerified?: boolean
+        }>
         activeTodayCount?: number
       }>
     },
@@ -813,7 +838,10 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
 
   /** Deduped “stories” row with presence tiers */
   const storyPeople = useMemo(() => {
-    const map = new Map<string, { id: string; displayName: string; avatar?: string; presence: 'online' | 'recent' }>()
+    const map = new Map<
+      string,
+      { id: string; displayName: string; avatar?: string; presence: 'online' | 'recent'; isVerified?: boolean }
+    >()
     for (const u of onlineUsersList) {
       if (u?.id && u.id !== user.id) {
         const fromChat = avatarByUserId.get(u.id)
@@ -822,6 +850,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
           displayName: (u.firstName || 'User').trim() || 'User',
           avatar: preferStableAvatarUrl(fromChat, u.avatar) ?? fromChat ?? u.avatar,
           presence: u.presence === 'recent' ? 'recent' : 'online',
+          isVerified: Boolean(u.isVerified) || verifiedByUserId.get(u.id) === true,
         })
       }
     }
@@ -834,11 +863,12 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
           displayName: (u.name || 'User').trim() || 'User',
           avatar: preferStableAvatarUrl(fromChat, u.avatar) ?? fromChat ?? u.avatar,
           presence: 'online',
+          isVerified: Boolean(u.isVerified) || verifiedByUserId.get(u.id) === true,
         })
       }
     }
     return Array.from(map.values())
-  }, [onlineUsersList, onlineUsers, avatarByUserId, user.id])
+  }, [onlineUsersList, onlineUsers, avatarByUserId, verifiedByUserId, user.id])
 
   const onlineIdSet = useMemo(
     () => new Set(storyPeople.filter(p => p.presence === 'online').map(p => p.id)),
@@ -1084,8 +1114,11 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                         </Avatar>
                       </div>
                     </div>
-                    <span className="max-w-[64px] truncate text-center text-xs font-medium text-gray-900 dark:text-gray-100">
-                      {person.displayName}
+                    <span className="flex max-w-[72px] items-center justify-center gap-0.5">
+                      <span className="truncate text-center text-xs font-medium text-gray-900 dark:text-gray-100">
+                        {person.displayName}
+                      </span>
+                      <VerifiedBadge verified={person.isVerified} size="sm" className="shrink-0" />
                     </span>
                   </button>
                 ))
@@ -1138,8 +1171,11 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                         </AvatarFallback>
                       </Avatar>
                     </div>
-                    <span className="w-full truncate text-xs font-bold text-gray-900 dark:text-gray-100">
-                      {firstName}
+                    <span className="flex w-full items-center justify-center gap-0.5">
+                      <span className="truncate text-xs font-bold text-gray-900 dark:text-gray-100">
+                        {firstName}
+                      </span>
+                      <VerifiedBadge verified={otherParticipant.isVerified} size="sm" className="shrink-0" />
                     </span>
                   </button>
                 )
@@ -1230,9 +1266,18 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="mb-0.5 flex items-center gap-2">
-                          <p className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
-                            {rowName}
-                          </p>
+                          <div className="flex min-w-0 flex-1 items-center gap-1">
+                            <p className="min-w-0 truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+                              {rowName}
+                            </p>
+                            {chat.type !== 'group' ? (
+                              <VerifiedBadge
+                                verified={otherParticipant?.isVerified}
+                                size="sm"
+                                className="shrink-0"
+                              />
+                            ) : null}
+                          </div>
                           {isArchivedRow ? <Archive className="h-3.5 w-3.5 shrink-0 text-gray-400" aria-hidden /> : null}
                           {chat.lastMessage ? (
                             <span className="shrink-0 text-[10px] tabular-nums text-gray-500 dark:text-gray-400">

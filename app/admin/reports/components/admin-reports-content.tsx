@@ -99,9 +99,14 @@ interface FlaggedMessage {
   }
 }
 
+const REPORT_STATUS_FILTERS = new Set(['all', 'open', 'actioned', 'dismissed'])
+
 export function AdminReportsContent() {
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
+  const statusParam = searchParams.get('status')
+  const initialStatus =
+    statusParam && REPORT_STATUS_FILTERS.has(statusParam) ? statusParam : 'all'
   const activeTab =
     tabParam === 'flagged'
       ? 'flagged'
@@ -120,7 +125,7 @@ export function AdminReportsContent() {
   const [actionMessage, setActionMessage] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [filters, setFilters] = useState({
-    status: 'all',
+    status: initialStatus,
     category: 'all'
   })
   const [total, setTotal] = useState(0)
@@ -164,9 +169,15 @@ export function AdminReportsContent() {
         const data = await response.json()
         setReports(data.reports || [])
         setTotal(data.total || 0)
+      } else {
+        setReports([])
+        setTotal(0)
+        showErrorToast('Failed to load reports')
       }
     } catch (error) {
       console.error('Failed to load reports:', error)
+      setReports([])
+      setTotal(0)
       showErrorToast('Failed to load reports')
     } finally {
       setIsLoading(false)

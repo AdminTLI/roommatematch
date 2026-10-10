@@ -301,6 +301,30 @@ export async function POST(request: Request) {
     console.error('Failed to track analytics:', analyticsError)
   }
 
+  // Registration funnel milestones (first-reach, analysis-ready)
+  if (answersToSave.length > 0) {
+    try {
+      const { recordFunnelMilestone, maybeTrackSettingsFilled } = await import(
+        '@/lib/admin/registration-funnel-track'
+      )
+      if (body.section === 'intro' || body.section === 'academic') {
+        await recordFunnelMilestone(user.id, 'academic_filled', {
+          source: 'api/onboarding/save',
+          metadata: { section: body.section },
+        })
+      }
+      if (body.section === 'logistics-context') {
+        await recordFunnelMilestone(user.id, 'context_logistics', {
+          source: 'api/onboarding/save',
+          metadata: { section: body.section },
+        })
+      }
+      await maybeTrackSettingsFilled(user.id, 'api/onboarding/save')
+    } catch (funnelError) {
+      console.error('Failed to track funnel milestone:', funnelError)
+    }
+  }
+
   // Automatically generate/update user vector when section is saved
   // This ensures vectors are up-to-date for matching
   try {

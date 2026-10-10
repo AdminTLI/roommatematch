@@ -75,5 +75,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: result.error }, { status: result.status })
   }
 
+  try {
+    const { recordFunnelMilestone } = await import('@/lib/admin/registration-funnel-track')
+    await recordFunnelMilestone(user.id, 'verification_decision', {
+      source: 'api/auth/confirm-academic-email',
+      metadata: { method: 'uni_email' },
+      client: service as any,
+    })
+  } catch {
+    // non-fatal
+  }
+
   return NextResponse.json({ ok: true })
 }

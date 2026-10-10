@@ -35,6 +35,8 @@ interface ScoreInfoPopoverProps {
   children?: React.ReactNode
   triggerClassName?: string
   side?: 'top' | 'right' | 'bottom' | 'left'
+  /** Horizontal alignment relative to the trigger. Prefer `end` when opening below an icon on the left. */
+  align?: 'start' | 'center' | 'end'
   /**
    * Modal popover uses a dismiss layer so taps outside close reliably on touch devices.
    * Non-modal popovers often flash closed on mobile when the same gesture is treated as an outside click.
@@ -51,6 +53,7 @@ export function ScoreInfoPopover({
   children,
   triggerClassName,
   side = 'bottom',
+  align = 'center',
   modal = true,
 }: ScoreInfoPopoverProps) {
   return (
@@ -73,13 +76,20 @@ export function ScoreInfoPopover({
       <PopoverContent
         side={side}
         sideOffset={8}
-        align="center"
-        className="z-[400] w-[min(100vw-2rem,18rem)] border-slate-700 bg-slate-900 p-3 text-slate-100 shadow-xl"
+        align={align}
+        collisionPadding={12}
+        className={cn(
+          'z-[400] w-[min(100vw-2rem,18rem)] rounded-xl p-3 shadow-lg outline-none',
+          'border border-white/50 bg-white/75 text-slate-900 backdrop-blur-xl backdrop-saturate-150',
+          'dark:border-slate-700/70 dark:bg-slate-900/85 dark:text-slate-100 dark:shadow-xl',
+        )}
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
-        {title ? <p className="mb-1.5 text-sm font-semibold text-white">{title}</p> : null}
-        <p className="text-xs leading-relaxed text-slate-200">{description}</p>
+        {title ? (
+          <p className="mb-1.5 text-sm font-semibold text-slate-900 dark:text-white">{title}</p>
+        ) : null}
+        <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-200">{description}</p>
       </PopoverContent>
     </Popover>
   )

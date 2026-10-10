@@ -174,7 +174,9 @@ export async function GET(request: NextRequest) {
             .maybeSingle(),
           admin
             .from('users')
-            .select('identity_verified_at, persona_celebration_seen_at')
+            .select(
+              'identity_verified_at, persona_celebration_seen_at, is_verified_student'
+            )
             .eq('id', user.id)
             .maybeSingle(),
           (async () => {
@@ -184,9 +186,15 @@ export async function GET(request: NextRequest) {
           otherIds.length
             ? admin
                 .from('profiles')
-                .select('user_id, verification_status')
+                .select('user_id, verification_status, is_verified_student')
                 .in('user_id', otherIds)
-            : Promise.resolve({ data: [] as { user_id: string; verification_status: string }[] }),
+            : Promise.resolve({
+                data: [] as {
+                  user_id: string
+                  verification_status: string
+                  is_verified_student: boolean | null
+                }[],
+              }),
           otherIds.length
             ? admin
                 .from('onboarding_submissions')
@@ -199,16 +207,19 @@ export async function GET(request: NextRequest) {
       const { isFullQuestionnaireComplete } = await import('@/lib/onboarding/completion-stage')
       const peerVerification: Record<string, boolean> = {}
       for (const row of peerProfiles.data || []) {
-        peerVerification[row.user_id] = row.verification_status === 'verified'
+        peerVerification[row.user_id] =
+          row.verification_status === 'verified' || row.is_verified_student === true
       }
-      // Also treat durable users.identity_verified_at as verified when profile lags
+      // Also treat durable users flags when profile lags
       if (otherIds.length) {
         const { data: peerUsers } = await admin
           .from('users')
-          .select('id, identity_verified_at')
+          .select('id, identity_verified_at, is_verified_student')
           .in('id', otherIds)
         for (const u of peerUsers || []) {
-          if (u.identity_verified_at) peerVerification[u.id] = true
+          if (u.identity_verified_at || u.is_verified_student === true) {
+            peerVerification[u.id] = true
+          }
         }
       }
 
@@ -220,6 +231,10 @@ export async function GET(request: NextRequest) {
       const viewerHasFullQuestionnaire = isFullQuestionnaireComplete(submission?.completion_stage)
       const viewerPersonaVerified =
         verificationStatusResult.personaVerified || Boolean(viewerUser?.identity_verified_at)
+      const viewerIsVerified =
+        verificationStatusResult.isVerified ||
+        viewerPersonaVerified ||
+        viewerUser?.is_verified_student === true
       const personaCelebrationSeen = Boolean(viewerUser?.persona_celebration_seen_at)
 
       return NextResponse.json({ 
@@ -227,6 +242,10 @@ export async function GET(request: NextRequest) {
         viewerGates: {
           hasFullQuestionnaire: viewerHasFullQuestionnaire,
           personaVerified: viewerPersonaVerified,
+          isVerified: viewerIsVerified,
+          studentVerified:
+            verificationStatusResult.studentVerified ||
+            viewerUser?.is_verified_student === true,
           personaCelebrationSeen,
           completionStage: submission?.completion_stage ?? (submission ? 'full' : null),
           userType: profile.user_type,

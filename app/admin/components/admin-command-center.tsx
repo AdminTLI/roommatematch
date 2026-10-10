@@ -226,7 +226,7 @@ export function AdminCommandCenter() {
     {
       label: 'Pending reports',
       count: queues.pendingReports,
-      href: '/admin/reports',
+      href: '/admin/reports?status=open',
       icon: AlertTriangle,
       color: 'text-orange-600',
       bg: 'bg-orange-50 dark:bg-orange-950/30',
@@ -386,7 +386,7 @@ export function AdminCommandCenter() {
             value: metrics.pendingReports,
             icon: AlertTriangle,
             color: 'text-orange-600',
-            onClick: () => router.push('/admin/reports'),
+            onClick: () => router.push('/admin/reports?status=open'),
           },
           {
             label: 'Open Bugs',

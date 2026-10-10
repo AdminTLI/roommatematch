@@ -626,6 +626,37 @@ export async function POST(request: Request) {
           // Don't fail submission if analytics fails
           console.error('[Submit] Analytics tracking failed:', analyticsError)
         }
+
+        // 8. Registration funnel milestones
+        try {
+          const { recordFunnelMilestone } = await import(
+            '@/lib/admin/registration-funnel-track'
+          )
+          const stageWritten = submissionPayload.completion_stage
+          await recordFunnelMilestone(userId, 'using_platform', {
+            source: 'api/onboarding/submit',
+            metadata: { completion_stage: stageWritten },
+            reachedAt: submittedAt,
+          })
+          if (stageWritten === 'full') {
+            await recordFunnelMilestone(userId, 'harmony_complete', {
+              source: 'api/onboarding/submit',
+              metadata: { completion_stage: stageWritten },
+              reachedAt: submittedAt,
+            })
+          }
+          // Context submit implies logistics module was answered
+          await recordFunnelMilestone(userId, 'context_logistics', {
+            source: 'api/onboarding/submit',
+            reachedAt: submittedAt,
+          })
+          await recordFunnelMilestone(userId, 'academic_filled', {
+            source: 'api/onboarding/submit',
+            reachedAt: submittedAt,
+          })
+        } catch (funnelError) {
+          console.error('[Submit] Funnel tracking failed:', funnelError)
+        }
       }
 
     safeLogger.debug('[Submit] Submission complete')

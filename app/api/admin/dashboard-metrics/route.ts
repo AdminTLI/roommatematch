@@ -249,26 +249,16 @@ export async function GET(request: NextRequest) {
         })
       }
 
-      // 4. Pending Reports - always show current pending (not time-filtered)
-      // Check both 'open' and 'pending' status values for compatibility
-      const { count: pendingReportsOpen, error: reportsOpenError } = await adminClient
+      // 4. Pending Reports - always show current open reports (not time-filtered)
+      // report_status enum is: open | actioned | dismissed
+      const { count: pendingReports, error: reportsError } = await adminClient
         .from('reports')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'open')
 
-      const { count: pendingReportsPending, error: reportsPendingError } = await adminClient
-        .from('reports')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending')
-
-      if (reportsOpenError) {
-        safeLogger.error('[Admin] Error counting open reports', reportsOpenError)
+      if (reportsError) {
+        safeLogger.error('[Admin] Error counting open reports', reportsError)
       }
-      if (reportsPendingError) {
-        safeLogger.error('[Admin] Error counting pending reports', reportsPendingError)
-      }
-
-      const pendingReports = (pendingReportsOpen || 0) + (pendingReportsPending || 0)
 
       const { count: openBugReports, error: bugReportsError } = await adminClient
         .from('bug_reports')
@@ -382,18 +372,11 @@ export async function GET(request: NextRequest) {
         })
       }
 
-      // Pending Reports - check both 'open' and 'pending' status values for compatibility
-      const { count: pendingReportsOpen } = await adminClient
+      // Pending Reports — report_status enum is: open | actioned | dismissed
+      const { count: pendingReports } = await adminClient
         .from('reports')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'open')
-
-      const { count: pendingReportsPending } = await adminClient
-        .from('reports')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending')
-
-      const pendingReports = (pendingReportsOpen || 0) + (pendingReportsPending || 0)
 
       const { count: pendingLabReports } = await adminClient
         .from('lab_wish_reports')

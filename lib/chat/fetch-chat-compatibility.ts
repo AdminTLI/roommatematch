@@ -1,3 +1,5 @@
+import type { BuiltMatchInsights } from '@/lib/chat/match-module-feedback'
+
 export interface ChatCompatibilityPayload {
   compatibility_score?: number
   harmony_score?: number | null
@@ -5,6 +7,11 @@ export interface ChatCompatibilityPayload {
   dimension_scores_json?: { [key: string]: number } | null
   /** Gemini + cache; tone matches viewer cohort (see /api/chat/compatibility). */
   personalized_explanation?: string | null
+  /**
+   * Curated per-module strengths / watch-outs from questionnaire answer gaps.
+   * Never includes raw peer answers.
+   */
+  module_insights?: BuiltMatchInsights | null
 }
 
 export type FetchChatCompatibilityOptions = {

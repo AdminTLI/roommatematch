@@ -4,12 +4,15 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import {
   REGISTRATION_FUNNEL_STAGES,
+  REGISTRATION_FUNNEL_SIDE_METRICS,
   normalizeRegistrationStages,
   furthestRegistrationStage,
+  getRequiredFunnelDropOffPairs,
 } from '@/lib/admin/registration-funnel'
-import { questionSchemas } from '@/lib/onboarding/validation'
-
-const TOTAL_REQUIRED_QUESTIONS = Object.keys(questionSchemas).length
+import {
+  hasDashboardAccess,
+  isFullQuestionnaireComplete,
+} from '@/lib/onboarding/completion-stage'
 
 interface JourneyUser {
   user_id: string
@@ -19,12 +22,29 @@ interface JourneyUser {
   signed_up_at: string
   email_confirmed_at: string | null
   is_active: boolean
-  // Per-stage booleans, keyed by stage id (0..11)
+  /** Numbered funnel stages 0–9 */
   stages: Record<number, boolean>
-  // Furthest stage reached (for sorting / heatmap)
+  /** First-reach timestamps from registration_funnel_progress (ISO), keyed by stage id */
+  stage_reached_at: Record<number, string | null>
+  /** Side metrics (e.g. settings) — not part of numbered path */
+  side_metrics: Record<string, boolean>
+  side_metric_reached_at: Record<string, string | null>
   furthest_stage: number
-  // First & last activity timestamps
+  verification_method: string | null
   last_activity_at: string | null
+}
+
+const STAGE_PROGRESS_COLUMNS: Record<number, string> = {
+  0: 'signup_submitted_at',
+  1: 'email_verified_at',
+  2: 'academic_filled_at',
+  3: 'context_logistics_at',
+  4: 'using_platform_at',
+  5: 'received_matches_at',
+  6: 'harmony_complete_at',
+  7: 'verification_decision_at',
+  8: 'accepted_match_at',
+  9: 'chatted_at',
 }
 
 /**
@@ -41,14 +61,10 @@ interface JourneyUser {
  *
  * Response: {
  *   stages: FunnelStage[],
+ *   sideMetrics: FunnelSideMetric[],
  *   total_users: number,
  *   users: JourneyUser[],
- *   stats: {
- *     stageCounts: { [stageId: number]: number },
- *     stageRates: { [stageId: number]: number },     // % of total_users
- *     dropOffs: { from: number, to: number, lost: number, dropOffRate: number }[],
- *     biggestBottleneck: { stageId: number, dropOffRate: number } | null,
- *   }
+ *   stats: { stageCounts, stageRates, sideMetricCounts, dropOffs, biggestBottleneck }
  * }
  */
 export async function GET(request: NextRequest) {
@@ -121,96 +137,135 @@ export async function GET(request: NextRequest) {
     if (allUserIds.length === 0) {
       return NextResponse.json({
         stages: REGISTRATION_FUNNEL_STAGES,
+        sideMetrics: REGISTRATION_FUNNEL_SIDE_METRICS,
         total_users: 0,
         users: [],
-        stats: { stageCounts: {}, stageRates: {}, dropOffs: [], biggestBottleneck: null },
+        stats: {
+          stageCounts: {},
+          stageRates: {},
+          sideMetricCounts: {},
+          dropOffs: [],
+          biggestBottleneck: null,
+        },
       })
     }
 
     // --- 3) Parallel fan-out for per-stage signals ---
-    // We chunk `in()` calls to keep URLs short. For most installs the user list
-    // fits in one call (Postgres allows ~32k params, Supabase encodes as
-    // `in.(...)`, capped around 1MB URL length — well over what we need).
     const [
       profilesRes,
+      usersRes,
       verificationsApprovedRes,
-      profilesVerifiedRes,
       academicRes,
-      responsesRes,
+      onboardingSectionsRes,
       onboardingDoneRes,
       matchSuggestionsRes,
-      chatMembersRes,
       messageSendersRes,
+      nudgeRes,
       settingsProfilesRes,
+      progressRes,
     ] = await Promise.all([
       admin
         .from('profiles')
-        .select('user_id, first_name, last_name, bio, phone, languages, verification_status')
+        .select(
+          'user_id, first_name, last_name, bio, phone, languages, verification_status, is_verified_student'
+        )
         .in('user_id', allUserIds),
+      admin
+        .from('users')
+        .select('id, is_verified_student, identity_verified_at')
+        .in('id', allUserIds),
       admin
         .from('verifications')
         .select('user_id')
         .eq('status', 'approved')
         .in('user_id', allUserIds),
-      // Already covered by profiles above but included for clarity / fallback.
-      Promise.resolve({ data: null as any[] | null, error: null as any }),
       admin.from('user_academic').select('user_id').in('user_id', allUserIds),
-      admin.from('responses').select('user_id').in('user_id', allUserIds),
-      admin.from('onboarding_submissions').select('user_id').in('user_id', allUserIds),
-      // For match_suggestions we fetch all and filter in memory; using
-      // `.overlaps()` with a very large uuid[] would risk overflowing the
-      // REST URL length budget. The table is small relative to users.
       admin
-        .from('match_suggestions')
-        .select('member_ids, accepted_by, status'),
-      admin.from('chat_members').select('user_id').in('user_id', allUserIds),
+        .from('onboarding_sections')
+        .select('user_id, section, answers')
+        .in('user_id', allUserIds)
+        .in('section', ['intro', 'logistics-context', 'academic']),
+      admin
+        .from('onboarding_submissions')
+        .select('user_id, completion_stage')
+        .in('user_id', allUserIds),
+      admin.from('match_suggestions').select('member_ids, accepted_by, status'),
       admin
         .from('messages')
         .select('user_id, created_at')
         .in('user_id', allUserIds)
         .order('created_at', { ascending: false }),
       admin
+        .from('verification_nudge_state')
+        .select('user_id, last_action')
+        .in('user_id', allUserIds),
+      admin
         .from('profiles')
         .select('user_id, bio, phone, languages')
+        .in('user_id', allUserIds),
+      admin
+        .from('registration_funnel_progress')
+        .select('*')
         .in('user_id', allUserIds),
     ])
 
     if (profilesRes.error) safeLogger.warn('[Admin Journey] profiles fetch', profilesRes.error)
+    if (usersRes.error) safeLogger.warn('[Admin Journey] users fetch', usersRes.error)
     if (academicRes.error) safeLogger.warn('[Admin Journey] academic fetch', academicRes.error)
-    if (responsesRes.error) safeLogger.warn('[Admin Journey] responses fetch', responsesRes.error)
+    if (onboardingSectionsRes.error)
+      safeLogger.warn('[Admin Journey] onboarding_sections fetch', onboardingSectionsRes.error)
     if (onboardingDoneRes.error)
       safeLogger.warn('[Admin Journey] onboarding_submissions fetch', onboardingDoneRes.error)
     if (matchSuggestionsRes.error)
       safeLogger.warn('[Admin Journey] match_suggestions fetch', matchSuggestionsRes.error)
-    if (chatMembersRes.error)
-      safeLogger.warn('[Admin Journey] chat_members fetch', chatMembersRes.error)
     if (messageSendersRes.error)
       safeLogger.warn('[Admin Journey] messages fetch', messageSendersRes.error)
+    if (nudgeRes.error) safeLogger.warn('[Admin Journey] nudge fetch', nudgeRes.error)
+    if (progressRes.error)
+      safeLogger.warn('[Admin Journey] funnel progress fetch', progressRes.error)
 
     // --- 4) Build per-user state sets ---
+    const progressMap = new Map<string, any>()
+    ;(progressRes.data || []).forEach((row: any) => progressMap.set(row.user_id, row))
+
     const profileMap = new Map<string, any>()
     ;(profilesRes.data || []).forEach((p: any) => profileMap.set(p.user_id, p))
 
     const verifiedSet = new Set<string>(
       (verificationsApprovedRes.data || []).map((v: any) => v.user_id)
     )
-    // Fallback: profiles.verification_status === 'verified'
     ;(profilesRes.data || []).forEach((p: any) => {
-      if (p.verification_status === 'verified') verifiedSet.add(p.user_id)
+      if (p.verification_status === 'verified' || p.is_verified_student === true) {
+        verifiedSet.add(p.user_id)
+      }
+    })
+    ;(usersRes.data || []).forEach((u: any) => {
+      if (u.identity_verified_at || u.is_verified_student === true) {
+        verifiedSet.add(u.id)
+      }
     })
 
     const academicSet = new Set<string>(
       (academicRes.data || []).map((a: any) => a.user_id)
     )
-
-    const responseCountMap = new Map<string, number>()
-    for (const r of responsesRes.data || []) {
-      responseCountMap.set(r.user_id, (responseCountMap.get(r.user_id) || 0) + 1)
+    const logisticsContextSet = new Set<string>()
+    for (const row of onboardingSectionsRes.data || []) {
+      const answers = row.answers
+      const hasAnswers = Array.isArray(answers) && answers.length > 0
+      if (!hasAnswers) continue
+      if (row.section === 'logistics-context') {
+        logisticsContextSet.add(row.user_id)
+      }
+      // Intro / academic section also counts toward academic filled
+      if (row.section === 'intro' || row.section === 'academic') {
+        academicSet.add(row.user_id)
+      }
     }
 
-    const submittedSet = new Set<string>(
-      (onboardingDoneRes.data || []).map((o: any) => o.user_id)
-    )
+    const submissionStageMap = new Map<string, string | null>()
+    for (const o of onboardingDoneRes.data || []) {
+      submissionStageMap.set(o.user_id, o.completion_stage ?? null)
+    }
 
     const userIdSet = new Set(allUserIds)
     const receivedMatchesSet = new Set<string>()
@@ -224,7 +279,6 @@ export async function GET(request: NextRequest) {
       for (const id of accepted) {
         if (userIdSet.has(id)) acceptedMatchSet.add(id)
       }
-      // Treat 'confirmed' status as accepted for all participants too
       if (ms.status === 'confirmed') {
         for (const id of members) {
           if (userIdSet.has(id)) acceptedMatchSet.add(id)
@@ -232,15 +286,24 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const chatMemberSet = new Set<string>(
-      (chatMembersRes.data || []).map((c: any) => c.user_id)
-    )
-
     const senderSet = new Set<string>()
     const lastMessageMap = new Map<string, string>()
     for (const m of messageSendersRes.data || []) {
       senderSet.add(m.user_id)
       if (!lastMessageMap.has(m.user_id)) lastMessageMap.set(m.user_id, m.created_at)
+    }
+
+    // Verification decision = verified badge OR skip recorded on soft-nudge
+    const verificationDecisionSet = new Set<string>(verifiedSet)
+    for (const row of nudgeRes.data || []) {
+      const action = row.last_action
+      if (
+        action === 'skipped' ||
+        action === 'verified_uni' ||
+        action === 'verified_persona'
+      ) {
+        verificationDecisionSet.add(row.user_id)
+      }
     }
 
     const settingsFilledSet = new Set<string>()
@@ -253,42 +316,40 @@ export async function GET(request: NextRequest) {
     }
 
     // --- 5) Compute per-user stage booleans ---
-    const halfwayThreshold = Math.ceil(TOTAL_REQUIRED_QUESTIONS / 2)
-    const startedCeiling = Math.ceil(TOTAL_REQUIRED_QUESTIONS * 0.2)
-
     const usersOut: JourneyUser[] = workingUsers.map((u) => {
       const profile = profileMap.get(u.id)
-      const responseCount = responseCountMap.get(u.id) || 0
+      const hasSubmission = submissionStageMap.has(u.id)
+      const completionStage = submissionStageMap.get(u.id)
+      const usingPlatform = hasDashboardAccess(completionStage, hasSubmission)
+      const harmonyDone = hasSubmission && isFullQuestionnaireComplete(completionStage)
+      // Context logistics: section saved, or implied by dashboard/full submit
+      const contextLogistics =
+        logisticsContextSet.has(u.id) || usingPlatform || harmonyDone
 
-      const stage0 = true
-      const stage1 = !!u.email_confirmed_at
-      const stage2 = verifiedSet.has(u.id)
-      const stage3 = academicSet.has(u.id)
-      const stage4 = responseCount > 0 && responseCount < startedCeiling
-      const stage5 = responseCount > halfwayThreshold
-      const stage6 = submittedSet.has(u.id)
-      const stage7 = receivedMatchesSet.has(u.id)
-      const stage8 = acceptedMatchSet.has(u.id)
-      const stage9 = chatMemberSet.has(u.id)
-      const stage10 = senderSet.has(u.id)
-      const stage11 = settingsFilledSet.has(u.id)
-
+      const progress = progressMap.get(u.id)
       const stages = normalizeRegistrationStages({
-        0: stage0,
-        1: stage1,
-        2: stage2,
-        3: stage3,
-        4: stage4,
-        5: stage5,
-        6: stage6,
-        7: stage7,
-        8: stage8,
-        9: stage9,
-        10: stage10,
-        11: stage11,
+        0: true,
+        1: !!u.email_confirmed_at || !!progress?.email_verified_at,
+        2: academicSet.has(u.id) || contextLogistics || !!progress?.academic_filled_at,
+        3: contextLogistics || !!progress?.context_logistics_at,
+        4: usingPlatform || !!progress?.using_platform_at,
+        5: receivedMatchesSet.has(u.id) || !!progress?.received_matches_at,
+        6: harmonyDone || !!progress?.harmony_complete_at,
+        7: verificationDecisionSet.has(u.id) || !!progress?.verification_decision_at,
+        8: acceptedMatchSet.has(u.id) || !!progress?.accepted_match_at,
+        9: senderSet.has(u.id) || !!progress?.chatted_at,
       })
 
-      const furthest = furthestRegistrationStage(stages)
+      const stage_reached_at: Record<number, string | null> = {}
+      for (const [id, col] of Object.entries(STAGE_PROGRESS_COLUMNS)) {
+        const stageId = Number(id)
+        stage_reached_at[stageId] = progress?.[col] ?? null
+      }
+      // Signup always has a timestamp from auth created_at as fallback
+      if (!stage_reached_at[0]) stage_reached_at[0] = u.created_at
+      if (!stage_reached_at[1] && u.email_confirmed_at) {
+        stage_reached_at[1] = u.email_confirmed_at
+      }
 
       return {
         user_id: u.id,
@@ -299,24 +360,36 @@ export async function GET(request: NextRequest) {
         email_confirmed_at: u.email_confirmed_at,
         is_active: true,
         stages,
-        furthest_stage: furthest,
+        stage_reached_at,
+        side_metrics: {
+          settings_filled:
+            settingsFilledSet.has(u.id) || !!progress?.settings_filled_at,
+        },
+        side_metric_reached_at: {
+          settings_filled: progress?.settings_filled_at ?? null,
+        },
+        furthest_stage: furthestRegistrationStage(stages),
+        verification_method: progress?.verification_method ?? null,
         last_activity_at: lastMessageMap.get(u.id) || null,
       }
     })
 
-    // --- 6) Aggregated funnel stats (cumulative semantics) ---
-    // For the funnel we treat each stage as "user reached *at least* this
-    // stage" — independent of whether they completed every prior stage. This
-    // is more faithful to how users move through the product (e.g. someone
-    // who skipped the questionnaire-started bucket but landed on >50% should
-    // still count as having reached stage 5).
+    // --- 6) Aggregated funnel stats ---
     const stageCounts: Record<number, number> = {}
     for (const stage of REGISTRATION_FUNNEL_STAGES) {
       stageCounts[stage.id] = 0
     }
+    const sideMetricCounts: Record<string, number> = {}
+    for (const metric of REGISTRATION_FUNNEL_SIDE_METRICS) {
+      sideMetricCounts[metric.key] = 0
+    }
+
     for (const u of usersOut) {
       for (const stage of REGISTRATION_FUNNEL_STAGES) {
         if (u.stages[stage.id]) stageCounts[stage.id]++
+      }
+      for (const metric of REGISTRATION_FUNNEL_SIDE_METRICS) {
+        if (u.side_metrics[metric.key]) sideMetricCounts[metric.key]++
       }
     }
 
@@ -327,9 +400,7 @@ export async function GET(request: NextRequest) {
     }
 
     const dropOffs: Array<{ from: number; to: number; lost: number; dropOffRate: number }> = []
-    for (let i = 0; i < REGISTRATION_FUNNEL_STAGES.length - 1; i++) {
-      const from = REGISTRATION_FUNNEL_STAGES[i].id
-      const to = REGISTRATION_FUNNEL_STAGES[i + 1].id
+    for (const { from, to } of getRequiredFunnelDropOffPairs()) {
       const fromCount = stageCounts[from] || 0
       const toCount = stageCounts[to] || 0
       const lost = Math.max(fromCount - toCount, 0)
@@ -341,23 +412,28 @@ export async function GET(request: NextRequest) {
       .filter((d) => d.lost > 0)
       .sort((a, b) => b.dropOffRate - a.dropOffRate)[0] || null
 
-    // --- 7) Apply pagination *after* computing stats so the bottleneck
-    //         numbers always reflect the full filtered population ---
     const paged = usersOut.slice(offset, offset + limit)
 
     return NextResponse.json({
       stages: REGISTRATION_FUNNEL_STAGES,
+      sideMetrics: REGISTRATION_FUNNEL_SIDE_METRICS,
       total_users: total,
       users: paged,
       stats: {
         stageCounts,
         stageRates,
+        sideMetricCounts,
         dropOffs,
         biggestBottleneck: biggestBottleneck
-          ? { stageId: biggestBottleneck.from, dropOffRate: biggestBottleneck.dropOffRate, lost: biggestBottleneck.lost }
+          ? {
+              stageId: biggestBottleneck.from,
+              dropOffRate: biggestBottleneck.dropOffRate,
+              lost: biggestBottleneck.lost,
+            }
           : null,
       },
     })
+
   } catch (err) {
     safeLogger.error('[Admin Journey] Unexpected error', { error: err })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

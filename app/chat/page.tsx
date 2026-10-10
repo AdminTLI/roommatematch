@@ -27,14 +27,12 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
     redirect('/auth/sign-in')
   }
 
-  // Chat requires Persona (backup — middleware also enforces this for /chat)
+  // Email verification only — Persona / student verification is optional
   const verificationStatus = await checkUserVerificationStatus(user)
-  const redirectUrl = getVerificationRedirectUrl(verificationStatus, { requirePersona: true })
+  const redirectUrl = getVerificationRedirectUrl(verificationStatus)
   if (redirectUrl) {
     if (redirectUrl === '/auth/verify-email' && user.email) {
       redirect(`/auth/verify-email?email=${encodeURIComponent(user.email)}&auto=1`)
-    } else if (redirectUrl === '/verify') {
-      redirect('/verify?redirect=/chat')
     } else {
       redirect(redirectUrl)
     }

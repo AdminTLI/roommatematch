@@ -65,8 +65,9 @@ import { anonymizeMatchNotificationMessage } from '@/lib/notifications/anonymize
 import { isDiscoverableSuggestion } from '@/lib/matching/suggestion-tabs'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { toast } from 'sonner'
-import { PersonaTrustDialog } from '@/components/verification/persona-trust-dialog'
+import { VerifyChoiceDialog } from '@/components/verification/verify-choice-dialog'
 import { PersonaSuccessDialog } from '@/components/verification/persona-success-dialog'
+import { VerifiedBadge } from '@/components/verification/verified-badge'
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -138,12 +139,14 @@ interface DashboardRecentMatch {
   program: string
   university: string
   otherUserUnverified?: boolean
+  otherUserVerified?: boolean
   otherUserHarmonyIncomplete?: boolean
 }
 
 interface DashboardRecentMatchesPayload {
   matches: DashboardRecentMatch[]
   viewerPersonaVerified: boolean
+  viewerIsVerified: boolean
   personaCelebrationSeen: boolean
   peerVerification: Record<string, boolean>
 }
@@ -455,6 +458,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
   const emptyRecentMatchesPayload = (): DashboardRecentMatchesPayload => ({
     matches: [],
     viewerPersonaVerified: true,
+    viewerIsVerified: true,
     personaCelebrationSeen: true,
     peerVerification: {},
   })
@@ -502,6 +506,9 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         const viewerPersonaVerified = data.viewerGates
           ? Boolean(data.viewerGates.personaVerified)
           : true
+        const viewerIsVerified = data.viewerGates
+          ? Boolean(data.viewerGates.isVerified ?? data.viewerGates.personaVerified)
+          : true
         const personaCelebrationSeen = data.viewerGates
           ? Boolean(data.viewerGates.personaCelebrationSeen)
           : true
@@ -522,6 +529,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           return {
             matches: [],
             viewerPersonaVerified,
+            viewerIsVerified,
             personaCelebrationSeen,
             peerVerification,
           }
@@ -730,8 +738,8 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
             avatar: undefined,
             program: '',
             university: '',
-            otherUserUnverified:
-              viewerPersonaVerified ? peerVerification[userId] === false : false,
+            otherUserUnverified: false,
+            otherUserVerified: peerVerification[userId] === true,
             otherUserHarmonyIncomplete: peerHarmonyComplete[userId] === false,
           }
         })
@@ -741,6 +749,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         return {
           matches: formattedMatches,
           viewerPersonaVerified,
+          viewerIsVerified,
           personaCelebrationSeen,
           peerVerification,
         }
@@ -767,14 +776,14 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
   const recentMatches = recentMatchesPayload?.matches ?? []
   const viewerPersonaVerified = recentMatchesPayload?.viewerPersonaVerified ?? true
+  const viewerIsVerified = recentMatchesPayload?.viewerIsVerified ?? true
   const personaCelebrationSeenFromApi = recentMatchesPayload?.personaCelebrationSeen ?? true
   const peerVerification = recentMatchesPayload?.peerVerification ?? {}
 
-  const [personaDialogOpen, setPersonaDialogOpen] = useState(false)
+  const [verifyChoiceOpen, setVerifyChoiceOpen] = useState(false)
   const [personaSuccessOpen, setPersonaSuccessOpen] = useState(false)
   const [personaCelebrationSeen, setPersonaCelebrationSeen] = useState(true)
   const [pendingAcceptMatch, setPendingAcceptMatch] = useState<DashboardRecentMatch | null>(null)
-  const [unverifiedPeerDialogOpen, setUnverifiedPeerDialogOpen] = useState(false)
   const [harmonyPromptOpen, setHarmonyPromptOpen] = useState(false)
   const pendingHarmonyNavRef = useRef(false)
 
@@ -873,7 +882,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
 
   const confirmAcceptAfterGates = async (match: DashboardRecentMatch | null) => {
     if (!match?.suggestionId) return
-    setUnverifiedPeerDialogOpen(false)
     try {
       await respondMutation.mutateAsync({
         suggestionId: match.suggestionId,
@@ -896,15 +904,21 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         setHarmonyPromptOpen(true)
         return
       }
-      if (!viewerPersonaVerified) {
-        setPendingAcceptMatch(match)
-        setPersonaDialogOpen(true)
-        return
-      }
-      if (peerVerification[match.userId] === false) {
-        setPendingAcceptMatch(match)
-        setUnverifiedPeerDialogOpen(true)
-        return
+      if (!viewerIsVerified) {
+        try {
+          const nudgeRes = await fetch('/api/verification/nudge', {
+            credentials: 'include',
+            cache: 'no-store',
+          })
+          const nudgeData = await nudgeRes.json().catch(() => ({}))
+          if (nudgeRes.ok && nudgeData.shouldShow) {
+            setPendingAcceptMatch(match)
+            setVerifyChoiceOpen(true)
+            return
+          }
+        } catch {
+          // If nudge check fails, allow accept (soft nudge must not hard-block)
+        }
       }
     }
 
@@ -1363,8 +1377,20 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           <Sparkles className="w-5 h-5" />
           <span className="text-sm font-medium uppercase tracking-wider">Suggested for you</span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
-          {timeGreeting} <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">{displayFirstName}</span>
+        <h1 className="text-4xl md:text-5xl font-extrabold leading-[1.2] text-zinc-900 dark:text-white tracking-tight">
+          {timeGreeting}{' '}
+          <span className="inline-flex flex-wrap items-center gap-1.5">
+            {/* pb keeps bg-clip-text from cropping descenders (g, y, p, …) */}
+            <span className="inline-block pb-[0.14em] text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400">
+              {displayFirstName}
+            </span>
+            <VerifiedBadge
+              verified={viewerIsVerified}
+              size="lg"
+              tooltip="Your identity is verified"
+              className="translate-y-px"
+            />
+          </span>
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 max-w-lg text-lg font-medium">
           Here are your latest roommate suggestions. Take a look and see who you’d click with.
@@ -1432,6 +1458,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
                     contextScore: match.contextScore,
                     dimensionScores: match.dimensionScores || null,
                     otherUserUnverified: match.otherUserUnverified,
+                    otherUserVerified: match.otherUserVerified,
                     otherUserHarmonyIncomplete: match.otherUserHarmonyIncomplete,
                   }}
                   viewerHasFullQuestionnaire={hasCompletedQuestionnaire}
@@ -1547,29 +1574,32 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         </div>
       </motion.div>
 
-      <PersonaTrustDialog
-        open={personaDialogOpen}
-        onOpenChange={setPersonaDialogOpen}
+      <VerifyChoiceDialog
+        open={verifyChoiceOpen}
+        onOpenChange={setVerifyChoiceOpen}
         userId={user?.id || ''}
-        onVerified={() => {
-          if (user?.id) {
+        onContinue={(result) => {
+          if (user?.id && result !== 'skipped') {
             queryClient.setQueryData(
               queryKeys.matches.top(user.id),
               (old: DashboardRecentMatchesPayload | undefined) =>
-                old ? { ...old, viewerPersonaVerified: true } : old,
+                old
+                  ? {
+                      ...old,
+                      viewerIsVerified: true,
+                      viewerPersonaVerified:
+                        result === 'verified_persona' ? true : old.viewerPersonaVerified,
+                    }
+                  : old,
             )
           }
-          setPersonaDialogOpen(false)
-          if (!personaCelebrationSeen) {
+          setVerifyChoiceOpen(false)
+          if (result === 'verified_persona' && !personaCelebrationSeen) {
             setPersonaSuccessOpen(true)
             return
           }
           const match = pendingAcceptMatch
           if (match) {
-            if (peerVerification[match.userId] === false) {
-              setUnverifiedPeerDialogOpen(true)
-              return
-            }
             void confirmAcceptAfterGates(match)
           }
         }}
@@ -1582,10 +1612,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           setPersonaCelebrationSeen(true)
           const match = pendingAcceptMatch
           if (match) {
-            if (peerVerification[match.userId] === false) {
-              setUnverifiedPeerDialogOpen(true)
-              return
-            }
             void confirmAcceptAfterGates(match)
           }
         }}
@@ -1625,32 +1651,6 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         </DialogContent>
       </Dialog>
 
-      <Dialog open={unverifiedPeerDialogOpen} onOpenChange={setUnverifiedPeerDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>This person is not identity-verified yet</DialogTitle>
-            <DialogDescription>
-              You can still accept the match. Chat stays closed until they complete Persona
-              verification – this keeps everyone safer.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setUnverifiedPeerDialogOpen(false)
-                setPendingAcceptMatch(null)
-              }}
-            >
-              Cancel
-            </Button>
-            <Button type="button" onClick={() => void confirmAcceptAfterGates(pendingAcceptMatch)}>
-              Accept anyway
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

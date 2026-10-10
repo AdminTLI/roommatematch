@@ -22,6 +22,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { badgeVariants } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { VerifiedBadge } from '@/components/verification/verified-badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,6 +86,8 @@ interface MessengerConversationProps {
   chatId: string
   user: User
   onToggleProfile: () => void
+  /** Opens the Meet [Name] about panel (bio, interests, housing, uni) */
+  onOpenAbout?: () => void
   onBack?: () => void
   partnerName?: string
   partnerAvatar?: string
@@ -98,12 +101,15 @@ interface MessengerConversationProps {
   onComposerInsertConsumed?: () => void
   /** Bubble partner display name up so profile nudges can use it */
   onPartnerDisplayNameChange?: (name: string) => void
+  /** Bubble partner avatar (privacy-gated photo or programmatic icon) for the Meet panel */
+  onPartnerAvatarChange?: (avatar: string | undefined) => void
 }
 
 export function MessengerConversation({
   chatId,
   user,
   onToggleProfile,
+  onOpenAbout,
   onBack,
   partnerName = 'User',
   partnerAvatar,
@@ -113,6 +119,7 @@ export function MessengerConversation({
   composerInsert = null,
   onComposerInsertConsumed,
   onPartnerDisplayNameChange,
+  onPartnerAvatarChange,
 }: MessengerConversationProps) {
   const supabase = createClient()
   const router = useRouter()
@@ -136,10 +143,16 @@ export function MessengerConversation({
   const [partnerUserId, setPartnerUserId] = useState<string | null>(null)
   const [displayPartnerName, setDisplayPartnerName] = useState<string>(partnerName)
   const [displayPartnerAvatar, setDisplayPartnerAvatar] = useState<string | undefined>(partnerAvatar)
+  const [partnerIsVerified, setPartnerIsVerified] = useState(false)
 
   useEffect(() => {
     onPartnerDisplayNameChange?.(displayPartnerName)
   }, [displayPartnerName, onPartnerDisplayNameChange])
+
+  useEffect(() => {
+    onPartnerAvatarChange?.(displayPartnerAvatar)
+  }, [displayPartnerAvatar, onPartnerAvatarChange])
+
   const [isGroupChat, setIsGroupChat] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [showReportDialog, setShowReportDialog] = useState(false)
@@ -160,7 +173,6 @@ export function MessengerConversation({
   const [photoSharingDialogOpen, setPhotoSharingDialogOpen] = useState(false)
   const [sharePictureChoice, setSharePictureChoice] = useState(false)
   const [photoSharingSubmitting, setPhotoSharingSubmitting] = useState(false)
-  const [partnerProfileDialogOpen, setPartnerProfileDialogOpen] = useState(false)
 
   const { data: privacySnap } = useQuery<ChatPrivacySnapshot | null>({
     queryKey: queryKeys.chatPrivacy(chatId, user.id),
@@ -175,6 +187,25 @@ export function MessengerConversation({
     enabled: Boolean(chatId && partnerUserId && !isGroupChat),
     staleTime: 15_000,
   })
+
+  const { data: partnerVerifiedFlag } = useQuery({
+    queryKey: ['chat-partner-verified', chatId, partnerUserId],
+    queryFn: async () => {
+      const r = await fetch(`/api/chat/user-info?chatId=${encodeURIComponent(chatId)}`, {
+        credentials: 'include',
+        cache: 'no-store',
+      })
+      if (!r.ok) return false
+      const data = await r.json().catch(() => ({}))
+      return Boolean(data?.is_verified)
+    },
+    enabled: Boolean(chatId && partnerUserId && !isGroupChat),
+    staleTime: 60_000,
+  })
+
+  useEffect(() => {
+    setPartnerIsVerified(Boolean(partnerVerifiedFlag))
+  }, [partnerVerifiedFlag])
 
   const { data: compatData, isLoading: compatLoading } = useQuery({
     queryKey: queryKeys.chatCompatibility(chatId),
@@ -974,7 +1005,7 @@ export function MessengerConversation({
         }
 
         console.warn(
-          `[MessengerConversation] Failed to send message: HTTP ${response.status} ${response.statusText} — ${errorMessage}`
+          `[MessengerConversation] Failed to send message: HTTP ${response.status} ${response.statusText} - ${errorMessage}`
         )
         showErrorToast('Failed to send', errorMessage)
         return
@@ -1381,7 +1412,7 @@ export function MessengerConversation({
     <div
       ref={conversationRootRef}
       data-messenger-conversation
-      className="flex h-full w-full flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))] lg:rounded-t-2xl"
+      className="flex h-full w-full max-w-full flex-col overflow-x-hidden overflow-y-hidden overscroll-x-none bg-[hsl(var(--chat-bg-primary))] touch-pan-y lg:rounded-t-2xl"
     >
       {/* Fixed Header: avatar, name, compatibility chip, menu */}
       <div className="flex max-w-full flex-shrink-0 items-center justify-between gap-2 bg-[hsl(var(--chat-bg-primary))] px-3 py-2.5 max-lg:app-pt-safe-top lg:px-4 lg:py-3">
@@ -1398,15 +1429,15 @@ export function MessengerConversation({
                 <ChevronLeft className="h-6 w-6" strokeWidth={2.25} aria-hidden />
               </Button>
             )}
-            {!isGroupChat && partnerUserId ? (
+            {!isGroupChat && onOpenAbout ? (
               <button
                 type="button"
-                onClick={() => setPartnerProfileDialogOpen(true)}
-                aria-label={`View ${displayPartnerName}'s profile picture`}
+                onClick={onOpenAbout}
+                aria-label={`Meet ${displayPartnerName}`}
                 className="shrink-0 touch-manipulation rounded-full transition-opacity hover:opacity-90 active:scale-[0.98]"
               >
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={displayPartnerAvatar} />
+                  <AvatarImage src={displayPartnerAvatar} alt="" />
                   <AvatarFallback className="bg-purple-600 text-white">
                     {displayPartnerName.charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -1414,7 +1445,7 @@ export function MessengerConversation({
               </button>
             ) : (
               <Avatar className="h-10 w-10 shrink-0">
-                <AvatarImage src={displayPartnerAvatar} />
+                <AvatarImage src={displayPartnerAvatar} alt="" />
                 <AvatarFallback className="bg-purple-600 text-white">
                   {displayPartnerName.charAt(0).toUpperCase()}
                 </AvatarFallback>
@@ -1424,17 +1455,29 @@ export function MessengerConversation({
 
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <div className="flex min-w-0 items-center gap-2">
-              <h2 className="min-w-0 truncate text-base font-semibold leading-tight text-gray-900 dark:text-gray-100">
-                {displayPartnerName}
-              </h2>
+              {!isGroupChat && onOpenAbout ? (
+                <button
+                  type="button"
+                  onClick={onOpenAbout}
+                  aria-label={`Meet ${displayPartnerName}`}
+                  className="min-w-0 max-w-full truncate text-left text-base font-semibold leading-tight text-gray-900 touch-manipulation hover:text-violet-700 active:opacity-80 dark:text-gray-100 dark:hover:text-violet-300"
+                >
+                  {displayPartnerName}
+                </button>
+              ) : (
+                <h2 className="min-w-0 truncate text-base font-semibold leading-tight text-gray-900 dark:text-gray-100">
+                  {displayPartnerName}
+                </h2>
+              )}
+              <VerifiedBadge verified={partnerIsVerified && !isGroupChat} />
               {!isGroupChat && partnerUserId && (
                 <button
                   type="button"
                   onClick={onToggleProfile}
                   aria-label={
                     matchPercent != null
-                      ? `Compatibility ${matchPercent} percent, open details`
-                      : 'View compatibility details'
+                      ? `Compatibility ${matchPercent} percent, open match insights`
+                      : 'View match insights'
                   }
                   className={cn(
                     badgeVariants({ variant: 'outline', size: 'default' }),
@@ -1459,7 +1502,7 @@ export function MessengerConversation({
                   ) : (
                     <span className="whitespace-nowrap text-xs font-semibold text-violet-700 dark:text-violet-300">
                       <span className="lg:hidden" aria-hidden>
-                        —
+                        -
                       </span>
                       <span className="hidden lg:inline">Compatibility</span>
                     </span>
@@ -1649,31 +1692,6 @@ export function MessengerConversation({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={partnerProfileDialogOpen} onOpenChange={setPartnerProfileDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{displayPartnerName}</DialogTitle>
-            <DialogDescription className="sr-only">
-              Profile picture for {displayPartnerName}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-white/10 dark:bg-zinc-900/40">
-            {displayPartnerAvatar ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={displayPartnerAvatar}
-                alt={`${displayPartnerName}'s profile picture`}
-                className="aspect-square w-full object-cover object-center"
-              />
-            ) : (
-              <div className="flex aspect-square w-full items-center justify-center bg-purple-600 text-5xl font-semibold text-white">
-                {displayPartnerName.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <Dialog open={photoSharingDialogOpen} onOpenChange={setPhotoSharingDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -1748,7 +1766,7 @@ export function MessengerConversation({
         ref={messagesContainerRef}
         data-messenger-messages
         onScroll={handleScroll}
-        className="scrollbar-hide flex-1 overflow-y-auto min-h-0 px-4 py-4"
+        className="scrollbar-hide min-h-0 max-w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-x-none px-4 py-4 touch-pan-y"
       >
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
@@ -1818,10 +1836,6 @@ export function MessengerConversation({
           onSend={handleSendMessage}
           onComposerFocus={handleComposerFocus}
           onComposerBlur={handleComposerBlur}
-          showPromptChips={
-            !isGroupChat &&
-            visibleMessages.filter(m => !m.is_system_message).length < 3
-          }
           promptContext={{
             partnerName: displayPartnerName,
             compat: compatData ?? null,

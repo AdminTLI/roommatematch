@@ -16,25 +16,33 @@ export function MatchInsightMarkdown({ markdown, className }: MatchInsightMarkdo
   return (
     <div
       className={cn(
-        'prose prose-sm max-w-none text-slate-600 dark:prose-invert dark:text-slate-400',
-        'prose-p:my-2 prose-p:leading-relaxed prose-p:last:mb-0',
-        'prose-strong:font-semibold prose-strong:text-slate-800 dark:prose-strong:text-slate-100',
-        'prose-ul:my-2 prose-ul:list-disc prose-ul:space-y-1.5 prose-ul:pl-4 prose-ul:marker:text-slate-400 dark:prose-ul:marker:text-slate-500',
-        'prose-li:my-0 prose-li:leading-relaxed',
+        // Lock to panel body size (text-sm) so prose defaults do not drift larger/smaller.
+        'max-w-none text-sm leading-relaxed text-slate-600 dark:text-slate-300',
+        '[&_p]:my-2 [&_p]:text-sm [&_p]:leading-relaxed [&_p]:last:mb-0',
+        '[&_strong]:font-semibold [&_strong]:text-slate-800 dark:[&_strong]:text-slate-100',
+        '[&_ul]:my-2 [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-4',
+        '[&_ul]:marker:text-slate-400 dark:[&_ul]:marker:text-slate-500',
+        '[&_li]:my-0 [&_li]:text-sm [&_li]:leading-relaxed',
         className,
       )}
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+          p: ({ children }) => (
+            <p className="mb-2 text-sm leading-relaxed last:mb-0">{children}</p>
+          ),
           strong: ({ children }) => (
             <strong className="font-semibold text-slate-800 dark:text-slate-100">{children}</strong>
           ),
           ul: ({ children }) => (
-            <ul className="my-2 list-disc space-y-1.5 pl-4 marker:text-slate-400 dark:marker:text-slate-500">{children}</ul>
+            <ul className="my-2 list-disc space-y-1.5 pl-4 marker:text-slate-400 dark:marker:text-slate-500">
+              {children}
+            </ul>
           ),
-          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+          li: ({ children }) => (
+            <li className="text-sm leading-relaxed">{children}</li>
+          ),
         }}
       >
         {markdown}

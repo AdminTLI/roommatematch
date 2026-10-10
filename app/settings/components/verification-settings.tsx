@@ -27,6 +27,8 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
   const router = useRouter()
   const [status, setStatus] = useState<VerificationStatus>('unverified')
   const [verification, setVerification] = useState<VerificationData | null>(null)
+  const [studentVerified, setStudentVerified] = useState(false)
+  const [isVerified, setIsVerified] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isStarting, setIsStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +45,8 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
         const data = await response.json()
         setStatus(data.status)
         setVerification(data.verification)
+        setStudentVerified(Boolean(data.studentVerified))
+        setIsVerified(Boolean(data.isVerified))
       }
     } catch (error) {
       console.error('Failed to fetch verification status:', error)
@@ -127,11 +131,19 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Identity Verification</span>
-          {getStatusBadge()}
+          <span>Profile verification</span>
+          {isVerified ? (
+            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200">
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Verified
+            </Badge>
+          ) : (
+            getStatusBadge()
+          )}
         </CardTitle>
         <CardDescription>
-          Verify your identity to access all platform features including matches and chat.
+          Optional. Verified profiles show a badge to others. You can verify with a university email
+          or a quick ID check — chat and matches work either way.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -142,10 +154,21 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
           </Alert>
         )}
 
+        {studentVerified && (
+          <div className="space-y-1 rounded-xl border border-emerald-200/70 bg-emerald-50/50 px-3 py-2.5 dark:border-emerald-500/25 dark:bg-emerald-500/10">
+            <p className="text-sm font-medium text-emerald-900 dark:text-emerald-200">
+              University email verified
+            </p>
+            <p className="text-xs text-emerald-800/80 dark:text-emerald-300/80">
+              Your campus email is confirmed. You have the verified badge.
+            </p>
+          </div>
+        )}
+
         {status === 'verified' && verification && (
           <div className="space-y-2">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              Your identity has been successfully verified.
+              Your identity has been successfully verified with an ID check.
             </p>
             <div className="text-sm text-gray-500 dark:text-text-muted">
               <p>Provider: {verification.provider}</p>
@@ -189,10 +212,11 @@ export function VerificationSettings({ userId }: VerificationSettingsProps) {
           </div>
         )}
 
-        {status === 'unverified' && (
+        {status === 'unverified' && !studentVerified && (
           <div className="space-y-4">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              Start the verification process to access all platform features.
+              Start an optional ID check to unlock the verified badge (or verify with a university
+              email when prompted on match accept).
             </p>
             <Button onClick={startVerification} disabled={isStarting}>
               {isStarting ? (

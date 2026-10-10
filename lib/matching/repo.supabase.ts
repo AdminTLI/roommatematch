@@ -1117,6 +1117,19 @@ export class SupabaseMatchRepo implements MatchRepo {
 
     if (!error) {
       safeLogger.debug(`[DEBUG] createSuggestions - Successfully inserted ${toInsertSugs.length} suggestions`)
+      try {
+        const { recordFunnelMilestoneForUsers } = await import(
+          '@/lib/admin/registration-funnel-track'
+        )
+        const memberIds = toInsertSugs.flatMap((s) => s.memberIds || [])
+        await recordFunnelMilestoneForUsers(memberIds, 'received_matches', {
+          source: 'matching/createSuggestions',
+        })
+      } catch (funnelError) {
+        safeLogger.warn('[DEBUG] createSuggestions - Funnel tracking failed', {
+          error: funnelError instanceof Error ? funnelError.message : String(funnelError),
+        })
+      }
       return { inserted: toInsertSugs, insertedCount: toInsertSugs.length }
     }
 
@@ -1160,6 +1173,21 @@ export class SupabaseMatchRepo implements MatchRepo {
     }
 
     safeLogger.debug(`[DEBUG] createSuggestions - Inserted ${inserted.length} after conflict recovery`)
+    if (inserted.length > 0) {
+      try {
+        const { recordFunnelMilestoneForUsers } = await import(
+          '@/lib/admin/registration-funnel-track'
+        )
+        const memberIds = inserted.flatMap((s) => s.memberIds || [])
+        await recordFunnelMilestoneForUsers(memberIds, 'received_matches', {
+          source: 'matching/createSuggestions',
+        })
+      } catch (funnelError) {
+        safeLogger.warn('[DEBUG] createSuggestions - Funnel tracking failed', {
+          error: funnelError instanceof Error ? funnelError.message : String(funnelError),
+        })
+      }
+    }
     return { inserted, insertedCount: inserted.length }
   }
 

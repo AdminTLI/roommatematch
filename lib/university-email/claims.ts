@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { clearVerificationCache } from '@/lib/auth/verification-check'
 
 export const UNIVERSITY_EMAIL_IN_USE_MESSAGE =
   'This university email is already linked to another Domu Match account. If this is yours, sign in to that account or contact support.'
@@ -42,11 +43,21 @@ export function evaluateUniversityEmailOccupancy(args: {
   currentUniversityEmail: string | null | undefined
   emailNormalized: string
   occupantIds: string[]
+  /** Login email also counts as ownership (academic signup auto-verify). */
+  currentLoginEmail?: string | null | undefined
 }): UniversityEmailOccupancy {
-  const { currentUserId, currentUniversityEmail, emailNormalized, occupantIds } = args
+  const {
+    currentUserId,
+    currentUniversityEmail,
+    emailNormalized,
+    occupantIds,
+    currentLoginEmail,
+  } = args
   const ownsAlready =
-    Boolean(currentUniversityEmail) &&
-    normalizeUniversityEmail(currentUniversityEmail as string) === emailNormalized
+    (Boolean(currentUniversityEmail) &&
+      normalizeUniversityEmail(currentUniversityEmail as string) === emailNormalized) ||
+    (Boolean(currentLoginEmail) &&
+      normalizeUniversityEmail(currentLoginEmail as string) === emailNormalized)
 
   if (ownsAlready) {
     const others = occupantIdsExcluding(occupantIds, currentUserId)
@@ -206,7 +217,7 @@ export async function attachVerifiedUniversityEmail(
 
   const { data: currentUser, error: currentUserError } = await client
     .from('users')
-    .select('university_email, is_verified_student')
+    .select('email, university_email, is_verified_student')
     .eq('id', args.userId)
     .maybeSingle()
 
@@ -230,6 +241,7 @@ export async function attachVerifiedUniversityEmail(
   const occupancy = evaluateUniversityEmailOccupancy({
     currentUserId: args.userId,
     currentUniversityEmail: currentUser?.university_email ?? null,
+    currentLoginEmail: currentUser?.email ?? null,
     emailNormalized,
     occupantIds,
   })
@@ -269,6 +281,8 @@ export async function attachVerifiedUniversityEmail(
       updated_at: new Date().toISOString(),
     })
     .eq('user_id', args.userId)
+
+  clearVerificationCache(args.userId)
 
   if (!occupancy.createClaim) {
     return { ok: true }

@@ -5,6 +5,7 @@ import { User } from '@supabase/supabase-js'
 import { MessengerSidebar } from './messenger-sidebar'
 import { MessengerConversation } from './messenger-conversation'
 import { MessengerProfilePane } from './messenger-profile-pane'
+import { MessengerAboutPane } from './messenger-about-pane'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { queryClient, queryKeys } from '@/app/providers'
@@ -29,6 +30,8 @@ interface ChatInfo {
   partnerAvatar?: string
 }
 
+type RightPaneMode = 'insights' | 'about' | null
+
 /** Must match sheet `duration-300` */
 const MOBILE_SHEET_TRANSITION_MS = 300
 
@@ -44,12 +47,13 @@ export function MessengerLayout({
   const [pendingMessageHighlightId, setPendingMessageHighlightId] = useState<string | null>(
     initialMessageId || null,
   )
-  const [rightPaneOpen, setRightPaneOpen] = useState(false)
+  const [rightPaneMode, setRightPaneMode] = useState<RightPaneMode>(null)
   const [chatInfo, setChatInfo] = useState<ChatInfo | null>(null)
   const [composerInsert, setComposerInsert] = useState<string | null>(
     initialDraft && initialDraft.trim() ? initialDraft.trim() : null,
   )
   const [partnerDisplayName, setPartnerDisplayName] = useState<string>('User')
+  const [partnerAvatar, setPartnerAvatar] = useState<string | undefined>(undefined)
   const [isDesktop, setIsDesktop] = useState(true)
   /** Drives bottom-sheet enter animation (translate-y) on mobile */
   const [mobileSheetEntered, setMobileSheetEntered] = useState(false)
@@ -57,6 +61,8 @@ export function MessengerLayout({
   const draftParamsStrippedRef = useRef(false)
   const supabase = createClient()
   const { setActiveMobileConversation } = useMobileChatChrome()
+
+  const rightPaneOpen = rightPaneMode !== null
 
   useEffect(() => {
     const root = document.documentElement
@@ -133,9 +139,9 @@ export function MessengerLayout({
   }, [])
 
   /** Slide sheet down, then unmount (matches open animation). Desktop closes immediately. */
-  const closeMobileProfileSheet = useCallback(() => {
+  const closeRightPane = useCallback(() => {
     if (isDesktop) {
-      setRightPaneOpen(false)
+      setRightPaneMode(null)
       return
     }
     if (mobileSheetCloseTimerRef.current) {
@@ -145,9 +151,28 @@ export function MessengerLayout({
     setMobileSheetEntered(false)
     mobileSheetCloseTimerRef.current = setTimeout(() => {
       mobileSheetCloseTimerRef.current = null
-      setRightPaneOpen(false)
+      setRightPaneMode(null)
     }, MOBILE_SHEET_TRANSITION_MS)
   }, [isDesktop])
+
+  const openRightPaneMode = useCallback(
+    (mode: Exclude<RightPaneMode, null>) => {
+      if (rightPaneMode === mode) {
+        closeRightPane()
+        return
+      }
+      // Switching panels while sheet is already open: swap content without closing.
+      if (mobileSheetCloseTimerRef.current) {
+        clearTimeout(mobileSheetCloseTimerRef.current)
+        mobileSheetCloseTimerRef.current = null
+      }
+      setRightPaneMode(mode)
+      if (!isDesktop && rightPaneOpen) {
+        setMobileSheetEntered(true)
+      }
+    },
+    [closeRightPane, isDesktop, rightPaneMode, rightPaneOpen],
+  )
 
   // Update selected chat when initialChatId changes
   useEffect(() => {
@@ -232,18 +257,17 @@ export function MessengerLayout({
 
   const handleChatSelect = (chatId: string) => {
     setSelectedChatId(chatId)
+    setPartnerDisplayName('User')
+    setPartnerAvatar(undefined)
     if (!isDesktop && rightPaneOpen) {
-      closeMobileProfileSheet()
+      closeRightPane()
+    } else if (isDesktop) {
+      setRightPaneMode(null)
     }
   }
 
-  const handleToggleRightPane = () => {
-    if (!isDesktop && rightPaneOpen) {
-      closeMobileProfileSheet()
-      return
-    }
-    setRightPaneOpen(prev => !prev)
-  }
+  const handleOpenInsights = () => openRightPaneMode('insights')
+  const handleOpenAbout = () => openRightPaneMode('about')
 
   const handleBackToList = () => {
     setPendingMessageHighlightId(null)
@@ -253,7 +277,7 @@ export function MessengerLayout({
       mobileSheetCloseTimerRef.current = null
     }
     setMobileSheetEntered(false)
-    setRightPaneOpen(false)
+    setRightPaneMode(null)
   }
 
   const handleHighlightConsumed = useCallback(() => {
@@ -298,11 +322,36 @@ export function MessengerLayout({
     }
   }, [composerInsert, initialDraft, initialFocusComposer])
 
+  const onComposeNudge = (text: string) => {
+    setComposerInsert(text)
+    if (!isDesktop) closeRightPane()
+  }
+
+  const paneContent =
+    selectedChatId && rightPaneMode === 'insights' ? (
+      <MessengerProfilePane
+        chatId={selectedChatId}
+        isOpen
+        onClose={closeRightPane}
+        partnerDisplayName={partnerDisplayName || chatInfo?.partnerName}
+      />
+    ) : selectedChatId && rightPaneMode === 'about' ? (
+      <MessengerAboutPane
+        chatId={selectedChatId}
+        isOpen
+        onClose={closeRightPane}
+        partnerDisplayName={partnerDisplayName || chatInfo?.partnerName}
+        partnerAvatar={partnerAvatar ?? chatInfo?.partnerAvatar}
+        onComposeNudge={onComposeNudge}
+      />
+    ) : null
+
   const conversationEl = selectedChatId ? (
     <MessengerConversation
       chatId={selectedChatId}
       user={user}
-      onToggleProfile={handleToggleRightPane}
+      onToggleProfile={handleOpenInsights}
+      onOpenAbout={handleOpenAbout}
       onBack={handleBackToList}
       partnerName={chatInfo?.partnerName ?? 'User'}
       partnerAvatar={chatInfo?.partnerAvatar}
@@ -310,6 +359,7 @@ export function MessengerLayout({
       composerInsert={composerInsert}
       onComposerInsertConsumed={() => setComposerInsert(null)}
       onPartnerDisplayNameChange={setPartnerDisplayName}
+      onPartnerAvatarChange={setPartnerAvatar}
       highlightMessageId={
         pendingMessageHighlightId &&
         selectedChatId &&
@@ -377,38 +427,42 @@ export function MessengerLayout({
           flexDirection: 'column',
         }}
       >
-        {/* Mobile: list + sliding conversation */}
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))] lg:hidden">
-          <div
-            className={cn(
-              'flex min-h-0 flex-1 flex-col transition-[transform,opacity] duration-300 ease-out',
-              selectedChatId && '-translate-x-1/4 opacity-50 pointer-events-none',
-            )}
-          >
-            <MessengerSidebar
-              user={user}
-              onChatSelect={handleChatSelect}
-              selectedChatId={selectedChatId}
-            />
-          </div>
+        {/* Mobile: list + sliding conversation (only mount on mobile to avoid dual avatar state races) */}
+        {!isDesktop && (
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))]">
+            <div
+              className={cn(
+                'flex min-h-0 flex-1 flex-col transition-[transform,opacity] duration-300 ease-out',
+                selectedChatId && '-translate-x-1/4 opacity-50 pointer-events-none',
+              )}
+            >
+              <MessengerSidebar
+                user={user}
+                onChatSelect={handleChatSelect}
+                selectedChatId={selectedChatId}
+              />
+            </div>
 
-          <div
-            className={cn(
-              'absolute inset-0 z-20 flex min-h-0 flex-col bg-[hsl(var(--chat-bg-primary))] transition-transform duration-300 ease-out',
-              selectedChatId ? 'translate-x-0' : 'pointer-events-none translate-x-full',
-            )}
-          >
-            {conversationEl}
+            <div
+              className={cn(
+                'absolute inset-0 z-20 flex min-h-0 flex-col bg-[hsl(var(--chat-bg-primary))] transition-transform duration-300 ease-out',
+                selectedChatId ? 'translate-x-0' : 'pointer-events-none translate-x-full',
+              )}
+            >
+              {conversationEl}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Desktop: conversation or empty */}
-        <div className="hidden min-h-0 flex-1 flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))] lg:flex">
-          {conversationEl ?? emptyStateEl}
-        </div>
+        {isDesktop && (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))]">
+            {conversationEl ?? emptyStateEl}
+          </div>
+        )}
       </div>
 
-      {/* Desktop profile column -- clips; MessengerProfilePane owns the scroll region */}
+      {/* Desktop side column - one panel at a time with a soft crossfade */}
       {isDesktop && selectedChatId && rightPaneOpen && (
         <div
           data-messenger-profile
@@ -419,27 +473,23 @@ export function MessengerLayout({
             minHeight: 0,
           }}
         >
-          <MessengerProfilePane
-            chatId={selectedChatId}
-            isOpen={rightPaneOpen}
-            onClose={handleToggleRightPane}
-            partnerDisplayName={partnerDisplayName || chatInfo?.partnerName}
-            onComposeNudge={text => {
-              setComposerInsert(text)
-              if (!isDesktop) setRightPaneOpen(false)
-            }}
-          />
+          <div
+            key={rightPaneMode}
+            className="flex h-full min-h-0 flex-1 flex-col animate-in fade-in slide-in-from-right-2 duration-300"
+          >
+            {paneContent}
+          </div>
         </div>
       )}
 
-      {/* Mobile profile: backdrop + bottom sheet -- pane owns the scroll region */}
+      {/* Mobile: backdrop + bottom sheet - pane owns the scroll region */}
       {!isDesktop && selectedChatId && rightPaneOpen && (
         <div className="fixed inset-0 z-[100] lg:hidden" role="presentation">
           <button
             type="button"
-            aria-label="Close profile"
+            aria-label="Close panel"
             className="absolute inset-0 z-0 bg-black/60 transition-opacity duration-300 ease-out"
-            onClick={handleToggleRightPane}
+            onClick={closeRightPane}
           />
           <div
             data-mobile-profile-sheet
@@ -452,24 +502,15 @@ export function MessengerLayout({
             <div className="relative z-20 flex shrink-0 flex-col items-center bg-[hsl(var(--chat-bg-primary))] pt-2 pb-1">
               <button
                 type="button"
-                aria-label="Close profile sheet"
+                aria-label="Close panel sheet"
                 className="mb-1 h-11 w-full max-w-[120px] touch-manipulation rounded-full py-2"
-                onClick={handleToggleRightPane}
+                onClick={closeRightPane}
               >
                 <span className="mx-auto block h-1 w-10 rounded-full bg-gray-400 dark:bg-slate-500" />
               </button>
             </div>
             <div className="relative z-10 flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))]">
-              <MessengerProfilePane
-                chatId={selectedChatId}
-                isOpen={rightPaneOpen}
-                onClose={handleToggleRightPane}
-                partnerDisplayName={partnerDisplayName || chatInfo?.partnerName}
-                onComposeNudge={text => {
-                  setComposerInsert(text)
-                  if (!isDesktop) setRightPaneOpen(false)
-                }}
-              />
+              {paneContent}
             </div>
           </div>
         </div>

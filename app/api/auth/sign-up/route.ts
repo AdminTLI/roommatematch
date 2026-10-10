@@ -15,6 +15,12 @@ import {
   getIPRateLimitKey,
   buildRateLimitHeaders,
 } from '@/lib/rate-limit'
+import { isAcademicEmail } from '@/lib/university-email/academic-email'
+import {
+  UNIVERSITY_EMAIL_IN_USE_MESSAGE,
+  findUniversityEmailOccupantIds,
+  normalizeUniversityEmail,
+} from '@/lib/university-email/claims'
 
 const SignUpBodySchema = z.object({
   email: z.string().email(),
@@ -92,6 +98,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Academic login emails are exclusive — block signup if already held
+    if (isAcademicEmail(email)) {
+      try {
+        const holders = await findUniversityEmailOccupantIds(
+          admin,
+          normalizeUniversityEmail(email)
+        )
+        if (holders.length > 0) {
+          return NextResponse.json(
+            {
+              error: UNIVERSITY_EMAIL_IN_USE_MESSAGE,
+              code: 'UNIVERSITY_EMAIL_IN_USE',
+            },
+            { status: 409 }
+          )
+        }
+      } catch (occupancyError) {
+        safeLogger.warn('[SignUp] University email occupancy check failed', {
+          message:
+            occupancyError instanceof Error ? occupancyError.message : String(occupancyError),
+        })
+      }
+    }
+
     const supabase = await createClient()
     const origin =
       request.headers.get('origin') ||
@@ -136,6 +166,20 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to create account. Please try again.', code: 'SIGNUP_FAILED' },
         { status: 500 }
       )
+    }
+
+    try {
+      const { recordFunnelMilestone } = await import('@/lib/admin/registration-funnel-track')
+      await recordFunnelMilestone(data.user.id, 'signup_submitted', {
+        source: 'api/auth/sign-up',
+        metadata: {
+          user_type: body.userType ?? null,
+          academic_login: isAcademicEmail(email),
+        },
+        client: admin as any,
+      })
+    } catch {
+      // non-fatal
     }
 
     return NextResponse.json({

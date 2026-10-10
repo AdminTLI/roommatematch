@@ -8,29 +8,7 @@ import {
   normalizeUniversityEmail,
   recordUniversityEmailReuseFlag,
 } from '@/lib/university-email/claims'
-
-/** Allowed academic TLDs and known Dutch university email domains */
-const ACADEMIC_TLDS = [
-  '.nl',
-  '.edu',
-  '.ac.uk',
-  '.be',
-  '.de',
-]
-const ACADEMIC_DOMAIN_PATTERNS = [
-  /@student\.avans\.nl$/i,
-  /@avans\.nl$/i,
-  /@buas\.nl$/i,
-  /@([a-z0-9-]+\.)?(edu|ac\.uk|ac\.nl)(\.[a-z]{2})?$/i,
-]
-
-function isAcademicEmail(email: string): boolean {
-  const normalized = email.trim().toLowerCase()
-  if (!normalized || !normalized.includes('@')) return false
-  const domain = normalized.slice(normalized.indexOf('@') + 1)
-  if (ACADEMIC_DOMAIN_PATTERNS.some((re) => re.test(normalized))) return true
-  return ACADEMIC_TLDS.some((tld) => domain.endsWith(tld))
-}
+import { isAcademicEmail } from '@/lib/university-email/academic-email'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -75,13 +53,14 @@ export async function POST(request: Request) {
     const emailNormalized = normalizeUniversityEmail(email)
     const { data: currentUser } = await service
       .from('users')
-      .select('university_email')
+      .select('email, university_email')
       .eq('id', user.id)
       .maybeSingle()
     const occupantIds = await findUniversityEmailOccupantIds(service, emailNormalized)
     const occupancy = evaluateUniversityEmailOccupancy({
       currentUserId: user.id,
       currentUniversityEmail: currentUser?.university_email ?? null,
+      currentLoginEmail: currentUser?.email ?? null,
       emailNormalized,
       occupantIds,
     })

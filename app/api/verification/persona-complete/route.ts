@@ -168,6 +168,18 @@ export async function POST(request: NextRequest) {
         .eq('user_id', user.id)
     } else if (verificationStatus === 'approved') {
       await markIdentityVerified(user.id, 'persona', user.email)
+      try {
+        const { recordFunnelMilestone } = await import(
+          '@/lib/admin/registration-funnel-track'
+        )
+        await recordFunnelMilestone(user.id, 'verification_decision', {
+          source: 'api/verification/persona-complete',
+          metadata: { method: 'persona' },
+          client: admin as any,
+        })
+      } catch {
+        // non-fatal
+      }
     }
 
     clearVerificationCache(user.id)

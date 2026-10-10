@@ -14,6 +14,7 @@ export interface DiscoveryFeedMatch {
   contextScore?: number
   dimensionScores?: { [key: string]: number } | null
   otherUserUnverified?: boolean
+  otherUserVerified?: boolean
   otherUserHarmonyIncomplete?: boolean
 }
 
@@ -47,6 +48,7 @@ function matchProfile(match: DiscoveryFeedMatch) {
     contextScore: match.contextScore,
     dimensionScores: match.dimensionScores || null,
     otherUserUnverified: match.otherUserUnverified,
+    otherUserVerified: match.otherUserVerified,
     otherUserHarmonyIncomplete: match.otherUserHarmonyIncomplete,
   }
 }

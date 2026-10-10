@@ -28,6 +28,7 @@ import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useIsAdmin } from '@/lib/auth/roles-client'
 import { ADMIN_HUBS, ADMIN_HUB_ROUTE_MAP, resolveAdminHub } from '@/lib/admin/navigation'
+import { VerifiedBadge } from '@/components/verification/verified-badge'
 
 interface SidebarProps {
   user: {
@@ -81,9 +82,24 @@ export function Sidebar({ user, onClose }: SidebarProps) {
   const [unreadChatCount, setUnreadChatCount] = useState(0)
   const [totalMatchesCount, setTotalMatchesCount] = useState(0)
   const [opsHealthWarning, setOpsHealthWarning] = useState(false)
+  const [isVerified, setIsVerified] = useState(false)
   const isAdminRoute = pathname?.startsWith('/admin')
   const isAdmin = useIsAdmin()
   const unreadDebounceRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void fetch('/api/verification/nudge', { credentials: 'include', cache: 'no-store' })
+      .then(async (res) => {
+        if (!res.ok) return
+        const data = await res.json().catch(() => ({}))
+        if (!cancelled) setIsVerified(Boolean(data.isVerified))
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [user.id])
 
   const fetchUnreadCount = useCallback(async () => {
     try {
@@ -299,9 +315,12 @@ export function Sidebar({ user, onClose }: SidebarProps) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-text-primary truncate">
-                      {user.name || 'User'}
-                    </p>
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <p className="truncate text-xs font-semibold text-text-primary">
+                        {user.name || 'User'}
+                      </p>
+                      <VerifiedBadge verified={isVerified} />
+                    </div>
                     <p className="text-xs text-text-muted truncate">
                       {user.email}
                     </p>

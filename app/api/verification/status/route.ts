@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     const { data: userRow } = await admin
       .from('users')
-      .select('identity_verified_at')
+      .select('identity_verified_at, is_verified_student')
       .eq('id', user.id)
       .maybeSingle()
     
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     // Get user profile verification status (use admin for consistency - bypasses RLS)
     const { data: profile } = await admin
       .from('profiles')
-      .select('verification_status')
+      .select('verification_status, is_verified_student')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -193,9 +193,17 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const studentVerified =
+      userRow?.is_verified_student === true || profile?.is_verified_student === true
+    const personaVerified = verificationStatus === 'verified'
+    const isVerified = personaVerified || studentVerified
+
     return NextResponse.json(
       {
         status: verificationStatus,
+        personaVerified,
+        studentVerified,
+        isVerified,
         verification: verification
           ? {
               id: verification.id,

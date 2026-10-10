@@ -428,6 +428,25 @@ export async function GET(request: NextRequest) {
       ...buildRateLimitHeaders(CHAT_PROFILES_LIMIT, rateLimitResult)
     }
 
+    const [{ data: targetUserRow }, { data: targetProfileFlags }] = await Promise.all([
+      admin
+        .from('users')
+        .select('identity_verified_at, is_verified_student')
+        .eq('id', targetUserId)
+        .maybeSingle(),
+      admin
+        .from('profiles')
+        .select('verification_status, is_verified_student')
+        .eq('user_id', targetUserId)
+        .maybeSingle(),
+    ])
+
+    const peerIsVerified =
+      Boolean(targetUserRow?.identity_verified_at) ||
+      targetUserRow?.is_verified_student === true ||
+      targetProfileFlags?.verification_status === 'verified' ||
+      targetProfileFlags?.is_verified_student === true
+
     const basePayload = {
       first_name: profile.first_name || null,
       last_name: profile.last_name || null,
@@ -446,6 +465,7 @@ export async function GET(request: NextRequest) {
       programme_name: programName,
       degree_level: degreeLevel,
       study_year: studyYear,
+      is_verified: peerIsVerified,
       progressive_disclosure: {
         mutual_details: mutualDetails,
         mutual_picture: Boolean(privacySnap?.mutual_picture),

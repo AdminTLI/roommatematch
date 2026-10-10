@@ -134,11 +134,22 @@ export async function POST(request: NextRequest) {
     // Filter out profiles the current user has blocked (they don't need to see them)
     const allowedUserIds = allUserIds.filter(id => !blockedByCurrentUser.has(id))
 
-    // Fetch profiles for all allowed chat members (include user_type for cohort visibility)
-    const { data: profiles, error: profilesError } = await admin
-      .from('profiles')
-      .select('user_id, first_name, last_name, user_type, is_visible, avatar_id')
-      .in('user_id', allowedUserIds.length > 0 ? allowedUserIds : [])
+    // Fetch profiles + durable verification flags for allowed chat members
+    const profileSelectIds = allowedUserIds.length > 0 ? allowedUserIds : []
+    const [{ data: profiles, error: profilesError }, { data: userVerificationRows }] = await Promise.all([
+      admin
+        .from('profiles')
+        .select(
+          'user_id, first_name, last_name, user_type, is_visible, avatar_id, verification_status, is_verified_student'
+        )
+        .in('user_id', profileSelectIds),
+      profileSelectIds.length > 0
+        ? admin
+            .from('users')
+            .select('id, identity_verified_at, is_verified_student')
+            .in('id', profileSelectIds)
+        : Promise.resolve({ data: [] as Array<{ id: string; identity_verified_at: string | null; is_verified_student: boolean | null }> }),
+    ])
 
     if (profilesError) {
       // If not found, return empty profiles gracefully
@@ -158,6 +169,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const userVerificationById = new Map(
+      (userVerificationRows || []).map((row: any) => [row.id as string, row]),
+    )
+
     // Viewer's cohort: only same-role users can see full profile (student/professional)
     const viewerUserType = await getUserType(user.id)
 
@@ -170,6 +185,7 @@ export async function POST(request: NextRequest) {
           user_id: profile.user_id,
           first_name: 'User',
           last_name: '',
+          is_verified: false,
         }
       }
 
@@ -179,6 +195,7 @@ export async function POST(request: NextRequest) {
           user_id: profile.user_id,
           first_name: 'User',
           last_name: '',
+          is_verified: false,
         }
       }
 
@@ -188,14 +205,24 @@ export async function POST(request: NextRequest) {
           user_id: profile.user_id,
           first_name: 'User',
           last_name: '',
+          is_verified: false,
         }
       }
+
+      const userFlags = userVerificationById.get(profile.user_id)
+      const isVerified =
+        Boolean(userFlags?.identity_verified_at) ||
+        userFlags?.is_verified_student === true ||
+        profile.verification_status === 'verified' ||
+        profile.is_verified_student === true
+
       return {
         user_id: profile.user_id,
         first_name: profile.first_name,
         last_name: profile.last_name ?? '',
         /** DiceBear URL (safe to show in chat UI); real photos use privacy-state snapshot for 1:1 */
         avatar_url: programmaticAvatarUrl(profile.avatar_id, profile.user_id),
+        is_verified: isVerified,
       }
     })
 

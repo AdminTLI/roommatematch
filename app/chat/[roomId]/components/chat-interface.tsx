@@ -699,7 +699,9 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
               try {
                 const { data: fallbackProfiles, error: fallbackError } = await supabase
                   .from('profiles')
-                  .select('user_id, first_name, last_name, avatar_id')
+                  .select(
+                    'user_id, first_name, last_name, avatar_id, verification_status, is_verified_student'
+                  )
                   .in('user_id', Array.from(userIds))
 
                 if (!fallbackError && fallbackProfiles) {
@@ -878,19 +880,22 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
           setBlockWindows([])
         }
 
-        // Check verification status for the other user
-        // Use profile.verification_status instead of querying verifications table directly
-        // This avoids RLS issues and is more efficient (profiles are already loaded)
+        // Verified = Persona OR university student email
         try {
-          const profile = profilesMap.get(otherMember.id)
-          if (profile?.verification_status === 'verified') {
+          const profile = profilesMap.get(otherMember.id) as
+            | { verification_status?: string; is_verified_student?: boolean }
+            | undefined
+          if (
+            profile?.verification_status === 'verified' ||
+            profile?.is_verified_student === true
+          ) {
             setOtherUserVerificationStatus('verified')
           } else {
-            setOtherUserVerificationStatus('unverified')
+            setOtherUserVerificationStatus(null)
           }
         } catch (err) {
           safeLogger.error('[Chat] Failed to check verification status:', err)
-          setOtherUserVerificationStatus('unverified')
+          setOtherUserVerificationStatus(null)
         }
       } else {
         setOtherPersonName('')
@@ -2732,21 +2737,13 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
                     </>
                   )}
                 </div>
-                {!isGroup && otherUserVerificationStatus && (
+                {!isGroup && otherUserVerificationStatus === 'verified' && (
                   <div className="flex-shrink-0">
-                    {otherUserVerificationStatus === 'verified' ? (
-                      <div className="relative">
-                        <div className="w-8 h-8 rounded-xl bg-semantic-accent flex items-center justify-center border-2 border-semantic-accent/30 shadow-sm">
-                          <CheckCircle className="h-4 w-4 text-white fill-white" />
-                        </div>
+                    <div className="relative">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl border-2 border-emerald-500/30 bg-emerald-500 shadow-sm">
+                        <CheckCircle className="h-4 w-4 fill-white text-white" />
                       </div>
-                    ) : (
-                      <div className="relative">
-                        <div className="w-8 h-8 rounded-xl border-2 border-border-subtle flex items-center justify-center bg-bg-surface-alt">
-                          <div className="w-3 h-3 rounded-full bg-border-subtle"></div>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 )}
                 {isGroup && (

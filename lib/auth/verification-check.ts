@@ -3,7 +3,12 @@ import type { User } from '@supabase/supabase-js'
 
 export interface VerificationStatus {
   emailVerified: boolean
+  /** Persona / government ID verification passed */
   personaVerified: boolean
+  /** University email OTP (or academic signup) passed */
+  studentVerified: boolean
+  /** Either Persona or university email verification */
+  isVerified: boolean
   needsEmailVerification: boolean
   needsPersonaVerification: boolean
 }
@@ -45,6 +50,8 @@ export async function checkUserVerificationStatus(
     return {
       emailVerified: false,
       personaVerified: false,
+      studentVerified: false,
+      isVerified: false,
       needsEmailVerification: true,
       needsPersonaVerification: true,
     }
@@ -69,7 +76,7 @@ export async function checkUserVerificationStatus(
   const [userResult, verificationResult, profileResult] = await Promise.all([
     admin
       .from('users')
-      .select('identity_verified_at')
+      .select('identity_verified_at, is_verified_student')
       .eq('id', user.id)
       .maybeSingle(),
     admin
@@ -81,7 +88,7 @@ export async function checkUserVerificationStatus(
       .maybeSingle(),
     admin
       .from('profiles')
-      .select('verification_status')
+      .select('verification_status, is_verified_student')
       .eq('user_id', user.id)
       .maybeSingle(),
   ])
@@ -101,15 +108,23 @@ export async function checkUserVerificationStatus(
     verificationResult.data?.status === 'approved' ||
     profileResult.data?.verification_status === 'verified'
 
+  const studentVerified =
+    userResult.data?.is_verified_student === true ||
+    profileResult.data?.is_verified_student === true
+
+  const isVerified = personaVerified || studentVerified
+
   const status: VerificationStatus = {
     emailVerified,
     personaVerified,
+    studentVerified,
+    isVerified,
     needsEmailVerification: !emailVerified,
     needsPersonaVerification: emailVerified && !personaVerified,
   }
 
-  // ONLY cache verified - never cache unverified (prevents stale blocks for users who just verified)
-  if (personaVerified) {
+  // ONLY cache when fully verified - never cache unverified (prevents stale blocks)
+  if (isVerified) {
     verificationCache.set(cacheKey, {
       status,
       expiresAt: now + VERIFIED_CACHE_TTL_MS,
