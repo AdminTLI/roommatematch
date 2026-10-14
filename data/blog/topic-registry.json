@@ -2,6 +2,14 @@
   "description": "Tracks published blog topics to reduce week-to-week repetition. Append one entry per new post.",
   "entries": [
     {
+      "slug": "autumn-midterm-burnout-housemate-routines",
+      "date": "2026-10-14",
+      "category": "Wellbeing",
+      "primaryKeyword": "autumn midterm burnout housemates Netherlands",
+      "pillar": "Seasonal & student life milestones (Late Oct override)",
+      "angle": "Mid-block autumn burnout + recovery gaps + indoor bonding; Tilburg/Univers 94h peak + RIVM 2025 exhaustion/hindrance overview; Survival Guide; distinct from tentamenweek rules and winter-blues living-match posts; not shortage-led"
+    },
+    {
       "slug": "international-students-dutch-housemates-language",
       "date": "2026-09-30",
       "category": "Integration",

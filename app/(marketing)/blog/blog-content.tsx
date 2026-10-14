@@ -36,6 +36,16 @@ const content = {
     noResults: 'No articles in this category yet.',
     posts: [
       {
+        slug: 'autumn-midterm-burnout-housemate-routines',
+        title: 'Autumn Midterm Burnout: Housemate Routines That Help',
+        excerpt:
+          'Mid-block peaks and shorter days strain Dutch student houses. Indoor routines for study load, recovery gaps, and low-pressure bonding — without another tentamenweek rulebook.',
+        readTime: '9 min read',
+        date: '2026-10-14',
+        category: 'Wellbeing',
+        icon: Shield,
+      },
+      {
         slug: 'international-students-dutch-housemates-language',
         title: 'Language Gaps With Dutch Housemates',
         excerpt:
@@ -359,6 +369,16 @@ const content = {
     pageOf: (page: number, total: number) => `Pagina ${page} van ${total}`,
     noResults: 'Nog geen artikelen in deze categorie.',
     posts: [
+      {
+        slug: 'autumn-midterm-burnout-housemate-routines',
+        title: 'Herfst-midterms: huisgenotenroutines tegen burnout',
+        excerpt:
+          'Midden in het blok en kortere dagen belasten studentenhuizen. Indoor-routines voor studiedruk, herstelgaten en low-pressure bonding — zonder opnieuw een tentamenweek-handboek.',
+        readTime: '9 min lezen',
+        date: '2026-10-14',
+        category: 'Welzijn',
+        icon: Shield,
+      },
       {
         slug: 'international-students-dutch-housemates-language',
         title: 'Taalkloven met Nederlandse huisgenoten',
