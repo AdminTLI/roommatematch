@@ -30,6 +30,7 @@ const content = {
     privacy: 'Privacy Policy',
     terms: 'Terms of Service',
     cookies: 'Cookie Policy',
+    vibeCheck: 'Vibe Check',
     allRightsReserved: 'All rights reserved.',
   },
   nl: {
@@ -56,9 +57,24 @@ const content = {
     privacy: 'Privacybeleid',
     terms: 'Algemene voorwaarden',
     cookies: 'Cookiebeleid',
+    vibeCheck: 'Vibe Check',
     allRightsReserved: 'Alle rechten voorbehouden.',
   },
 }
+
+/** City marketing pages in alphabetical order by display name. */
+const CITY_LINKS = [
+  { href: '/amsterdam', label: 'Amsterdam' },
+  { href: '/breda', label: 'Breda' },
+  { href: '/den-haag', label: 'Den Haag' },
+  { href: '/eindhoven', label: 'Eindhoven' },
+  { href: '/groningen', label: 'Groningen' },
+  { href: '/leiden', label: 'Leiden' },
+  { href: '/nijmegen', label: 'Nijmegen' },
+  { href: '/rotterdam', label: 'Rotterdam' },
+  { href: '/tilburg', label: 'Tilburg' },
+  { href: '/utrecht', label: 'Utrecht' },
+] as const
 
 export default function Footer() {
   const { locale } = useApp()
@@ -136,54 +152,16 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">{t.cities}</h4>
             <ul className="space-y-3 text-slate-400">
+              {CITY_LINKS.map((city) => (
+                <li key={city.href}>
+                  <Link href={city.href} className="hover:text-white transition-colors">
+                    {city.label}
+                  </Link>
+                </li>
+              ))}
               <li>
-                <Link href="/amsterdam" className="hover:text-white transition-colors">
-                  Amsterdam
-                </Link>
-              </li>
-              <li>
-                <Link href="/rotterdam" className="hover:text-white transition-colors">
-                  Rotterdam
-                </Link>
-              </li>
-              <li>
-                <Link href="/utrecht" className="hover:text-white transition-colors">
-                  Utrecht
-                </Link>
-              </li>
-              <li>
-                <Link href="/den-haag" className="hover:text-white transition-colors">
-                  Den Haag
-                </Link>
-              </li>
-              <li>
-                <Link href="/eindhoven" className="hover:text-white transition-colors">
-                  Eindhoven
-                </Link>
-              </li>
-              <li>
-                <Link href="/groningen" className="hover:text-white transition-colors">
-                  Groningen
-                </Link>
-              </li>
-              <li>
-                <Link href="/leiden" className="hover:text-white transition-colors">
-                  Leiden
-                </Link>
-              </li>
-              <li>
-                <Link href="/nijmegen" className="hover:text-white transition-colors">
-                  Nijmegen
-                </Link>
-              </li>
-              <li>
-                <Link href="/breda" className="hover:text-white transition-colors">
-                  Breda
-                </Link>
-              </li>
-              <li>
-                <Link href="/tilburg" className="hover:text-white transition-colors">
-                  Tilburg
+                <Link href="/vibe-check" className="hover:text-white transition-colors">
+                  {t.vibeCheck}
                 </Link>
               </li>
             </ul>
