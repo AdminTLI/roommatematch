@@ -36,6 +36,7 @@ import {
   cityForUniversity,
   saveVibeCheckSession,
   universityDisplayName,
+  VIBE_UNIVERSITY_OPTIONS,
   type VibeUniversityChoice,
 } from '@/lib/vibe-check/session'
 import { buildVibeShareSubject, buildVibeShareText } from '@/lib/vibe-check/share-copy'
@@ -187,10 +188,18 @@ export function VibeCheckClient() {
             matchCount: meta?.matchCount ?? null,
           }),
         })
-        const data = (await res.json().catch(() => ({}))) as { responseId?: string }
+        const data = (await res.json().catch(() => ({}))) as {
+          responseId?: string
+          error?: string
+        }
+        if (!res.ok) {
+          console.warn('[vibe-check] complete failed', res.status, data.error)
+          return null
+        }
         if (data.responseId) setResponseId(data.responseId)
         return data.responseId ?? null
-      } catch {
+      } catch (err) {
+        console.warn('[vibe-check] complete request error', err)
         return null
       }
     },
@@ -232,6 +241,8 @@ export function VibeCheckClient() {
     acceptedTerms &&
     (university === 'avans' ||
       university === 'buas' ||
+      university === 'tilburg_tiu' ||
+      university === 'fontys_tilburg' ||
       (university === 'other' && universityOther.trim().length >= 2))
 
   const finishQuiz = useCallback(
@@ -240,7 +251,9 @@ export function VibeCheckClient() {
       setArchetype(result)
       setStep('results')
       void (async () => {
-        const id = await persistAnswers(nextAnswers)
+        // Always persist first so the anonymous row (and student counter) includes this user.
+        let id = await persistAnswers(nextAnswers)
+        if (!id) id = await persistAnswers(nextAnswers)
         const fit = await fetchLifestyleFit(nextAnswers)
         await persistAnswers(nextAnswers, { ...fit, responseId: id })
       })()
@@ -411,8 +424,8 @@ export function VibeCheckClient() {
               Find your roommate archetype
             </h1>
             <p className="mt-2 text-sm text-slate-600 sm:text-base">
-              Answer a few lifestyle questions, see who fits how you live, and meet students in{' '}
-              {city} looking for roommates.
+              Answer a few lifestyle questions, see who fits how you live, and meet students in
+              Breda and Tilburg looking for roommates.
             </p>
           </div>
 
@@ -430,13 +443,7 @@ export function VibeCheckClient() {
                   We use this for your passport badge and local match cohort.
                 </p>
                 <div className="mt-5 grid gap-3">
-                  {(
-                    [
-                      { id: 'avans' as const, label: 'Avans University of Applied Sciences' },
-                      { id: 'buas' as const, label: 'Breda University of Applied Sciences (BUas)' },
-                      { id: 'other' as const, label: 'Other university' },
-                    ] as const
-                  ).map((opt) => (
+                  {VIBE_UNIVERSITY_OPTIONS.map((opt) => (
                     <button
                       key={opt.id}
                       type="button"
@@ -458,7 +465,7 @@ export function VibeCheckClient() {
                     type="text"
                     value={universityOther}
                     onChange={(e) => setUniversityOther(e.target.value)}
-                    placeholder="e.g. Tilburg University"
+                    placeholder="e.g. your university name"
                     className="mt-4 h-12 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/30"
                   />
                 ) : null}

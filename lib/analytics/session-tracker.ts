@@ -31,25 +31,31 @@ export function getOrCreateSessionId(): string {
     return generateSessionId()
   }
 
-  const existing = localStorage.getItem(SESSION_STORAGE_KEY)
-  const sessionStart = localStorage.getItem(SESSION_START_KEY)
-  
-  // Check if session has expired (30 minutes of inactivity)
-  if (existing && sessionStart) {
-    const startTime = new Date(sessionStart).getTime()
-    const now = Date.now()
-    
-    if (now - startTime < SESSION_TIMEOUT_MS) {
-      return existing
+  try {
+    const existing = localStorage.getItem(SESSION_STORAGE_KEY)
+    const sessionStart = localStorage.getItem(SESSION_START_KEY)
+
+    // Check if session has expired (30 minutes of inactivity)
+    if (existing && sessionStart) {
+      const startTime = new Date(sessionStart).getTime()
+      const now = Date.now()
+
+      if (now - startTime < SESSION_TIMEOUT_MS) {
+        return existing
+      }
     }
+
+    // Create new session
+    const newSessionId = generateSessionId()
+    localStorage.setItem(SESSION_STORAGE_KEY, newSessionId)
+    localStorage.setItem(SESSION_START_KEY, new Date().toISOString())
+
+    return newSessionId
+  } catch {
+    // Private mode / blocked storage — still return an ephemeral id so
+    // anonymous vibe-check (and similar) submissions can proceed.
+    return generateSessionId()
   }
-  
-  // Create new session
-  const newSessionId = generateSessionId()
-  localStorage.setItem(SESSION_STORAGE_KEY, newSessionId)
-  localStorage.setItem(SESSION_START_KEY, new Date().toISOString())
-  
-  return newSessionId
 }
 
 /**

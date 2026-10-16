@@ -9,6 +9,7 @@ export {
   clearVibeCheckSession,
   universityDisplayName,
   cityForUniversity,
+  VIBE_UNIVERSITY_OPTIONS,
 } from './session'
 export type { VibeCheckSession, VibeUniversityChoice } from './session'
 export { mapVibeAnswersToOnboarding } from './map-to-onboarding'
