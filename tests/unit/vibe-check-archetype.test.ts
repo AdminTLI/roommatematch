@@ -113,12 +113,12 @@ describe('summarizeLifestyleFit match count', () => {
     }
 
     const zero = summarizeLifestyleFit(scores, emptyPeers, { submissionCount: 0 })
-    expect(zero.matchCount).toBe(100)
+    expect(zero.matchCount).toBe(61)
 
     const five = summarizeLifestyleFit(scores, emptyPeers, { submissionCount: 5 })
-    expect(five.matchCount).toBe(105)
+    expect(five.matchCount).toBe(66)
 
     const six = summarizeLifestyleFit(scores, emptyPeers, { submissionCount: 6 })
-    expect(six.matchCount).toBe(106)
+    expect(six.matchCount).toBe(67)
   })
 })

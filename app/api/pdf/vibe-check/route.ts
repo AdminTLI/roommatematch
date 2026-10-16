@@ -5,6 +5,7 @@ import { renderPdf } from '@/lib/pdf/render-pdf'
 import { pdfQueue } from '@/lib/pdf/queue'
 import { generateVibeCheckPassportHtml } from '@/lib/pdf/templates/vibe-check-passport'
 import { calculateArchetype } from '@/lib/vibe-check/archetype'
+import { LIFESTYLE_FIT_COUNT_OFFSET } from '@/lib/vibe-check/lifestyle-fit'
 import { VIBE_CHECK_QUESTIONS } from '@/lib/vibe-check/questions'
 import {
   checkRateLimit,
@@ -78,7 +79,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { university, city, answers, matchCount = 100, lifestyleFitPercent = 60 } = parsed.data
+    const {
+      university,
+      city,
+      answers,
+      matchCount = LIFESTYLE_FIT_COUNT_OFFSET,
+      lifestyleFitPercent = 60,
+    } = parsed.data
 
     const missing = VIBE_CHECK_QUESTIONS.filter((q) => typeof answers[q.id] !== 'number')
     if (missing.length > 0) {

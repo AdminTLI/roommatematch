@@ -39,6 +39,7 @@ import {
   type VibeUniversityChoice,
 } from '@/lib/vibe-check/session'
 import { buildVibeShareSubject, buildVibeShareText } from '@/lib/vibe-check/share-copy'
+import { LIFESTYLE_FIT_COUNT_OFFSET } from '@/lib/vibe-check/lifestyle-fit'
 import { getOrCreateSessionId } from '@/lib/analytics/session-tracker'
 
 type Step = 'university' | 'quiz' | 'results' | 'beta' | 'done'
@@ -174,7 +175,10 @@ export function VibeCheckClient() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             sessionId,
-            responseId: meta?.responseId ?? responseId,
+            // Omit until we have an id — sending null fails Zod .optional() (not nullable).
+            ...((meta?.responseId ?? responseId)
+              ? { responseId: meta?.responseId ?? responseId }
+              : {}),
             university: universityLabel,
             universityOther: university === 'other' ? universityOther.trim() : null,
             city,
@@ -206,7 +210,8 @@ export function VibeCheckClient() {
         lifestyleFitPercent?: number
         cohortAverages?: CohortAverages | null
       }
-      const nextMatch = typeof data.matchCount === 'number' ? data.matchCount : 100
+      const nextMatch =
+        typeof data.matchCount === 'number' ? data.matchCount : LIFESTYLE_FIT_COUNT_OFFSET
       const nextFit =
         typeof data.lifestyleFitPercent === 'number' ? data.lifestyleFitPercent : 60
       setMatchCount(nextMatch)
@@ -214,10 +219,10 @@ export function VibeCheckClient() {
       setCohortAverages(data.cohortAverages ?? null)
       return { matchCount: nextMatch, lifestyleFitPercent: nextFit }
     } catch {
-      setMatchCount(100)
+      setMatchCount(LIFESTYLE_FIT_COUNT_OFFSET)
       setLifestyleFitPercent(60)
       setCohortAverages(null)
-      return { matchCount: 100, lifestyleFitPercent: 60 }
+      return { matchCount: LIFESTYLE_FIT_COUNT_OFFSET, lifestyleFitPercent: 60 }
     } finally {
       setFitLoading(false)
     }
@@ -264,7 +269,7 @@ export function VibeCheckClient() {
       city,
       answers,
       archetype,
-      matchCount: matchCount ?? 100,
+      matchCount: matchCount ?? LIFESTYLE_FIT_COUNT_OFFSET,
       lifestyleFitPercent: lifestyleFitPercent ?? 60,
       email: emailValue,
       completedAt: new Date().toISOString(),
@@ -283,7 +288,7 @@ export function VibeCheckClient() {
           university: universityLabel,
           city,
           answers,
-          matchCount: matchCount ?? 100,
+          matchCount: matchCount ?? LIFESTYLE_FIT_COUNT_OFFSET,
           lifestyleFitPercent: lifestyleFitPercent ?? 60,
         }),
       })

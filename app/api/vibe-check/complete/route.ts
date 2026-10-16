@@ -15,7 +15,8 @@ export const runtime = 'nodejs'
 
 const BodySchema = z.object({
   sessionId: z.string().min(1).max(120).optional(),
-  responseId: z.string().uuid().optional(),
+  // Client may send null before the first insert; Zod optional() alone rejects null.
+  responseId: z.string().uuid().optional().nullable(),
   university: z.string().min(1).max(200).optional(),
   universityOther: z.string().max(200).optional().nullable(),
   city: z.string().min(1).max(80).optional(),

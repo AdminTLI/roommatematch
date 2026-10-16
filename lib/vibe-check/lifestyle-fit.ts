@@ -4,7 +4,7 @@ import { VIBE_CHECK_QUESTIONS } from './questions'
 
 export const LIFESTYLE_FIT_THRESHOLD = 0.6
 /** Floor shown as "at least X potential students" before counting vibe-check submissions. */
-export const LIFESTYLE_FIT_COUNT_OFFSET = 100
+export const LIFESTYLE_FIT_COUNT_OFFSET = 61
 
 export type ModuleScores = {
   environment: number
@@ -209,7 +209,7 @@ export type LifestyleFitResult = {
   lifestyleFitPercent: number
   /**
    * Display count for "at least X potential students":
-   * offset (100) + vibe-check submissions (grows every form completion).
+   * offset (61) + vibe-check submissions (grows every form completion).
    */
   matchCount: number
   /** Real users compared (had enough vibe answers). */
