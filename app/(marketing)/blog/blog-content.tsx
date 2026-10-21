@@ -36,6 +36,16 @@ const content = {
     noResults: 'No articles in this category yet.',
     posts: [
       {
+        slug: 'autumn-huisavond-indoor-bonding-netherlands',
+        title: 'Autumn Huisavond: Indoor Bonding for Dutch Students',
+        excerpt:
+          'Late October pushes student life indoors. Huisavond, shared dinners, and low-pressure rituals keep Dutch housemates connected when daylight and campus social life shrink.',
+        readTime: '8 min read',
+        date: '2026-10-21',
+        category: 'Lifestyle',
+        icon: Users,
+      },
+      {
         slug: 'international-students-dutch-housemates-language',
         title: 'Language Gaps With Dutch Housemates',
         excerpt:
@@ -359,6 +369,16 @@ const content = {
     pageOf: (page: number, total: number) => `Pagina ${page} van ${total}`,
     noResults: 'Nog geen artikelen in deze categorie.',
     posts: [
+      {
+        slug: 'autumn-huisavond-indoor-bonding-netherlands',
+        title: 'Herfst-huisavond: indoor bonding voor studenten',
+        excerpt:
+          'Eind oktober schuift het studentenleven naar binnen. Huisavond, samen eten en lage-druk rituelen houden huisgenoten verbonden als daglicht en campusleven afnemen.',
+        readTime: '8 min lezen',
+        date: '2026-10-21',
+        category: 'Lifestyle',
+        icon: Users,
+      },
       {
         slug: 'international-students-dutch-housemates-language',
         title: 'Taalkloven met Nederlandse huisgenoten',

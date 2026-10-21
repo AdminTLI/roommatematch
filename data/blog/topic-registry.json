@@ -2,6 +2,14 @@
   "description": "Tracks published blog topics to reduce week-to-week repetition. Append one entry per new post.",
   "entries": [
     {
+      "slug": "autumn-huisavond-indoor-bonding-netherlands",
+      "date": "2026-10-21",
+      "category": "Lifestyle",
+      "primaryKeyword": "autumn huisavond indoor bonding Netherlands",
+      "pillar": "Seasonal Late-Oct / student culture",
+      "angle": "Late-Oct seasonal override: indoor huisavond/gezelligheid bonding (not midterm burnout sequel to draft PR45); RIVM loneliness 23% lead; NRC/Inholland uitwonend; Survival Guide Do/Dont; broad Dutch focus; no shortage thesis"
+    },
+    {
       "slug": "international-students-dutch-housemates-language",
       "date": "2026-09-30",
       "category": "Integration",

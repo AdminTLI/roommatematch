@@ -2,6 +2,21 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "autumn-huisavond-indoor-bonding-netherlands",
+      "date": "2026-10-21",
+      "primarySourceUrls": [
+        "https://www.rivm.nl/mentale-gezondheid/monitor/studenten/eenzaamheid",
+        "https://www.nrc.nl/nieuws/2025/08/31/student-op-kamers-voelt-zich-mentaal-minder-goed-het-lijkt-eerst-zo-fijn-uit-huis-gaan-a4904558",
+        "https://www.studiekeuzelab.nl/kies/zo-maak-je-afspraken-met-je-huisgenoten",
+        "https://www.trimbos.nl/actueel/blogs/eenzaamheid-onder-studenten-vraagt-om-aandacht-herkenning-en-actie/",
+        "https://www.rug.nl/filosofie/outreach/een-huis-delen-hoe-hou-je-het-leuk-reduced.pdf"
+      ],
+      "statsUsed": [
+        "RIVM/Trimbos/GGD MMMS 2025: ~23% HBO/WO students strongly lonely",
+        "NRC/Inholland 2025: uitwonend students lower wellbeing vs thuiswonend; smaller shared setups worse loneliness"
+      ]
+    },
+    {
       "slug": "international-students-dutch-housemates-language",
       "date": "2026-09-30",
       "primarySourceUrls": [
