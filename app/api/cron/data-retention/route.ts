@@ -60,6 +60,8 @@ export async function GET(request: Request) {
       app_events: { deleted: 0, error: null as string | null },
       email_unsubscribe_events: { deleted: 0, error: null as string | null },
       domu_ai_chat_log: { deleted: 0, error: null as string | null },
+      feature_waitlist: { deleted: 0, error: null as string | null },
+      vibe_check: { responses_deleted: 0, events_deleted: 0, error: null as string | null },
       inactive_accounts: {
         warnings30d: 0,
         warnings7d: 0,
@@ -149,6 +151,65 @@ export async function GET(request: Request) {
     } catch (error) {
       results.domu_ai_chat_log.error = error instanceof Error ? error.message : 'Unknown error'
       safeLogger.error('[Cron] Failed to purge Domu AI chat log', { error })
+    }
+
+    // 7a. Purge feature_waitlist entries older than 2 years (GDPR Art. 5(1)(e) — storage limitation)
+    try {
+      const waitlistCutoff = new Date()
+      waitlistCutoff.setDate(waitlistCutoff.getDate() - 730) // 2 years
+      const { count: waitlistDeletedCount, error: waitlistDeleteError } = await supabase
+        .from('feature_waitlist')
+        .delete({ count: 'exact' })
+        .lt('created_at', waitlistCutoff.toISOString())
+      if (waitlistDeleteError) throw waitlistDeleteError
+      results.feature_waitlist.deleted = waitlistDeletedCount ?? 0
+      safeLogger.info('[Cron] Purged expired feature_waitlist entries', {
+        count: results.feature_waitlist.deleted,
+      })
+    } catch (error) {
+      results.feature_waitlist.error = error instanceof Error ? error.message : 'Unknown error'
+      safeLogger.error('[Cron] Failed to purge feature_waitlist', { error })
+    }
+
+    // 7b. Purge anonymous vibe_check_responses + vibe_check_events older than 1 year
+    try {
+      const vibeCutoff = new Date()
+      vibeCutoff.setDate(vibeCutoff.getDate() - 365)
+      const { data: oldResponseIds } = await supabase
+        .from('vibe_check_responses')
+        .select('id')
+        .lt('created_at', vibeCutoff.toISOString())
+        .limit(5000)
+      if (oldResponseIds && oldResponseIds.length > 0) {
+        const ids = oldResponseIds.map((r) => r.id)
+        const { count: eventsDeleted, error: eventsErr } = await supabase
+          .from('vibe_check_events')
+          .delete({ count: 'exact' })
+          .in('response_id', ids)
+        if (eventsErr) throw eventsErr
+        results.vibe_check.events_deleted = eventsDeleted ?? 0
+        const { count: responsesDeleted, error: responsesErr } = await supabase
+          .from('vibe_check_responses')
+          .delete({ count: 'exact' })
+          .in('id', ids)
+        if (responsesErr) throw responsesErr
+        results.vibe_check.responses_deleted = responsesDeleted ?? 0
+      }
+      // Also purge orphaned events (response_id IS NULL) older than 1 year
+      const { count: orphanEventsDeleted, error: orphanErr } = await supabase
+        .from('vibe_check_events')
+        .delete({ count: 'exact' })
+        .is('response_id', null)
+        .lt('created_at', vibeCutoff.toISOString())
+      if (orphanErr) throw orphanErr
+      results.vibe_check.events_deleted += orphanEventsDeleted ?? 0
+      safeLogger.info('[Cron] Purged expired vibe_check data', {
+        responses: results.vibe_check.responses_deleted,
+        events: results.vibe_check.events_deleted,
+      })
+    } catch (error) {
+      results.vibe_check.error = error instanceof Error ? error.message : 'Unknown error'
+      safeLogger.error('[Cron] Failed to purge vibe_check data', { error })
     }
 
     // 7. Inactive account warnings + 1-year processing (privacy policy)

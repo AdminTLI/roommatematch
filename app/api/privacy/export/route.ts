@@ -92,7 +92,8 @@ export async function GET(req: NextRequest) {
         consents: {},
         bug_reports: {},
         lab_prompt_dismissals: {},
-        lab_wish_reports: {}
+        lab_wish_reports: {},
+        verification_nudge_state: {}
       }
 
       // 1. Account information (from auth.users)
@@ -520,6 +521,20 @@ export async function GET(req: NextRequest) {
 
       if (labWishReports && labWishReports.length > 0) {
         exportData.lab_wish_reports = labWishReports
+      }
+
+      // 21. Verification nudge state (GDPR Art. 15 — behavioral tracking data)
+      const adminForNudge = createAdminClient()
+      const { data: nudgeState } = await adminForNudge
+        .from('verification_nudge_state')
+        .select(
+          'first_shown_at, last_shown_at, last_action, show_count, next_eligible_at, cadence_stage, created_at, updated_at'
+        )
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (nudgeState) {
+        exportData.verification_nudge_state = nudgeState
       }
 
       // Convert to JSON string

@@ -263,6 +263,14 @@ export async function processInactiveAccounts(
       await supabase.from('lab_co_creator_badges').delete().eq('user_id', userId)
       await supabase.from('lab_wish_reports').delete().eq('reporter_id', userId)
 
+      // Scrub registration funnel behavioral data (GDPR Art. 5 — storage limitation)
+      // ON DELETE CASCADE handles account deletion; explicit delete needed for inactivity anonymization.
+      await supabase.from('registration_funnel_milestones').delete().eq('user_id', userId)
+      await supabase.from('registration_funnel_progress').delete().eq('user_id', userId)
+
+      // Delete verification nudge cadence state (GDPR Art. 5 — storage limitation)
+      await supabase.from('verification_nudge_state').delete().eq('user_id', userId)
+
       await supabase
         .from('users')
         .update({

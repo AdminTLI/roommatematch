@@ -111,6 +111,45 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
     description: 'Domu AI assistant conversation logs (user_message is personal data)',
     legalBasis: 'Contractual necessity for providing AI assistant feature; subject to GDPR Art. 17 erasure',
     exceptions: []
+  },
+  {
+    dataType: 'feature_waitlist',
+    retentionDays: 730, // 2 years
+    description:
+      'Email addresses submitted to feature waitlists (e.g. professional cohort sign-up). No user_id link — identified only by email.',
+    legalBasis:
+      'Consent (Art. 6(1)(a) GDPR) — user proactively submitted email to be notified about a specific feature',
+    exceptions: [
+      'Deleted immediately upon verified erasure request matching the submitted email',
+      'Entries without a matching auth account cannot be auto-exported via DSAR; manual erasure process applies',
+    ],
+  },
+  {
+    dataType: 'verification_nudge_state',
+    retentionDays: 365, // 1 year — same as inactive_accounts; wiped on inactivity processing
+    description:
+      'Per-user soft-verification nudge cadence state (impression count, cadence stage, last action). Deleted via ON DELETE CASCADE on account deletion.',
+    legalBasis:
+      'Legitimate interest (Art. 6(1)(f) GDPR) — necessary for appropriate nudge frequency management',
+    exceptions: ['Wiped when account is anonymized for inactivity'],
+  },
+  {
+    dataType: 'registration_funnel',
+    retentionDays: 730, // 2 years — used for cohort analysis; wiped on account deletion via CASCADE
+    description:
+      'Registration funnel milestone timestamps and progress rows per user. Deleted via ON DELETE CASCADE on account deletion; anonymized on inactivity.',
+    legalBasis:
+      'Legitimate interest (Art. 6(1)(f) GDPR) — cohort bottleneck analysis to improve onboarding',
+    exceptions: ['Rows deleted on inactivity anonymization to minimize pseudonymous behavioral data'],
+  },
+  {
+    dataType: 'vibe_check',
+    retentionDays: 365, // 1 year — anonymous funnel data; no user_id column
+    description:
+      'Anonymous vibe-check responses and events (session_id, university, city, lifestyle answers). No direct user_id link.',
+    legalBasis:
+      'Legitimate interest (Art. 6(1)(f) GDPR) — aggregate marketing funnel and housing-compatibility research',
+    exceptions: ['No individual erasure path since no user_id; aggregate only after 1 year'],
   }
 ]
 
