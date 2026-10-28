@@ -463,7 +463,7 @@ const content = {
           culturele gewoonte tot productpitch te maken. Huur- en borgsom-rekenwerk blijft relevant voor het
           huishoudbudget - de{' '}
           <Link href="/rent-calculator">huurcalculator</Link> is één neutrale plek om die cijfers eerlijk te houden
-          - maar de fiets is vaak de eerste gedeelde cultuurtest na het contract.
+ - maar de fiets is vaak de eerste gedeelde cultuurtest na het contract.
         </p>
 
         <h2>Een eenvoudige herfst-huischecklist</h2>

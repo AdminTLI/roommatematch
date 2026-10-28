@@ -56,6 +56,16 @@ const content = {
         icon: Users,
       },
       {
+        slug: 'autumn-midterm-burnout-housemate-routines',
+        title: 'Autumn Midterm Burnout: Housemate Routines That Help',
+        excerpt:
+          'Mid-block peaks and shorter days strain Dutch student houses. Indoor routines for study load, recovery gaps, and low-pressure bonding - without another tentamenweek rulebook.',
+        readTime: '9 min read',
+        date: '2026-10-14',
+        category: 'Wellbeing',
+        icon: Shield,
+      },
+      {
         slug: 'dutch-student-bike-culture-housemates',
         title: 'How Bike Culture Shapes Dutch Student Houses',
         excerpt:
@@ -408,6 +418,16 @@ const content = {
         date: '2026-10-21',
         category: 'Lifestyle',
         icon: Users,
+      },
+      {
+        slug: 'autumn-midterm-burnout-housemate-routines',
+        title: 'Herfst-midterms: huisgenotenroutines tegen burnout',
+        excerpt:
+          'Midden in het blok en kortere dagen belasten studentenhuizen. Indoor-routines voor studiedruk, herstelgaten en low-pressure bonding - zonder opnieuw een tentamenweek-handboek.',
+        readTime: '9 min lezen',
+        date: '2026-10-14',
+        category: 'Welzijn',
+        icon: Shield,
       },
       {
         slug: 'dutch-student-bike-culture-housemates',
