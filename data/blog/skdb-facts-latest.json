@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-09-30T06:03:46.800Z",
+  "generatedAt": "2026-10-28T06:01:28.601Z",
   "skdbRelease": "26.3",
-  "peildatum": "2026-09-30",
+  "peildatum": "2026-10-28",
   "attribution": "Studiekeuzedatabase (LCSK)",
   "sourceMode": "api",
   "facts": [
     {
       "id": "programmes_total_count",
       "label": "Programmes in Studiekeuzedatabase (API)",
-      "value": 3297,
+      "value": 3312,
       "unit": "count",
       "scope": "nl",
       "source": "opleidingen"
@@ -16,7 +16,7 @@
     {
       "id": "programmes_active_count",
       "label": "Active programmes (at least one open vorm)",
-      "value": 3297,
+      "value": 3312,
       "unit": "count",
       "scope": "nl",
       "source": "opleidingen"
@@ -24,7 +24,7 @@
     {
       "id": "programmes_with_admission_requirements_count",
       "label": "Programmes with admission requirements text",
-      "value": 3297,
+      "value": 3308,
       "unit": "count",
       "scope": "nl",
       "source": "opleidingen"
@@ -32,7 +32,7 @@
     {
       "id": "programmes_with_admission_requirements_pct",
       "label": "Share of programmes with admission requirements",
-      "value": 100,
+      "value": 99.9,
       "unit": "percent",
       "scope": "nl",
       "source": "opleidingen"
@@ -40,7 +40,7 @@
     {
       "id": "programmes_with_ects_count",
       "label": "Programmes with ECTS credits",
-      "value": 3297,
+      "value": 3312,
       "unit": "count",
       "scope": "nl",
       "source": "opleidingen"
@@ -56,7 +56,7 @@
     {
       "id": "programmes_bachelor_count",
       "label": "Bachelor programmes (inferred level)",
-      "value": 1993,
+      "value": 2002,
       "unit": "count",
       "scope": "nl",
       "source": "opleidingen"
@@ -64,7 +64,7 @@
     {
       "id": "programmes_master_count",
       "label": "Master programmes (inferred level)",
-      "value": 1304,
+      "value": 1310,
       "unit": "count",
       "scope": "nl",
       "source": "opleidingen"
@@ -90,14 +90,14 @@
     {
       "cluster": "Bedrijfskunde en management",
       "sector": "Economie en Bedrijf",
-      "programmeCount": 167,
-      "activeCount": 167
+      "programmeCount": 169,
+      "activeCount": 169
     },
     {
       "cluster": "Informatica",
       "sector": "Exact en Informatica",
-      "programmeCount": 116,
-      "activeCount": 116
+      "programmeCount": 118,
+      "activeCount": 118
     },
     {
       "cluster": "Bedrijfskunde",
@@ -120,8 +120,8 @@
     {
       "cluster": "Gezondheidswetenschappen",
       "sector": "Gezondheid",
-      "programmeCount": 70,
-      "activeCount": 70
+      "programmeCount": 71,
+      "activeCount": 71
     },
     {
       "cluster": "Lerarenopleidingen maatschappijvakken",
@@ -156,8 +156,8 @@
     {
       "cluster": "Lerarenopleidingen exact",
       "sector": "Onderwijs en Opvoeding",
-      "programmeCount": 61,
-      "activeCount": 61
+      "programmeCount": 62,
+      "activeCount": 62
     },
     {
       "cluster": "Recht",
@@ -178,16 +178,22 @@
       "activeCount": 49
     },
     {
-      "cluster": "Taal, Literatuur en Cultuur",
-      "sector": "Taal en Communicatie",
-      "programmeCount": 46,
-      "activeCount": 46
-    },
-    {
       "cluster": "Commerciële economie",
       "sector": "Economie en Bedrijf",
       "programmeCount": 45,
       "activeCount": 45
+    },
+    {
+      "cluster": "Taal, Literatuur en Cultuur",
+      "sector": "Taal en Communicatie",
+      "programmeCount": 44,
+      "activeCount": 44
+    },
+    {
+      "cluster": "Theologie en Levensbeschouwing",
+      "sector": "Kunst en Cultuur",
+      "programmeCount": 43,
+      "activeCount": 43
     },
     {
       "cluster": "Kunst- en cultuurstudies",
@@ -202,16 +208,10 @@
       "activeCount": 42
     },
     {
-      "cluster": "Theologie en Levensbeschouwing",
-      "sector": "Kunst en Cultuur",
-      "programmeCount": 42,
-      "activeCount": 42
-    },
-    {
       "cluster": "Leraar basisonderwijs (PABO)",
       "sector": "Onderwijs en Opvoeding",
-      "programmeCount": 41,
-      "activeCount": 41
+      "programmeCount": 42,
+      "activeCount": 42
     },
     {
       "cluster": "International Business and Management",
@@ -364,8 +364,8 @@
       "activeCount": 27
     },
     {
-      "cluster": "Kunstmatige Intelligentie",
-      "sector": "Exact en Informatica",
+      "cluster": "Business Studies",
+      "sector": "Economie en Bedrijf",
       "programmeCount": 27,
       "activeCount": 27
     },
@@ -376,14 +376,14 @@
       "activeCount": 27
     },
     {
-      "cluster": "Business Studies",
-      "sector": "Economie en Bedrijf",
-      "programmeCount": 26,
-      "activeCount": 26
-    },
-    {
       "cluster": "Biologie",
       "sector": "Aarde en Milieu",
+      "programmeCount": 25,
+      "activeCount": 25
+    },
+    {
+      "cluster": "Kunstmatige Intelligentie",
+      "sector": "Exact en Informatica",
       "programmeCount": 25,
       "activeCount": 25
     },
@@ -442,6 +442,12 @@
       "activeCount": 21
     },
     {
+      "cluster": "Toegepaste Psychologie",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 21,
+      "activeCount": 21
+    },
+    {
       "cluster": "Archeologie",
       "sector": "Kunst en Cultuur",
       "programmeCount": 20,
@@ -452,12 +458,6 @@
       "sector": "Kunst en Cultuur",
       "programmeCount": 20,
       "activeCount": 20
-    },
-    {
-      "cluster": "Sport en Bewegen",
-      "sector": "Gedrag en Maatschappij",
-      "programmeCount": 19,
-      "activeCount": 19
     },
     {
       "cluster": "Fiscaal recht",
@@ -472,10 +472,16 @@
       "activeCount": 19
     },
     {
-      "cluster": "Toegepaste Psychologie",
+      "cluster": "Sport en Bewegen",
       "sector": "Gedrag en Maatschappij",
-      "programmeCount": 19,
-      "activeCount": 19
+      "programmeCount": 18,
+      "activeCount": 18
+    },
+    {
+      "cluster": "Lerarenopleidingen speciaal",
+      "sector": "Onderwijs en Opvoeding",
+      "programmeCount": 18,
+      "activeCount": 18
     },
     {
       "cluster": "Talen en Culturen van Azië en Afrika",
@@ -544,6 +550,12 @@
       "activeCount": 15
     },
     {
+      "cluster": "Overig gezondheidszorg",
+      "sector": "Gezondheid",
+      "programmeCount": 15,
+      "activeCount": 15
+    },
+    {
       "cluster": "Biologie en medisch labaratoriumonderzoek",
       "sector": "Aarde en Milieu",
       "programmeCount": 15,
@@ -556,12 +568,6 @@
       "activeCount": 15
     },
     {
-      "cluster": "Lerarenopleidingen speciaal",
-      "sector": "Onderwijs en Opvoeding",
-      "programmeCount": 14,
-      "activeCount": 14
-    },
-    {
       "cluster": "Criminologie",
       "sector": "Recht en Bestuur",
       "programmeCount": 14,
@@ -570,12 +576,6 @@
     {
       "cluster": "Vastgoed en Makelaardij",
       "sector": "Economie en Bedrijf",
-      "programmeCount": 14,
-      "activeCount": 14
-    },
-    {
-      "cluster": "Overig gezondheidszorg",
-      "sector": "Gezondheid",
       "programmeCount": 14,
       "activeCount": 14
     },
@@ -598,6 +598,12 @@
       "activeCount": 13
     },
     {
+      "cluster": "Politicologie",
+      "sector": "Recht en Bestuur",
+      "programmeCount": 13,
+      "activeCount": 13
+    },
+    {
       "cluster": "Mediastudies",
       "sector": "Taal en Communicatie",
       "programmeCount": 13,
@@ -616,6 +622,12 @@
       "activeCount": 12
     },
     {
+      "cluster": "Industrieel ontwerpen",
+      "sector": "Techniek",
+      "programmeCount": 12,
+      "activeCount": 12
+    },
+    {
       "cluster": "Civiele techniek",
       "sector": "Techniek",
       "programmeCount": 12,
@@ -630,12 +642,6 @@
     {
       "cluster": "Mechatronica",
       "sector": "Techniek",
-      "programmeCount": 11,
-      "activeCount": 11
-    },
-    {
-      "cluster": "Politicologie",
-      "sector": "Recht en Bestuur",
       "programmeCount": 11,
       "activeCount": 11
     },
@@ -690,12 +696,6 @@
     {
       "cluster": "Informatiestudies",
       "sector": "Taal en Communicatie",
-      "programmeCount": 8,
-      "activeCount": 8
-    },
-    {
-      "cluster": "Industrieel ontwerpen",
-      "sector": "Techniek",
       "programmeCount": 8,
       "activeCount": 8
     },
@@ -778,12 +778,6 @@
       "activeCount": 6
     },
     {
-      "cluster": "Sociaal Financiële Dienstverlening",
-      "sector": "Gedrag en Maatschappij",
-      "programmeCount": 6,
-      "activeCount": 6
-    },
-    {
       "cluster": "Engelse taal en cultuur",
       "sector": "Taal en Communicatie",
       "programmeCount": 5,
@@ -802,20 +796,26 @@
       "activeCount": 5
     },
     {
+      "cluster": "Sociaal Financiële Dienstverlening",
+      "sector": "Gedrag en Maatschappij",
+      "programmeCount": 5,
+      "activeCount": 5
+    },
+    {
       "cluster": "Journalistiek",
       "sector": "Taal en Communicatie",
       "programmeCount": 4,
       "activeCount": 4
     },
     {
-      "cluster": "Informatie- en Communicatietechnologie",
-      "sector": "Interdisciplinair",
-      "programmeCount": 4,
-      "activeCount": 4
-    },
-    {
       "cluster": "Vertaalopleidingen",
       "sector": "Taal en Communicatie",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
+      "cluster": "Lifestyle Studies",
+      "sector": "Economie en Bedrijf",
       "programmeCount": 3,
       "activeCount": 3
     },
@@ -832,8 +832,8 @@
       "activeCount": 2
     },
     {
-      "cluster": "Lifestyle Studies",
-      "sector": "Economie en Bedrijf",
+      "cluster": "Informatie- en Communicatietechnologie",
+      "sector": "Interdisciplinair",
       "programmeCount": 2,
       "activeCount": 2
     },
@@ -853,28 +853,28 @@
   "bySector": [
     {
       "sector": "Economie en Bedrijf",
-      "programmeCount": 698,
-      "activeCount": 698
+      "programmeCount": 702,
+      "activeCount": 702
     },
     {
       "sector": "Onderwijs en Opvoeding",
-      "programmeCount": 431,
-      "activeCount": 431
+      "programmeCount": 437,
+      "activeCount": 437
     },
     {
       "sector": "Techniek",
-      "programmeCount": 324,
-      "activeCount": 324
+      "programmeCount": 328,
+      "activeCount": 328
     },
     {
       "sector": "Kunst en Cultuur",
-      "programmeCount": 322,
-      "activeCount": 322
+      "programmeCount": 323,
+      "activeCount": 323
     },
     {
       "sector": "Gezondheid",
-      "programmeCount": 299,
-      "activeCount": 299
+      "programmeCount": 301,
+      "activeCount": 301
     },
     {
       "sector": "Exact en Informatica",
@@ -888,13 +888,13 @@
     },
     {
       "sector": "Recht en Bestuur",
-      "programmeCount": 242,
-      "activeCount": 242
+      "programmeCount": 244,
+      "activeCount": 244
     },
     {
       "sector": "Taal en Communicatie",
-      "programmeCount": 198,
-      "activeCount": 198
+      "programmeCount": 196,
+      "activeCount": 196
     },
     {
       "sector": "Aarde en Milieu",
@@ -903,11 +903,17 @@
     },
     {
       "sector": "Interdisciplinair",
-      "programmeCount": 50,
-      "activeCount": 50
+      "programmeCount": 48,
+      "activeCount": 48
     }
   ],
   "byInstitution": [
+    {
+      "instellingSkdb": 183,
+      "instellingNaam": "Fontys Hogeschool",
+      "programmeCount": 168,
+      "activeCount": 168
+    },
     {
       "instellingSkdb": 54,
       "instellingNaam": "Universiteit van Amsterdam",
@@ -915,16 +921,10 @@
       "activeCount": 166
     },
     {
-      "instellingSkdb": 183,
-      "instellingNaam": "Fontys Hogeschool",
-      "programmeCount": 163,
-      "activeCount": 163
-    },
-    {
       "instellingSkdb": 46,
       "instellingNaam": "Rijksuniversiteit Groningen",
-      "programmeCount": 153,
-      "activeCount": 153
+      "programmeCount": 154,
+      "activeCount": 154
     },
     {
       "instellingSkdb": 45,
@@ -953,8 +953,8 @@
     {
       "instellingSkdb": 106,
       "instellingNaam": "HAN University of Applied Sciences",
-      "programmeCount": 111,
-      "activeCount": 111
+      "programmeCount": 112,
+      "activeCount": 112
     },
     {
       "instellingSkdb": 79,
@@ -975,26 +975,26 @@
       "activeCount": 102
     },
     {
-      "instellingSkdb": 181,
-      "instellingNaam": "Hogeschool Inholland",
-      "programmeCount": 97,
-      "activeCount": 97
-    },
-    {
-      "instellingSkdb": 21,
-      "instellingNaam": "Windesheim",
-      "programmeCount": 96,
-      "activeCount": 96
-    },
-    {
       "instellingSkdb": 184,
       "instellingNaam": "Saxion",
       "programmeCount": 96,
       "activeCount": 96
     },
     {
+      "instellingSkdb": 181,
+      "instellingNaam": "Hogeschool Inholland",
+      "programmeCount": 96,
+      "activeCount": 96
+    },
+    {
       "instellingSkdb": 182,
       "instellingNaam": "Avans Hogeschool",
+      "programmeCount": 95,
+      "activeCount": 95
+    },
+    {
+      "instellingSkdb": 21,
+      "instellingNaam": "Windesheim",
       "programmeCount": 95,
       "activeCount": 95
     },
@@ -1007,8 +1007,8 @@
     {
       "instellingSkdb": 61,
       "instellingNaam": "Hogeschool van Amsterdam",
-      "programmeCount": 87,
-      "activeCount": 87
+      "programmeCount": 88,
+      "activeCount": 88
     },
     {
       "instellingSkdb": 48,
@@ -1019,8 +1019,8 @@
     {
       "instellingSkdb": 102,
       "instellingNaam": "Hanze",
-      "programmeCount": 84,
-      "activeCount": 84
+      "programmeCount": 85,
+      "activeCount": 85
     },
     {
       "instellingSkdb": 124,
@@ -1125,14 +1125,14 @@
       "activeCount": 22
     },
     {
-      "instellingSkdb": 168,
-      "instellingNaam": "TIAS School for Business and Society",
-      "programmeCount": 22,
-      "activeCount": 22
-    },
-    {
       "instellingSkdb": 138,
       "instellingNaam": "Open Universiteit",
+      "programmeCount": 21,
+      "activeCount": 21
+    },
+    {
+      "instellingSkdb": 168,
+      "instellingNaam": "TIAS School for Business and Society",
       "programmeCount": 21,
       "activeCount": 21
     },
@@ -1169,6 +1169,12 @@
     {
       "instellingSkdb": 87,
       "instellingNaam": "Hogeschool Schoevers",
+      "programmeCount": 14,
+      "activeCount": 14
+    },
+    {
+      "instellingSkdb": 259,
+      "instellingNaam": "HBO Academy",
       "programmeCount": 14,
       "activeCount": 14
     },
@@ -1253,12 +1259,6 @@
     {
       "instellingSkdb": 173,
       "instellingNaam": "SOMT",
-      "programmeCount": 7,
-      "activeCount": 7
-    },
-    {
-      "instellingSkdb": 259,
-      "instellingNaam": "HBO Academy",
       "programmeCount": 7,
       "activeCount": 7
     },
@@ -1365,6 +1365,12 @@
       "activeCount": 3
     },
     {
+      "instellingSkdb": 239,
+      "instellingNaam": "Islamic University of Applied Sciences Rotterdam",
+      "programmeCount": 3,
+      "activeCount": 3
+    },
+    {
       "instellingSkdb": 22,
       "instellingNaam": "Gerrit Rietveld Academie",
       "programmeCount": 3,
@@ -1443,12 +1449,6 @@
       "activeCount": 2
     },
     {
-      "instellingSkdb": 239,
-      "instellingNaam": "Islamic University of Applied Sciences Rotterdam",
-      "programmeCount": 2,
-      "activeCount": 2
-    },
-    {
       "instellingSkdb": 258,
       "instellingNaam": "Thomas More Hogeschool",
       "programmeCount": 2,
@@ -1475,6 +1475,12 @@
     {
       "instellingSkdb": 264,
       "instellingNaam": "Hogeschool voor Toegepaste Filosofie (HTF)",
+      "programmeCount": 2,
+      "activeCount": 2
+    },
+    {
+      "instellingSkdb": 2123,
+      "instellingNaam": "International University of Applied Sciences Amsterdam",
       "programmeCount": 2,
       "activeCount": 2
     },
@@ -1553,12 +1559,6 @@
     {
       "instellingSkdb": 2122,
       "instellingNaam": "Stichting BV/BmS Opleidingen",
-      "programmeCount": 1,
-      "activeCount": 1
-    },
-    {
-      "instellingSkdb": 2123,
-      "instellingNaam": "International University of Applied Sciences Amsterdam",
       "programmeCount": 1,
       "activeCount": 1
     }

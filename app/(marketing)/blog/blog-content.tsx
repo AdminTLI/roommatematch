@@ -36,6 +36,16 @@ const content = {
     noResults: 'No articles in this category yet.',
     posts: [
       {
+        slug: 'wintertijd-dark-evenings-student-houses',
+        title: 'Wintertijd House Rhythm for Dutch Students',
+        excerpt:
+          'After the October clock change, Dutch student houses face earlier dark evenings. Reset living-room time, quiet hours, and light routines early.',
+        readTime: '8 min read',
+        date: '2026-10-28',
+        category: 'Lifestyle',
+        icon: BookOpen,
+      },
+      {
         slug: 'international-students-dutch-housemates-language',
         title: 'Language Gaps With Dutch Housemates',
         excerpt:
@@ -359,6 +369,16 @@ const content = {
     pageOf: (page: number, total: number) => `Pagina ${page} van ${total}`,
     noResults: 'Nog geen artikelen in deze categorie.',
     posts: [
+      {
+        slug: 'wintertijd-dark-evenings-student-houses',
+        title: 'Wintertijd-huisritme voor Nederlandse studenten',
+        excerpt:
+          'Na de oktoberwissel worden avonden eerder donker in studentenhuizen. Heronderhandel woonkamer-tijd, stilte-uren en lichtroutines voordat wrijving vastloopt.',
+        readTime: '8 min lezen',
+        date: '2026-10-28',
+        category: 'Lifestyle',
+        icon: BookOpen,
+      },
       {
         slug: 'international-students-dutch-housemates-language',
         title: 'Taalkloven met Nederlandse huisgenoten',

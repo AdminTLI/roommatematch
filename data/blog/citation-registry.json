@@ -2,6 +2,21 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "wintertijd-dark-evenings-student-houses",
+      "date": "2026-10-28",
+      "primarySourceUrls": [
+        "https://www.rijksoverheid.nl/vraag-en-antwoord/zomertijd-wintertijd/klok-verzetten-nederland",
+        "https://www.lumc.nl/actueel/2024/mensen-zijn-dagdieren-die-met-de-lichtknop-het-hele-aardse-programma-in-de-war-kunnen-schoppen/",
+        "https://www.cbs.nl/nl-nl/nieuws/2023/45/meer-slaapproblemen-en-psychische-klachten-onder-jongeren",
+        "https://www.ru.nl/diensten/recharge/overzicht/verminder-blauw-licht-om-beter-te-slapen-tijdens-de-winteravonden",
+        "https://www.studentenleefstijl.nl/slaaphygiene/"
+      ],
+      "statsUsed": [
+        "Rijksoverheid: wintertijd Sunday 25 October 2026, clocks back 03:00→02:00",
+        "CBS Jeugdmonitor 2022: 22% of 12–25 had sleep problems in prior two weeks (vs 14% in 2017)"
+      ]
+    },
+    {
       "slug": "international-students-dutch-housemates-language",
       "date": "2026-09-30",
       "primarySourceUrls": [
