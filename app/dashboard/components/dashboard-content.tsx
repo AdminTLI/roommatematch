@@ -547,20 +547,30 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
           }
         }
 
-        // Sync localStorage with database: Clear entries where DB status doesn't match localStorage
+        // Sync localStorage with database: Clear entries where DB status doesn't match localStorage.
+        // Keep "accepted" cache while DB is still pending — accept may not have propagated yet,
+        // and we must not re-show a card the user just connected on (matches /matches behavior).
         const staleEntries: string[] = []
         Array.from(deduped.values()).forEach(s => {
           const cachedStatus = processedSuggestions.get(s.id)
-          if (cachedStatus) {
-            // If DB shows pending but localStorage says processed, localStorage is stale - clear it
-            if (s.status === 'pending' && (cachedStatus === 'declined' || cachedStatus === 'accepted' || cachedStatus === 'confirmed')) {
-              logger.log('[loadRecentMatches] Detected stale localStorage entry:', {
-                id: s.id,
-                cachedStatus,
-                dbStatus: s.status
-              })
-              staleEntries.push(s.id)
-            }
+          if (!cachedStatus) return
+
+          if (s.status === 'pending' && (cachedStatus === 'declined' || cachedStatus === 'confirmed')) {
+            logger.log('[loadRecentMatches] Detected stale localStorage entry:', {
+              id: s.id,
+              cachedStatus,
+              dbStatus: s.status
+            })
+            staleEntries.push(s.id)
+          }
+          if (s.status === 'confirmed' && (cachedStatus === 'declined' || cachedStatus === 'accepted')) {
+            staleEntries.push(s.id)
+          }
+          if (s.status === 'accepted' && cachedStatus === 'declined') {
+            staleEntries.push(s.id)
+          }
+          if (s.status === 'declined' && (cachedStatus === 'accepted' || cachedStatus === 'confirmed')) {
+            staleEntries.push(s.id)
           }
         })
 
