@@ -32,6 +32,23 @@
       ]
     },
     {
+      "slug": "dutch-student-bike-culture-housemates",
+      "date": "2026-10-07",
+      "primarySourceUrls": [
+        "https://www.cbs.nl/nl-nl/visualisaties/verkeer-en-vervoer/personen/fietsen",
+        "https://ans-online.nl/artikelen/wies-biekens-21-ontdekte-dat-internationale-studenten-zich-meer-thuis-voelen-in-nederland-wanneer-ze-fietsen/",
+        "https://universonline.nl/nieuws/2026/01/13/de-fietsenwinkel-op-de-campus-als-ontmoetingsplaats-als-het-moet-leren-we-je-zelfs-fietsen/",
+        "https://www.utwente.nl/stories/student/647126/zo-overleef-je-de-herfst-als-student/?tag=student-tips"
+      ],
+      "statsUsed": [
+        "CBS 2023: bicycle 27% of all trips; ~2.9 km/day average",
+        "CBS 2023: ages 18-25 ~2.6 km/day by bike; 44% of bike trips shopping/going out/sport/hobby",
+        "CBS 2023 monthly: Oct ~3.0 km/day, Nov ~2.36, Dec ~1.90",
+        "Univers Tilburg: ~50 campus bike shop visitors/day; autumn puncture spike",
+        "ANS/Biekens: n=16 international student interviews Amsterdam/Nijmegen on cycling and belonging"
+      ]
+    },
+    {
       "slug": "international-students-dutch-housemates-language",
       "date": "2026-09-30",
       "primarySourceUrls": [

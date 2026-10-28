@@ -31,6 +31,8 @@ const CATEGORY_PREFERENCES: Record<string, BlogHeroImageKey[]> = {
   Safety: ['contractSigning', 'housingCityscape', 'cityBikeStudent'],
   Technology: ['studyLateNight', 'studentsCollaborating', 'contractSigning'],
   Finance: ['housingCityscape', 'contractSigning', 'sharedKitchen'],
+  Lifestyle: ['cityBikeStudent', 'studentsCollaborating', 'sharedKitchen'],
+  Culture: ['cityBikeStudent', 'internationalCampus', 'studentsCollaborating'],
 }
 
 const DEFAULT_PREFERENCES: BlogHeroImageKey[] = [
