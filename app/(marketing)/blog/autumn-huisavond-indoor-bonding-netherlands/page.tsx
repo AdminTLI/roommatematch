@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Autumn Huisavond: Indoor Bonding for Dutch Students',
     description:
-      'Why late-autumn student houses need intentional indoor bonding—and how huisavond culture keeps connection light when daylight and campus social life shrink.',
+      'Why late-autumn student houses need intentional indoor bonding - and how huisavond culture keeps connection light when daylight and campus social life shrink.',
     type: 'article',
     publishedTime: '2026-10-21',
     authors: ['Domu Match Team'],

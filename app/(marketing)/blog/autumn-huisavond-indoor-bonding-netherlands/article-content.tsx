@@ -52,14 +52,14 @@ const content = {
           >
             RIVM / Trimbos / GGD GHOR, MMMS student loneliness indicator, 2025
           </a>
-          ). When weather and midterms pull people indoors, the house either becomes a soft landing—or a set of closed
+          ). When weather and midterms pull people indoors, the house either becomes a soft landing - or a set of closed
           bedroom doors.
         </p>
 
         <figure>
           <BlogHeroImage
             imageKey={heroImageKey}
-            alt="Bright open-plan kitchen with wooden cabinets, a long dining table, bar stools, and houseplants—typical shared-house gathering space"
+            alt="Bright open-plan kitchen with wooden cabinets, a long dining table, bar stools, and houseplants - typical shared-house gathering space"
             priority
           />
           <figcaption>
@@ -71,7 +71,7 @@ const content = {
 
         <p>
           September social life is external: intro weeks, association nights, spontaneous after-lecture plans. October
-          is internal. Daylight shortens, study blocks lengthen, and housemates see each other more—but often only as
+          is internal. Daylight shortens, study blocks lengthen, and housemates see each other more - but often only as
           shadows between lectures and bed. Research on students living away from home keeps finding the same pattern:
           being <em>uitwonend</em> can raise loneliness and stress compared with living with parents, especially in
           smaller shared setups (
@@ -86,7 +86,7 @@ const content = {
         </p>
 
         <p>
-          Dutch houses already have a cultural technology for this: <strong>huisavond</strong>—a recurring house night
+          Dutch houses already have a cultural technology for this: <strong>huisavond</strong> - a recurring house night
           that is more ritual than rave. Guides for first-time co-living still treat shared dinners, house evenings, and
           low-stakes events as the glue that turns strangers into a working household (
           <a
@@ -132,7 +132,7 @@ const content = {
         <ul>
           <li>Turning huisavond into a drinking contest. MMMS reporting already links student-house drinking cultures
             to heavier use patterns; autumn bonding does not need that script.</li>
-          <li>Using the night to litigate chores. Park the schoonmaakrooster for another message—or for the quieter
+          <li>Using the night to litigate chores. Park the schoonmaakrooster for another message - or for the quieter
             process described in{' '}
             <Link href="/blog/group-chats-ground-rules">group-chat ground rules</Link>.</li>
           <li>Expecting every housemate to be a best friend. Compatibility is routines and respect, not identical
@@ -157,12 +157,12 @@ const content = {
           </li>
           <li>
             <strong>Corridor check-ins:</strong> a two-sentence “How is your week looking?” beats waiting for someone to
-            cry in the kitchen—see also{' '}
+            cry in the kitchen - see also{' '}
             <Link href="/blog/housemate-support-living-away-from-home">housemate support boundaries</Link>.
           </li>
           <li>
             <strong>Guest pause window:</strong> during heavy midterm blocks, agree that overnight guests need a quick
-            house ping. That is courtesy, not a ban—different from temporary exam-week systems covered in{' '}
+            house ping. That is courtesy, not a ban - different from temporary exam-week systems covered in{' '}
             <Link href="/blog/exam-week-house-rules-netherlands">exam-week house rules</Link>.
           </li>
         </ul>
@@ -177,8 +177,8 @@ const content = {
           For context on how Dutch institutions frame student life beyond a single city, the overview on{' '}
           <Link href="/universities">universities</Link> sits alongside the broader mission on{' '}
           <Link href="/about">about</Link>. Practical household budgeting tools such as the{' '}
-          <Link href="/rent-calculator">rent calculator</Link> matter too—shared dinners collapse when nobody can afford
-          the groceries—but money is the infrastructure, not the ritual.
+          <Link href="/rent-calculator">rent calculator</Link> matter too - shared dinners collapse when nobody can afford
+          the groceries - but money is the infrastructure, not the ritual.
         </p>
 
         <h2>A 10-minute house check-in script</h2>
@@ -188,7 +188,7 @@ const content = {
         <ol>
           <li>Propose one recurring huisavond for November (day + end time).</li>
           <li>Ask everyone to name one “green” bonding activity (cook / study-together / walk) and one hard no.</li>
-          <li>Agree that silence is a valid reply—opt-in only.</li>
+          <li>Agree that silence is a valid reply - opt-in only.</li>
           <li>Assign a rotating cook, not a permanent host.</li>
         </ol>
 
@@ -200,7 +200,7 @@ const content = {
 
         <h2>Sources</h2>
         <p className="text-sm text-slate-600">
-          RIVM / Trimbos-instituut / GGD GHOR Nederland. Monitor Mentale gezondheid en Middelengebruik Studenten —
+          RIVM / Trimbos-instituut / GGD GHOR Nederland. Monitor Mentale gezondheid en Middelengebruik Studenten - 
           loneliness indicator (verslagjaar 2025).{' '}
           <a
             href="https://www.rivm.nl/mentale-gezondheid/monitor/studenten/eenzaamheid"
@@ -297,14 +297,14 @@ const content = {
           >
             RIVM / Trimbos / GGD GHOR, MMMS-indicator eenzaamheid, 2025
           </a>
-          ). Als weer en midterms mensen naar binnen trekken, wordt het huis óf een zachte landing—óf een rij gesloten
+          ). Als weer en midterms mensen naar binnen trekken, wordt het huis óf een zachte landing - óf een rij gesloten
           slaapkamerdeuren.
         </p>
 
         <figure>
           <BlogHeroImage
             imageKey={heroImageKey}
-            alt="Lichte open keuken met houten kasten, een lange eettafel, barkrukken en kamerplanten—typische gedeelde huiskamer"
+            alt="Lichte open keuken met houten kasten, een lange eettafel, barkrukken en kamerplanten - typische gedeelde huiskamer"
             priority
           />
           <figcaption>
@@ -317,7 +317,7 @@ const content = {
 
         <p>
           Het sociale leven in september is vooral extern: introweken, verenigingsavonden, spontane plannen na college.
-          Oktober is intern. Het daglicht wordt korter, studieblokken langer, en huisgenoten zien elkaar vaker—maar vaak
+          Oktober is intern. Het daglicht wordt korter, studieblokken langer, en huisgenoten zien elkaar vaker - maar vaak
           alleen als schimmen tussen college en bed. Onderzoek onder uitwonende studenten blijft hetzelfde patroon
           laten zien: op kamers wonen kan eenzaamheid en stress verhogen ten opzichte van studenten die nog bij hun
           ouders wonen, vooral in kleinere woonsituaties (
@@ -332,7 +332,7 @@ const content = {
         </p>
 
         <p>
-          Nederlandse huizen hebben daar al een culturele technologie voor: <strong>huisavond</strong>—een terugkerende
+          Nederlandse huizen hebben daar al een culturele technologie voor: <strong>huisavond</strong> - een terugkerende
           avond die meer ritueel is dan rave. Guides voor eerste keer samenwonen behandelen gedeelde etentjes,
           huisavonden en low-stakes activiteiten nog steeds als de lijm die vreemden tot een werkend huishouden maakt (
           <a
@@ -378,7 +378,7 @@ const content = {
         <ul>
           <li>Huisavond veranderen in een drinkwedstrijd. MMMS-rapportages linken studenthuis-drinkcultuur al aan
             zwaarder middelengebruik; herfstbonding heeft dat script niet nodig.</li>
-          <li>De avond gebruiken om klusjes uit te vechten. Parkeer het schoonmaakrooster voor een ander bericht—of voor
+          <li>De avond gebruiken om klusjes uit te vechten. Parkeer het schoonmaakrooster voor een ander bericht - of voor
             het rustigere proces in{' '}
             <Link href="/blog/group-chats-ground-rules">groepsapp-huisregels</Link>.</li>
           <li>Van elke huisgenoot een beste vriend verwachten. Compatibiliteit is routines en respect, niet identieke
@@ -403,12 +403,12 @@ const content = {
           </li>
           <li>
             <strong>Gang-check-ins:</strong> twee zinnen “Hoe ziet je week eruit?” wint het van wachten tot iemand huilt
-            in de keuken—zie ook{' '}
+            in de keuken - zie ook{' '}
             <Link href="/blog/housemate-support-living-away-from-home">grenzen bij huisgenootsteun</Link>.
           </li>
           <li>
             <strong>Gast-pauzevenster:</strong> in zware midtermblokken afspreken dat overnachtingsgasten een korte
-            huisping krijgen. Dat is hoffelijkheid, geen verbod—anders dan tijdelijke tentamenweek-systemen in{' '}
+            huisping krijgen. Dat is hoffelijkheid, geen verbod - anders dan tijdelijke tentamenweek-systemen in{' '}
             <Link href="/blog/exam-week-house-rules-netherlands">tentamenweek-huisregels</Link>.
           </li>
         </ul>
@@ -422,8 +422,8 @@ const content = {
           eenzaamheid meer ruimte. Daarom zijn campuswelzijn en huiscultuur hetzelfde retentieverhaal in verschillende
           kantoren. Voor context over hoe Nederlandse instellingen studentenleven kaderen, staat het overzicht op{' '}
           <Link href="/universities">universities</Link> naast de bredere missie op <Link href="/about">about</Link>.
-          Praktische huishoudtools zoals de <Link href="/rent-calculator">rent calculator</Link> doen ertoe—gedeelde
-          etentjes vallen plat als niemand boodschappen kan betalen—maar geld is de infrastructuur, niet het ritueel.
+          Praktische huishoudtools zoals de <Link href="/rent-calculator">rent calculator</Link> doen ertoe - gedeelde
+          etentjes vallen plat als niemand boodschappen kan betalen - maar geld is de infrastructuur, niet het ritueel.
         </p>
 
         <h2>Een check-in-script van 10 minuten</h2>
@@ -433,7 +433,7 @@ const content = {
         <ol>
           <li>Stel één terugkerende huisavond voor november voor (dag + eindtijd).</li>
           <li>Vraag iedereen één “groene” bondingactiviteit (koken / samen studeren / wandelen) en één harde no.</li>
-          <li>Spreek af dat stilte een geldig antwoord is—alleen opt-in.</li>
+          <li>Spreek af dat stilte een geldig antwoord is - alleen opt-in.</li>
           <li>Wijs een roterende kok aan, geen permanente host.</li>
         </ol>
 
@@ -445,7 +445,7 @@ const content = {
 
         <h2>Bronnen</h2>
         <p className="text-sm text-slate-600">
-          RIVM / Trimbos-instituut / GGD GHOR Nederland. Monitor Mentale gezondheid en Middelengebruik Studenten —
+          RIVM / Trimbos-instituut / GGD GHOR Nederland. Monitor Mentale gezondheid en Middelengebruik Studenten - 
           indicator eenzaamheid (verslagjaar 2025).{' '}
           <a
             href="https://www.rivm.nl/mentale-gezondheid/monitor/studenten/eenzaamheid"
