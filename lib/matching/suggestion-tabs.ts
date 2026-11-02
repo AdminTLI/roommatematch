@@ -22,14 +22,14 @@ export function isSuggestedForUser(
 
   if (suggestion.status === 'pending') return true
 
-  // Other person accepted first — keep visible so this user can respond
-  const memberCount = suggestion.memberIds?.length ?? 2
-  if (
-    suggestion.status === 'accepted' &&
-    acceptedBy.length > 0 &&
-    acceptedBy.length < memberCount
-  ) {
-    return true
+  if (suggestion.status === 'accepted') {
+    // Algorithm auto-accept: cron set status='accepted' with no one in
+    // accepted_by yet. Both users should see it as a fresh Suggested card.
+    if (acceptedBy.length === 0) return true
+
+    // Other person accepted first — keep visible so this user can respond.
+    const memberCount = suggestion.memberIds?.length ?? 2
+    if (acceptedBy.length < memberCount) return true
   }
 
   return false
