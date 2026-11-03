@@ -20,6 +20,20 @@ describe('suggestion tab helpers', () => {
     expect(isSuggestedForUser(suggestion, userB)).toBe(true)
   })
 
+  it('shows algorithm auto-accept (status=accepted, acceptedBy=[]) in Suggested for both users', () => {
+    const suggestion = {
+      status: 'accepted',
+      acceptedBy: [],
+      memberIds: [userA, userB],
+    }
+    expect(isSuggestedForUser(suggestion, userA)).toBe(true)
+    expect(isSuggestedForUser(suggestion, userB)).toBe(true)
+    expect(isPendingForUser(suggestion, userA)).toBe(false)
+    expect(isPendingForUser(suggestion, userB)).toBe(false)
+    expect(isDiscoverableSuggestion(suggestion, userA, new Set())).toBe(true)
+    expect(isDiscoverableSuggestion(suggestion, userB, new Set())).toBe(true)
+  })
+
   it('still shows pending suggestions the user has not accepted', () => {
     const suggestion = {
       status: 'pending',
@@ -38,6 +52,31 @@ describe('suggestion tab helpers', () => {
     }
     expect(
       isDiscoverableSuggestion(suggestion, userA, new Set([userB]))
+    ).toBe(false)
+  })
+
+  it('treats null acceptedBy like empty for algorithm auto-accept', () => {
+    const suggestion = {
+      status: 'accepted',
+      acceptedBy: null,
+      memberIds: [userA, userB],
+    }
+    expect(isSuggestedForUser(suggestion, userA)).toBe(true)
+    expect(isPendingForUser(suggestion, userA)).toBe(false)
+  })
+
+  it('hides confirmed and declined from Suggested', () => {
+    expect(
+      isSuggestedForUser(
+        { status: 'confirmed', acceptedBy: [userA, userB], memberIds: [userA, userB] },
+        userA
+      )
+    ).toBe(false)
+    expect(
+      isSuggestedForUser(
+        { status: 'declined', acceptedBy: [], memberIds: [userA, userB] },
+        userA
+      )
     ).toBe(false)
   })
 })
