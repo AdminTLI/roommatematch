@@ -523,9 +523,12 @@ export async function runMatchingAsSuggestions({
                 academic: match.academic_bonus
               }
 
-              const autoMatchThreshold = 80
-              const status = fitIndex >= autoMatchThreshold ? 'accepted' : 'pending'
-              const acceptedBy = fitIndex >= autoMatchThreshold ? [student.id, studentB.id] : []
+              // Always create discoverable Suggested cards. Never write
+              // status='accepted' without a real user action — empty acceptedBy
+              // hid cards after the cron ON CONFLICT preserve fix, and stuffing
+              // both member IDs into acceptedBy faked Confirmed matches.
+              const status = 'pending' as const
+              const acceptedBy: string[] = []
 
               // We need to push the PAIR. Since we iterate A then B, we will see A-B and B-A.
               // pairFits expects key AId::BId.

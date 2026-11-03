@@ -1,9 +1,12 @@
 /**
  * Helpers for categorizing match_suggestions into Suggested / Pending tabs.
  *
- * Important: when the *other* user accepts first, status becomes `accepted`
- * with only them in `accepted_by`. That suggestion must still appear in
- * Suggested for the remaining user — otherwise it disappears from both tabs.
+ * Important cases for status=`accepted`:
+ * - `accepted_by=[]` (legacy algorithm auto-accept): treat as fresh Suggested
+ *   for both users — neither has acted yet.
+ * - `accepted_by` has the other person only: keep in Suggested so this user
+ *   can still respond; without this the card vanishes from both tabs.
+ * - I am in `accepted_by`: not Suggested (Pending instead, until mutual).
  */
 
 export type SuggestionTabFields = {

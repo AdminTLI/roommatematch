@@ -54,4 +54,29 @@ describe('suggestion tab helpers', () => {
       isDiscoverableSuggestion(suggestion, userA, new Set([userB]))
     ).toBe(false)
   })
+
+  it('treats null acceptedBy like empty for algorithm auto-accept', () => {
+    const suggestion = {
+      status: 'accepted',
+      acceptedBy: null,
+      memberIds: [userA, userB],
+    }
+    expect(isSuggestedForUser(suggestion, userA)).toBe(true)
+    expect(isPendingForUser(suggestion, userA)).toBe(false)
+  })
+
+  it('hides confirmed and declined from Suggested', () => {
+    expect(
+      isSuggestedForUser(
+        { status: 'confirmed', acceptedBy: [userA, userB], memberIds: [userA, userB] },
+        userA
+      )
+    ).toBe(false)
+    expect(
+      isSuggestedForUser(
+        { status: 'declined', acceptedBy: [], memberIds: [userA, userB] },
+        userA
+      )
+    ).toBe(false)
+  })
 })
