@@ -2,6 +2,26 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "hbo-wo-housemates-study-rhythms-netherlands",
+      "date": "2026-11-04",
+      "primarySourceUrls": [
+        "https://lcsk.nl/nieuws/nse2026/",
+        "https://www.uu.nl/bachelors/algemene-informatie/hoe-kies-ik-een-studie/verschil-hbo-en-universiteit",
+        "https://www.rijksoverheid.nl/documenten/vraag-en-antwoord/schooltijden-en-onderwijstijd/hoeveel-lesuren-heb-ik-in-het-hoger-onderwijs",
+        "https://www.nuffic.nl/onderwijssystemen/nederland/hoger-onderwijs",
+        "https://www.kamerbewonersadviesburo.nl/huurrecht/onderverhuur/",
+        "https://www.tilburguniversity.edu/nl/studenten/snelgids/welkom-nieuwe-student/op-kamers-tilburg",
+        "https://www.studiekeuzedatabase.nl/"
+      ],
+      "statsUsed": [
+        "LCSK NSE 2026: about 248,000 respondents; 31% study pressure too high (37% in 2023); WO 34% vs HBO 30%",
+        "LCSK NSE 2026: satisfaction 75% overall; WO 82% vs HBO 70%",
+        "UU: HBO about 25 vs WO about 16 contact hours per week",
+        "Rijksoverheid: HBO bachelor 240 points, WO bachelor 180, 60 points = 1,680 hours per year",
+        "SKDB release 26.3 peildatum 2026-11-04: 3,312 programmes, 109 institutions, 2,002 bachelor / 1,310 master (inferred level)"
+      ]
+    },
+    {
       "slug": "wintertijd-dark-evenings-student-houses",
       "date": "2026-10-28",
       "primarySourceUrls": [

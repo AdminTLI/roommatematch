@@ -2,6 +2,14 @@
   "description": "Tracks published blog topics to reduce week-to-week repetition. Append one entry per new post.",
   "entries": [
     {
+      "slug": "hbo-wo-housemates-study-rhythms-netherlands",
+      "date": "2026-11-04",
+      "category": "Technology",
+      "primaryKeyword": "HBO vs WO housemates",
+      "pillar": "Study landscape & academics (Week 5)",
+      "angle": "HBO vs WO study rhythms (contact hours, internships, study pressure) in mixed student houses; LCSK NSE 2026, UU, Rijksoverheid, Nuffic, KAB; Cultural Explainer; light Tilburg/Breda mention; not shortage-led"
+    },
+    {
       "slug": "wintertijd-dark-evenings-student-houses",
       "date": "2026-10-28",
       "category": "Lifestyle",

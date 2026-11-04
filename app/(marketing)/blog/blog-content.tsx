@@ -36,6 +36,16 @@ const content = {
     noResults: 'No articles in this category yet.',
     posts: [
       {
+        slug: 'hbo-wo-housemates-study-rhythms-netherlands',
+        title: 'HBO vs WO Housemates: Two Study Rhythms, One House',
+        excerpt:
+          'HBO and WO students often share one Dutch house but live different weeks. Contact hours, internships, and study pressure explain where friction starts.',
+        readTime: '7 min read',
+        date: '2026-11-04',
+        category: 'Technology',
+        icon: Brain,
+      },
+      {
         slug: 'wintertijd-dark-evenings-student-houses',
         title: 'Wintertijd House Rhythm for Dutch Students',
         excerpt:
@@ -399,6 +409,16 @@ const content = {
     pageOf: (page: number, total: number) => `Pagina ${page} van ${total}`,
     noResults: 'Nog geen artikelen in deze categorie.',
     posts: [
+      {
+        slug: 'hbo-wo-housemates-study-rhythms-netherlands',
+        title: 'Hbo- en wo-huisgenoten: twee ritmes, één huis',
+        excerpt:
+          'Hbo- en wo-studenten delen vaak één huis maar leven een andere week. Contacturen, stages en studiedruk verklaren waar de wrijving begint.',
+        readTime: '7 min lezen',
+        date: '2026-11-04',
+        category: 'Technology',
+        icon: Brain,
+      },
       {
         slug: 'wintertijd-dark-evenings-student-houses',
         title: 'Wintertijd-huisritme voor Nederlandse studenten',
