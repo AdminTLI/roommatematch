@@ -62,6 +62,7 @@ export async function GET(request: Request) {
       domu_ai_chat_log: { deleted: 0, error: null as string | null },
       feature_waitlist: { deleted: 0, error: null as string | null },
       vibe_check: { responses_deleted: 0, events_deleted: 0, error: null as string | null },
+      wish_board: { deleted: 0, error: null as string | null },
       inactive_accounts: {
         warnings30d: 0,
         warnings7d: 0,
@@ -210,6 +211,24 @@ export async function GET(request: Request) {
     } catch (error) {
       results.vibe_check.error = error instanceof Error ? error.message : 'Unknown error'
       safeLogger.error('[Cron] Failed to purge vibe_check data', { error })
+    }
+
+    // 7c. Purge lab_wishes (wish board) older than 365 days (GDPR Art. 5(1)(e) — storage limitation)
+    //     lab_wish_votes and lab_wish_reports are cascade-deleted by the FK constraint.
+    //     lab_co_creator_badges.wish_id is set to NULL (ON DELETE SET NULL).
+    try {
+      const wishCutoff = new Date()
+      wishCutoff.setDate(wishCutoff.getDate() - 365)
+      const { count: wishDeletedCount, error: wishDeleteError } = await supabase
+        .from('lab_wishes')
+        .delete({ count: 'exact' })
+        .lt('created_at', wishCutoff.toISOString())
+      if (wishDeleteError) throw wishDeleteError
+      results.wish_board.deleted = wishDeletedCount ?? 0
+      safeLogger.info('[Cron] Purged expired lab_wishes', { count: results.wish_board.deleted })
+    } catch (error) {
+      results.wish_board.error = error instanceof Error ? error.message : 'Unknown error'
+      safeLogger.error('[Cron] Failed to purge lab_wishes', { error })
     }
 
     // 7. Inactive account warnings + 1-year processing (privacy policy)
