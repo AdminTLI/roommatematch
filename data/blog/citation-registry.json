@@ -2,6 +2,28 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "student-loan-interest-cap-scrapped-netherlands",
+      "date": "2026-11-11",
+      "primarySourceUrls": [
+        "https://www.rijksoverheid.nl/actueel/nieuws/2026/10/22/renteplafond-studieleningen-duurder-en-risicovol-minister-in-gesprek-met-parlement",
+        "https://www.scienceguide.nl/2026/11/kamer-stemt-in-met-schrappen-renteplafond-en-wil-hbo-hervormen/",
+        "https://www.ad.nl/politiek/definitief-geen-renteplafond-op-studieleningen-geld-naar-mboers-en-iets-hogere-beurs~a4a6cf8d/",
+        "https://www.duo.nl/particulier/rente/rente-voor-studenten.jsp",
+        "https://www.duo.nl/organisatie/pers/rentepercentages-studiefinanciering-voor-2026-bekend.jsp",
+        "https://www.duo.nl/particulier/student-finance-citizens-eu-eer-switzerland-or-uk/eligibility.jsp",
+        "https://ocoamsterdam.nl/vragen/hoeveel-studiefinanciering-krijg-ik-per-maand-in-het-hoger-onderwijs-hbo-en-wo",
+        "https://www.belastingdienst.nl/wps/wcm/connect/nl/huurtoeslag/content/student-op-kamers-huurtoeslag"
+      ],
+      "statsUsed": [
+        "Rijksoverheid 22 Oct 2026: cap now costs min EUR 160m/yr vs EUR 40m reserved; long-term rate 2.7% to 3.3%",
+        "ScienceGuide 3 Nov 2026: Tweede Kamer rejected motion to keep 2.5% cap; D66, VVD, CDA against",
+        "AD: EUR 40m kept for students, mostly mbo tuition refunds; +EUR 5 on planned +EUR 50 uitwonende beurs from 2028/29",
+        "DUO: 2027 rate 2.70% (SF35) / 3.28% (SF15); 2026 2.33% / 2.29%; 2023 0.46, 2024 2.56, 2025 2.57 (SF35)",
+        "OCO/DUO Sep-Dec 2026: max loan EUR 315.17 per month",
+        "DUO EU/EEA eligibility: 32 hours per month (24 average after 6 months) or 5 years residence"
+      ]
+    },
+    {
       "slug": "hbo-wo-housemates-study-rhythms-netherlands",
       "date": "2026-11-04",
       "primarySourceUrls": [
