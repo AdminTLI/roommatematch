@@ -68,7 +68,11 @@ export const RETENTION_POLICIES: RetentionPolicy[] = [
     retentionDays: 365,
     description: 'Domu Lab feature wishes, votes, and focus-group opt-ins',
     legalBasis: 'Legitimate interest in product discovery and improving the platform',
-    exceptions: ['Anonymized after account deletion via CASCADE']
+    exceptions: [
+      'Hard-deleted after retention via data-retention/maintenance crons',
+      'On account deletion: rows removed via ON DELETE CASCADE',
+      'On inactivity anonymization: title/body scrubbed; votes/reports/dismissals removed',
+    ],
   },
   {
     dataType: 'application_logs',

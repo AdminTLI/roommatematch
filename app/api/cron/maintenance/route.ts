@@ -13,6 +13,7 @@ import { logOpsEvent, purgeOldOpsEvents } from '@/lib/monitoring/ops-log'
 import { verifyCronRequest } from '@/lib/cron/verify-cron-request'
 import { purgeExpiredVerificationsWithStorage } from '@/lib/privacy/verification-retention'
 import { runInactivityLifecycle } from '@/lib/privacy/inactive-accounts'
+import { purgeExpiredWishBoard } from '@/lib/privacy/wish-board-retention'
 
 export const maxDuration = 300 // 5 minutes - maximum allowed for Hobby plan
 export const dynamic = 'force-dynamic'
@@ -58,6 +59,7 @@ export async function GET(request: Request) {
         reports: { deleted: 0, error: null as string | null },
         app_events: { deleted: 0, error: null as string | null },
         domu_ai_chat_log: { deleted: 0, error: null as string | null },
+        wish_board: { deleted: 0, error: null as string | null },
         inactive_accounts: {
           warnings30d: 0,
           warnings7d: 0,
@@ -533,6 +535,17 @@ export async function GET(request: Request) {
       } catch (error) {
         results.dataRetention.domu_ai_chat_log.error = error instanceof Error ? error.message : 'Unknown error'
         safeLogger.error('[Cron] Failed to purge Domu AI chat log', { error })
+      }
+
+      // 6.4b. Purge lab_wishes per wish_board retention policy (GDPR Art. 5(1)(e) — storage limitation)
+      //       lab_wish_votes and lab_wish_reports are cascade-deleted by the FK constraint.
+      //       lab_co_creator_badges.wish_id is set to NULL (ON DELETE SET NULL).
+      try {
+        const wishPurge = await purgeExpiredWishBoard(supabase)
+        results.dataRetention.wish_board.deleted = wishPurge.deleted
+      } catch (error) {
+        results.dataRetention.wish_board.error = error instanceof Error ? error.message : 'Unknown error'
+        safeLogger.error('[Cron] Failed to purge lab_wishes', { error })
       }
 
       // 6.5. Inactive account warnings + 1-year anonymization (privacy policy)
