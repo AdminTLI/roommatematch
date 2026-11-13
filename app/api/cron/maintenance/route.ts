@@ -13,6 +13,7 @@ import { logOpsEvent, purgeOldOpsEvents } from '@/lib/monitoring/ops-log'
 import { verifyCronRequest } from '@/lib/cron/verify-cron-request'
 import { purgeExpiredVerificationsWithStorage } from '@/lib/privacy/verification-retention'
 import { runInactivityLifecycle } from '@/lib/privacy/inactive-accounts'
+import { purgeExpiredWishBoard } from '@/lib/privacy/wish-board-retention'
 
 export const maxDuration = 300 // 5 minutes - maximum allowed for Hobby plan
 export const dynamic = 'force-dynamic'
@@ -536,19 +537,12 @@ export async function GET(request: Request) {
         safeLogger.error('[Cron] Failed to purge Domu AI chat log', { error })
       }
 
-      // 6.4b. Purge lab_wishes (wish board) older than 365 days (GDPR Art. 5(1)(e) — storage limitation)
+      // 6.4b. Purge lab_wishes per wish_board retention policy (GDPR Art. 5(1)(e) — storage limitation)
       //       lab_wish_votes and lab_wish_reports are cascade-deleted by the FK constraint.
       //       lab_co_creator_badges.wish_id is set to NULL (ON DELETE SET NULL).
       try {
-        const wishCutoff = new Date()
-        wishCutoff.setDate(wishCutoff.getDate() - 365)
-        const { count: wishDeletedCount, error: wishDeleteError } = await supabase
-          .from('lab_wishes')
-          .delete({ count: 'exact' })
-          .lt('created_at', wishCutoff.toISOString())
-        if (wishDeleteError) throw wishDeleteError
-        results.dataRetention.wish_board.deleted = wishDeletedCount ?? 0
-        safeLogger.info('[Cron] Purged expired lab_wishes', { count: results.dataRetention.wish_board.deleted })
+        const wishPurge = await purgeExpiredWishBoard(supabase)
+        results.dataRetention.wish_board.deleted = wishPurge.deleted
       } catch (error) {
         results.dataRetention.wish_board.error = error instanceof Error ? error.message : 'Unknown error'
         safeLogger.error('[Cron] Failed to purge lab_wishes', { error })
