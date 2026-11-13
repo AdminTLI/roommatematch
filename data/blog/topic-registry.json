@@ -2,6 +2,14 @@
   "description": "Tracks published blog topics to reduce week-to-week repetition. Append one entry per new post.",
   "entries": [
     {
+      "slug": "student-loan-interest-cap-scrapped-netherlands",
+      "date": "2026-11-11",
+      "category": "Finance",
+      "primaryKeyword": "student loan interest Netherlands",
+      "pillar": "Breaking news / policy (Priority 1 newsjack; rotational week 6 mod 8 overridden)",
+      "angle": "Practical Impact Guide: Tweede Kamer scrapped 2.5% student loan interest cap on 3 Nov 2026; DUO 2027 rates 2.70% SF35 / 3.28% SF15; rate-scenario table, Mijn DUO checklist, house chat script; Dutch and international (EU/EEA 32h rule) angles; not shortage-led"
+    },
+    {
       "slug": "hbo-wo-housemates-study-rhythms-netherlands",
       "date": "2026-11-04",
       "category": "Technology",

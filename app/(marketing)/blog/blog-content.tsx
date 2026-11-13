@@ -36,6 +36,16 @@ const content = {
     noResults: 'No articles in this category yet.',
     posts: [
       {
+        slug: 'student-loan-interest-cap-scrapped-netherlands',
+        title: 'No Student Loan Interest Cap: What To Do Now',
+        excerpt:
+          'The 2.5% student loan interest cap is gone. See what DUO rates mean for your budget, plus a checklist and a house chat script.',
+        readTime: '7 min read',
+        date: '2026-11-11',
+        category: 'Finance',
+        icon: TrendingUp,
+      },
+      {
         slug: 'hbo-wo-housemates-study-rhythms-netherlands',
         title: 'HBO vs WO Housemates: Two Study Rhythms, One House',
         excerpt:
@@ -409,6 +419,16 @@ const content = {
     pageOf: (page: number, total: number) => `Pagina ${page} van ${total}`,
     noResults: 'Nog geen artikelen in deze categorie.',
     posts: [
+      {
+        slug: 'student-loan-interest-cap-scrapped-netherlands',
+        title: 'Geen renteplafond studielening: wat nu?',
+        excerpt:
+          'Het renteplafond van 2,5% is geschrapt. Wat betekenen de DUO-rentes voor je budget? Met checklist en appje voor je huisgroep.',
+        readTime: '7 min lezen',
+        date: '2026-11-11',
+        category: 'Financiën',
+        icon: TrendingUp,
+      },
       {
         slug: 'hbo-wo-housemates-study-rhythms-netherlands',
         title: 'Hbo- en wo-huisgenoten: twee ritmes, één huis',
