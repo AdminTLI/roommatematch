@@ -2,6 +2,22 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "december-empty-house-loneliness-netherlands",
+      "date": "2026-11-18",
+      "primarySourceUrls": [
+        "https://delta.tudelft.nl/article/internationale-studenten-hoe-vier-je-kerst-als-je-familie-ver-weg-woont",
+        "https://delta.tudelft.nl/article/lichte-verbetering-van-welzijn-studenten",
+        "https://www.student.universiteitleiden.nl/en/events/2026/12/leiden-universitys-winter-weeks",
+        "https://bron.fontys.nl/winter-university-verbindt-internationale-studenten/",
+        "https://www.utwente.nl/en/stories/student/42418/loneliness-during-the-winter-holidays/?tag=internationals&tag=well-being"
+      ],
+      "statsUsed": [
+        "MMMS-2025 via Delta: 60% of HBO/WO respondents reported loneliness feelings",
+        "MMMS-2025 via Delta: among international respondents, fatigue and loneliness more common than in 2023",
+        "Leiden Winter Weeks 2026: 21 Dec 2026 to 2 Jan 2027"
+      ]
+    },
+    {
       "slug": "student-loan-interest-cap-scrapped-netherlands",
       "date": "2026-11-11",
       "primarySourceUrls": [

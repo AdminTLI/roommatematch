@@ -36,6 +36,16 @@ const content = {
     noResults: 'No articles in this category yet.',
     posts: [
       {
+        slug: 'december-empty-house-loneliness-netherlands',
+        title: 'December Stay-Behind Loneliness for Students',
+        excerpt:
+          'After exams, Dutch student houses empty as people leave for Christmas. A practical guide for internationals and locals who stay behind and feel the quiet.',
+        readTime: '9 min read',
+        date: '2026-11-18',
+        category: 'Wellbeing',
+        icon: Shield,
+      },
+      {
         slug: 'student-loan-interest-cap-scrapped-netherlands',
         title: 'No Student Loan Interest Cap: What To Do Now',
         excerpt:
@@ -419,6 +429,16 @@ const content = {
     pageOf: (page: number, total: number) => `Pagina ${page} van ${total}`,
     noResults: 'Nog geen artikelen in deze categorie.',
     posts: [
+      {
+        slug: 'december-empty-house-loneliness-netherlands',
+        title: 'December-thuisblijvers: eenzaamheid in het lege huis',
+        excerpt:
+          'Na de tentamens leegt het studentenhuis omdat iedereen naar huis gaat met kerst. Praktische gids voor internationals en Nederlanders die blijven en de stilte voelen.',
+        readTime: '9 min lezen',
+        date: '2026-11-18',
+        category: 'Welzijn',
+        icon: Shield,
+      },
       {
         slug: 'student-loan-interest-cap-scrapped-netherlands',
         title: 'Geen renteplafond studielening: wat nu?',
