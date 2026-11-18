@@ -2,6 +2,14 @@
   "description": "Tracks published blog topics to reduce week-to-week repetition. Append one entry per new post.",
   "entries": [
     {
+      "slug": "december-empty-house-loneliness-netherlands",
+      "date": "2026-11-18",
+      "category": "Wellbeing",
+      "primaryKeyword": "december stay-behind loneliness student houses Netherlands",
+      "pillar": "Seasonal December override (exams + kerstvakantie empty house)",
+      "angle": "Post-exam isolation then departure cascade; internationals + Dutch herexamen/work stay-behinds; Delta Christmas + MMMS 60% loneliness feelings + internationals fatigue/loneliness up; Leiden Winter Weeks 21 Dec-2 Jan; Survival Guide roster checklist + WhatsApp scripts; distinct from huisavond bonding and midterm burnout; not shortage-led"
+    },
+    {
       "slug": "student-loan-interest-cap-scrapped-netherlands",
       "date": "2026-11-11",
       "category": "Finance",
