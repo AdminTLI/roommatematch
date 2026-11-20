@@ -6,6 +6,8 @@ import { MessengerSidebar } from './messenger-sidebar'
 import { MessengerConversation } from './messenger-conversation'
 import { MessengerProfilePane } from './messenger-profile-pane'
 import { MessengerAboutPane } from './messenger-about-pane'
+import { MessengerGroupInsightsPane } from './messenger-group-insights-pane'
+import { MessengerHousingListingPane } from './messenger-housing-listing-pane'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { queryClient, queryKeys } from '@/app/providers'
@@ -28,6 +30,9 @@ interface ChatInfo {
   id: string
   partnerName: string
   partnerAvatar?: string
+  housingListingTitle?: string | null
+  isHousingHostChat?: boolean
+  isGroup?: boolean
 }
 
 type RightPaneMode = 'insights' | 'about' | null
@@ -237,17 +242,73 @@ export function MessengerLayout({
 
         if (!memberships) return
 
+        let housingListingTitle: string | null = null
+        let isHousingHostChat = false
+        let isGroup = false
+        let partnerName = 'User'
+        let partnerAvatar: string | undefined
+        const { data: chatRow } = await supabase
+          .from('chats')
+          .select('housing_application_id, is_group, name')
+          .eq('id', selectedChatId)
+          .maybeSingle()
+
+        isGroup = Boolean(chatRow?.is_group)
+
+        if (chatRow?.housing_application_id) {
+          isHousingHostChat = true
+          const { data: app } = await supabase
+            .from('housing_applications')
+            .select('housing_listings(title)')
+            .eq('id', chatRow.housing_application_id)
+            .maybeSingle()
+          const listing = app?.housing_listings as { title?: string } | { title?: string }[] | null
+          housingListingTitle = Array.isArray(listing)
+            ? listing[0]?.title || 'Listing'
+            : listing?.title || 'Listing'
+        }
+
+        if (isGroup && typeof chatRow?.name === 'string' && chatRow.name.trim()) {
+          partnerName = chatRow.name.trim()
+        } else {
+          const otherMemberId = memberships.find((m) => m.user_id !== user.id)?.user_id
+          if (otherMemberId) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('first_name, last_name, avatar_id, profile_picture_url')
+              .eq('user_id', otherMemberId)
+              .maybeSingle()
+            const fullName = [profile?.first_name?.trim(), profile?.last_name?.trim()]
+              .filter(Boolean)
+              .join(' ')
+            if (fullName) partnerName = fullName
+            if (typeof profile?.profile_picture_url === 'string' && profile.profile_picture_url) {
+              partnerAvatar = profile.profile_picture_url
+            }
+          }
+        }
+
         setChatInfo({
           id: selectedChatId,
-          partnerName: 'User',
-          partnerAvatar: undefined
+          partnerName,
+          partnerAvatar,
+          housingListingTitle,
+          isHousingHostChat,
+          isGroup,
         })
+        if (partnerName !== 'User') {
+          setPartnerDisplayName(partnerName)
+        }
+        if (partnerAvatar) {
+          setPartnerAvatar(partnerAvatar)
+        }
       } catch (error) {
         console.error('Failed to fetch chat info:', error)
         setChatInfo({
           id: selectedChatId,
           partnerName: 'User',
-          partnerAvatar: undefined
+          partnerAvatar: undefined,
+          isGroup: false,
         })
       }
     }
@@ -329,46 +390,91 @@ export function MessengerLayout({
 
   const paneContent =
     selectedChatId && rightPaneMode === 'insights' ? (
-      <MessengerProfilePane
-        chatId={selectedChatId}
-        isOpen
-        onClose={closeRightPane}
-        partnerDisplayName={partnerDisplayName || chatInfo?.partnerName}
-      />
+      chatInfo?.isGroup ? (
+        <MessengerGroupInsightsPane
+          chatId={selectedChatId}
+          isOpen
+          onClose={closeRightPane}
+          mode="insights"
+        />
+      ) : chatInfo?.isHousingHostChat ? (
+        <MessengerHousingListingPane
+          chatId={selectedChatId}
+          isOpen
+          onClose={closeRightPane}
+          mode="insights"
+        />
+      ) : (
+        <MessengerProfilePane
+          chatId={selectedChatId}
+          isOpen
+          onClose={closeRightPane}
+          partnerDisplayName={partnerDisplayName || chatInfo?.partnerName}
+        />
+      )
     ) : selectedChatId && rightPaneMode === 'about' ? (
-      <MessengerAboutPane
-        chatId={selectedChatId}
-        isOpen
-        onClose={closeRightPane}
-        partnerDisplayName={partnerDisplayName || chatInfo?.partnerName}
-        partnerAvatar={partnerAvatar ?? chatInfo?.partnerAvatar}
-        onComposeNudge={onComposeNudge}
-      />
+      chatInfo?.isGroup ? (
+        <MessengerGroupInsightsPane
+          chatId={selectedChatId}
+          isOpen
+          onClose={closeRightPane}
+          mode="members"
+        />
+      ) : chatInfo?.isHousingHostChat ? (
+        <MessengerHousingListingPane
+          chatId={selectedChatId}
+          isOpen
+          onClose={closeRightPane}
+          mode="host"
+        />
+      ) : (
+        <MessengerAboutPane
+          chatId={selectedChatId}
+          isOpen
+          onClose={closeRightPane}
+          partnerDisplayName={partnerDisplayName || chatInfo?.partnerName}
+          partnerAvatar={partnerAvatar ?? chatInfo?.partnerAvatar}
+          onComposeNudge={onComposeNudge}
+        />
+      )
     ) : null
 
   const conversationEl = selectedChatId ? (
-    <MessengerConversation
-      chatId={selectedChatId}
-      user={user}
-      onToggleProfile={handleOpenInsights}
-      onOpenAbout={handleOpenAbout}
-      onBack={handleBackToList}
-      partnerName={chatInfo?.partnerName ?? 'User'}
-      partnerAvatar={chatInfo?.partnerAvatar}
-      hideComposer={!isDesktop && rightPaneOpen}
-      composerInsert={composerInsert}
-      onComposerInsertConsumed={() => setComposerInsert(null)}
-      onPartnerDisplayNameChange={setPartnerDisplayName}
-      onPartnerAvatarChange={setPartnerAvatar}
-      highlightMessageId={
-        pendingMessageHighlightId &&
-        selectedChatId &&
-        (!initialChatId || selectedChatId === initialChatId)
-          ? pendingMessageHighlightId
-          : null
-      }
-      onHighlightConsumed={handleHighlightConsumed}
-    />
+    <div className="flex h-full min-h-0 flex-1 flex-col">
+      {chatInfo?.isHousingHostChat ? (
+        <div className="shrink-0 border-b border-indigo-100 bg-indigo-50/90 px-4 py-2 text-xs text-indigo-800 dark:border-indigo-500/20 dark:bg-indigo-950/40 dark:text-indigo-200">
+          <span className="font-semibold">Host chat</span>
+          {chatInfo.housingListingTitle
+            ? ` · Housing · ${chatInfo.housingListingTitle}`
+            : ' · About a housing listing'}
+        </div>
+      ) : null}
+      <div className="min-h-0 flex-1">
+        <MessengerConversation
+          chatId={selectedChatId}
+          user={user}
+          onToggleProfile={handleOpenInsights}
+          onOpenAbout={handleOpenAbout}
+          onBack={handleBackToList}
+          partnerName={chatInfo?.partnerName ?? 'User'}
+          partnerAvatar={chatInfo?.partnerAvatar}
+          isHousingHostChat={Boolean(chatInfo?.isHousingHostChat)}
+          hideComposer={!isDesktop && rightPaneOpen}
+          composerInsert={composerInsert}
+          onComposerInsertConsumed={() => setComposerInsert(null)}
+          onPartnerDisplayNameChange={setPartnerDisplayName}
+          onPartnerAvatarChange={setPartnerAvatar}
+          highlightMessageId={
+            pendingMessageHighlightId &&
+            selectedChatId &&
+            (!initialChatId || selectedChatId === initialChatId)
+              ? pendingMessageHighlightId
+              : null
+          }
+          onHighlightConsumed={handleHighlightConsumed}
+        />
+      </div>
+    </div>
   ) : null
 
   const emptyStateEl = (

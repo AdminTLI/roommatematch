@@ -1,9 +1,5 @@
-// View Toggle Component
-// Toggle between List, Map, and Split views
-
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { List, Map, LayoutGrid } from 'lucide-react'
 import { ViewMode } from '@/types/housing'
 import { cn } from '@/lib/utils'
@@ -18,31 +14,40 @@ export function ViewToggle({ value, onChange, className }: ViewToggleProps) {
   const views = [
     { value: 'list' as const, label: 'List', icon: List },
     { value: 'map' as const, label: 'Map', icon: Map },
-    { value: 'split' as const, label: 'Split', icon: LayoutGrid }
+    { value: 'split' as const, label: 'Split', icon: LayoutGrid },
   ]
 
   return (
-    <div className={cn('flex rounded-lg border border-gray-200 p-1', className)}>
+    <div
+      className={cn(
+        'hidden h-11 items-center gap-0.5 rounded-2xl border border-zinc-200 bg-white p-1 sm:inline-flex dark:border-white/10 dark:bg-white/5',
+        className
+      )}
+      role="group"
+      aria-label="View mode"
+    >
       {views.map((view) => {
         const Icon = view.icon
         const isActive = value === view.value
-        
         return (
-          <Button
+          <button
             key={view.value}
-            variant={isActive ? 'primary' : 'ghost'}
-            size="sm"
-            onClick={() => onChange(view.value)}
+            type="button"
+            title={view.label}
+            aria-label={view.label}
+            aria-pressed={isActive}
+            onClick={() => {
+              if (view.value !== value) onChange(view.value)
+            }}
             className={cn(
-              'flex items-center gap-2',
-              isActive 
-                ? 'bg-primary text-primary-foreground shadow-sm' 
-                : 'text-gray-600 hover:text-gray-900'
+              'inline-flex h-9 w-9 items-center justify-center rounded-xl transition',
+              isActive
+                ? 'bg-indigo-500 text-white'
+                : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white'
             )}
           >
-            <Icon className="h-4 w-4" />
-            <span className="hidden sm:inline">{view.label}</span>
-          </Button>
+            <Icon className="h-3.5 w-3.5" />
+          </button>
         )
       })}
     </div>

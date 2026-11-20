@@ -17,13 +17,16 @@ import {
 } from '@/lib/auth/session-terminated'
 import { BETA_SIGNUP_GOOGLE_FORM_URL } from '@/lib/marketing/beta-signup'
 import { AccountBannedDialog } from '@/components/auth/account-banned-dialog'
+import { getSafeAppRedirectPath } from '@/lib/auth/app-url'
 
 export function SignInForm({
   initialErrorCode,
   reason,
+  redirectTo,
 }: {
   initialErrorCode?: string | null
   reason?: string | null
+  redirectTo?: string | null
 }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,6 +35,7 @@ export function SignInForm({
   const [error, setError] = useState('')
   const [showBannedDialog, setShowBannedDialog] = useState(false)
   const router = useRouter()
+  const redirectAfterSignIn = getSafeAppRedirectPath(redirectTo, '/dashboard')
   const [supabaseInitError, setSupabaseInitError] = useState<string | null>(null)
   const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null)
 
@@ -159,7 +163,14 @@ export function SignInForm({
           }
           
           // Redirect to verify-email page with email query param
-          router.push(`/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}&auto=1`)
+          const verifyParams = new URLSearchParams({
+            email: trimmedEmail,
+            auto: '1',
+          })
+          if (redirectAfterSignIn !== '/dashboard') {
+            verifyParams.set('redirect', redirectAfterSignIn)
+          }
+          router.push(`/auth/verify-email?${verifyParams.toString()}`)
           return
         }
         
@@ -231,9 +242,16 @@ export function SignInForm({
             options: { shouldCreateUser: false }
           })
         } catch {}
-        router.push(`/auth/verify-email?email=${encodeURIComponent(trimmedEmail)}&auto=1`)
+        const verifyParams = new URLSearchParams({
+          email: trimmedEmail,
+          auto: '1',
+        })
+        if (redirectAfterSignIn !== '/dashboard') {
+          verifyParams.set('redirect', redirectAfterSignIn)
+        }
+        router.push(`/auth/verify-email?${verifyParams.toString()}`)
       } else {
-        router.push('/dashboard')
+        router.push(redirectAfterSignIn)
       }
     } catch (err) {
       console.error('[SignIn] Unexpected error during sign-in:', err)

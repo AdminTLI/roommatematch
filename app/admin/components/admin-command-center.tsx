@@ -30,6 +30,7 @@ import {
   FileText,
   Clock,
   UserCheck,
+  Building2,
 } from 'lucide-react'
 
 type TimePeriod = '24h' | '7d' | '1m' | '3m' | '6m' | '1y' | 'all'
@@ -65,6 +66,8 @@ interface QueueCounts {
   dsarOverdue: number
   dsarApproaching: number
   pendingVerifications: number
+  pendingHousingListings: number
+  agingHousingApplications: number
 }
 
 export function AdminCommandCenter() {
@@ -93,6 +96,8 @@ export function AdminCommandCenter() {
     dsarOverdue: 0,
     dsarApproaching: 0,
     pendingVerifications: 0,
+    pendingHousingListings: 0,
+    agingHousingApplications: 0,
   })
   const [systemHealth, setSystemHealth] = useState<SystemHealthData | null>(null)
   const [activities, setActivities] = useState<ActivityItem[]>([])
@@ -124,11 +129,14 @@ export function AdminCommandCenter() {
 
   const loadQueues = async () => {
     try {
-      const [flaggedRes, dsarRes, verificationsRes] = await Promise.all([
-        fetch('/api/admin/messages/flagged?limit=1'),
-        fetch('/api/admin/dsar/stats'),
-        fetch('/api/admin/verifications?status=pending'),
-      ])
+      const [flaggedRes, dsarRes, verificationsRes, housingRes, agingAppsRes] =
+        await Promise.all([
+          fetch('/api/admin/messages/flagged?limit=1'),
+          fetch('/api/admin/dsar/stats'),
+          fetch('/api/admin/verifications?status=pending'),
+          fetch('/api/admin/housing/listings?moderation_status=pending'),
+          fetch('/api/admin/housing/metrics?period=30d'),
+        ])
 
       let flaggedTotal = 0
       if (flaggedRes.ok) {
@@ -150,6 +158,18 @@ export function AdminCommandCenter() {
         pendingVerifications = data.stats?.pending ?? 0
       }
 
+      let pendingHousingListings = 0
+      if (housingRes.ok) {
+        const data = await housingRes.json()
+        pendingHousingListings = data.stats?.pending ?? 0
+      }
+
+      let agingHousingApplications = 0
+      if (agingAppsRes.ok) {
+        const data = await agingAppsRes.json()
+        agingHousingApplications = data.queues?.aging_applications ?? 0
+      }
+
       setQueues((prev) => ({
         ...prev,
         pendingReports: metrics.pendingReports,
@@ -160,6 +180,8 @@ export function AdminCommandCenter() {
         dsarOverdue,
         dsarApproaching,
         pendingVerifications,
+        pendingHousingListings,
+        agingHousingApplications,
       }))
     } catch (error) {
       console.error('Failed to load queue counts:', error)
@@ -286,6 +308,22 @@ export function AdminCommandCenter() {
       icon: UserCheck,
       color: 'text-blue-600',
       bg: 'bg-blue-50 dark:bg-blue-950/30',
+    },
+    {
+      label: 'Pending housing listings',
+      count: queues.pendingHousingListings,
+      href: '/admin/housing/listings?moderation_status=pending',
+      icon: Building2,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50 dark:bg-indigo-950/30',
+    },
+    {
+      label: 'Aging housing applications',
+      count: queues.agingHousingApplications,
+      href: '/admin/housing/applications?aging=1',
+      icon: Clock,
+      color: 'text-amber-700',
+      bg: 'bg-amber-50 dark:bg-amber-950/30',
     },
   ].filter(
     (item) =>

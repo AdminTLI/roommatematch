@@ -15,47 +15,25 @@ import { channelManager } from '@/lib/realtime/channel-manager'
 
 export function GlobalRealtimeCleanupHandler() {
   useEffect(() => {
-    // Phase 4: Cleanup all subscriptions on page unload
-    const handleBeforeUnload = () => {
-      // Cleanup all channels when page is about to unload
-      if (typeof window !== 'undefined') {
-        channelManager.cleanup()
-      }
+    // Prefer pagehide over unload — unload is blocked by Permissions-Policy in many browsers
+    const handlePageHide = () => {
+      channelManager.cleanup()
     }
 
-    const handleUnload = () => {
-      // Final cleanup on unload
-      if (typeof window !== 'undefined') {
-        channelManager.cleanup()
-      }
-    }
-
-    // Phase 4: Pause subscriptions when page becomes hidden
-    // Resume is handled automatically when page becomes visible again
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // Page is hidden - subscriptions will pause automatically
-        // Supabase handles this, but we can log for debugging
+        // Best-effort cleanup when tab is backgrounded (bfcache-safe companion to pagehide)
         if (process.env.NODE_ENV === 'development') {
-          console.log('[GlobalRealtimeCleanup] Page hidden - subscriptions paused')
-        }
-      } else {
-        // Page is visible again - subscriptions will resume automatically
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[GlobalRealtimeCleanup] Page visible - subscriptions resumed')
+          console.log('[GlobalRealtimeCleanup] Page hidden')
         }
       }
     }
 
-    // Add event listeners
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    window.addEventListener('unload', handleUnload)
+    window.addEventListener('pagehide', handlePageHide)
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
-    // Cleanup listeners on unmount
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-      window.removeEventListener('unload', handleUnload)
+      window.removeEventListener('pagehide', handlePageHide)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [])

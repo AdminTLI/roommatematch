@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useIsSuperAdmin } from '@/lib/auth/roles-client'
 import {
-  ADMIN_SECTION_TABS,
+  getAdminSectionTabs,
   isSectionTabActive,
   type AdminHubId,
 } from '@/lib/admin/navigation'
@@ -29,7 +29,7 @@ export function AdminSectionTabs({ hub, badgeCounts }: AdminSectionTabsProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { isSuperAdmin, isLoading } = useIsSuperAdmin()
-  const tabs = ADMIN_SECTION_TABS[hub]
+  const tabs = getAdminSectionTabs(hub)
 
   const visibleTabs = tabs.filter((tab) => {
     if (tab.superAdminOnly && !isLoading && !isSuperAdmin) return false

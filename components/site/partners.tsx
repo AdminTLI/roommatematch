@@ -13,6 +13,13 @@ const partners = [
     width: 280,
     height: 60,
   },
+  {
+    name: 'Expat Housing Center',
+    href: 'https://www.expathousingcenter.nl/',
+    logoSrc: '/images/partners/expat-housing-center-logo.png',
+    width: 302,
+    height: 60,
+  },
 ]
 
 const copy = {
@@ -47,7 +54,7 @@ export function Partners() {
                 href={partner.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex h-20 w-56 items-center justify-center rounded-2xl border border-white/60 bg-white/70 px-5 py-4 backdrop-blur-xl transition-all duration-200 hover:bg-white/90 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
+                className="group flex h-20 min-w-56 w-max max-w-[18rem] items-center justify-center rounded-2xl border border-white/60 bg-white/70 px-5 py-4 backdrop-blur-xl transition-all duration-200 hover:bg-white/90 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
                 aria-label={`${partner.name} (opens in a new tab)`}
               >
                 <Image

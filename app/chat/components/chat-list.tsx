@@ -28,6 +28,11 @@ import { GroupInvitationCard } from './group-invitation-card'
 import { queryKeys, queryClient } from '@/app/providers'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { dedupeDirectChatsByPartner } from '@/lib/chat/dedupe-direct-chats'
+import {
+  DELETED_PROFILE_DISPLAY_NAME,
+  isAnonymizedDeletedProfile,
+  isDeletedPartnerLabel,
+} from '@/lib/chat/deleted-profile'
 
 interface ChatRoom {
   id: string
@@ -128,7 +133,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       // First, get chat memberships for this user
       const { data: memberships, error: membershipsError } = await supabase
         .from('chat_members')
-        .select('chat_id, user_id, last_read_at')
+        .select('chat_id, user_id, last_read_at, joined_at')
         .eq('user_id', user.id)
 
       if (membershipsError) throw membershipsError
@@ -149,11 +154,12 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
           *,
           chat_members!inner(
             user_id,
-            last_read_at
+            last_read_at,
+            joined_at
           )
         `)
         .in('id', chatIds)
-        .order('created_at', { ascending: false })
+        .order('updated_at', { ascending: false })
 
       if (chatsError) {
         console.error('[ChatList] Error fetching chats:', chatsError)
@@ -412,16 +418,11 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
 
       // Transform database results to ChatRoom format
       // Use hasUserMessages flag to determine if recently matched
-      const transformedChats: ChatRoom[] = (finalChatRooms || []).map((room: any) => {
+      const transformedChats: ChatRoom[] = (finalChatRooms || []).flatMap((room: any) => {
         // Check if recently matched: A chat is "recently matched" if it has no user messages
         // A chat becomes "active" the moment ANY message is sent or received (not just system greetings)
         // Use the hasUserMessages flag set during message fetching (checks all messages, not just latest)
         const hasUserMessages = room.hasUserMessages || false
-
-        // A chat is recently matched ONLY if it has no user messages (only system greetings or empty)
-        // The moment a user sends or receives ANY message, it becomes active
-        // If there are ANY messages that are not the system greeting, the chat is active
-        const isRecentlyMatched = !hasUserMessages;
 
         // Compatibility score not available without matches table - set to undefined
         const compatibilityScore = undefined;
@@ -429,10 +430,24 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
         // Get the other participant for individual chats
         const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
         const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
+        const otherIsDeleted =
+          !room.is_group && isAnonymizedDeletedProfile(otherProfile)
+
+        // Deleted accounts with no prior conversation should not appear in New Matches
+        if (otherIsDeleted && !hasUserMessages) {
+          return []
+        }
+
+        // A chat is recently matched ONLY if it has no user messages (only system greetings or empty)
+        // The moment a user sends or receives ANY message, it becomes active
+        // If there are ANY messages that are not the system greeting, the chat is active
+        const isRecentlyMatched = !hasUserMessages;
 
         // Construct participant name with better fallback logic
         let participantName = 'User'
-        if (otherProfile) {
+        if (otherIsDeleted) {
+          participantName = DELETED_PROFILE_DISPLAY_NAME
+        } else if (otherProfile) {
           const firstName = otherProfile.first_name?.trim()
           const lastName = otherProfile.last_name?.trim()
           if (firstName && lastName) {
@@ -472,17 +487,22 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
 
         const lastMessageDate = lastMessage?.created_at ? safeParseDate(lastMessage.created_at) : null
         const roomCreatedDate = room.created_at ? safeParseDate(room.created_at) : null
+        const roomUpdatedDate = room.updated_at ? safeParseDate(room.updated_at) : null
+        const myJoinedDate = safeParseDate(membershipMap.get(room.id)?.joined_at)
         const lastReadDate = safeParseDate(lastReadAt)
 
-        const mostRecentMessageTime = lastMessageDate
-          ? lastMessageDate.getTime()
-          : (roomCreatedDate ? roomCreatedDate.getTime() : 0)
+        const mostRecentMessageTime = Math.max(
+          lastMessageDate?.getTime() || 0,
+          roomUpdatedDate?.getTime() || 0,
+          myJoinedDate?.getTime() || 0,
+          roomCreatedDate?.getTime() || 0,
+        )
 
         // Get all messages for this chat for search functionality
         const chatMessages = allMessagesMap.get(room.id) || []
         const allMessagesContent = chatMessages.map((msg: any) => msg.content)
 
-        return {
+        return [{
           id: room.id,
           name: room.is_group ? `Group Chat` : participantName,
           type: room.is_group ? 'group' : 'individual',
@@ -497,7 +517,9 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
           participants: room.chat_members?.map((p: any) => {
             const profile = profilesMap.get(p.user_id)
             let fullName = 'User'
-            if (profile) {
+            if (p.user_id !== user.id && otherIsDeleted) {
+              fullName = DELETED_PROFILE_DISPLAY_NAME
+            } else if (profile) {
               const firstName = profile.first_name?.trim()
               const lastName = profile.last_name?.trim()
               if (firstName && lastName) {
@@ -512,7 +534,9 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
             return {
               id: p.user_id,
               name: fullName,
-              avatar: profile?.avatar_url || undefined,
+              avatar: otherIsDeleted && p.user_id !== user.id
+                ? undefined
+                : profile?.avatar_url || undefined,
               isOnline: false
             }
           }) || [],
@@ -523,7 +547,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
           firstMessageAt: undefined,
           isRecentlyMatched,
           allMessages: allMessagesContent // Store all message content for search
-        }
+        }]
       })
 
       console.log('[ChatList] Successfully transformed chats:', {
@@ -556,8 +580,13 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
               if (!snap?.partner_user_id || snap.partner_user_id === user.id) return chat
 
               const partnerId = snap.partner_user_id
-              const partnerName = snap.partner_display_name || chat.name
-              const partnerAvatar = snap.partner_avatar_url || undefined
+              const partnerDeleted = isDeletedPartnerLabel(snap.partner_display_name)
+              const partnerName = partnerDeleted
+                ? DELETED_PROFILE_DISPLAY_NAME
+                : snap.partner_display_name || chat.name
+              const partnerAvatar = partnerDeleted
+                ? undefined
+                : snap.partner_avatar_url || undefined
               const hasPartner = chat.participants.some((p) => p.id === partnerId)
               const participants = hasPartner
                 ? chat.participants.map((p) =>
@@ -565,7 +594,7 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
                       ? {
                           ...p,
                           name: partnerName || p.name,
-                          avatar: partnerAvatar || p.avatar,
+                          avatar: partnerDeleted ? undefined : partnerAvatar || p.avatar,
                         }
                       : p,
                   )
@@ -594,7 +623,16 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
       return dedupeDirectChatsByPartner(
         chatsWithPartners.filter((chat) => {
           if (chat.type !== 'individual') return true
-          return chat.participants.some((p) => p.id !== user.id)
+          const other = chat.participants.find((p) => p.id !== user.id)
+          if (!other) return false
+          // Deleted accounts with no conversation must not appear in New Matches
+          if (
+            chat.isRecentlyMatched &&
+            (isDeletedPartnerLabel(chat.name) || isDeletedPartnerLabel(other.name))
+          ) {
+            return false
+          }
+          return true
         }),
         user.id,
       )
@@ -712,7 +750,15 @@ export function ChatList({ user, onChatSelect, selectedChatId }: ChatListProps) 
   // Separate chats into recently matched and active conversations
   // Sort both sections by most recent message timestamp (most recent first)
   const recentlyMatchedChats = filteredChats
-    .filter(chat => chat.isRecentlyMatched && chat.participants.some(p => p.id !== user.id))
+    .filter((chat) => {
+      if (!chat.isRecentlyMatched) return false
+      const other = chat.participants.find((p) => p.id !== user.id)
+      if (!other) return false
+      if (isDeletedPartnerLabel(chat.name) || isDeletedPartnerLabel(other.name)) {
+        return false
+      }
+      return true
+    })
     .sort((a, b) => {
       // Sort by most recent message timestamp, or chat creation time if no messages
       const timeA = (a as any).mostRecentMessageTime || 0

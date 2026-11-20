@@ -10,6 +10,8 @@ interface OnboardingHeaderProps {
   className?: string
   /** Override exit destination (defaults to /dashboard) */
   exitHref?: string
+  /** When false, hides the top-right exit (X) control. Default true. */
+  showExit?: boolean
   /**
    * Center status chip.
    * - `autosave` (default): shows live Autosaved state
@@ -21,14 +23,21 @@ interface OnboardingHeaderProps {
   chipLabel?: string
   /** Force a specific save label when statusMode is autosave */
   saveLabel?: string
+  /**
+   * Intercept exit. Return false / a rejected promise to cancel navigation.
+   * When provided, called instead of immediately pushing exitHref.
+   */
+  onExit?: () => boolean | void | Promise<boolean | void>
 }
 
 export function OnboardingHeader({
   className,
   exitHref = '/dashboard',
+  showExit = true,
   statusMode = 'autosave',
   chipLabel = 'Welcome',
   saveLabel,
+  onExit,
 }: OnboardingHeaderProps) {
   const router = useRouter()
   const lastSavedAt = useOnboardingStore((s) => s.lastSavedAt)
@@ -78,14 +87,22 @@ export function OnboardingHeader({
             </span>
           )}
 
-          <button
-            type="button"
-            onClick={() => router.push(exitHref)}
-            aria-label="Exit onboarding"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-slate-200/70 transition hover:bg-slate-50 hover:text-[#0F172A] dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-50"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          {showExit && (
+            <button
+              type="button"
+              onClick={async () => {
+                if (onExit) {
+                  const allowed = await onExit()
+                  if (allowed === false) return
+                }
+                router.push(exitHref)
+              }}
+              aria-label="Exit onboarding"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-500 ring-1 ring-slate-200/70 transition hover:bg-slate-50 hover:text-[#0F172A] dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-50"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
     </header>

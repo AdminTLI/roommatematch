@@ -25,7 +25,6 @@ import {
   Search,
   X,
   User,
-  Building2,
   Settings,
   LayoutDashboard,
   Sparkles,
@@ -62,6 +61,7 @@ import { LabPromptCard } from '@/app/(components)/lab-prompt-card'
 import type { LabPromptKey } from '@/lib/lab/types'
 import { isDashboardActivityNotification } from '@/lib/notifications/dashboard-activity'
 import { anonymizeMatchNotificationMessage } from '@/lib/notifications/anonymize-match-message'
+import { hrefForNotification } from '@/lib/notifications/live-toast'
 import { isDiscoverableSuggestion } from '@/lib/matching/suggestion-tabs'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { toast } from 'sonner'
@@ -1339,7 +1339,7 @@ export function DashboardContent({ hasCompletedQuestionnaire = false, hasPartial
         router.push('/matches')
         break
       case 'housing_update':
-        router.push('/housing')
+        router.push(hrefForNotification(activity))
         break
       default:
         router.push('/notifications')

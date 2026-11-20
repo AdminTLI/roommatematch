@@ -8,6 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Mail, CheckCircle, ArrowRight, RefreshCw } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
+import {
+  getSafeAppRedirectPath,
+  POST_VERIFY_REDIRECT_KEY,
+} from '@/lib/auth/app-url'
 import { OTPInput } from './otp-input'
 import { VerificationFeedback } from './verification-feedback'
 
@@ -19,12 +23,42 @@ export function VerifyEmailForm() {
   const [error, setError] = useState('')
   const [resendSuccess, setResendSuccess] = useState(false)
   const [isVerified, setIsVerified] = useState(false)
+  const [postVerifyPath, setPostVerifyPath] = useState('/onboarding/path')
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+
+  const resolvePostVerifyRedirect = () => {
+    const fromUrl = searchParams.get('redirect')
+    if (fromUrl) {
+      return getSafeAppRedirectPath(fromUrl, '/onboarding/path')
+    }
+    try {
+      const fromStorage = sessionStorage.getItem(POST_VERIFY_REDIRECT_KEY)
+      if (fromStorage) {
+        return getSafeAppRedirectPath(fromStorage, '/onboarding/path')
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return '/onboarding/path'
+  }
+
+  const clearPostVerifyRedirect = () => {
+    try {
+      sessionStorage.removeItem(POST_VERIFY_REDIRECT_KEY)
+    } catch {
+      // ignore
+    }
+  }
+
+  useEffect(() => {
+    setPostVerifyPath(resolvePostVerifyRedirect())
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- resolve from current URL/storage on mount / redirect param change
+  }, [searchParams])
 
   // Get email from multiple sources in priority order:
   // 1. URL query parameter (?email=...)
@@ -188,11 +222,12 @@ export function VerifyEmailForm() {
           // Non-fatal: onboarding can still proceed; academic gate may offer retry
         }
         
-        // After email OTP, continue onboarding.
-        // /onboarding/path skips "Which best describes you?" when user_type was
-        // saved at sign-up, and shows the academic gate (or redirects) next.
+        // After email OTP: student/YP → onboarding path; host signup → host onboarding.
+        const nextPath = resolvePostVerifyRedirect()
+        setPostVerifyPath(nextPath)
+        clearPostVerifyRedirect()
         setTimeout(() => {
-          window.location.href = '/onboarding/path'
+          window.location.href = nextPath
         }, 1500)
       }
     } catch (err) {
@@ -259,10 +294,12 @@ export function VerifyEmailForm() {
   }
 
   const handleContinue = () => {
-    window.location.href = '/onboarding/path'
+    clearPostVerifyRedirect()
+    window.location.href = postVerifyPath
   }
 
   if (isVerified) {
+    const isHostNext = postVerifyPath.startsWith('/host')
     return (
       <Card className="w-full glass">
         <CardHeader className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
@@ -276,13 +313,15 @@ export function VerifyEmailForm() {
         </CardHeader>
         <CardContent className="space-y-4 px-4 sm:px-6 pb-6 sm:pb-6">
           <p className="text-xs sm:text-sm text-muted-foreground text-center">
-            Redirecting you to set up your profile...
+            {isHostNext
+              ? 'Redirecting you to host setup...'
+              : 'Redirecting you to set up your profile...'}
           </p>
           <Button 
             onClick={handleContinue} 
             className="w-full min-h-[44px] text-base"
           >
-            Continue to profile setup
+            {isHostNext ? 'Continue to host setup' : 'Continue to profile setup'}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </CardContent>

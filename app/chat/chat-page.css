@@ -146,17 +146,21 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
 }
 
 /*
- * Open thread on mobile: hard-lock the page and size the chat column to the visual viewport.
+ * Open thread on mobile: full-bleed shell locked to the layout viewport (100dvh), not vv.height.
  *
- * With `interactiveWidget: resizes-content`, the visual viewport shrinks when the keyboard opens.
- * We pin body + [data-chat-page] to `height: var(--vv-height)` at top: 0 (no translateY) so the
- * flex column (messages + in-flow composer) stays visible above the keyboard.
+ * With `interactiveWidget: resizes-content`, 100dvh shrinks when the keyboard opens and the
+ * flex column (messages + in-flow composer) stays above it.
  *
- * Do NOT:
- *   - translateY(var(--vv-top)) -- iOS Chrome often reports offsetTop while keyboard is open and
- *     shifts the whole column off-screen (white blank).
- *   - position:fixed the composer with bottom: var(--kb-inset) -- double-counts the keyboard against
- *     an already-resized shell and can park the input (and messages) out of view.
+ * Do NOT size body / [data-chat-page] to `var(--vv-height)`:
+ *   iOS Chrome often reports visualViewport.offsetTop > 0 while the keyboard is open. A shell
+ *   that is only vv.height tall and pinned at layout top:0 then sits above the visible viewport
+ *   → blank white/dark page and a missing composer.
+ *
+ * Do NOT translateY(var(--vv-top)) or position:fixed the composer with bottom: var(--kb-inset)
+ * against an already-resized shell (double-counts the keyboard).
+ *
+ * Overlay-only keyboards (layout did not resize): `--kb-inset` pads the chat column so the
+ * in-flow composer lifts above the keyboard without moving the shell.
  */
 @media (max-width: 1023px) {
   body.mobile-chat-active-conversation,
@@ -165,9 +169,10 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
+    bottom: 0 !important;
     width: 100% !important;
-    height: var(--vv-height, 100dvh) !important;
-    max-height: var(--vv-height, 100dvh) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
     overflow: hidden !important;
     overscroll-behavior: none !important;
     touch-action: pan-y !important;
@@ -176,6 +181,9 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
   body.mobile-chat-active-conversation .safe-area-inset,
   body:has([data-chat-page]).mobile-chat-active-conversation .safe-area-inset {
     padding-top: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
   }
 
   body.mobile-chat-active-conversation.chat-page main > div > div[data-chat-page],
@@ -185,15 +193,18 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
+    bottom: 0 !important;
     width: 100% !important;
-    height: var(--vv-height, 100dvh) !important;
-    max-height: var(--vv-height, 100dvh) !important;
+    height: 100% !important;
+    max-height: 100% !important;
     transform: none !important;
     flex: none !important;
     box-sizing: border-box !important;
+    /* Overlay keyboard only; 0 when interactive-widget already resized the layout. */
+    padding-bottom: var(--kb-inset, 0px) !important;
   }
 
-  /* Composer stays in document flow at the bottom of the resized shell. */
+  /* Composer stays in document flow at the bottom of the shell. */
   body.mobile-chat-active-conversation [data-messenger-composer],
   body:has([data-chat-page]).mobile-chat-active-conversation [data-messenger-composer] {
     position: relative !important;
@@ -648,9 +659,16 @@ body:has([data-chat-page]) [class*="border-t"][class*="shadow-2xl"] {
     touch-action: pan-y manipulation !important;
   }
 
-  /* Edge fade hint for horizontal scroll areas */
-  .edge-fade-right {
-    background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
-  }
+/* Edge fade hint for horizontal scroll areas */
+.edge-fade-right {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+}
 
+/* Group invite DM card: bubble-sized (capped); fills narrow panes on mobile */
+[data-group-invite-dm] {
+  width: 100% !important;
+  max-width: 280px !important;
+  flex: 0 0 auto !important;
+  box-sizing: border-box !important;
+}
 

@@ -4,6 +4,7 @@ import {
   Users,
   Shield,
   Layers,
+  Building2,
   BarChart3,
   Settings,
 } from 'lucide-react'
@@ -13,6 +14,7 @@ export type AdminHubId =
   | 'people'
   | 'safety'
   | 'platform'
+  | 'housing'
   | 'insights'
   | 'system'
 
@@ -62,6 +64,13 @@ export const ADMIN_HUBS: AdminHubDefinition[] = [
     description: 'Matches, matching controls, and chat moderation',
   },
   {
+    id: 'housing',
+    label: 'Housing',
+    href: '/admin/housing',
+    icon: Building2,
+    description: 'Listings moderation, hosts, applications, and marketplace health',
+  },
+  {
     id: 'insights',
     label: 'Insights',
     href: '/admin/metrics',
@@ -86,7 +95,18 @@ export const ADMIN_HUB_ROUTE_MAP: Record<AdminHubId, string[]> = {
     '/admin/verifications',
   ],
   safety: ['/admin/safety', '/admin/reports'],
-  platform: ['/admin/platform', '/admin/matches', '/admin/matching', '/admin/chats'],
+  platform: [
+    '/admin/platform',
+    '/admin/matches',
+    '/admin/matching',
+    '/admin/chats',
+  ],
+  housing: [
+    '/admin/housing',
+    '/admin/housing/listings',
+    '/admin/housing/hosts',
+    '/admin/housing/applications',
+  ],
   insights: ['/admin/insights', '/admin/metrics', '/admin/analytics', '/admin/lab'],
   system: [
     '/admin/system',
@@ -129,6 +149,12 @@ export const ADMIN_SECTION_TABS: Record<Exclude<AdminHubId, 'overview'>, AdminSe
     { id: 'matching', label: 'Matching', href: '/admin/matching', superAdminOnly: true },
     { id: 'chats', label: 'Chats', href: '/admin/chats' },
   ],
+  housing: [
+    { id: 'overview', label: 'Overview', href: '/admin/housing' },
+    { id: 'listings', label: 'Listings', href: '/admin/housing/listings' },
+    { id: 'hosts', label: 'Hosts', href: '/admin/housing/hosts' },
+    { id: 'applications', label: 'Applications', href: '/admin/housing/applications' },
+  ],
   insights: [
     { id: 'metrics', label: 'Overview', href: '/admin/metrics' },
     { id: 'executive', label: 'Executive', href: '/admin/metrics?tab=executive' },
@@ -154,6 +180,14 @@ export const ADMIN_SECTION_TABS: Record<Exclude<AdminHubId, 'overview'>, AdminSe
     { id: 'bugs', label: 'Bug Reports', href: '/admin/bug-reports' },
     { id: 'retention', label: 'Retention', href: '/admin/retention' },
   ],
+}
+
+/** Safe lookup — never returns undefined (guards against stale Turbopack module graphs). */
+export function getAdminSectionTabs(
+  hub: Exclude<AdminHubId, 'overview'> | string
+): AdminSectionTab[] {
+  const tabs = (ADMIN_SECTION_TABS as Record<string, AdminSectionTab[] | undefined>)[hub]
+  return Array.isArray(tabs) ? tabs : []
 }
 
 export function resolveAdminHub(pathname: string | null): AdminHubId {
@@ -200,6 +234,12 @@ export function isSectionTabActive(pathname: string | null, searchParams: URLSea
     if (tab.id === 'reports' && pathname === '/admin/reports' && !searchParams?.get('tab')) return true
     if (tab.id === 'metrics' && pathname === '/admin/metrics' && !searchParams?.get('tab')) return true
     if (tab.id === 'matches' && pathname === '/admin/matches') return true
+    if (tab.id === 'overview' && pathname === '/admin/housing' && !searchParams?.get('tab')) return true
+    if (tab.id === 'hosts' && (pathname === '/admin/housing/hosts' || pathname.startsWith('/admin/housing/hosts/'))) {
+      return true
+    }
+    if (tab.id === 'listings' && pathname.startsWith('/admin/housing/listings')) return true
+    if (tab.id === 'applications' && pathname.startsWith('/admin/housing/applications')) return true
     return pathname === base && !searchParams?.get('tab')
   }
   const tabParams = new URLSearchParams(query)

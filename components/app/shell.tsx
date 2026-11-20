@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { TopNav } from './TopNav'
-import { FloatingDock } from './navigation/floating-dock'
+import { FloatingDock } from './navigation/app-floating-dock'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -29,6 +29,7 @@ import { AppFooter } from './app-footer'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/app/query-client'
 import { ActivityHeartbeat } from '@/components/app/activity-heartbeat'
+import { MobileChatChromeProvider } from '@/components/app/mobile-chat-chrome-context'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -41,7 +42,7 @@ interface AppShellProps {
   }
   showQuestionnairePrompt?: boolean  // NEW: Control questionnaire modal
   hideVerificationBanner?: boolean  // NEW: Hide verification banner (e.g., on verify page)
-  context?: 'user' | 'admin' | 'partner' | 'university'
+  context?: 'user' | 'admin' | 'partner' | 'university' | 'host'
 }
 
 export function AppShell({
@@ -157,18 +158,23 @@ export function AppShell({
   // Framer Motion's translateY creates a containing block: `position:fixed` (chat composer) would
   // anchor to this wrapper instead of the viewport, hiding the input under mobile browser chrome.
   const isChatRoute = pathname === '/chat' || Boolean(pathname?.startsWith('/chat/'))
+  const isHostMessagesRoute =
+    pathname === '/host/messages' || Boolean(pathname?.startsWith('/host/messages'))
+  // Listing detail owns the same max-w-7xl + px as Topbar — skip shell padding/max-width so
+  // it doesn't double-inset and collapse back to the old narrow card layout.
+  // (Cache-bust marker: housing-detail-flush-v2)
+  const isHousingDetailRoute = Boolean(pathname?.match(/^\/housing\/[^/]+$/))
+  const isFixedMessengerSurface = isChatRoute || isHostMessagesRoute
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+        <MobileChatChromeProvider>
         <div className="min-h-screen bg-transparent safe-area-inset">
           <div className="flex min-h-screen flex-col">
             {/* Main content area */}
             <div className="flex-1 flex flex-col overflow-hidden relative z-0">
               <TopNav user={user} context={context} />
-
-              {/* Floating Dock Navigation */}
-              <FloatingDock />
 
               {/* Verification Banner */}
               {showVerificationBanner && (
@@ -198,20 +204,34 @@ export function AppShell({
                 </div>
               )}
               <div className="flex-1 flex flex-col overflow-hidden relative">
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-40 chat-page-main">
-                  {isChatRoute ? (
-                    <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col">
+                <main
+                  className={
+                    isHousingDetailRoute
+                      ? 'chat-page-main flex-1 overflow-y-auto px-0 pb-24 pt-4 sm:pt-6 md:pb-40'
+                      : isHostMessagesRoute
+                        ? 'chat-page-main flex min-h-0 flex-1 flex-col overflow-hidden p-0'
+                        : 'chat-page-main flex-1 overflow-y-auto p-4 pb-24 sm:p-6 md:pb-40 lg:p-8'
+                  }
+                >
+                  {isFixedMessengerSurface ? (
+                    <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col overflow-hidden">
                       {children}
-                      <div className="mt-6 sm:mt-8">
-                        <AppFooter />
-                      </div>
+                      {!isHostMessagesRoute ? (
+                        <div className="mt-6 sm:mt-8">
+                          <AppFooter />
+                        </div>
+                      ) : null}
                     </div>
                   ) : (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.2, ease: 'easeOut' }}
-                      className="max-w-7xl mx-auto h-full"
+                      className={
+                        isHousingDetailRoute
+                          ? 'mx-auto h-full w-full max-w-none'
+                          : 'mx-auto h-full w-full max-w-7xl'
+                      }
                     >
                       {children}
                       <div className="mt-6 sm:mt-8">
@@ -222,12 +242,15 @@ export function AppShell({
                 </main>
               </div>
             </div>
+
+            {/* Outside the z-0 content stack so Leaflet panes (z 200–700) cannot cover it */}
+            <FloatingDock context={context} />
           </div>
 
           {user.id !== 'demo-user-id' && <ActivityHeartbeat />}
 
-          {/* Message Notification Popup */}
-          <MessageNotificationPopup userId={user.id} />
+          {/* Live toasts are redundant on /chat — the left pane already surfaces new activity */}
+          {!isChatRoute && <MessageNotificationPopup userId={user.id} />}
 
           {context === 'user' && user.id !== 'demo-user-id' && <BugReportWidget />}
 
@@ -259,6 +282,7 @@ export function AppShell({
             </DialogContent>
           </Dialog>
         </div>
+        </MobileChatChromeProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )

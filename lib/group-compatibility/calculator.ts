@@ -6,6 +6,24 @@ import {
   CategoryWeights,
   DEFAULT_INTENT_WEIGHTS
 } from './types'
+import { calculateGroupCompatibilityV2 } from './v2-calculator'
+
+/**
+ * Prefer v2 pairwise scoring. Falls back to legacy centroid if v2 returns null.
+ */
+export async function calculateGroupCompatibility(
+  chatId: string,
+  memberIds: string[],
+  groupIntent: 'housing' | 'study' | 'social' | 'general' = 'general'
+): Promise<GroupCompatibilityScore> {
+  try {
+    const v2 = await calculateGroupCompatibilityV2(chatId, memberIds, groupIntent)
+    if (v2) return v2
+  } catch {
+    // fall through to legacy
+  }
+  return calculateGroupCompatibilityLegacy(chatId, memberIds, groupIntent)
+}
 
 interface UserVectorData {
   user_id: string
@@ -141,9 +159,9 @@ function normalizeDistance(distance: number, maxDistance: number = 10): number {
 }
 
 /**
- * Calculate group compatibility score
+ * Legacy centroid-based group compatibility (fallback).
  */
-export async function calculateGroupCompatibility(
+async function calculateGroupCompatibilityLegacy(
   chatId: string,
   memberIds: string[],
   groupIntent: 'housing' | 'study' | 'social' | 'general' = 'general'

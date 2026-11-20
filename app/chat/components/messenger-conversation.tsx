@@ -18,6 +18,7 @@ import {
   RotateCcw,
   Sparkles,
   ImageIcon,
+  Users,
 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { badgeVariants } from '@/components/ui/badge'
@@ -41,17 +42,41 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { channelManager } from '@/lib/realtime/channel-manager'
 import type { ChannelSubscription } from '@/lib/realtime/channel-manager'
+import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
+import {
+  DELETED_PROFILE_DISPLAY_NAME,
+  isAnonymizedDeletedProfile,
+} from '@/lib/chat/deleted-profile'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import { showSuccessToast, showErrorToast } from '@/lib/toast'
 import { MessengerMessageBubble, type MessageReplyRef } from './messenger-message-bubble'
 import { MessengerTypingBar } from './messenger-typing-bar'
 import { ReportUserDialog } from './report-user-dialog'
 import { cn } from '@/lib/utils'
-import { queryClient, queryKeys } from '@/app/providers'
+import { queryClient } from '@/app/query-client'
+import { queryKeys } from '@/app/query-keys'
 import type { ChatPrivacySnapshot } from '@/lib/privacy/profile-access-types'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { fetchChatCompatibility } from '@/lib/chat/fetch-chat-compatibility'
+import {
+  chatHousingContextKey,
+  fetchChatHousingContext,
+} from '@/lib/chat/fetch-chat-housing-context'
+import { fetchGroupPanel } from '@/lib/chat/fetch-group-panel'
+import { bumpChatInList } from '@/lib/chat/bump-chat-in-list'
+import { LockedGroupChat } from './locked-group-chat'
+import { GroupInviteMessageCard } from './group-invite-message-card'
+import { HousingCoApplyMessageCard } from './housing-co-apply-message-card'
+import {
+  isGroupInviteMetadata,
+  type GroupInviteMessageMetadata,
+} from '@/lib/chat/group-invite-metadata'
+import {
+  isHousingCoApplyMetadata,
+  type HousingCoApplyMessageMetadata,
+} from '@/lib/chat/housing-co-apply-metadata'
 
 interface Message {
   id: string
@@ -63,6 +88,11 @@ interface Message {
   read_by: string[]
   is_own: boolean
   is_system_message?: boolean
+  metadata?:
+    | GroupInviteMessageMetadata
+    | HousingCoApplyMessageMetadata
+    | Record<string, unknown>
+    | null
   reply_to?: {
     id: string
     content: string
@@ -91,8 +121,16 @@ interface MessengerConversationProps {
   onBack?: () => void
   partnerName?: string
   partnerAvatar?: string
+  /** Host↔applicant housing chat — show listing fit instead of roommate Match Insights */
+  isHousingHostChat?: boolean
+  /** Subtitle under the name (e.g. listing · accepted) */
+  housingSubtitle?: string | null
+  /** Housing fit 0–100 for the header chip when isHousingHostChat */
+  housingFitPercent?: number | null
   /** Mobile: hide composer when profile/compatibility sheet is open */
   hideComposer?: boolean
+  /** Host embed: parent already shows listing/partner chrome */
+  hideHeader?: boolean
   /** When set, scroll this message into view after messages load */
   highlightMessageId?: string | null
   /** Called after highlight ring is cleared (e.g. strip `messageId` from URL) */
@@ -113,7 +151,11 @@ export function MessengerConversation({
   onBack,
   partnerName = 'User',
   partnerAvatar,
+  isHousingHostChat = false,
+  housingSubtitle = null,
+  housingFitPercent = null,
   hideComposer = false,
+  hideHeader = false,
   highlightMessageId = null,
   onHighlightConsumed,
   composerInsert = null,
@@ -154,6 +196,10 @@ export function MessengerConversation({
   }, [displayPartnerAvatar, onPartnerAvatarChange])
 
   const [isGroupChat, setIsGroupChat] = useState(false)
+  const [isHousingChatLocal, setIsHousingChatLocal] = useState(false)
+  const [isGroupLocked, setIsGroupLocked] = useState(false)
+  const [groupDescription, setGroupDescription] = useState<string | null>(null)
+  const isHousingChat = isHousingHostChat || isHousingChatLocal
   const [isMuted, setIsMuted] = useState(false)
   const [showReportDialog, setShowReportDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -211,13 +257,71 @@ export function MessengerConversation({
     queryKey: queryKeys.chatCompatibility(chatId),
     queryFn: () => fetchChatCompatibility(chatId),
     staleTime: 5 * 60 * 1000,
-    enabled: !!chatId && !isGroupChat,
+    enabled: !!chatId && !isGroupChat && !isHousingHostChat,
   })
 
-  const matchPercent =
-    compatData?.compatibility_score != null && !Number.isNaN(compatData.compatibility_score)
-      ? Math.round(compatData.compatibility_score * 100)
-      : null
+  const { data: housingContext, isLoading: housingContextLoading } = useQuery({
+    queryKey: chatHousingContextKey(chatId),
+    queryFn: () => fetchChatHousingContext(chatId),
+    staleTime: 60_000,
+    enabled: !!chatId && isHousingHostChat && !isGroupChat,
+  })
+
+  const { data: groupPanelData, isLoading: groupCompatLoading } = useQuery({
+    queryKey: queryKeys.groupPanel(chatId),
+    queryFn: () => fetchGroupPanel(chatId),
+    staleTime: 60_000,
+    enabled: !!chatId && isGroupChat,
+  })
+
+  const matchPercent = isGroupChat
+    ? // Hide group-fit % while the chat is still locked (pending invites / matches).
+      isGroupLocked || groupPanelData?.chat?.is_locked
+      ? null
+      : groupPanelData?.compatibility?.overall_score != null &&
+          !Number.isNaN(groupPanelData.compatibility.overall_score)
+        ? Math.round(
+            groupPanelData.compatibility.overall_score <= 1
+              ? groupPanelData.compatibility.overall_score * 100
+              : groupPanelData.compatibility.overall_score,
+          )
+        : null
+    : isHousingChat
+      ? housingContext?.application.fit_score != null &&
+        !Number.isNaN(housingContext.application.fit_score)
+        ? Math.round(
+            housingContext.application.fit_score <= 1
+              ? housingContext.application.fit_score * 100
+              : housingContext.application.fit_score,
+          )
+        : null
+      : compatData?.compatibility_score != null && !Number.isNaN(compatData.compatibility_score)
+        ? Math.round(compatData.compatibility_score * 100)
+        : null
+
+  const compatChipLoading = isGroupChat
+    ? groupCompatLoading && !isGroupLocked
+    : isHousingChat
+      ? housingContextLoading
+      : compatLoading
+
+  useEffect(() => {
+    if (!isGroupChat || !groupPanelData?.viewer_settings) return
+    const muted = Boolean(groupPanelData.viewer_settings.muted)
+    setIsMuted(muted)
+    try {
+      const mutedChats = JSON.parse(localStorage.getItem('muted_chats') || '[]') as string[]
+      const next = muted
+        ? mutedChats.includes(chatId)
+          ? mutedChats
+          : [...mutedChats, chatId]
+        : mutedChats.filter((id) => id !== chatId)
+      localStorage.setItem('muted_chats', JSON.stringify(next))
+      window.dispatchEvent(new CustomEvent('mutedChatsChanged'))
+    } catch {
+      // ignore
+    }
+  }, [isGroupChat, chatId, groupPanelData?.viewer_settings?.muted])
 
   const isMessageHiddenByBlockWindow = useCallback((message: Message) => {
     if (!partnerUserId || message.sender_id !== partnerUserId) return false
@@ -360,7 +464,7 @@ export function MessengerConversation({
       const MESSAGE_LIMIT = 50
       const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
-        .select('id, content, user_id, created_at, reply_to_id')
+        .select('id, content, user_id, created_at, reply_to_id, metadata')
         .eq('chat_id', chatId)
         .order('created_at', { ascending: false })
         .limit(MESSAGE_LIMIT)
@@ -433,9 +537,9 @@ export function MessengerConversation({
 
       const senderNameForUser = (uid: string) => {
         const profile = newProfilesMap.get(uid)
-        return profile
-          ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
-          : 'User'
+        if (!profile) return 'User'
+        if (isAnonymizedDeletedProfile(profile)) return DELETED_PROFILE_DISPLAY_NAME
+        return [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
       }
 
       const replyIds = [
@@ -456,12 +560,26 @@ export function MessengerConversation({
       // Get chat info and partner user ID
       const { data: chatData } = await supabase
         .from('chats')
-        .select('is_group')
+        .select('is_group, is_locked, name, description, housing_application_id')
         .eq('id', chatId)
         .single()
 
       if (chatData) {
         setIsGroupChat(chatData.is_group || false)
+        setIsHousingChatLocal(Boolean(chatData.housing_application_id))
+        setIsGroupLocked(Boolean(chatData.is_group && chatData.is_locked))
+        setGroupDescription(
+          typeof chatData.description === 'string' && chatData.description.trim()
+            ? chatData.description.trim()
+            : null
+        )
+        if (chatData.is_group && chatData.name) {
+          setDisplayPartnerName(chatData.name)
+        } else if (chatData.is_group) {
+          setDisplayPartnerName('Group chat')
+        }
+      } else {
+        setIsHousingChatLocal(false)
       }
 
       const { data: chatMembers } = await supabase
@@ -483,11 +601,21 @@ export function MessengerConversation({
           // Update partner name and avatar from loaded profiles
           const partnerProfile = newProfilesMap.get(otherMember.user_id)
           if (partnerProfile) {
-            const partnerFullName = [partnerProfile.first_name?.trim(), partnerProfile.last_name?.trim()]
-              .filter(Boolean)
-              .join(' ') || 'User'
-            setDisplayPartnerName(partnerFullName)
-            setDisplayPartnerAvatar(partnerProfile.avatar_url || undefined)
+            if (isAnonymizedDeletedProfile(partnerProfile)) {
+              setDisplayPartnerName(DELETED_PROFILE_DISPLAY_NAME)
+              setDisplayPartnerAvatar(undefined)
+            } else {
+              const partnerFullName = [partnerProfile.first_name?.trim(), partnerProfile.last_name?.trim()]
+                .filter(Boolean)
+                .join(' ')
+              // Skip cohort-anonymized "User" — housing effect / privacy snap supply the real name.
+              if (partnerFullName && partnerFullName !== 'User') {
+                setDisplayPartnerName(partnerFullName)
+                setDisplayPartnerAvatar(partnerProfile.avatar_url || undefined)
+              } else if (partnerProfile.avatar_url) {
+                setDisplayPartnerAvatar(partnerProfile.avatar_url)
+              }
+            }
           }
 
           // Load block windows for this pair and derive active blocked state.
@@ -539,6 +667,7 @@ export function MessengerConversation({
         user_id: string
         created_at: string
         reply_to_id?: string | null
+        metadata?: GroupInviteMessageMetadata | Record<string, unknown> | null
       }) => {
         const senderName = senderNameForUser(msg.user_id)
 
@@ -569,6 +698,7 @@ export function MessengerConversation({
           read_by: readBy,
           is_own: msg.user_id === user.id,
           is_system_message: isSystemGreeting,
+          metadata: msg.metadata || null,
           reply_to,
         }
       })
@@ -644,12 +774,15 @@ export function MessengerConversation({
       user_id: string
       created_at: string
       reply_to_id?: string | null
+      metadata?: GroupInviteMessageMetadata | Record<string, unknown> | null
     }) => {
       let senderName = 'User'
       const profile = profilesMapRef.current.get(newMsg.user_id)
 
       if (profile) {
-        senderName = [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+        senderName = isAnonymizedDeletedProfile(profile)
+          ? DELETED_PROFILE_DISPLAY_NAME
+          : [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
       }
 
       const isSystemGreeting = newMsg.content === "You're matched! Start your conversation 👋"
@@ -684,6 +817,7 @@ export function MessengerConversation({
           read_by: readBy,
           is_own: isOwnMessage,
           is_system_message: isSystemGreeting,
+          metadata: newMsg.metadata || null,
           reply_to,
         }
 
@@ -699,7 +833,9 @@ export function MessengerConversation({
               if (!p) return
               const pr = profilesMapRef.current.get(p.user_id)
               const sn = pr
-                ? [pr.first_name?.trim(), pr.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+                ? isAnonymizedDeletedProfile(pr)
+                  ? DELETED_PROFILE_DISPLAY_NAME
+                  : [pr.first_name?.trim(), pr.last_name?.trim()].filter(Boolean).join(' ') || 'User'
                 : 'User'
               setMessages(curr =>
                 curr.map(m =>
@@ -722,8 +858,18 @@ export function MessengerConversation({
         return next
       })
 
+      bumpChatInList({
+        viewerUserId: user.id,
+        chatId,
+        content: newMsg.content,
+        senderLabel: isOwnMessage ? 'You' : senderName,
+        createdAt: newMsg.created_at,
+        incrementUnread: false,
+        markAsActiveConversation: !isSystemGreeting,
+        refetch: true,
+      })
+
       void queryClient.invalidateQueries({ queryKey: queryKeys.chatPrivacy(chatId, user.id) })
-      void queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
 
       if (!userScrolledUpRef.current && scrollToBottomRef.current) {
         scrollToBottomRef.current(true)
@@ -789,7 +935,31 @@ export function MessengerConversation({
     [supabase],
   )
 
-  // Setup real-time subscription
+  const pollNewMessages = useCallback(async () => {
+    const current = messagesRef.current
+    const lastAt = current.length > 0 ? current[current.length - 1]?.created_at : null
+    if (!lastAt || !chatId) return
+
+    const { data: rows, error } = await supabase
+      .from('messages')
+      .select('id, content, user_id, created_at, reply_to_id, metadata')
+      .eq('chat_id', chatId)
+      .gt('created_at', lastAt)
+      .order('created_at', { ascending: true })
+
+    if (error || !rows?.length) return
+
+    for (const row of rows) {
+      handleIncomingMessage(row)
+    }
+  }, [chatId, supabase, handleIncomingMessage])
+
+  const pollNewMessagesRef = useRef(pollNewMessages)
+  useEffect(() => {
+    pollNewMessagesRef.current = pollNewMessages
+  }, [pollNewMessages])
+
+  // Setup real-time subscription: private broadcast (primary) + postgres_changes (backup)
   useEffect(() => {
     if (!chatId) return
 
@@ -799,6 +969,9 @@ export function MessengerConversation({
       isLoadingMessagesRef.current = false
       setPartnerUserId(null) // Reset partner user ID when chat changes
       setIsGroupChat(false) // Reset group chat state
+      setIsHousingChatLocal(false)
+      setIsGroupLocked(false)
+      setGroupDescription(null)
       setIsMuted(false) // Reset muted state
       setDisplayPartnerName(partnerName) // Reset to prop value
       setDisplayPartnerAvatar(partnerAvatar) // Reset to prop value
@@ -825,6 +998,7 @@ export function MessengerConversation({
             user_id: string
             created_at: string
             reply_to_id?: string | null
+            metadata?: GroupInviteMessageMetadata | Record<string, unknown> | null
           },
         )
       },
@@ -847,6 +1021,53 @@ export function MessengerConversation({
       },
     })
 
+    // Primary low-latency path: DB trigger broadcasts to chat:{id}:messages
+    const broadcastTopic = `chat:${chatId}:messages`
+    let broadcastChannel: RealtimeChannel | null = supabase
+      .channel(broadcastTopic, {
+        config: {
+          private: true,
+          broadcast: { self: false, ack: false },
+        },
+      })
+      .on('broadcast', { event: 'INSERT' }, (payload) => {
+        const newMessage = (payload as { payload?: Record<string, unknown> })?.payload
+        if (!newMessage || typeof newMessage !== 'object') return
+
+        const id = typeof newMessage.id === 'string' ? newMessage.id : null
+        const content = typeof newMessage.content === 'string' ? newMessage.content : null
+        const userId = typeof newMessage.user_id === 'string' ? newMessage.user_id : null
+        const createdAt =
+          typeof newMessage.created_at === 'string' ? newMessage.created_at : null
+        if (!id || !content || !userId || !createdAt) return
+
+        const chatIdFromPayload =
+          typeof newMessage.chat_id === 'string' ? newMessage.chat_id : null
+        if (chatIdFromPayload && chatIdFromPayload !== chatId) return
+
+        handleIncomingMessage({
+          id,
+          content,
+          user_id: userId,
+          created_at: createdAt,
+          reply_to_id:
+            typeof newMessage.reply_to_id === 'string' ? newMessage.reply_to_id : null,
+          metadata:
+            (newMessage.metadata as
+              | GroupInviteMessageMetadata
+              | Record<string, unknown>
+              | null
+              | undefined) ?? null,
+        })
+      })
+
+    broadcastChannel.subscribe((status) => {
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        // Fall back to immediate REST poll if broadcast channel fails to join
+        void pollNewMessagesRef.current()
+      }
+    })
+
     return () => {
       if (incomingReadTimerRef.current) {
         clearTimeout(incomingReadTimerRef.current)
@@ -854,57 +1075,95 @@ export function MessengerConversation({
       }
       channelManager.unsubscribe(channelKey, subId)
       channelManager.unsubscribe(reactionChannelKey, reactionSubId)
+      if (broadcastChannel) {
+        void supabase.removeChannel(broadcastChannel)
+        broadcastChannel = null
+      }
     }
-  }, [chatId, user.id, supabase, loadMessages, handleIncomingMessage, handleReactionChange])
+  }, [chatId, user.id, supabase, loadMessages, handleIncomingMessage, handleReactionChange, partnerName, partnerAvatar])
 
-  // Poll for new messages as a fallback when realtime delivery is delayed.
+  // If a chat_message notification arrives for this open thread, fetch immediately
+  // so the bubble never lags behind the toast.
+  useRealtimeInvalidation({
+    table: 'notifications',
+    event: 'INSERT',
+    filter: `user_id=eq.${user.id}`,
+    queryKeys: [],
+    enabled: !!user.id && !!chatId,
+    invalidateQueries: false,
+    onPayload: (payload) => {
+      const notification = payload.new as
+        | { type?: string; metadata?: { chat_id?: string } }
+        | undefined
+      if (!notification || notification.type !== 'chat_message') return
+      if (notification.metadata?.chat_id !== chatId) return
+      void pollNewMessagesRef.current()
+    },
+  })
+
+  // Poll as a last-resort fallback if both broadcast and postgres_changes miss.
   useEffect(() => {
     if (!chatId) return
 
-    const pollNewMessages = async () => {
-      const current = messagesRef.current
-      const lastAt = current.length > 0 ? current[current.length - 1]?.created_at : null
-      if (!lastAt) return
-
-      const { data: rows, error } = await supabase
-        .from('messages')
-        .select('id, content, user_id, created_at, reply_to_id')
-        .eq('chat_id', chatId)
-        .gt('created_at', lastAt)
-        .order('created_at', { ascending: true })
-
-      if (error || !rows?.length) return
-
-      for (const row of rows) {
-        handleIncomingMessage(row)
-      }
-    }
-
     const interval = setInterval(() => {
       void pollNewMessages()
-    }, 10_000)
+    }, 5_000)
 
     return () => clearInterval(interval)
-  }, [chatId, supabase, handleIncomingMessage])
+  }, [chatId, pollNewMessages])
 
   // Update partner name and avatar: progressive disclosure snapshot for 1:1, else profile/props.
+  // Group chats keep the group name set during loadMessages — never overwrite with a person.
+  // Host↔applicant rooms use real names (privacy snap / layout / profiles) and must never keep
+  // the roommate cohort anonymized "User" label.
   useEffect(() => {
+    if (isGroupChat) return
+
+    const isPlaceholderName = (name: string | null | undefined) =>
+      !name || name === 'User' || name === 'Your match'
+
+    const applyProfileName = (profile: {
+      first_name?: string | null
+      last_name?: string | null
+      avatar_url?: string | null
+    }, opts?: { allowPlaceholder?: boolean }) => {
+      if (isAnonymizedDeletedProfile(profile)) {
+        setDisplayPartnerName(DELETED_PROFILE_DISPLAY_NAME)
+        setDisplayPartnerAvatar(undefined)
+        return true
+      }
+      const partnerFullName = [profile.first_name?.trim(), profile.last_name?.trim()]
+        .filter(Boolean)
+        .join(' ')
+      if (!partnerFullName) return false
+      if (!opts?.allowPlaceholder && isPlaceholderName(partnerFullName)) return false
+      setDisplayPartnerName(partnerFullName)
+      setDisplayPartnerAvatar(profile.avatar_url || partnerAvatar || undefined)
+      return true
+    }
+
+    const isHousing = isHousingHostChat || isHousingChatLocal
+    if (isHousing) {
+      // Privacy snap uses the admin client and returns the real host/applicant name.
+      if (privacySnap?.partner_display_name && !isPlaceholderName(privacySnap.partner_display_name)) {
+        setDisplayPartnerName(privacySnap.partner_display_name)
+        setDisplayPartnerAvatar(privacySnap.partner_avatar_url || partnerAvatar || undefined)
+        return
+      }
+      if (!isPlaceholderName(partnerName)) {
+        setDisplayPartnerName(partnerName)
+        if (partnerAvatar !== undefined) setDisplayPartnerAvatar(partnerAvatar)
+        return
+      }
+      if (partnerUserId) {
+        const partnerProfile = profilesMapRef.current.get(partnerUserId)
+        if (partnerProfile && applyProfileName(partnerProfile)) return
+      }
+      return
+    }
     if (!partnerUserId) {
       setDisplayPartnerName(partnerName)
       setDisplayPartnerAvatar(partnerAvatar)
-      return
-    }
-    if (isGroupChat) {
-      if (profilesMapRef.current) {
-        const partnerProfile = profilesMapRef.current.get(partnerUserId)
-        if (partnerProfile) {
-          const partnerFullName = [partnerProfile.first_name?.trim(), partnerProfile.last_name?.trim()]
-            .filter(Boolean)
-            .join(' ') || 'User'
-          setDisplayPartnerName(partnerFullName)
-          setDisplayPartnerAvatar(partnerProfile.avatar_url || undefined)
-        }
-      }
       return
     }
     if (privacySnap) {
@@ -912,17 +1171,22 @@ export function MessengerConversation({
       setDisplayPartnerAvatar(privacySnap.partner_avatar_url || undefined)
       return
     }
-    if (profilesMapRef.current) {
-      const partnerProfile = profilesMapRef.current.get(partnerUserId)
-      if (partnerProfile) {
-        const partnerFullName = [partnerProfile.first_name?.trim(), partnerProfile.last_name?.trim()]
-          .filter(Boolean)
-          .join(' ') || 'User'
-        setDisplayPartnerName(partnerFullName)
-        setDisplayPartnerAvatar(partnerProfile.avatar_url || undefined)
+    const partnerProfile = profilesMapRef.current.get(partnerUserId)
+    if (partnerProfile) {
+      if (!applyProfileName(partnerProfile, { allowPlaceholder: true })) {
+        setDisplayPartnerName(partnerName !== 'User' ? partnerName : 'User')
+        setDisplayPartnerAvatar(partnerAvatar)
       }
     }
-  }, [partnerUserId, partnerName, partnerAvatar, isGroupChat, privacySnap])
+  }, [
+    partnerUserId,
+    partnerName,
+    partnerAvatar,
+    isGroupChat,
+    isHousingHostChat,
+    isHousingChatLocal,
+    privacySnap,
+  ])
 
   // Auto-scroll on initial load only
   useLayoutEffect(() => {
@@ -1017,7 +1281,9 @@ export function MessengerConversation({
       if (sentMessage?.id) {
         const profile = profilesMapRef.current.get(sentMessage.user_id) || sentMessage.profiles
         const senderName = profile
-          ? [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
+          ? isAnonymizedDeletedProfile(profile)
+            ? DELETED_PROFILE_DISPLAY_NAME
+            : [profile.first_name?.trim(), profile.last_name?.trim()].filter(Boolean).join(' ') || 'User'
           : 'User'
         const isSystemGreeting = sentMessage.content === "You're matched! Start your conversation 👋"
 
@@ -1056,8 +1322,23 @@ export function MessengerConversation({
       }
 
       scrollToBottom(true)
+
+      if (sentMessage?.id && typeof sentMessage.content === 'string') {
+        bumpChatInList({
+          viewerUserId: user.id,
+          chatId,
+          content: sentMessage.content,
+          senderLabel: 'You',
+          createdAt: sentMessage.created_at || new Date().toISOString(),
+          incrementUnread: false,
+          markAsActiveConversation: true,
+          refetch: true,
+        })
+      } else {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+      }
+
       void queryClient.invalidateQueries({ queryKey: queryKeys.chatPrivacy(chatId, user.id) })
-      void queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Please try again.'
       console.warn('[MessengerConversation] Failed to send message:', message)
@@ -1240,22 +1521,23 @@ export function MessengerConversation({
     setIsMuting(true)
     try {
       const newMutedState = !isMuted
-      // Store muted status in localStorage
-      // In the future, this could be stored in a user_chat_settings table
-      const mutedChats = JSON.parse(localStorage.getItem('muted_chats') || '[]')
-      if (newMutedState) {
-        if (!mutedChats.includes(chatId)) {
-          mutedChats.push(chatId)
-        }
-      } else {
-        const index = mutedChats.indexOf(chatId)
-        if (index > -1) {
-          mutedChats.splice(index, 1)
+
+      if (isGroupChat) {
+        const { updateGroupChatSettings } = await import('@/lib/chat/fetch-group-panel')
+        const result = await updateGroupChatSettings(chatId, { muted: newMutedState })
+        if (!result.ok) {
+          throw new Error(result.error)
         }
       }
-      localStorage.setItem('muted_chats', JSON.stringify(mutedChats))
-      
-      // Dispatch custom event to notify other components
+
+      // Keep localStorage in sync for sidebar filters / toast gating
+      const mutedChats = JSON.parse(localStorage.getItem('muted_chats') || '[]') as string[]
+      const next = newMutedState
+        ? mutedChats.includes(chatId)
+          ? mutedChats
+          : [...mutedChats, chatId]
+        : mutedChats.filter((id) => id !== chatId)
+      localStorage.setItem('muted_chats', JSON.stringify(next))
       window.dispatchEvent(new CustomEvent('mutedChatsChanged'))
 
       setIsMuted(newMutedState)
@@ -1374,8 +1656,8 @@ export function MessengerConversation({
   }
 
   const handleComposerFocus = useCallback(() => {
-    // Replying usually means the user wants the latest messages in view; keep the list pinned to
-    // the end while the keyboard/visual viewport settles (handled by ChatPageViewportRoot on /chat).
+    // Keep the message list pinned to the latest while the keyboard settles. Do not call
+    // window.scrollTo / scrollIntoView here — that races iOS visualViewport and blanks the shell.
     setUserScrolledUp(false)
     userScrolledUpRef.current = false
     setShouldAutoScroll(true)
@@ -1390,22 +1672,17 @@ export function MessengerConversation({
     flushMessagesToEnd()
     requestAnimationFrame(() => {
       flushMessagesToEnd()
-      requestAnimationFrame(() => {
-        flushMessagesToEnd()
-      })
+      requestAnimationFrame(flushMessagesToEnd)
     })
-    window.setTimeout(flushMessagesToEnd, 50)
-    window.setTimeout(flushMessagesToEnd, 200)
-    window.setTimeout(flushMessagesToEnd, 450)
+    window.setTimeout(flushMessagesToEnd, 120)
+    window.setTimeout(flushMessagesToEnd, 360)
   }, [])
 
   const handleComposerBlur = useCallback(() => {
-    // Some mobile browsers (notably iOS Chrome) can miss the final visualViewport event when the
-    // keyboard closes. ChatPageViewportRoot listens to window resize; trigger a cheap resync.
+    // Some mobile browsers miss the final visualViewport event when the keyboard closes.
     if (typeof window === 'undefined') return
-    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 0)
-    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 120)
-    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 350)
+    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 50)
+    window.setTimeout(() => window.dispatchEvent(new Event('resize')), 280)
   }, [])
 
   return (
@@ -1415,6 +1692,7 @@ export function MessengerConversation({
       className="flex h-full w-full max-w-full flex-col overflow-x-hidden overflow-y-hidden overscroll-x-none bg-[hsl(var(--chat-bg-primary))] touch-pan-y lg:rounded-t-2xl"
     >
       {/* Fixed Header: avatar, name, compatibility chip, menu */}
+      {!hideHeader ? (
       <div className="flex max-w-full flex-shrink-0 items-center justify-between gap-2 bg-[hsl(var(--chat-bg-primary))] px-3 py-2.5 max-lg:app-pt-safe-top lg:px-4 lg:py-3">
         <div className="flex min-w-0 flex-1 items-center gap-2.5 lg:gap-3">
           <div className="flex shrink-0 items-center gap-1.5 lg:gap-2">
@@ -1429,7 +1707,22 @@ export function MessengerConversation({
                 <ChevronLeft className="h-6 w-6" strokeWidth={2.25} aria-hidden />
               </Button>
             )}
-            {!isGroupChat && onOpenAbout ? (
+            {isGroupChat ? (
+              onOpenAbout ? (
+                <button
+                  type="button"
+                  onClick={onOpenAbout}
+                  aria-label="View group members"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white touch-manipulation transition-opacity hover:opacity-90 active:scale-[0.98]"
+                >
+                  <Users className="h-5 w-5" aria-hidden />
+                </button>
+              ) : (
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white">
+                  <Users className="h-5 w-5" aria-hidden />
+                </div>
+              )
+            ) : onOpenAbout ? (
               <button
                 type="button"
                 onClick={onOpenAbout}
@@ -1455,11 +1748,17 @@ export function MessengerConversation({
 
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <div className="flex min-w-0 items-center gap-2">
-              {!isGroupChat && onOpenAbout ? (
+              {onOpenAbout ? (
                 <button
                   type="button"
                   onClick={onOpenAbout}
-                  aria-label={`Meet ${displayPartnerName}`}
+                  aria-label={
+                    isGroupChat
+                      ? `View members of ${displayPartnerName}`
+                      : isHousingChat
+                        ? `View host and listing for ${displayPartnerName}`
+                        : `Meet ${displayPartnerName}`
+                  }
                   className="min-w-0 max-w-full truncate text-left text-base font-semibold leading-tight text-gray-900 touch-manipulation hover:text-violet-700 active:opacity-80 dark:text-gray-100 dark:hover:text-violet-300"
                 >
                   {displayPartnerName}
@@ -1470,14 +1769,26 @@ export function MessengerConversation({
                 </h2>
               )}
               <VerifiedBadge verified={partnerIsVerified && !isGroupChat} />
-              {!isGroupChat && partnerUserId && (
+              {(isHousingHostChat || isGroupChat || Boolean(partnerUserId)) && (
                 <button
                   type="button"
                   onClick={onToggleProfile}
                   aria-label={
-                    matchPercent != null
-                      ? `Compatibility ${matchPercent} percent, open match insights`
-                      : 'View match insights'
+                    isHousingHostChat
+                      ? housingFitPercent != null
+                        ? `Housing fit ${housingFitPercent} percent, open fit details`
+                        : 'Open applicant fit details'
+                      : isGroupChat
+                        ? matchPercent != null
+                          ? `Group compatibility ${matchPercent} percent, open group insights`
+                          : 'View group insights'
+                        : isHousingChat
+                          ? matchPercent != null
+                            ? `Listing fit ${matchPercent} percent, open listing details`
+                            : 'View listing and host details'
+                          : matchPercent != null
+                            ? `Compatibility ${matchPercent} percent, open match insights`
+                            : 'View match insights'
                   }
                   className={cn(
                     badgeVariants({ variant: 'outline', size: 'default' }),
@@ -1492,24 +1803,52 @@ export function MessengerConversation({
                     aria-hidden
                     strokeWidth={2}
                   />
-                  {compatLoading ? (
+                  {isHousingHostChat ? (
+                    housingFitPercent != null ? (
+                      <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-violet-700 dark:text-violet-300">
+                        <span className="lg:hidden">{housingFitPercent}%</span>
+                        <span className="hidden lg:inline">{housingFitPercent}% Fit</span>
+                      </span>
+                    ) : (
+                      <span className="whitespace-nowrap text-xs font-semibold text-violet-700 dark:text-violet-300">
+                        <span className="lg:hidden">App</span>
+                        <span className="hidden lg:inline">Application</span>
+                      </span>
+                    )
+                  ) : compatChipLoading ? (
                     <span className="text-xs font-semibold tabular-nums text-ink-400 dark:text-ink-500">…</span>
                   ) : matchPercent != null ? (
                     <span className="whitespace-nowrap text-xs font-semibold tabular-nums text-violet-700 dark:text-violet-300">
                       <span className="lg:hidden">{matchPercent}%</span>
-                      <span className="hidden lg:inline">{matchPercent}% Compatibility</span>
+                      <span className="hidden lg:inline">
+                        {matchPercent}%{' '}
+                        {isGroupChat
+                          ? 'Group fit'
+                          : isHousingChat
+                            ? 'Listing fit'
+                            : 'Compatibility'}
+                      </span>
                     </span>
                   ) : (
                     <span className="whitespace-nowrap text-xs font-semibold text-violet-700 dark:text-violet-300">
                       <span className="lg:hidden" aria-hidden>
                         -
                       </span>
-                      <span className="hidden lg:inline">Compatibility</span>
+                      <span className="hidden lg:inline">
+                        {isGroupChat
+                          ? 'Group fit'
+                          : isHousingChat
+                            ? 'Listing'
+                            : 'Compatibility'}
+                      </span>
                     </span>
                   )}
                 </button>
               )}
             </div>
+            {isHousingHostChat && housingSubtitle ? (
+              <p className="truncate text-xs text-gray-500 dark:text-gray-400">{housingSubtitle}</p>
+            ) : null}
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
@@ -1598,8 +1937,13 @@ export function MessengerConversation({
           </DropdownMenu>
         </div>
       </div>
+      ) : null}
 
-      {!isGroupChat && privacySnap && !privacySnap.mutual_picture && (
+      {!hideHeader &&
+        !isHousingHostChat &&
+        !isGroupChat &&
+        privacySnap &&
+        !privacySnap.mutual_picture && (
         <div
           role="status"
           className="flex shrink-0 items-center justify-between gap-3 border-b border-violet-200/80 bg-violet-50/90 px-3 py-2 text-sm text-violet-950 dark:border-violet-800/60 dark:bg-violet-950/30 dark:text-violet-100 lg:px-4"
@@ -1761,7 +2105,26 @@ export function MessengerConversation({
         </DialogContent>
       </Dialog>
 
-      {/* Message Feed - Scrollable */}
+      {isGroupChat && groupDescription && !isGroupLocked && (
+        <div className="shrink-0 border-b border-zinc-100 px-4 py-2 text-xs text-zinc-500 dark:border-white/10 dark:text-zinc-400">
+          {groupDescription}
+        </div>
+      )}
+
+      {/* Locked group setup OR message feed */}
+      {isGroupChat && isGroupLocked ? (
+        <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] lg:pb-4">
+          <LockedGroupChat
+            chatId={chatId}
+            userId={user.id}
+            onUnlock={() => {
+              setIsGroupLocked(false)
+              void loadMessages()
+              queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+            }}
+          />
+        </div>
+      ) : (
       <div
         ref={messagesContainerRef}
         data-messenger-messages
@@ -1781,7 +2144,15 @@ export function MessengerConversation({
           </div>
         ) : (
           <div className="space-y-4">
-            {visibleMessages.map((message, index) => (
+            {visibleMessages.map((message, index) => {
+              const inviteMeta = isGroupInviteMetadata(message.metadata)
+                ? message.metadata
+                : null
+              const coApplyMeta = isHousingCoApplyMetadata(message.metadata)
+                ? message.metadata
+                : null
+
+              return (
               <div key={message.id} id={message.id} className="scroll-mt-28">
                 {shouldShowDateSeparator(index, visibleMessages) && (
                   <div className="chat-date-divider my-6 px-2">
@@ -1790,6 +2161,70 @@ export function MessengerConversation({
                     </span>
                   </div>
                 )}
+                {inviteMeta ? (
+                  <div
+                    className={cn(
+                      'flex w-full',
+                      message.is_own ? 'justify-end' : 'justify-start'
+                    )}
+                  >
+                    <div
+                      data-group-invite-dm
+                      className="shrink-0"
+                      style={{ width: '100%', maxWidth: 280 }}
+                    >
+                      <GroupInviteMessageCard
+                        metadata={inviteMeta}
+                        canRespond={!message.is_own}
+                        onResolved={(status, groupChatId) => {
+                          setMessages((prev) =>
+                            prev.map((m) =>
+                              m.id === message.id && isGroupInviteMetadata(m.metadata)
+                                ? { ...m, metadata: { ...m.metadata, status } }
+                                : m
+                            )
+                          )
+                          void queryClient.invalidateQueries({
+                            queryKey: queryKeys.chats(user.id),
+                          })
+                          window.dispatchEvent(new Event('group-invites-changed'))
+                          if (status === 'accepted') {
+                            router.push(`/chat?chatId=${encodeURIComponent(groupChatId)}`)
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : coApplyMeta ? (
+                  <div
+                    className={cn(
+                      'flex w-full items-end gap-2',
+                      message.is_own ? 'justify-end' : 'justify-start'
+                    )}
+                  >
+                    {!message.is_own && (
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        <AvatarImage
+                          src={avatarForDisplayedMessage(message)}
+                          alt=""
+                        />
+                        <AvatarFallback className="bg-zinc-200 text-xs text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100">
+                          {(message.sender_name || '?').charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      data-housing-co-apply-dm
+                      className="min-w-0 shrink"
+                      style={{ width: '100%', maxWidth: 280 }}
+                    >
+                      <HousingCoApplyMessageCard
+                        metadata={coApplyMeta}
+                        isOwn={message.is_own}
+                      />
+                    </div>
+                  </div>
+                ) : (
                 <MessengerMessageBubble
                   id={message.id}
                   content={message.content}
@@ -1824,14 +2259,17 @@ export function MessengerConversation({
                         }
                   }
                 />
+                )}
               </div>
-            ))}
+              )
+            })}
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
+      )}
 
-      {!hideComposer && (
+      {!hideComposer && !isGroupLocked && (
         <MessengerTypingBar
           onSend={handleSendMessage}
           onComposerFocus={handleComposerFocus}

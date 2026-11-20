@@ -58,6 +58,7 @@ export const COLORS = {
 
 export const URLS = {
   home: 'https://domumatch.com',
+  app: 'https://domumatch.com',
   helpCenter: 'https://domumatch.com/help-center',
   contact: 'https://domumatch.com/contact',
   privacy: 'https://domumatch.com/privacy',

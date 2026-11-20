@@ -142,7 +142,7 @@ test.describe('Housing Page', () => {
     
     // Check empty state is shown
     await expect(page.locator('[data-testid="empty-state"]')).toBeVisible()
-    await expect(page.locator('[data-testid="empty-state"]')).toContainText('No listings found')
+    await expect(page.locator('[data-testid="empty-state"]')).toContainText('Nothing fits these filters')
     
     // Check action buttons are present
     await expect(page.locator('[data-testid="broaden-location-button"]')).toBeVisible()

@@ -2,6 +2,7 @@
 // Helper functions for generating search names and managing search state
 
 import { FiltersState } from '@/types/housing'
+import { formatNlEuroCompact, formatPriceRangeLabel } from '@/lib/housing/format'
 
 export function generateSearchName(filters: FiltersState): string {
   const parts: string[] = []
@@ -12,10 +13,11 @@ export function generateSearchName(filters: FiltersState): string {
   }
 
   // Price range
-  if (filters.priceMin || filters.priceMax) {
-    const min = filters.priceMin || 0
-    const max = filters.priceMax || '∞'
-    parts.push(`€${min}-${max}`)
+  if (filters.priceMin != null || filters.priceMax != null) {
+    parts.push(
+      formatPriceRangeLabel(filters.priceMin, filters.priceMax) ||
+        `${formatNlEuroCompact(filters.priceMin || 0)}+`
+    )
   }
 
   // Room type
@@ -25,6 +27,7 @@ export function generateSearchName(filters: FiltersState): string {
         case 'room': return 'Room'
         case 'studio': return 'Studio'
         case 'apartment': return 'Apartment'
+        case 'shared': return 'Shared house'
         default: return type
       }
     })
@@ -78,10 +81,10 @@ export function getSearchSummary(filters: FiltersState): string {
     criteria.push(`City: ${filters.city}`)
   }
 
-  if (filters.priceMin || filters.priceMax) {
-    const min = filters.priceMin || 0
-    const max = filters.priceMax || '∞'
-    criteria.push(`Price: €${min} - €${max}`)
+  if (filters.priceMin != null || filters.priceMax != null) {
+    criteria.push(
+      `Price: ${formatPriceRangeLabel(filters.priceMin, filters.priceMax) || 'Any'}`
+    )
   }
 
   if (filters.roomTypes && filters.roomTypes.length > 0) {

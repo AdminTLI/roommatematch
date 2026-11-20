@@ -39,20 +39,38 @@ const leftColumnDefault = {
   ] as const,
 }
 
-export function SignUpSection() {
+const hostColumn = {
+  brand: 'Domu Match',
+  title: 'List with Domu Match.',
+  body: 'Private landlords and agencies can publish student housing. Applicants stay anonymous until you make an offer.',
+  bullets: [
+    { strong: 'Compatibility scores:', text: 'See how applicants fit your home.' },
+    { strong: 'Anonymous until offer:', text: 'Identity stays hidden until you Accept.' },
+    { strong: 'One place to manage:', text: 'Listings, applications, viewings, and chat.' },
+  ] as const,
+}
+
+export function SignUpSection({ variant = 'default' }: { variant?: 'default' | 'host' }) {
   const searchParams = useSearchParams()
+  const isHost = variant === 'host'
   const typeFromUrl = useMemo(() => {
+    if (isHost) return null
     const t = searchParams?.get('type')
     // Professional cohort is locked / coming soon – ignore deep-links
     if (t === 'student') return t
     return null
-  }, [searchParams])
+  }, [searchParams, isHost])
 
   const [selectedType, setSelectedType] = useState<UserType | null>(null)
   const [waitlistOpen, setWaitlistOpen] = useState(false)
   const userType = typeFromUrl ?? selectedType
-  const showPathSelection = !typeFromUrl && selectedType === null
-  const leftSubtitle = userType ? welcomeCopy[userType].subtitle : leftColumnDefault.body
+  const showPathSelection = !isHost && !typeFromUrl && selectedType === null
+  const leftSubtitle = isHost
+    ? hostColumn.body
+    : userType
+      ? welcomeCopy[userType].subtitle
+      : leftColumnDefault.body
+  const leftBullets = isHost ? hostColumn.bullets : leftColumnDefault.bullets
 
   const openProfessionalWaitlist = () => setWaitlistOpen(true)
 
@@ -62,10 +80,12 @@ export function SignUpSection() {
         {/* Left: brand / welcome (dynamic by type) */}
         <div className="hidden lg:block">
           <p className="text-sm font-semibold tracking-wide text-slate-700">
-            {leftColumnDefault.brand}
+            {isHost ? hostColumn.brand : leftColumnDefault.brand}
           </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">
-            {userType ? (
+            {isHost ? (
+              hostColumn.title
+            ) : userType ? (
               welcomeCopy[userType].title
             ) : (
               <>
@@ -80,7 +100,7 @@ export function SignUpSection() {
             {leftSubtitle}
           </p>
           <ul className="mt-8 space-y-3 text-sm text-slate-700">
-            {leftColumnDefault.bullets.map((b, i) => (
+            {leftBullets.map((b, i) => (
               <li key={i} className="flex gap-2 items-baseline">
                 <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-600/70" />
                 <span><strong>{b.strong}</strong> {b.text}</span>
@@ -166,12 +186,24 @@ export function SignUpSection() {
               </div>
             </div>
           ) : (
-            <SignUpForm userType={userType} />
+            <SignUpForm
+              userType={isHost ? null : userType}
+              signupIntent={isHost ? 'host' : undefined}
+              redirectAfterVerify={isHost ? '/host/onboarding' : undefined}
+              title={isHost ? 'Create your host account' : undefined}
+              subtitle={
+                isHost
+                  ? 'Same secure signup as students — then we’ll set up your host profile.'
+                  : undefined
+              }
+            />
           )}
         </div>
       </div>
 
-      <ProfessionalComingSoonDialog open={waitlistOpen} onOpenChange={setWaitlistOpen} />
+      {!isHost && (
+        <ProfessionalComingSoonDialog open={waitlistOpen} onOpenChange={setWaitlistOpen} />
+      )}
     </section>
   )
 }

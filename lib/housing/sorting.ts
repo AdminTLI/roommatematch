@@ -86,26 +86,33 @@ function deg2rad(deg: number): number {
 export function getSortLabel(sort: SortOption): string {
   switch (sort) {
     case 'best':
-      return 'Best match'
+      return 'Best for you'
     case 'priceAsc':
       return 'Price (low to high)'
     case 'priceDesc':
       return 'Price (high to low)'
     case 'distance':
-      return 'Distance to campus'
+      return 'Near campus'
     case 'newest':
-      return 'Newest first'
+      return 'Newest'
     default:
-      return 'Best match'
+      return 'Best for you'
   }
+}
+
+/** Primary discovery sorts — fit-first, then location & recency */
+export function getPrimarySortOptions(): Array<{ value: SortOption; label: string }> {
+  return [
+    { value: 'best', label: getSortLabel('best') },
+    { value: 'distance', label: getSortLabel('distance') },
+    { value: 'newest', label: getSortLabel('newest') },
+  ]
 }
 
 export function getSortOptions(): Array<{ value: SortOption; label: string }> {
   return [
-    { value: 'best', label: getSortLabel('best') },
+    ...getPrimarySortOptions(),
     { value: 'priceAsc', label: getSortLabel('priceAsc') },
     { value: 'priceDesc', label: getSortLabel('priceDesc') },
-    { value: 'distance', label: getSortLabel('distance') },
-    { value: 'newest', label: getSortLabel('newest') }
   ]
 }

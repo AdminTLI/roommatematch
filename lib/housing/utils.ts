@@ -2,6 +2,7 @@
 // This module provides utility functions for the housing marketplace
 
 import { HousingListing, HousingCompatibilityScore, UserHousingPreferences, COMMON_AMENITIES } from './types'
+import { formatNlDate, formatNlEuroCompact, formatNlNumber } from './format'
 
 export class HousingUtils {
   /**
@@ -179,7 +180,9 @@ export class HousingUtils {
     if (scores.budget >= 0.8) {
       const totalCost = listing.rent_monthly + (listing.utilities_included ? 0 : listing.utilities_cost)
       if (totalCost < preferences.max_rent_monthly) {
-        factors.push(`Great value - €${Math.round(preferences.max_rent_monthly - totalCost)} under budget`)
+        factors.push(
+          `Great value - ${formatNlEuroCompact(Math.round(preferences.max_rent_monthly - totalCost))} under budget`
+        )
       } else {
         factors.push('Within your budget range')
       }
@@ -232,7 +235,7 @@ export class HousingUtils {
     if (scores.budget < 0.5) {
       const totalCost = listing.rent_monthly + (listing.utilities_included ? 0 : listing.utilities_cost)
       const overage = totalCost - preferences.max_rent_monthly
-      factors.push(`€${Math.round(overage)} over your budget`)
+      factors.push(`${formatNlEuroCompact(Math.round(overage))} over your budget`)
     }
 
     if (scores.location < 0.5) {
@@ -271,12 +274,12 @@ export class HousingUtils {
    */
   static formatRent(rent: number, utilitiesIncluded: boolean, utilitiesCost: number = 0): string {
     if (utilitiesIncluded) {
-      return `€${rent.toLocaleString()}/month (utilities included)`
+      return `${formatNlEuroCompact(rent)}/month (utilities included)`
     } else if (utilitiesCost > 0) {
       const total = rent + utilitiesCost
-      return `€${rent.toLocaleString()} + €${utilitiesCost} utilities = €${total.toLocaleString()}/month`
+      return `${formatNlEuroCompact(rent)} + €${formatNlNumber(utilitiesCost)} utilities = ${formatNlEuroCompact(total)}/month`
     } else {
-      return `€${rent.toLocaleString()}/month + utilities`
+      return `${formatNlEuroCompact(rent)}/month + utilities`
     }
   }
 
@@ -288,9 +291,10 @@ export class HousingUtils {
     const now = new Date()
     const diffTime = date.getTime() - now.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const formatted = formatNlDate(dateString) || dateString
 
     if (diffDays < 0) {
-      return `Available now (${date.toLocaleDateString()})`
+      return `Available now (${formatted})`
     } else if (diffDays === 0) {
       return 'Available today'
     } else if (diffDays === 1) {
@@ -301,7 +305,7 @@ export class HousingUtils {
       const weeks = Math.ceil(diffDays / 7)
       return `Available in ${weeks} week${weeks > 1 ? 's' : ''}`
     } else {
-      return `Available ${date.toLocaleDateString()}`
+      return `Available ${formatted}`
     }
   }
 

@@ -1,6 +1,8 @@
 // Housing Feed & Tours System Types
 // This module defines TypeScript interfaces for the housing marketplace
 
+import type { ListingDealbreakers, ListingLifestylePrefs } from '@/lib/host/types'
+
 export interface HousingListing {
   id: string
   title: string
@@ -39,6 +41,19 @@ export interface HousingListing {
   furnished: boolean
   parking_available: boolean
   parking_cost: number
+
+  // Host marketplace
+  host_id?: string
+  seeking_people?: number
+  lifestyle_prefs?: ListingLifestylePrefs
+  dealbreakers?: ListingDealbreakers
+  neighborhood_lat?: number
+  neighborhood_lng?: number
+  house_number?: string | null
+  house_letter?: string | null
+  house_number_addition?: string | null
+  floor_level?: string | null
+  unit_label?: string | null
   
   // University integration
   university_id?: string
@@ -58,7 +73,7 @@ export interface HousingListing {
   floor_plan_url?: string
   
   // Status
-  status: 'active' | 'pending' | 'suspended' | 'rented' | 'expired'
+  status: 'active' | 'pending' | 'suspended' | 'rented' | 'expired' | 'draft'
   moderation_status: 'pending' | 'approved' | 'rejected' | 'needs_review'
   moderation_notes?: string
   
@@ -145,7 +160,25 @@ export interface HousingApplication {
   group_members: string[]
   
   // Status
-  status: 'submitted' | 'under_review' | 'approved' | 'rejected' | 'withdrawn'
+  status:
+    | 'submitted'
+    | 'under_review'
+    | 'shortlisted'
+    | 'accepted'
+    | 'offer_pending'
+    | 'offer_accepted'
+    | 'offer_declined'
+    | 'approved'
+    | 'rejected'
+    | 'withdrawn'
+  anonymous_label?: string
+  fit_score?: number
+  cohesion_score?: number
+  identity_revealed?: boolean
+  chat_id?: string
+  /** 1:1 host↔applicant chat (not roommate group-apply chat_id) */
+  host_chat_id?: string
+  rejection_reason_code?: string
   
   // Content
   motivation_letter?: string

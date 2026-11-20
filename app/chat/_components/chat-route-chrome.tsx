@@ -1,9 +1,12 @@
 'use client'
 
-import { MobileChatChromeProvider } from '@/components/app/mobile-chat-chrome-context'
 import type { ReactNode } from 'react'
 
-/** Wraps /chat so FloatingDock + Domu can hide during an active mobile thread. */
+/**
+ * Kept for call-site compatibility. Mobile chat chrome context now lives on
+ * AppShell so FloatingDock can hide during an active mobile thread (including
+ * /host/messages).
+ */
 export function ChatRouteChrome({ children }: { children: ReactNode }) {
-  return <MobileChatChromeProvider>{children}</MobileChatChromeProvider>
+  return <>{children}</>
 }

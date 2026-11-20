@@ -817,3 +817,63 @@
     padding-top: calc(env(safe-area-inset-top, 0px) + var(--app-visual-top-inset, 0px)) !important;
   }
 }
+
+/*
+  Listing detail hero: photo | apply at 3:1 via CSS grid (more reliable than flex %).
+  Photo column stretches to the apply panel's content height — no inner scroll.
+*/
+[data-listing-hero='photo-apply-3-1'] {
+  display: grid !important;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 1rem;
+}
+
+[data-listing-hero='photo-apply-3-1'] > :first-child {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: 20rem; /* +25% from 16rem */
+  overflow: hidden;
+  border-radius: 1rem;
+}
+
+[data-listing-hero='photo-apply-3-1'] > :last-child {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  [data-listing-hero='photo-apply-3-1'] > :first-child {
+    min-height: 22.5rem; /* +25% from 18rem */
+  }
+}
+
+@media (min-width: 768px) {
+  [data-listing-hero='photo-apply-3-1'] {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) !important;
+    gap: 1.25rem;
+    /* +25% taller hero so apply content has more breathing room */
+    min-height: 35rem; /* was 28rem */
+  }
+
+  [data-listing-hero='photo-apply-3-1'] > :first-child {
+    min-height: 100%;
+    height: 100%;
+  }
+
+  [data-listing-hero='photo-apply-3-1'] > :last-child {
+    min-height: 100%;
+    height: 100%;
+  }
+}
+
+@media (min-width: 1280px) {
+  [data-listing-hero='photo-apply-3-1'] {
+    min-height: 37.5rem; /* was 30rem */
+  }
+}

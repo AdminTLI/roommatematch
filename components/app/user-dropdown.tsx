@@ -23,9 +23,11 @@ interface UserDropdownProps {
     name: string
     avatar?: string
   }
+  /** Where Settings should navigate (host portal uses /host/settings). */
+  settingsHref?: string
 }
 
-export function UserDropdown({ user }: UserDropdownProps) {
+export function UserDropdown({ user, settingsHref = '/settings' }: UserDropdownProps) {
   const router = useRouter()
   const supabase = createClient()
   const [mounted, setMounted] = useState(false)
@@ -99,7 +101,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
           <DropdownMenuSeparator className="mx-1 my-1 bg-border" />
 
           <DropdownMenuItem
-            onClick={() => router.push('/settings')}
+            onClick={() => router.push(settingsHref)}
             className="cursor-pointer gap-2.5 rounded-xl px-2.5 py-2.5 text-foreground focus:bg-secondary focus:text-foreground data-[highlighted]:bg-secondary data-[highlighted]:text-foreground"
           >
             <Settings className="h-4 w-4 shrink-0 text-muted-foreground" />

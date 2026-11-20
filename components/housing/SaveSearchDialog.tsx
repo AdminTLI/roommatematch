@@ -18,6 +18,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { FiltersState } from '@/types/housing'
 import { generateSearchName } from '@/lib/housing/search-utils'
+import { formatNlEuroCompact } from '@/lib/housing/format'
 
 interface SaveSearchDialogProps {
   open: boolean
@@ -125,8 +126,12 @@ export function SaveSearchDialog({
             <div className="font-medium mb-2">Search Criteria:</div>
             <div className="space-y-1 text-gray-600">
               {filters.city && <div>• City: {filters.city}</div>}
-              {filters.priceMin && <div>• Min price: €{filters.priceMin}</div>}
-              {filters.priceMax && <div>• Max price: €{filters.priceMax}</div>}
+              {filters.priceMin != null && (
+                <div>• Min price: {formatNlEuroCompact(filters.priceMin)}</div>
+              )}
+              {filters.priceMax != null && (
+                <div>• Max price: {formatNlEuroCompact(filters.priceMax)}</div>
+              )}
               {filters.universityVerifiedOnly && <div>• University-verified only</div>}
               {filters.minCompatibility && <div>• Min compatibility: {filters.minCompatibility}%</div>}
             </div>

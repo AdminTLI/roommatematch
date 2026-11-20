@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +13,13 @@ import { createBrowserClient } from '@supabase/ssr'
 const glassCardClass =
   'w-full'
 
+function readHashParams(): URLSearchParams {
+  if (typeof window === 'undefined' || !window.location.hash) {
+    return new URLSearchParams()
+  }
+  return new URLSearchParams(window.location.hash.replace(/^#/, ''))
+}
+
 export function ResetPasswordConfirmForm() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -22,32 +29,100 @@ export function ResetPasswordConfirmForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [isValidSession, setIsValidSession] = useState(false)
+  const [isCheckingSession, setIsCheckingSession] = useState(true)
   const router = useRouter()
-  
+  const searchParams = useSearchParams()
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
   useEffect(() => {
-    const checkSession = async () => {
-      // At this point the /auth/callback route should already have
-      // exchanged the code for a session and set cookies.
-      // We just need to confirm a session exists.
+    let cancelled = false
+
+    const establishRecoverySession = async () => {
+      setIsCheckingSession(true)
+
+      const hashParams = readHashParams()
+      const hashError = hashParams.get('error_code') || hashParams.get('error')
+      if (hashError) {
+        if (!cancelled) {
+          setError(
+            (hashParams.get('error_description') || 'Invalid or expired reset link.')
+              .replace(/\+/g, ' ')
+          )
+          setIsValidSession(false)
+          setIsCheckingSession(false)
+        }
+        return
+      }
+
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+      if (accessToken && refreshToken) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        })
+        window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        if (cancelled) return
+        if (sessionError) {
+          setError(sessionError.message || 'Invalid or expired reset link. Please request a new password reset.')
+          setIsValidSession(false)
+          setIsCheckingSession(false)
+          return
+        }
+        setIsValidSession(true)
+        setIsCheckingSession(false)
+        return
+      }
+
+      const tokenHash = searchParams.get('token_hash')
+      const type = searchParams.get('type')
+      if (tokenHash && (type === 'recovery' || !type)) {
+        const { error: otpError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery',
+        })
+        if (cancelled) return
+        if (otpError) {
+          setError(
+            otpError.message.toLowerCase().includes('expired') ||
+              otpError.message.toLowerCase().includes('invalid')
+              ? 'Invalid or expired reset link. Please request a new password reset.'
+              : otpError.message
+          )
+          setIsValidSession(false)
+          setIsCheckingSession(false)
+          return
+        }
+        window.history.replaceState(null, '', window.location.pathname)
+        setIsValidSession(true)
+        setIsCheckingSession(false)
+        return
+      }
+
+      // Callback route may already have exchanged a PKCE code for a session.
       const { data: { session } } = await supabase.auth.getSession()
+      if (cancelled) return
       if (session) {
-        console.log('[Reset Password] Valid session found')
         setIsValidSession(true)
       } else {
-        console.log('[Reset Password] No valid session found on confirm page')
         setError('Invalid or expired reset link. Please request a new password reset.')
+        setIsValidSession(false)
         setTimeout(() => {
           router.push('/auth/reset-password')
         }, 3000)
       }
+      setIsCheckingSession(false)
     }
-    checkSession()
-  }, [supabase, router])
+
+    void establishRecoverySession()
+    return () => {
+      cancelled = true
+    }
+  }, [supabase, router, searchParams])
 
   const validatePassword = (pwd: string) => {
     if (pwd.length < 8) {
@@ -111,6 +186,17 @@ export function ResetPasswordConfirmForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (isCheckingSession) {
+    return (
+      <div className={glassCardClass}>
+        <div className="flex flex-col items-center gap-3 px-4 sm:px-6 py-10 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-500" aria-hidden />
+          <p className="text-sm text-slate-700">Confirming your reset link…</p>
+        </div>
+      </div>
+    )
   }
 
   if (!isValidSession) {

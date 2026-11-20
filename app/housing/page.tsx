@@ -91,21 +91,9 @@ export default async function HousingPage() {
     name: campus.name
   })) || []
 
-  // Fetch real listings from database
-  const { data: listings, error: listingsError } = await supabase
-    .from('housing_listings')
-    .select('*')
-    .eq('status', 'active')
-    .eq('moderation_status', 'approved')
-    .order('created_at', { ascending: false })
-    .limit(20)
-
-  if (listingsError) {
-    console.error('Failed to fetch listings:', listingsError)
-  }
-
-  // Always pass empty array if no listings, never null/undefined
-  const initialListings = listings || []
+  // Client loads scored listings from /api/housing/listings (match-first shape).
+  // Do not pass raw DB rows — they use rent_monthly, not priceMonthly.
+  const initialListings: Listing[] = []
 
   return (
     <AppShell user={{

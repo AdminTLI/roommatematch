@@ -1,23 +1,23 @@
-// Housing Page Client Component
-// Main client component with state management and layout
-
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { Listing, FiltersState, ViewMode, Coords } from '@/types/housing'
-import { filtersToSearchParams, searchParamsToFilters, getDefaultFilters } from '@/lib/housing/url-sync'
-import { useDebounce } from '@/hooks/use-debounce'
+import './leaflet.css'
+import { filtersToSearchParams, getDefaultFilters } from '@/lib/housing/url-sync'
 import { queryKeys } from '@/app/providers'
 import { Toolbar } from '@/components/housing/Toolbar'
 import { ListPane } from '@/components/housing/ListPane'
 import { MapPane } from '@/components/housing/MapPane'
-import { ListSkeleton } from '@/components/housing/Skeletons'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ReportListingDialog } from '@/components/housing/ReportListingDialog'
 import { List, Map } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import {
+  readSavedListingIds,
+  toggleSavedListingId,
+} from '@/lib/housing/saved-listings'
 
 interface HousingPageClientProps {
   initialListings: Listing[]
@@ -27,229 +27,269 @@ interface HousingPageClientProps {
   userCampusCoords?: Coords
 }
 
+function stableFilterKey(filters: FiltersState): string {
+  return JSON.stringify(filters)
+}
+
 export function HousingPageClient({
   initialListings,
   initialFilters,
   campusOptions,
   userCampusId,
-  userCampusCoords
+  userCampusCoords,
 }: HousingPageClientProps) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  
-  // State
-  const [filters, setFilters] = useState<FiltersState>(initialFilters)
+
+  const [filters, setFilters] = useState<FiltersState>(() => ({
+    sort: initialFilters.sort || 'best',
+    view: initialFilters.view || 'split',
+    page: 1,
+  }))
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedQ, setDebouncedQ] = useState<string | undefined>(undefined)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [savedListings, setSavedListings] = useState<Set<string>>(new Set())
   const [selectedCampusId, setSelectedCampusId] = useState<string | undefined>(userCampusId)
+  const [reportId, setReportId] = useState<string | null>(null)
 
-  // Debounce filters to prevent rapid refetches
-  const debouncedFilters = useDebounce(filters, 300)
-
-  // Update URL when filters change
+  // Debounce search text only (primitive) - never debounce the whole filters object
   useEffect(() => {
-    const newParams = filtersToSearchParams(filters)
-    const newUrl = new URL(window.location.href)
-    newUrl.search = newParams.toString()
-    
-    // Use replaceState to avoid adding to history
-    window.history.replaceState({}, '', newUrl.toString())
-  }, [filters])
+    const t = setTimeout(() => {
+      const next = searchQuery.trim() || undefined
+      setDebouncedQ((prev) => (prev === next ? prev : next))
+    }, 300)
+    return () => clearTimeout(t)
+  }, [searchQuery])
 
-  // Fetch listings with React Query using debounced filters
-  const fetchListings = useCallback(async (): Promise<Listing[]> => {
-    const params = filtersToSearchParams(debouncedFilters)
-    const response = await fetch(`/api/housing/listings?${params.toString()}`)
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch listings')
+  const effectiveFilters = useMemo<FiltersState>(
+    () => ({
+      ...filters,
+      q: debouncedQ,
+      campusId: selectedCampusId,
+    }),
+    [filters, debouncedQ, selectedCampusId]
+  )
+
+  const filterKey = useMemo(() => stableFilterKey(effectiveFilters), [effectiveFilters])
+
+  // Clear leftover default query junk from older builds (?sort=best&view=split)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    let dirty = false
+    if (params.get('sort') === 'best') {
+      params.delete('sort')
+      dirty = true
     }
-    
-    const data = await response.json()
-    return data.items || [] // Ensure always array
-  }, [debouncedFilters])
+    if (params.get('view') === 'split') {
+      params.delete('view')
+      dirty = true
+    }
+    if (params.get('universityVerifiedOnly') === 'false') {
+      params.delete('universityVerifiedOnly')
+      dirty = true
+    }
+    if (params.get('minCompatibility') === '70') {
+      params.delete('minCompatibility')
+      dirty = true
+    }
+    if (!dirty) return
+    const next = params.toString()
+    const path = next ? `${window.location.pathname}?${next}` : window.location.pathname
+    window.history.replaceState({}, '', path)
+  }, [])
 
-  const { data: listings = initialListings, isLoading, error: queryError } = useQuery({
-    queryKey: queryKeys.housingListings(debouncedFilters),
+  const fetchListings = useCallback(async (): Promise<Listing[]> => {
+    const params = filtersToSearchParams(JSON.parse(filterKey) as FiltersState)
+    const response = await fetch(`/api/housing/listings?${params.toString()}`)
+    if (!response.ok) throw new Error('Failed to fetch listings')
+    const data = await response.json()
+    return data.items || []
+  }, [filterKey])
+
+  const {
+    data: listings = initialListings,
+    isLoading,
+    error: queryError,
+  } = useQuery({
+    queryKey: queryKeys.housingListings({ key: filterKey }),
     queryFn: fetchListings,
-    staleTime: 30_000, // 30 seconds for semi-static data
-    initialData: initialListings,
+    staleTime: 30_000,
   })
 
   const errorMessage =
-    queryError instanceof Error ? queryError.message : typeof queryError === 'string' ? queryError : null
+    queryError instanceof Error
+      ? queryError.message
+      : typeof queryError === 'string'
+        ? queryError
+        : null
 
-  // Handle filter changes
-  const handleFiltersChange = useCallback((newFilters: FiltersState) => {
-    setFilters(newFilters)
+  const handleFiltersChange = useCallback(
+    (next: FiltersState | ((prev: FiltersState) => FiltersState)) => {
+      setFilters((prev) => {
+        const resolved = typeof next === 'function' ? next(prev) : next
+        if (stableFilterKey(resolved) === stableFilterKey(prev)) return prev
+        return resolved
+      })
+    },
+    []
+  )
+
+  useEffect(() => {
+    setSavedListings(new Set(readSavedListingIds()))
   }, [])
 
-  // Handle campus change
-  const handleCampusChange = useCallback((campusId: string) => {
-    setSelectedCampusId(campusId)
-    const newFilters = { ...filters, campusId: campusId || undefined }
-    setFilters(newFilters)
-  }, [filters])
-
-  // Handle listing actions
   const handleSave = useCallback((id: string) => {
-    setSavedListings(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(id)) {
-        newSet.delete(id)
-      } else {
-        newSet.add(id)
+    const next = toggleSavedListingId(id)
+    setSavedListings(new Set(next))
+    if (next.includes(id)) {
+      toast.success('Saved', {
+        action: {
+          label: 'View saved',
+          onClick: () => router.push('/housing/saved'),
+        },
+      })
+    }
+  }, [router])
+
+  const handleShare = useCallback(async (id: string) => {
+    const url = `${window.location.origin}/housing/${id}`
+    try {
+      if (navigator.share) await navigator.share({ title: 'Domu housing', url })
+      else {
+        await navigator.clipboard.writeText(url)
+        toast.success('Link copied')
       }
-      return newSet
-    })
+    } catch {
+      try {
+        await navigator.clipboard.writeText(url)
+        toast.success('Link copied')
+      } catch {
+        toast.error('Could not share')
+      }
+    }
   }, [])
 
-  const handleShare = useCallback((id: string) => {
-    // TODO: Implement share functionality
-    console.log('Share listing:', id)
-  }, [])
-
-  const handleReport = useCallback((id: string) => {
-    // TODO: Implement report functionality
-    console.log('Report listing:', id)
-  }, [])
-
-  // Handle empty state actions
-  const handleBroadenLocation = useCallback(() => {
-    // TODO: Open filters drawer and focus on radius
-    console.log('Broaden location')
-  }, [])
-
-  const handleLowerCompatibility = useCallback(() => {
-    // TODO: Open filters drawer and focus on compatibility slider
-    console.log('Lower compatibility')
-  }, [])
-
-  const handleCreateAlert = useCallback(() => {
-    // TODO: Open save search dialog
-    console.log('Create alert')
-  }, [])
-
-  const handleClearFilters = useCallback(() => {
-    setFilters(getDefaultFilters())
-  }, [])
-
-  const handleSaveSearch = useCallback(() => {
-    // TODO: Open save search dialog
-    console.log('Save search')
-  }, [])
-
-  // Get current view mode
   const viewMode = filters.view || 'split'
-  const hasFilters = Object.keys(filters).some(key => {
-    const value = filters[key as keyof FiltersState]
-    return value !== undefined && value !== null && value !== '' && 
-           !(Array.isArray(value) && value.length === 0)
-  })
+  const hasFilters = Boolean(debouncedQ || selectedCampusId || filters.priceMin || filters.priceMax || filters.city)
 
-  // Mobile view
-  if (viewMode === 'list' || viewMode === 'map') {
-    return (
-      <div className="min-h-screen bg-gray-50 pb-safe-bottom md:pb-0">
-        {/* Toolbar */}
-        <Toolbar
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          onSaveSearch={handleSaveSearch}
-          campusOptions={campusOptions}
-          selectedCampusId={selectedCampusId}
-          onCampusChange={handleCampusChange}
-        />
+  const reportDialog = reportId ? (
+    <ReportListingDialog
+      open
+      onOpenChange={(open) => !open && setReportId(null)}
+      listingId={reportId}
+      listingTitle={listings.find((l) => l.id === reportId)?.title || 'Listing'}
+    />
+  ) : null
 
-        {/* Mobile tabs */}
-        <div className="border-b bg-white">
-          <Tabs value={viewMode} onValueChange={(value) => handleFiltersChange({ ...filters, view: value as ViewMode })}>
-            <TabsList className="w-full">
-              <TabsTrigger value="list" className="flex-1">
-                <List className="h-4 w-4 mr-2" />
-                List
-              </TabsTrigger>
-              <TabsTrigger value="map" className="flex-1">
-                <Map className="h-4 w-4 mr-2" />
-                Map
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+  const toolbar = (
+    <Toolbar
+      filters={filters}
+      searchQuery={searchQuery}
+      onSearchQueryChange={setSearchQuery}
+      onFiltersChange={handleFiltersChange}
+      onSaveSearch={() => toast.message('Use Filters to refine, then Save Search')}
+      campusOptions={campusOptions}
+      selectedCampusId={selectedCampusId}
+      onCampusChange={setSelectedCampusId}
+    />
+  )
 
-        {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          {viewMode === 'list' ? (
-            <ListPane
-              listings={listings}
-              isLoading={isLoading}
-              error={errorMessage}
-              onHover={setHoveredId}
-              onSave={handleSave}
-              onShare={handleShare}
-              onReport={handleReport}
-              onBroadenLocation={handleBroadenLocation}
-              onLowerCompatibility={handleLowerCompatibility}
-              onCreateAlert={handleCreateAlert}
-              onClearFilters={handleClearFilters}
-              hasFilters={hasFilters}
-              savedListings={savedListings}
-              highlightedId={hoveredId ?? undefined}
-            />
-          ) : (
-            <MapPane
-              listings={listings}
-              campusCoords={userCampusCoords}
-              onHover={setHoveredId}
-              onViewportChange={() => {}}
-              onListingClick={(id) => router.push(`/housing/${id}`)}
-              highlightedId={hoveredId ?? undefined}
-              className="h-[calc(100vh-280px)] sm:h-[600px]"
-            />
-          )}
-        </div>
-      </div>
-    )
-  }
+  const listPane = (
+    <ListPane
+      listings={listings}
+      isLoading={isLoading}
+      error={errorMessage}
+      onHover={setHoveredId}
+      onSave={handleSave}
+      onShare={handleShare}
+      onReport={setReportId}
+      onBroadenLocation={() =>
+        handleFiltersChange((prev) => ({
+          ...prev,
+          maxDistanceKm: undefined,
+          radiusKm: undefined,
+        }))
+      }
+      onLowerCompatibility={() =>
+        handleFiltersChange((prev) => ({ ...prev, minCompatibility: undefined }))
+      }
+      onCreateAlert={() => toast.message('Use Save Search in the toolbar')}
+      onClearFilters={() => {
+        setFilters(getDefaultFilters())
+        setSearchQuery('')
+        setSelectedCampusId(undefined)
+      }}
+      hasFilters={hasFilters}
+      savedListings={savedListings}
+      highlightedId={hoveredId ?? undefined}
+      layout={viewMode === 'split' ? 'split' : 'list'}
+    />
+  )
 
-  // Desktop split view
   return (
-    <div className="min-h-screen bg-gray-50 pb-safe-bottom md:pb-0">
-      {/* Toolbar */}
-      <Toolbar
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        onSaveSearch={handleSaveSearch}
-        campusOptions={campusOptions}
-        selectedCampusId={selectedCampusId}
-        onCampusChange={handleCampusChange}
-      />
+    <div className="space-y-6 pb-safe-bottom md:pb-0">
+      {toolbar}
 
-      {/* Split layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">
-          {/* List pane */}
-          <div className="overflow-y-auto">
-            <ListPane
-              listings={listings}
-              isLoading={isLoading}
-              error={errorMessage}
-              onHover={setHoveredId}
-              onSave={handleSave}
-              onShare={handleShare}
-              onReport={handleReport}
-              onBroadenLocation={handleBroadenLocation}
-              onLowerCompatibility={handleLowerCompatibility}
-              onCreateAlert={handleCreateAlert}
-              onClearFilters={handleClearFilters}
-              hasFilters={hasFilters}
-              savedListings={savedListings}
-              highlightedId={hoveredId ?? undefined}
-            />
-          </div>
+      {(viewMode === 'list' || viewMode === 'map') && (
+        <div className="flex overflow-hidden rounded-2xl bg-zinc-100 p-1 dark:bg-white/5 sm:hidden">
+          {(
+            [
+              ['list', 'List', List],
+              ['map', 'Map', Map],
+            ] as const
+          ).map(([id, label, Icon]) => (
+            <button
+              key={id}
+              type="button"
+              className={cn(
+                'flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition',
+                viewMode === id
+                  ? 'bg-indigo-500 text-white shadow-sm'
+                  : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+              )}
+              onClick={() =>
+                handleFiltersChange((prev) => ({ ...prev, view: id as ViewMode }))
+              }
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
-          {/* Map pane */}
-          <div className="hidden lg:block">
+      {viewMode === 'split' && (
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-indigo-600">
+            Housing discovery
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink-900 dark:text-white sm:text-3xl">
+            Ranked for how you live
+          </h1>
+          <p className="mt-1 text-sm text-ink-500">
+            Best for you first - map synced with fit. Unverified hosts stay browse-only.
+          </p>
+        </div>
+      )}
+
+      {viewMode === 'map' ? (
+        <MapPane
+          listings={listings}
+          campusCoords={userCampusCoords}
+          onHover={setHoveredId}
+          onViewportChange={() => {}}
+          onListingClick={(id) => router.push(`/housing/${id}`)}
+          highlightedId={hoveredId ?? undefined}
+          className="h-[calc(100vh-280px)] sm:h-[600px]"
+        />
+      ) : viewMode === 'list' ? (
+        listPane
+      ) : (
+        <div className="grid h-[calc(100vh-220px)] grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Padding so hover/focus outlines are not clipped by the scrollport */}
+          <div className="overflow-y-auto overflow-x-visible px-1 py-1">{listPane}</div>
+          <div className="hidden min-h-0 lg:block">
             <MapPane
               listings={listings}
               campusCoords={userCampusCoords}
@@ -261,7 +301,9 @@ export function HousingPageClient({
             />
           </div>
         </div>
-      </div>
+      )}
+
+      {reportDialog}
     </div>
   )
 }

@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { 
   Search, 
-  Filter, 
+  ListFilter, 
   MapPin, 
   Euro, 
   Calendar,
@@ -67,14 +67,6 @@ export function HousingFeed({ user }: HousingFeedProps) {
     setIsLoading(true)
     
     try {
-      // For demo mode, use mock data
-      if (user.id === 'demo-user-id') {
-        const mockListings = await generateMockListings()
-        setListings(mockListings)
-        setIsLoading(false)
-        return
-      }
-
       // Load compatible housing listings using RPC
       const { data: listingData, error } = await supabase.rpc('get_compatible_housing_listings', {
         p_user_id: user.id,
@@ -134,160 +126,6 @@ export function HousingFeed({ user }: HousingFeedProps) {
     }
   }
 
-  const generateMockListings = async (): Promise<HousingListingWithCompatibility[]> => {
-    return [
-      {
-        id: 'listing-1',
-        title: 'Modern Studio Apartment near UvA',
-        description: 'Beautiful modern studio apartment perfect for students. Located just 5 minutes walk from the University of Amsterdam.',
-        address: 'Spuistraat 123',
-        city: 'Amsterdam',
-        postal_code: '1012 VG',
-        property_type: 'studio',
-        room_type: 'studio',
-        total_rooms: 1,
-        available_rooms: 1,
-        total_bathrooms: 1,
-        rent_monthly: 1200,
-        utilities_included: true,
-        utilities_cost: 0,
-        deposit_amount: 2400,
-        agency_fee: 0,
-        available_from: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-        min_stay_months: 6,
-        amenities: ['wifi', 'heating', 'washing_machine', 'near_university', 'near_public_transport'],
-        pet_friendly: false,
-        smoking_allowed: false,
-        furnished: true,
-        parking_available: false,
-        parking_cost: 0,
-        verified_by_university: true,
-        landlord_name: 'Amsterdam Housing Co.',
-        landlord_email: 'contact@amsterdamhousing.nl',
-        photos: ['/housing/studio-1.jpg', '/housing/studio-2.jpg'],
-        virtual_tour_url: 'https://example.com/virtual-tour/1',
-        status: 'active',
-        moderation_status: 'approved',
-        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        compatibility_score: 0.87,
-        compatibility_breakdown: {
-          budget: 0.9,
-          location: 0.95,
-          amenities: 0.8,
-          timeline: 0.85
-        },
-        positive_factors: [
-          'Great value - €300 under budget',
-          'Located in your preferred city: Amsterdam',
-          'Close to university',
-          'University-verified listing',
-          'Virtual tour available'
-        ],
-        negative_factors: []
-      },
-      {
-        id: 'listing-2',
-        title: 'Shared Room in Student House',
-        description: 'Large shared room in a vibrant student house with 4 other international students.',
-        address: 'Oosterpark 45',
-        city: 'Amsterdam',
-        postal_code: '1092 AC',
-        property_type: 'shared_room',
-        room_type: 'shared',
-        total_rooms: 5,
-        available_rooms: 1,
-        total_bathrooms: 2,
-        rent_monthly: 650,
-        utilities_included: true,
-        utilities_cost: 0,
-        deposit_amount: 1300,
-        agency_fee: 0,
-        available_from: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        min_stay_months: 3,
-        amenities: ['wifi', 'heating', 'washing_machine', 'common_area', 'near_public_transport'],
-        pet_friendly: false,
-        smoking_allowed: false,
-        furnished: true,
-        parking_available: true,
-        parking_cost: 50,
-        verified_by_university: false,
-        landlord_name: 'Student Housing Amsterdam',
-        landlord_email: 'info@studenthousing.nl',
-        photos: ['/housing/shared-1.jpg', '/housing/shared-2.jpg'],
-        status: 'active',
-        moderation_status: 'approved',
-        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        compatibility_score: 0.72,
-        compatibility_breakdown: {
-          budget: 0.95,
-          location: 0.8,
-          amenities: 0.6,
-          timeline: 0.75
-        },
-        positive_factors: [
-          'Great value - €850 under budget',
-          'Located in your preferred city: Amsterdam',
-          'Perfect availability timing'
-        ],
-        negative_factors: [
-          'Missing 1 required amenities'
-        ]
-      },
-      {
-        id: 'listing-3',
-        title: 'Private Room with Balcony',
-        description: 'Spacious private room with private balcony overlooking the canal. Perfect for quiet study.',
-        address: 'Keizersgracht 234',
-        city: 'Amsterdam',
-        postal_code: '1016 CT',
-        property_type: 'private_room',
-        room_type: 'private',
-        total_rooms: 3,
-        available_rooms: 1,
-        total_bathrooms: 2,
-        rent_monthly: 1100,
-        utilities_included: false,
-        utilities_cost: 150,
-        deposit_amount: 2500,
-        agency_fee: 110,
-        available_from: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
-        min_stay_months: 12,
-        amenities: ['wifi', 'heating', 'balcony', 'storage', 'near_university'],
-        pet_friendly: true,
-        smoking_allowed: false,
-        furnished: true,
-        parking_available: false,
-        parking_cost: 0,
-        verified_by_university: true,
-        landlord_name: 'Canal Properties',
-        landlord_email: 'rentals@canalproperties.nl',
-        photos: ['/housing/private-1.jpg', '/housing/private-2.jpg', '/housing/private-3.jpg'],
-        status: 'active',
-        moderation_status: 'approved',
-        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        compatibility_score: 0.68,
-        compatibility_breakdown: {
-          budget: 0.7,
-          location: 0.9,
-          amenities: 0.5,
-          timeline: 0.6
-        },
-        positive_factors: [
-          'Located in your preferred city: Amsterdam',
-          'Close to university',
-          'University-verified listing'
-        ],
-        negative_factors: [
-          '€150 over your budget',
-          'Missing 2 required amenities'
-        ]
-      }
-    ]
-  }
-
   const handleBookTour = (listingId: string) => {
     const listing = listings.find(l => l.id === listingId)
     if (listing) {
@@ -298,12 +136,6 @@ export function HousingFeed({ user }: HousingFeedProps) {
 
   const handleTourBooking = async (request: TourBookingRequest) => {
     try {
-      if (user.id === 'demo-user-id') {
-        console.log('Demo: Booking tour', request)
-        // Simulate successful booking
-        return
-      }
-
       const { error } = await supabase
         .from('tour_bookings')
         .insert({
@@ -441,7 +273,7 @@ export function HousingFeed({ user }: HousingFeedProps) {
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
+              <ListFilter className="h-4 w-4" />
               Filters
             </Button>
           </PopoverTrigger>

@@ -258,8 +258,8 @@ SELECT 'Question Items Seed Data Check' as check_type,
        COUNT(DISTINCT section) as sections_count
 FROM question_items;
 
--- Check housing listings
-SELECT 'Housing Listings Seed Data Check' as check_type,
+-- Housing listings are host-created (no seed marketplace data expected)
+SELECT 'Housing Listings Count' as check_type,
        COUNT(*) as listing_count
 FROM housing_listings;
 

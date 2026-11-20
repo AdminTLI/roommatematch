@@ -118,7 +118,7 @@ JOIN auth.users u ON r.user_id = u.id
 WHERE u.email = '<your DEMO_USER_EMAIL>'
 ORDER BY qi.section, qi.key;
 
--- Test 3: Check housing listings
+-- Test 3: Check housing listings (host-created only; no seed marketplace data)
 SELECT title, city, rent_monthly, status
 FROM housing_listings
 WHERE status = 'active';

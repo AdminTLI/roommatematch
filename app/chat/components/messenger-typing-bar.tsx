@@ -158,7 +158,8 @@ export function MessengerTypingBar({
   const handleComposerTouchEnd = (e: TouchEvent<HTMLTextAreaElement>) => {
     const target = e.currentTarget
     if (target !== document.activeElement) {
-      e.preventDefault()
+      // Focus without scrolling the layout viewport. Avoid preventDefault here — on iOS it
+      // can suppress the keyboard or desync visualViewport and blank the thread shell.
       target.focus({ preventScroll: true })
     }
   }

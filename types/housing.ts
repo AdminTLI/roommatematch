@@ -8,6 +8,12 @@ export type Verification = {
   lastAuditISO?: string
 }
 
+/** WWS (Dutch rent-points) certification shown on listing detail */
+export type WwsCertificationStatus =
+  | 'under_review'
+  | 'certified'
+  | 'not_certified'
+
 export type Coords = {
   lat: number
   lng: number
@@ -30,7 +36,7 @@ export type Listing = {
   priceMonthly: number
   moveInISO?: string
   leaseMonths?: number
-  roomType: 'room' | 'studio' | 'apartment'
+  roomType: 'room' | 'studio' | 'apartment' | 'shared'
   beds?: number
   baths?: number
   furnished?: boolean
@@ -45,14 +51,47 @@ export type Listing = {
   distanceKmToCampus?: number // computed on fetch if campus chosen
   compatibilityScore?: number // 0-100
   compatibilityReasons?: string[] // top 3
+  /** Section scores 0–100 for lifestyle / budget / timeline */
+  scoreBreakdown?: {
+    lifestyle: number
+    budget: number
+    timeline: number
+    capacity?: number
+    amenities?: number
+  }
+  /** Per-dimension + overall insight copy explaining the fit score */
+  scoreInsights?: {
+    lifestyle?: string
+    budget?: string
+    timeline?: string
+    overall?: string
+  }
+  watchOuts?: string[]
+  hostVerified?: boolean
+  /** Apply / viewing / pin enabled only when host email is verified */
+  actionsEnabled?: boolean
+  seekingPeople?: number
   roommatesCount?: number
   isNew?: boolean
   isPopular?: boolean
+  /** WWS rent-points badge status (admin-reviewed) */
+  wwsStatus?: WwsCertificationStatus
   verification: Verification
   agencyOrHost?: {
     name: string
     responseTimeHrs?: number
     rating?: number
+    /** private_landlord | agency */
+    hostType?: 'private_landlord' | 'agency'
+    companyName?: string | null
+    bio?: string | null
+    /** Signed URL for host profile photo */
+    avatarUrl?: string | null
+    /** ISO timestamp when the host joined Domu Match */
+    joinedAt?: string | null
+    /** Other active + approved listings by this host (excl. current) */
+    otherListingsCount?: number
+    idVerified?: boolean
   }
   // Additional fields from existing schema
   description: string
@@ -93,6 +132,9 @@ export type FiltersState = {
   priceMin?: number
   priceMax?: number
   city?: string
+  address?: string
+  lat?: number
+  lng?: number
   radiusKm?: number
   moveInFrom?: string
   moveInTo?: string

@@ -4,6 +4,10 @@ import { checkRateLimit, getUserRateLimitKey, buildRateLimitHeaders } from '@/li
 import { safeLogger } from '@/lib/utils/logger'
 import { getUserType } from '@/lib/auth/cohort-visibility'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
+import {
+  DELETED_PROFILE_DISPLAY_NAME,
+  isAnonymizedDeletedProfile,
+} from '@/lib/chat/deleted-profile'
 
 export async function POST(request: NextRequest) {
   try {
@@ -102,6 +106,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ profiles: [] })
     }
 
+    // Host↔applicant rooms must show real names (cross-cohort by design).
+    const { data: housingChatRows } = await admin
+      .from('chats')
+      .select('id')
+      .in('id', authorizedChatIds)
+      .not('housing_application_id', 'is', null)
+    const housingChatIds = new Set((housingChatRows || []).map((row) => row.id as string))
+    const housingPartnerUserIds = new Set(
+      chatMembers
+        .filter((m) => housingChatIds.has(m.chat_id) && m.user_id !== user.id)
+        .map((m) => m.user_id as string)
+    )
+
     // Get all unique user IDs (cap to max 200 total members across all chats)
     const allUserIds = [...new Set(chatMembers.slice(0, 200).map(m => m.user_id))]
 
@@ -140,7 +157,7 @@ export async function POST(request: NextRequest) {
       admin
         .from('profiles')
         .select(
-          'user_id, first_name, last_name, user_type, is_visible, avatar_id, verification_status, is_verified_student'
+          'user_id, first_name, last_name, user_type, is_visible, avatar_id, program, verification_status, is_verified_student'
         )
         .in('user_id', profileSelectIds),
       profileSelectIds.length > 0
@@ -177,8 +194,11 @@ export async function POST(request: NextRequest) {
     const viewerUserType = await getUserType(user.id)
 
     // Post-process profiles:
+    // - Deleted/anonymized accounts → "Deleted Profile" (checked before ghost mode;
+    //   anonymized rows also set is_visible=false)
     // - For users who have blocked the current user, anonymize their name to "User"
     // - For users in a different cohort (role), show only "User" so profile data is not visible across cohorts
+    const [deletedFirst, deletedLast] = DELETED_PROFILE_DISPLAY_NAME.split(' ')
     const safeProfiles = (profiles || []).map((profile: any) => {
       if (blockedCurrentUser.has(profile.user_id)) {
         return {
@@ -189,8 +209,21 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Anonymized / deleted accounts — keep chats readable but never treat as a live ghost user
+      if (isAnonymizedDeletedProfile(profile) && profile.user_id !== user.id) {
+        return {
+          user_id: profile.user_id,
+          first_name: deletedFirst,
+          last_name: deletedLast || '',
+          is_verified: false,
+          is_deleted: true,
+        }
+      }
+
       // Ghost mode: users with Make Profile Visible OFF should appear as "User" to everyone else.
-      if (profile.is_visible === false && profile.user_id !== user.id) {
+      // Housing host↔applicant chats are an intentional exception — both parties already know who they are.
+      const isHousingPartner = housingPartnerUserIds.has(profile.user_id)
+      if (profile.is_visible === false && profile.user_id !== user.id && !isHousingPartner) {
         return {
           user_id: profile.user_id,
           first_name: 'User',
@@ -200,7 +233,8 @@ export async function POST(request: NextRequest) {
       }
 
       const sameCohort = viewerUserType != null && profile.user_type === viewerUserType
-      if (!sameCohort) {
+      // Roommate matching hides cross-cohort profiles; housing chats are host↔applicant by design.
+      if (!sameCohort && !isHousingPartner) {
         return {
           user_id: profile.user_id,
           first_name: 'User',

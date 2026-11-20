@@ -3,6 +3,8 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { safeLogger } from '@/lib/utils/logger'
 import { recalculateGroupCompatibility } from '@/lib/group-compatibility/calculator'
 import { getUserType } from '@/lib/auth/cohort-visibility'
+import { ensurePairwiseAmongActiveMembers } from '@/lib/chat/ensure-group-pairwise'
+import { markGroupInviteMessagesResolved } from '@/lib/chat/send-group-invite-dms'
 
 // GET /api/chat/invitations/pending - Get pending invitations for current user
 export async function GET(request: NextRequest) {
@@ -18,14 +20,16 @@ export async function GET(request: NextRequest) {
     const chatId = searchParams.get('chatId')
 
     if (chatId) {
-      // Get specific invitation details
-      const { data: invitation, error } = await supabase
+      // Invitees are not members until accept — use admin for chat details (RLS-safe).
+      const adminForInvite = await createAdminClient()
+      const { data: invitation, error } = await adminForInvite
         .from('group_invitations')
         .select(`
           *,
           chats (
             id,
             name,
+            description,
             group_intent,
             invitation_status,
             created_by
@@ -35,11 +39,10 @@ export async function GET(request: NextRequest) {
         .eq('invitee_id', user.id)
         .eq('status', 'pending')
         .maybeSingle()
-      
-      // Fetch inviter profile separately (inviter_id references users(id), not profiles)
+
       let inviterProfile = null
       if (invitation?.inviter_id) {
-        const { data: profile } = await supabase
+        const { data: profile } = await adminForInvite
           .from('profiles')
           .select('first_name, last_name')
           .eq('user_id', invitation.inviter_id)
@@ -58,8 +61,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Invitation not found' }, { status: 404 })
       }
 
-      // Get compatibility scores
-      const { data: compatibility } = await supabase
+      const { data: compatibility } = await adminForInvite
         .from('group_compatibility_scores')
         .select('*')
         .eq('chat_id', chatId)
@@ -126,14 +128,18 @@ export async function GET(request: NextRequest) {
         }
       })
     } else {
-      // Get all pending invitations for user
-      const { data: invitations, error } = await supabase
+      // Invitees are not chat_members until they accept, so nested chats
+      // joins via the user client are blocked by RLS. Load invites + chat
+      // details with the admin client, scoped to this invitee only.
+      const admin = await createAdminClient()
+      const { data: invitations, error } = await admin
         .from('group_invitations')
         .select(`
           *,
           chats (
             id,
             name,
+            description,
             group_intent,
             invitation_status,
             created_at
@@ -142,20 +148,6 @@ export async function GET(request: NextRequest) {
         .eq('invitee_id', user.id)
         .eq('status', 'pending')
         .order('invited_at', { ascending: false })
-      
-      // Fetch inviter profiles separately
-      const inviterIds = invitations?.map(inv => inv.inviter_id).filter(Boolean) || []
-      const inviterProfilesMap = new Map()
-      if (inviterIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, first_name, last_name')
-          .in('user_id', inviterIds)
-        
-        profiles?.forEach(p => {
-          inviterProfilesMap.set(p.user_id, { first_name: p.first_name, last_name: p.last_name })
-        })
-      }
 
       if (error) {
         return NextResponse.json(
@@ -164,9 +156,21 @@ export async function GET(request: NextRequest) {
         )
       }
 
-      // Get compatibility scores for each chat
+      const inviterIds = invitations?.map(inv => inv.inviter_id).filter(Boolean) || []
+      const inviterProfilesMap = new Map()
+      if (inviterIds.length > 0) {
+        const { data: profiles } = await admin
+          .from('profiles')
+          .select('user_id, first_name, last_name')
+          .in('user_id', inviterIds)
+
+        profiles?.forEach(p => {
+          inviterProfilesMap.set(p.user_id, { first_name: p.first_name, last_name: p.last_name })
+        })
+      }
+
       const chatIds = invitations?.map(inv => inv.chat_id) || []
-      const { data: compatibilities } = await supabase
+      const { data: compatibilities } = await admin
         .from('group_compatibility_scores')
         .select('*')
         .in('chat_id', chatIds)
@@ -253,21 +257,82 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Update chat member status to active
+      // Consent granted: upsert as active member (invitees are not members until accept)
+      const joinedAt = new Date().toISOString()
       const { error: memberError } = await admin
         .from('chat_members')
-        .update({
-          status: 'active'
-        })
-        .eq('chat_id', chat_id)
-        .eq('user_id', user.id)
+        .upsert(
+          {
+            chat_id: chat_id,
+            user_id: user.id,
+            status: 'active',
+            invitation_id: invitation.id,
+            joined_at: joinedAt,
+          },
+          { onConflict: 'chat_id,user_id' }
+        )
 
       if (memberError) {
-        safeLogger.warn('Failed to update member status', { error: memberError })
+        // Fallback: try update then insert for schemas without upsert conflict target
+        const { error: updateErr } = await admin
+          .from('chat_members')
+          .update({ status: 'active', invitation_id: invitation.id, joined_at: joinedAt })
+          .eq('chat_id', chat_id)
+          .eq('user_id', user.id)
+
+        if (updateErr) {
+          const { error: insertErr } = await admin.from('chat_members').insert({
+            chat_id: chat_id,
+            user_id: user.id,
+            status: 'active',
+            invitation_id: invitation.id,
+            joined_at: joinedAt,
+          })
+          if (insertErr) {
+            safeLogger.warn('Failed to activate member after accept', { error: insertErr })
+          }
+        }
+        if (memberError) {
+          safeLogger.warn('Upsert member failed, used fallback', { error: memberError })
+        }
       }
 
-      // Note: Compatibility is calculated once at creation and stays fixed
-      // We don't recalculate here
+      // Bump chat activity so the group rises in everyone's sidebar ranking
+      const { error: activityErr } = await admin
+        .from('chats')
+        .update({ updated_at: joinedAt })
+        .eq('id', chat_id)
+      if (activityErr) {
+        safeLogger.warn('Failed to bump chat activity after accept', { error: activityErr, chat_id })
+      }
+
+      // Progressive pairwise: among everyone who is already active (creator + acceptees)
+      const { data: activeMembers } = await admin
+        .from('chat_members')
+        .select('user_id')
+        .eq('chat_id', chat_id)
+        .eq('status', 'active')
+
+      const activeIds = (activeMembers || []).map((m) => m.user_id as string)
+      try {
+        await ensurePairwiseAmongActiveMembers(admin, chat_id, activeIds)
+      } catch (pairwiseErr) {
+        safeLogger.warn('Failed to ensure progressive pairwise after accept', {
+          error: pairwiseErr,
+          chat_id,
+        })
+      }
+
+      if (activeIds.length >= 2) {
+        try {
+          await recalculateGroupCompatibility(chat_id)
+        } catch (compatErr) {
+          safeLogger.warn('Failed to recalculate group compatibility after accept', {
+            error: compatErr,
+            chat_id,
+          })
+        }
+      }
 
       // Check if all invitations are accepted (but chat may still be locked due to pairwise matches)
       const { data: pendingInvitations } = await admin
@@ -276,13 +341,35 @@ export async function POST(request: NextRequest) {
         .eq('chat_id', chat_id)
         .eq('status', 'pending')
 
+      const allInvitesResolved = !pendingInvitations || pendingInvitations.length === 0
+
       // Update invitation_status to 'active' if all invitations accepted
       // But chat may still be locked if pairwise matches are pending
-      if (!pendingInvitations || pendingInvitations.length === 0) {
+      if (allInvitesResolved) {
+        const { data: unlockCheck } = await admin.rpc('can_group_unlock', {
+          p_chat_id: chat_id,
+        })
+        const canUnlock = unlockCheck === true
+
         await admin
           .from('chats')
-          .update({ invitation_status: 'active' })
+          .update({
+            invitation_status: 'active',
+            ...(canUnlock
+              ? { is_locked: false, lock_reason: null }
+              : {}),
+          })
           .eq('id', chat_id)
+      }
+
+      try {
+        await markGroupInviteMessagesResolved(admin, {
+          groupChatId: chat_id,
+          inviteeId: user.id,
+          status: 'accepted',
+        })
+      } catch (markErr) {
+        safeLogger.warn('Failed to mark invite DMs accepted', { error: markErr })
       }
 
       // Get chat lock status
@@ -322,6 +409,16 @@ export async function POST(request: NextRequest) {
         .delete()
         .eq('chat_id', chat_id)
         .eq('user_id', user.id)
+
+      try {
+        await markGroupInviteMessagesResolved(admin, {
+          groupChatId: chat_id,
+          inviteeId: user.id,
+          status: 'declined',
+        })
+      } catch (markErr) {
+        safeLogger.warn('Failed to mark invite DMs declined', { error: markErr })
+      }
 
       return NextResponse.json({ 
         success: true,

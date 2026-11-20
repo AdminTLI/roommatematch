@@ -1117,13 +1117,15 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
       messagesChannelRef.current = null
     }
 
-    // Subscribe to new messages via broadcast channel
-    const channelName = `room:${roomId}:messages`
+    // Subscribe to new messages via private broadcast channel
+    // Topic must match DB trigger + realtime.messages RLS: chat:{id}:messages
+    const channelName = `chat:${roomId}:messages`
     safeLogger.debug('[Realtime] Creating broadcast channel:', channelName)
 
     const messagesChannel = supabase
       .channel(channelName, {
         config: {
+          private: true,
           broadcast: { self: true, ack: true }
         }
       })
@@ -2257,7 +2259,7 @@ export function ChatInterface({ roomId, user, onBack, onToggleRightPane, rightPa
       const channel = messagesChannelRef.current
       if (channel) {
         try {
-          const channelName = `room:${roomId}:messages`
+          const channelName = `chat:${roomId}:messages`
           console.log('[Realtime] Broadcasting message to channel:', channelName)
           const broadcastPayload = {
             id: message.id,

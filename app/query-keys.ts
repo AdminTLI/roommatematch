@@ -1,3 +1,21 @@
+import { chatHousingContextKey } from '@/lib/chat/fetch-chat-housing-context'
+
+function chatCompatibilityKey(chatId?: string | null) {
+  return chatId
+    ? (['chat', 'compatibility', chatId] as const)
+    : (['chat', 'compatibility'] as const)
+}
+
+function groupPanelKey(chatId?: string | null) {
+  return chatId ? (['chat', 'group-panel', chatId] as const) : (['chat', 'group-panel'] as const)
+}
+
+function chatPrivacyKey(chatId?: string | null, userId?: string | null) {
+  return chatId && userId
+    ? (['chat', 'privacy', chatId, userId] as const)
+    : (['chat', 'privacy'] as const)
+}
+
 export const queryKeys = {
   chats: (userId?: string) => (userId ? ['chats', userId] : ['chats']),
   notifications: (userId?: string) => (userId ? ['notifications', userId] : ['notifications']),
@@ -9,17 +27,20 @@ export const queryKeys = {
     all: (userId?: string) => (userId ? ['matches', userId] : ['matches']),
   },
   activity: (userId?: string) => (userId ? ['activity', userId] : ['activity']),
-  updates: ['updates'],
+  updates: ['updates'] as const,
   profile: (userId?: string) => (userId ? ['profile', userId] : ['profile']),
   housingListings: (filters?: Record<string, unknown>) =>
     filters ? ['housing-listings', filters] : ['housing-listings'],
-  universities: ['universities'],
-  campuses: ['campuses'],
-  timezones: ['timezones'],
+  universities: ['universities'] as const,
+  campuses: ['campuses'] as const,
+  timezones: ['timezones'] as const,
   compatibility: (userAId?: string, userBId?: string) =>
     userAId && userBId ? ['compatibility', userAId, userBId] : ['compatibility'],
-  chatCompatibility: (chatId?: string | null) =>
-    chatId ? (['chat', 'compatibility', chatId] as const) : (['chat', 'compatibility'] as const),
-  chatPrivacy: (chatId?: string | null, userId?: string | null) =>
-    chatId && userId ? (['chat', 'privacy', chatId, userId] as const) : (['chat', 'privacy'] as const),
-} as const
+  chatCompatibility: chatCompatibilityKey,
+  chatHousingContext: chatHousingContextKey,
+  groupPanel: groupPanelKey,
+  chatPrivacy: chatPrivacyKey,
+}
+
+/** @deprecated Prefer importing from `@/lib/chat/fetch-chat-housing-context`. */
+export { chatHousingContextKey }

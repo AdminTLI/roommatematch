@@ -179,13 +179,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check if group can unlock now
+    // Check if group can unlock now (pairwise clear AND no pending invitations)
     const { data: progress } = await admin.rpc('get_pairwise_match_progress', {
       p_chat_id: chat_id
     })
 
+    const { data: pendingInvites } = await admin
+      .from('group_invitations')
+      .select('id')
+      .eq('chat_id', chat_id)
+      .eq('status', 'pending')
+
     const progressData = progress?.[0]
-    const canUnlock = progressData?.pending_pairs === 0 && progressData?.rejected_pairs === 0
+    const canUnlock =
+      progressData?.pending_pairs === 0 &&
+      progressData?.rejected_pairs === 0 &&
+      (!pendingInvites || pendingInvites.length === 0)
 
     // Get chat info for notifications
     const { data: chat } = await admin

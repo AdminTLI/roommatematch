@@ -15,7 +15,7 @@ import {
   Users,
   Settings,
   LayoutDashboard,
-  Building2,
+  House,
   ArrowUpRight
 } from 'lucide-react'
 import { NotificationBell } from '@/app/(components)/notifications/notification-bell'
@@ -29,6 +29,8 @@ import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context
 import { cn } from '@/lib/utils'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { isFeatureEnabled } from '@/lib/feature-flags'
+import { HousingNavMenu } from '@/components/housing/HousingNavMenu'
 
 interface TopbarProps {
   user: {
@@ -37,7 +39,7 @@ interface TopbarProps {
     name: string
     avatar?: string
   }
-  context?: 'user' | 'admin' | 'partner' | 'university'
+  context?: 'user' | 'admin' | 'partner' | 'university' | 'host'
 }
 
 interface SearchResult {
@@ -70,13 +72,23 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
+  // Radix HoverCard/Popover useId mismatches under React 19.2 / Next 16 SSR.
+  const [radixReady, setRadixReady] = useState(false)
+
+  useEffect(() => {
+    setRadixReady(true)
+  }, [])
 
   const isAdminContext = context === 'admin' || context === 'partner' || context === 'university'
+  const homeHref =
+    context === 'host' ? '/host' : isAdminContext ? '/admin' : '/dashboard'
 
   const isChatThreadRoute =
     pathname === '/chat' || (pathname?.startsWith('/chat/') ?? false)
+  const isHostMessagesRoute =
+    pathname === '/host/messages' || (pathname?.startsWith('/host/messages') ?? false)
   const hideTopBarOnMobileForChat =
-    !isAdminContext && activeMobileConversation && isChatThreadRoute
+    !isAdminContext && activeMobileConversation && (isChatThreadRoute || isHostMessagesRoute)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -228,7 +240,7 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
     }
     if (result.type === 'match' || result.type === 'user') return User
     if (result.type === 'message') return MessageCircle
-    if (result.type === 'housing') return Building2
+    if (result.type === 'housing') return House
     return Search
   }
 
@@ -245,7 +257,7 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
       <div className="flex flex-wrap items-center w-full px-3 sm:px-4 lg:px-6 py-3 gap-3 md:gap-4 max-w-7xl mx-auto">
         {/* Logo - Visible on all screens now that sidebar is gone */}
         <Link
-          href={isAdminContext ? '/admin' : '/dashboard'}
+          href={homeHref}
           className="order-1 flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0"
         >
           <div className="relative h-8 w-8 flex-shrink-0">
@@ -375,6 +387,8 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
 
         {/* Right side - Actions */}
         <div className="order-2 sm:order-3 ml-auto flex items-center gap-1.5 sm:gap-3 md:gap-4 flex-shrink-0">
+          {!isAdminContext && isFeatureEnabled('housing') && <HousingNavMenu />}
+
           <div className="text-zinc-400 hover:text-white transition-colors">
             <NotificationBell userId={user.id} />
           </div>
@@ -422,6 +436,25 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
                   </>
                 )
 
+                const betaLabel = (
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-300 dark:to-purple-300 sm:text-xs">
+                    Beta
+                  </span>
+                )
+
+                if (!radixReady) {
+                  return (
+                    <button
+                      type="button"
+                      className={pillClassName}
+                      aria-label="Beta program"
+                      disabled
+                    >
+                      {betaLabel}
+                    </button>
+                  )
+                }
+
                 return (
                   <>
                     {/* Desktop: hover affordance */}
@@ -429,9 +462,7 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
                       <HoverCard openDelay={180} closeDelay={120}>
                         <HoverCardTrigger asChild>
                           <button type="button" className={pillClassName} aria-label="Beta program - hover for details">
-                            <span className="text-[11px] font-bold uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-300 dark:to-purple-300 sm:text-xs">
-                              Beta
-                            </span>
+                            {betaLabel}
                           </button>
                         </HoverCardTrigger>
                         <HoverCardContent
@@ -453,9 +484,7 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
                       <Popover>
                         <PopoverTrigger asChild>
                           <button type="button" className={pillClassName} aria-label="Beta program - tap for details">
-                            <span className="text-[11px] font-bold uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-300 dark:to-purple-300 sm:text-xs">
-                              Beta
-                            </span>
+                            {betaLabel}
                           </button>
                         </PopoverTrigger>
                         <PopoverContent
@@ -478,7 +507,10 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
             </>
           )}
 
-          <UserDropdown user={user} />
+          <UserDropdown
+            user={user}
+            settingsHref={context === 'host' ? '/host/settings' : '/settings'}
+          />
         </div>
       </div>
     </motion.header>

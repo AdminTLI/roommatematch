@@ -31,6 +31,10 @@ import {
 import { PasswordStrengthIndicator } from '@/components/auth/password-strength-indicator'
 import { AccountBannedDialog } from '@/components/auth/account-banned-dialog'
 import { ACCOUNT_BANNED_CODE } from '@/lib/auth/banned-emails'
+import {
+  getSafeAppRedirectPath,
+  POST_VERIFY_REDIRECT_KEY,
+} from '@/lib/auth/app-url'
 import type { UserType } from '@/types/profile'
 
 const glassCardClass =
@@ -38,13 +42,32 @@ const glassCardClass =
 const inputClass =
   'pl-10 min-h-[44px] bg-white/60 border-white/70 text-slate-900 placeholder:text-slate-500 focus-visible:ring-slate-900/20'
 
-export function SignUpForm({ userType }: { userType?: UserType | null }) {
+type SignUpFormProps = {
+  userType?: UserType | null
+  /** After email OTP, send the user here (e.g. /host/onboarding). */
+  redirectAfterVerify?: string
+  /** Host / alternate signup framing */
+  title?: string
+  subtitle?: string
+  signupIntent?: 'host'
+}
+
+export function SignUpForm({
+  userType,
+  redirectAfterVerify,
+  title,
+  subtitle,
+  signupIntent,
+}: SignUpFormProps) {
   const { dictionary } = useApp()
   const t = dictionary.auth.signUp as (typeof import('@/app/(i18n)/en').en)['auth']['signUp'] & {
     modalTitle?: string
     dobUnderage?: string
     goHome?: string
   }
+  const safeRedirectAfterVerify = redirectAfterVerify
+    ? getSafeAppRedirectPath(redirectAfterVerify, '/host/onboarding')
+    : null
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -136,6 +159,8 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
           lastName: lastName.trim(),
           dateOfBirth,
           userType: userType === 'student' || userType === 'professional' ? userType : null,
+          signupIntent: signupIntent === 'host' ? 'host' : null,
+          redirectAfterVerify: safeRedirectAfterVerify,
           acceptTerms: true,
           confirmAge: true,
         }),
@@ -193,7 +218,18 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
       }
 
       sessionStorage.setItem('verification-email', email.trim())
-      router.push(`/auth/verify-email?email=${encodeURIComponent(email.trim())}&auto=1`)
+      if (safeRedirectAfterVerify) {
+        sessionStorage.setItem(POST_VERIFY_REDIRECT_KEY, safeRedirectAfterVerify)
+      }
+
+      const verifyParams = new URLSearchParams({
+        email: email.trim(),
+        auto: '1',
+      })
+      if (safeRedirectAfterVerify) {
+        verifyParams.set('redirect', safeRedirectAfterVerify)
+      }
+      router.push(`/auth/verify-email?${verifyParams.toString()}`)
     } catch (err) {
       console.error('[SignUp] Unexpected error:', err)
       setError('An unexpected error occurred. Please try again.')
@@ -207,10 +243,10 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
       <div className={glassCardClass}>
         <div className="text-center px-4 sm:px-6 pt-6 sm:pt-6">
           <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">
-            {t.title}
+            {title ?? t.title}
           </h2>
           <p className="mt-1 text-sm sm:text-base text-slate-700">
-            {t.subtitle}
+            {subtitle ?? t.subtitle}
           </p>
         </div>
         <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 pt-6">
@@ -405,7 +441,14 @@ export function SignUpForm({ userType }: { userType?: UserType | null }) {
 
           <p className="text-center text-xs sm:text-sm text-slate-700">
             {t.haveAccount}{' '}
-            <Link href="/auth/sign-in" className="text-blue-700 font-semibold hover:underline">
+            <Link
+              href={
+                signupIntent === 'host'
+                  ? '/auth/sign-in?redirect=/host/onboarding'
+                  : '/auth/sign-in'
+              }
+              className="text-blue-700 font-semibold hover:underline"
+            >
               {t.signInLink}
             </Link>
           </p>

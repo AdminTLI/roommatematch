@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Listing } from '@/types/housing'
-import { ListingCard } from './ListingCard'
+import { DiscoverListingCard } from './DiscoverListingCard'
 import { ListSkeleton } from './Skeletons'
 import { EmptyState } from './EmptyState'
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,8 @@ interface ListPaneProps {
   hasFilters: boolean
   savedListings: Set<string>
   highlightedId?: string
+  /** list = 3-col showcase on desktop; split = compact beside map */
+  layout?: 'list' | 'split'
   className?: string
 }
 
@@ -44,6 +46,7 @@ export function ListPane({
   hasFilters,
   savedListings,
   highlightedId,
+  layout = 'list',
   className = ''
 }: ListPaneProps) {
   const [retryCount, setRetryCount] = useState(0)
@@ -104,15 +107,19 @@ export function ListPane({
   // Show listings
   return (
     <div className={className}>
-      {/* Results count */}
-      <div className="mb-4 text-sm text-gray-600">
-        {listings.length} {listings.length === 1 ? 'listing' : 'listings'} found
+      <div className="mb-4 text-sm font-medium text-ink-500">
+        {listings.length} {listings.length === 1 ? 'place' : 'places'} ranked for you
       </div>
 
-      {/* Listings grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        className={
+          layout === 'list'
+            ? 'grid auto-rows-fr grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7'
+            : 'grid auto-rows-fr grid-cols-1 items-stretch gap-4 xl:grid-cols-2'
+        }
+      >
         {listings.map((listing, index) => (
-          <ListingCard
+          <DiscoverListingCard
             key={listing.id}
             listing={listing}
             onHover={onHover}
@@ -121,27 +128,18 @@ export function ListPane({
             onReport={onReport}
             isSaved={savedListings.has(listing.id)}
             isHighlighted={highlightedId === listing.id}
-            imagePriority={index < 2}
+            imagePriority={index < (layout === 'list' ? 3 : 2)}
+            imageShowcase={layout === 'list'}
           />
         ))}
       </div>
 
-      {/* Loading more indicator */}
       {isLoading && listings.length > 0 && (
         <div className="mt-6 flex justify-center">
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-ink-500">
             <RefreshCw className="h-4 w-4 animate-spin" />
-            <span>Loading more listings...</span>
+            <span>Refreshing…</span>
           </div>
-        </div>
-      )}
-
-      {/* Load more button (for pagination) */}
-      {!isLoading && listings.length > 0 && (
-        <div className="mt-8 flex justify-center">
-          <Button variant="outline" onClick={() => {/* TODO: Implement pagination */}}>
-            Load more listings
-          </Button>
         </div>
       )}
     </div>

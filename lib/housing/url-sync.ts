@@ -23,6 +23,15 @@ export function filtersToSearchParams(filters: FiltersState): URLSearchParams {
   if (filters.city) {
     params.set('city', filters.city)
   }
+  if (filters.address) {
+    params.set('address', filters.address)
+  }
+  if (filters.lat !== undefined) {
+    params.set('lat', filters.lat.toString())
+  }
+  if (filters.lng !== undefined) {
+    params.set('lng', filters.lng.toString())
+  }
   if (filters.radiusKm !== undefined) {
     params.set('radiusKm', filters.radiusKm.toString())
   }
@@ -98,11 +107,11 @@ export function filtersToSearchParams(filters: FiltersState): URLSearchParams {
     params.set('lifestyleTags', filters.lifestyleTags.join(','))
   }
 
-  // View and sort
-  if (filters.sort) {
+  // View and sort — omit defaults so /housing stays clean
+  if (filters.sort && filters.sort !== 'best') {
     params.set('sort', filters.sort)
   }
-  if (filters.view) {
+  if (filters.view && filters.view !== 'split') {
     params.set('view', filters.view)
   }
 
@@ -137,6 +146,20 @@ export function searchParamsToFilters(params: URLSearchParams): FiltersState {
   const city = params.get('city')
   if (city) {
     filters.city = city
+  }
+  const address = params.get('address')
+  if (address) {
+    filters.address = address
+  }
+  const lat = params.get('lat')
+  if (lat) {
+    const parsed = parseFloat(lat)
+    if (Number.isFinite(parsed)) filters.lat = parsed
+  }
+  const lng = params.get('lng')
+  if (lng) {
+    const parsed = parseFloat(lng)
+    if (Number.isFinite(parsed)) filters.lng = parsed
   }
   const radiusKm = params.get('radiusKm')
   if (radiusKm) {
@@ -258,11 +281,9 @@ export function searchParamsToFilters(params: URLSearchParams): FiltersState {
 
 export function getDefaultFilters(): FiltersState {
   return {
-    minCompatibility: 70,
-    universityVerifiedOnly: false,
     sort: 'best',
     view: 'split',
-    page: 1
+    page: 1,
   }
 }
 
@@ -274,6 +295,9 @@ export function hasActiveFilters(filters: FiltersState): boolean {
     filters.priceMin !== undefined ||
     filters.priceMax !== undefined ||
     filters.city !== undefined ||
+    filters.address !== undefined ||
+    filters.lat !== undefined ||
+    filters.lng !== undefined ||
     filters.radiusKm !== undefined ||
     filters.moveInFrom !== undefined ||
     filters.moveInTo !== undefined ||

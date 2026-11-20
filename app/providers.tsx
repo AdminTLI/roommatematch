@@ -12,3 +12,4 @@
 export { useApp } from '@/app/app-context'
 export { queryClient } from '@/app/query-client'
 export { queryKeys } from '@/app/query-keys'
+export { chatHousingContextKey } from '@/lib/chat/fetch-chat-housing-context'

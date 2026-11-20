@@ -189,6 +189,7 @@ export async function middleware(req: NextRequest) {
         '/api/account/activity', // Session heartbeat; auth required in route
         '/api/account/presence', // Online presence ping; auth required in route (no CSRF header)
         '/api/unsubscribe', // Token-authenticated; users arrive from email without session/CSRF
+        '/api/privacy/consent', // Cookie banner; must work for anonymous visitors (no CSRF cookie/token yet)
       ]
       // Normalize pathname (remove trailing slash) for consistent matching
       const normalizedPathname = pathname.replace(/\/$/, '')
@@ -238,6 +239,7 @@ export async function middleware(req: NextRequest) {
     '/forum',
     '/notifications',
     '/housing',
+    '/host',
     '/move-in',
     '/reputation',
     '/safety',
@@ -630,6 +632,7 @@ export async function middleware(req: NextRequest) {
 
   // Feature flag gating for housing and move-in routes
   // Only check admin status for routes that need it
+  // /host is available to authenticated hosts even when student housing browse is flagged off
   if (user && (pathname.startsWith('/housing') || pathname.startsWith('/move-in'))) {
     // Check if feature is enabled
     const featureKey = pathname.startsWith('/housing') ? 'housing' : 'move_in'

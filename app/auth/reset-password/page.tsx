@@ -1,6 +1,8 @@
+import { Suspense } from 'react'
 import { ResetPasswordForm } from '@/components/auth/reset-password-form'
 import { AuthWrapperLight } from '@/app/auth/components/auth-wrapper-light'
 import { Metadata } from 'next'
+import { Loader2 } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Reset Password | Domu Match',
@@ -45,7 +47,16 @@ export default function ResetPasswordPage() {
           {/* Right: form */}
           <div className="mx-auto w-full max-w-md">
             <div className="rounded-3xl border border-white/60 bg-white/50 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] p-6 sm:p-8">
-              <ResetPasswordForm />
+              <Suspense
+                fallback={
+                  <div className="flex flex-col items-center gap-3 py-10 text-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500" aria-hidden />
+                    <p className="text-sm text-slate-700">Loading…</p>
+                  </div>
+                }
+              >
+                <ResetPasswordForm />
+              </Suspense>
             </div>
           </div>
         </div>

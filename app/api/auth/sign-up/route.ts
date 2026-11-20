@@ -29,6 +29,8 @@ const SignUpBodySchema = z.object({
   lastName: z.string().min(1).max(100),
   dateOfBirth: z.string().min(1),
   userType: z.enum(['student', 'professional']).optional().nullable(),
+  signupIntent: z.enum(['host']).optional().nullable(),
+  redirectAfterVerify: z.string().max(200).optional().nullable(),
   acceptTerms: z.literal(true),
   confirmAge: z.literal(true),
 })
@@ -128,6 +130,15 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_APP_URL ||
       'http://localhost:3000'
 
+    const { getSafeAppRedirectPath } = await import('@/lib/auth/app-url')
+    const isHostSignup = body.signupIntent === 'host'
+    const postVerifyPath = isHostSignup
+      ? getSafeAppRedirectPath(body.redirectAfterVerify, '/host/onboarding')
+      : null
+    const emailRedirectTo = postVerifyPath
+      ? `${origin}/auth/verify-email?redirect=${encodeURIComponent(postVerifyPath)}`
+      : `${origin}/auth/verify-email`
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password: body.password,
@@ -140,8 +151,9 @@ export async function POST(request: NextRequest) {
           ...(body.userType === 'student' || body.userType === 'professional'
             ? { user_type: body.userType }
             : {}),
+          ...(isHostSignup ? { signup_intent: 'host' } : {}),
         },
-        emailRedirectTo: `${origin}/auth/verify-email`,
+        emailRedirectTo,
       },
     })
 
@@ -174,6 +186,7 @@ export async function POST(request: NextRequest) {
         source: 'api/auth/sign-up',
         metadata: {
           user_type: body.userType ?? null,
+          signup_intent: body.signupIntent ?? null,
           academic_login: isAcademicEmail(email),
         },
         client: admin as any,

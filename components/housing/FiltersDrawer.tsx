@@ -1,348 +1,463 @@
-// Filters Drawer Component
-// Right-side drawer with comprehensive filter options
-
 'use client'
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
+import { useEffect, useId, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { AlertTriangle, X } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetDescription, 
-  SheetHeader, 
-  SheetTitle 
-} from '@/components/ui/sheet'
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { X, Euro, MapPin, Calendar, Home, Users, Shield } from 'lucide-react'
 import { FiltersState } from '@/types/housing'
+import { OptionChip } from './FilterPill'
+import { LocationFilterFields } from './LocationFilterFields'
 
 interface FiltersDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   filters: FiltersState
-  onFiltersChange: (filters: FiltersState) => void
+  onFiltersChange: (
+    filters: FiltersState | ((prev: FiltersState) => FiltersState)
+  ) => void
+}
+
+const ROOM_TYPES = [
+  { value: 'room' as const, label: 'Private room' },
+  { value: 'studio' as const, label: 'Studio' },
+  { value: 'apartment' as const, label: 'Apartment' },
+  { value: 'shared' as const, label: 'Shared house' },
+]
+
+const LEASE_OPTIONS = [
+  { value: 3, label: '3 months' },
+  { value: 6, label: '6 months' },
+  { value: 12, label: '12 months' },
+  { value: 24, label: '12+ months' },
+] as const
+
+const ACCESS_OPTIONS = [
+  { value: 'elevator' as const, label: 'Elevator' },
+  { value: 'stepFree' as const, label: 'Step-free' },
+  { value: 'groundFloor' as const, label: 'Ground floor' },
+]
+
+const QUIET_OPTIONS = [
+  { value: 'strict' as const, label: 'Strict' },
+  { value: 'normal' as const, label: 'Normal' },
+  { value: 'flexible' as const, label: 'Flexible' },
+]
+
+const CLEANLINESS_OPTIONS = [
+  { value: 1 as const, label: 'Relaxed' },
+  { value: 3 as const, label: 'Moderate' },
+  { value: 5 as const, label: 'Strict' },
+]
+
+const fieldClass =
+  'h-10 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-500/20 dark:border-white/10 dark:bg-white/5 dark:text-white'
+
+const currencyShellClass =
+  'flex h-10 w-full items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 transition focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-white/10 dark:bg-white/5'
+
+const currencyInputClass =
+  'h-full min-w-0 flex-1 bg-transparent text-sm text-ink-900 outline-none placeholder:text-ink-400 dark:text-white'
+
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description?: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="space-y-3 border-b border-zinc-100 py-6 last:border-b-0 dark:border-zinc-800">
+      <div>
+        <h3 className="text-sm font-medium text-ink-900 dark:text-white">
+          {title}
+        </h3>
+        {description ? (
+          <p className="mt-0.5 text-sm text-ink-500">{description}</p>
+        ) : null}
+      </div>
+      {children}
+    </section>
+  )
 }
 
 export function FiltersDrawer({
   open,
   onOpenChange,
   filters,
-  onFiltersChange
+  onFiltersChange,
 }: FiltersDrawerProps) {
-  const [localFilters, setLocalFilters] = useState<FiltersState>(filters)
+  const titleId = useId()
+  const descriptionId = useId()
+  const [local, setLocal] = useState<FiltersState>(filters)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (open) setLocal(filters)
+  }, [open, filters])
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onOpenChange(false)
+    }
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open, onOpenChange])
+
+  const update = <K extends keyof FiltersState>(
+    key: K,
+    value: FiltersState[K]
+  ) => {
+    setLocal((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const toggleArray = <K extends 'roomTypes' | 'leaseMonths' | 'accessibility'>(
+    key: K,
+    value: NonNullable<FiltersState[K]>[number]
+  ) => {
+    setLocal((prev) => {
+      const current = (prev[key] as unknown[] | undefined) || []
+      const next = current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value]
+      return {
+        ...prev,
+        [key]: next.length ? next : undefined,
+      }
+    })
+  }
 
   const handleApply = () => {
-    onFiltersChange(localFilters)
+    onFiltersChange(local)
     onOpenChange(false)
   }
 
   const handleClear = () => {
-    const clearedFilters: FiltersState = {
-      sort: 'best',
-      view: 'split',
-      page: 1
-    }
-    setLocalFilters(clearedFilters)
+    setLocal({
+      sort: filters.sort || 'best',
+      view: filters.view || 'split',
+      page: 1,
+    })
   }
 
-  const handleReset = () => {
-    setLocalFilters(filters)
-  }
+  if (!mounted || !open) return null
 
-  const updateFilter = (key: keyof FiltersState, value: any) => {
-    setLocalFilters(prev => ({ ...prev, [key]: value }))
-  }
+  return createPortal(
+    <div className="fixed inset-0 z-[1400]" role="presentation">
+      <button
+        type="button"
+        aria-label="Close filters"
+        className="absolute inset-0 bg-zinc-950/40 backdrop-blur-[2px]"
+        onClick={() => onOpenChange(false)}
+      />
 
-  const toggleArrayFilter = (key: keyof FiltersState, value: any) => {
-    const currentArray = (localFilters[key] as any[]) || []
-    const newArray = currentArray.includes(value)
-      ? currentArray.filter(item => item !== value)
-      : [...currentArray, value]
-    updateFilter(key, newArray)
-  }
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        data-state="open"
+        className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-950"
+      >
+        <div className="relative shrink-0 space-y-1 border-b border-zinc-100 px-5 py-5 pr-12 dark:border-zinc-800 sm:px-6 sm:pr-14">
+          <h2
+            id={titleId}
+            className="text-lg font-semibold tracking-tight text-ink-900 dark:text-white"
+          >
+            Filters
+          </h2>
+          <p id={descriptionId} className="text-sm text-ink-500">
+            Narrow results to places that fit how you live
+          </p>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => onOpenChange(false)}
+            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full text-ink-500 transition hover:bg-zinc-100 hover:text-ink-900 dark:hover:bg-white/10 dark:hover:text-white sm:right-4 sm:top-4"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Filter Listings
-          </SheetTitle>
-          <SheetDescription>
-            Refine your search to find the perfect place
-          </SheetDescription>
-        </SheetHeader>
-
-        <div className="space-y-6 py-6">
-          {/* Price Range */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Euro className="h-4 w-4" />
-              Price Range (€/month)
-            </Label>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 sm:px-6">
+          <Section title="Budget" description="Monthly rent in euros">
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="priceMin" className="text-xs text-gray-500">Min</Label>
-                <Input
-                  id="priceMin"
-                  type="number"
-                  placeholder="0"
-                  value={localFilters.priceMin || ''}
-                  onChange={(e) => updateFilter('priceMin', e.target.value ? parseInt(e.target.value) : undefined)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="priceMax" className="text-xs text-gray-500">Max</Label>
-                <Input
-                  id="priceMax"
-                  type="number"
-                  placeholder="2000"
-                  value={localFilters.priceMax || ''}
-                  onChange={(e) => updateFilter('priceMax', e.target.value ? parseInt(e.target.value) : undefined)}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Location
-            </Label>
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  placeholder="e.g., Amsterdam"
-                  value={localFilters.city || ''}
-                  onChange={(e) => updateFilter('city', e.target.value || undefined)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="radius">Radius (km)</Label>
-                <Slider
-                  value={[localFilters.radiusKm || 5]}
-                  onValueChange={([value]) => updateFilter('radiusKm', value)}
-                  max={50}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="text-xs text-gray-500 text-center">
-                  {localFilters.radiusKm || 5} km
+              <label className="space-y-1.5">
+                <span className="text-sm text-ink-500">Min</span>
+                <div className={currencyShellClass}>
+                  <span className="shrink-0 text-sm text-ink-400">€</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    placeholder="0"
+                    value={local.priceMin ?? ''}
+                    onChange={(e) =>
+                      update(
+                        'priceMin',
+                        e.target.value ? parseInt(e.target.value, 10) : undefined
+                      )
+                    }
+                    className={currencyInputClass}
+                  />
                 </div>
-              </div>
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-sm text-ink-500">Max</span>
+                <div className={currencyShellClass}>
+                  <span className="shrink-0 text-sm text-ink-400">€</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    placeholder="Any"
+                    value={local.priceMax ?? ''}
+                    onChange={(e) =>
+                      update(
+                        'priceMax',
+                        e.target.value ? parseInt(e.target.value, 10) : undefined
+                      )
+                    }
+                    className={currencyInputClass}
+                  />
+                </div>
+              </label>
             </div>
-          </div>
+          </Section>
 
-          {/* Move-in Date */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Move-in Date
-            </Label>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="moveInFrom" className="text-xs text-gray-500">From</Label>
-                <Input
-                  id="moveInFrom"
-                  type="date"
-                  value={localFilters.moveInFrom || ''}
-                  onChange={(e) => updateFilter('moveInFrom', e.target.value || undefined)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="moveInTo" className="text-xs text-gray-500">To</Label>
-                <Input
-                  id="moveInTo"
-                  type="date"
-                  value={localFilters.moveInTo || ''}
-                  onChange={(e) => updateFilter('moveInTo', e.target.value || undefined)}
-                />
-              </div>
-            </div>
-          </div>
+          <Section
+            title="Location"
+            description="Pick a city, or search a Dutch address"
+          >
+            <LocationFilterFields
+              city={local.city}
+              address={local.address}
+              radiusKm={local.radiusKm ?? 5}
+              onCityChange={(next) => update('city', next)}
+              onAddressChange={(next) => {
+                setLocal((prev) => ({
+                  ...prev,
+                  address: next,
+                  ...(next ? {} : { lat: undefined, lng: undefined }),
+                }))
+              }}
+              onAddressResolved={(resolved) => {
+                setLocal((prev) => ({
+                  ...prev,
+                  address: resolved.addressLine || prev.address,
+                  city: resolved.city || prev.city,
+                  lat: resolved.latitude ?? undefined,
+                  lng: resolved.longitude ?? undefined,
+                }))
+              }}
+              onRadiusChange={(value) => update('radiusKm', value)}
+            />
+          </Section>
 
-          {/* Lease Length */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Lease Length</Label>
+          <Section title="Home type">
             <div className="flex flex-wrap gap-2">
-              {[3, 6, 12, 24].map(months => (
-                <Badge
-                  key={months}
-                  variant={localFilters.leaseMonths?.includes(months) ? "default" : "outline"}
-                  className="cursor-pointer"
-                  onClick={() => toggleArrayFilter('leaseMonths', months)}
+              {ROOM_TYPES.map((type) => (
+                <OptionChip
+                  key={type.value}
+                  selected={Boolean(local.roomTypes?.includes(type.value))}
+                  onClick={() => toggleArray('roomTypes', type.value)}
                 >
-                  {months} months
-                </Badge>
+                  {type.label}
+                </OptionChip>
               ))}
             </div>
-          </div>
+          </Section>
 
-          {/* Room Types */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Home className="h-4 w-4" />
-              Room Type
-            </Label>
+          <Section title="Lease length">
+            <div className="flex flex-wrap gap-2">
+              {LEASE_OPTIONS.map((option) => (
+                <OptionChip
+                  key={option.value}
+                  selected={Boolean(local.leaseMonths?.includes(option.value))}
+                  onClick={() => toggleArray('leaseMonths', option.value)}
+                >
+                  {option.label}
+                </OptionChip>
+              ))}
+            </div>
+          </Section>
+
+          <Section title="Move-in dates">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="space-y-1.5">
+                <span className="text-sm text-ink-500">From</span>
+                <input
+                  type="date"
+                  value={local.moveInFrom ?? ''}
+                  onChange={(e) =>
+                    update('moveInFrom', e.target.value || undefined)
+                  }
+                  className={fieldClass}
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-sm text-ink-500">To</span>
+                <input
+                  type="date"
+                  value={local.moveInTo ?? ''}
+                  onChange={(e) =>
+                    update('moveInTo', e.target.value || undefined)
+                  }
+                  className={fieldClass}
+                />
+              </label>
+            </div>
+          </Section>
+
+          <Section title="Must-haves">
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  ['furnished', 'Furnished'],
+                  ['utilitiesIncluded', 'Utilities included'],
+                  ['petsAllowed', 'Pets allowed'],
+                  ['universityVerifiedOnly', 'Verified only'],
+                ] as const
+              ).map(([key, label]) => (
+                <OptionChip
+                  key={key}
+                  selected={Boolean(local[key])}
+                  onClick={() => update(key, local[key] ? undefined : true)}
+                >
+                  {label}
+                </OptionChip>
+              ))}
+            </div>
+          </Section>
+
+          <Section title="Accessibility">
+            <div className="flex flex-wrap gap-2">
+              {ACCESS_OPTIONS.map((option) => (
+                <OptionChip
+                  key={option.value}
+                  selected={Boolean(
+                    local.accessibility?.includes(option.value)
+                  )}
+                  onClick={() => toggleArray('accessibility', option.value)}
+                >
+                  {option.label}
+                </OptionChip>
+              ))}
+            </div>
+          </Section>
+
+          <Section
+            title="Compatibility"
+            description="Minimum lifestyle match with your profile"
+          >
             <div className="space-y-2">
-              {[
-                { value: 'room', label: 'Private Room' },
-                { value: 'studio', label: 'Studio' },
-                { value: 'apartment', label: 'Entire Apartment' }
-              ].map(roomType => (
-                <div key={roomType.value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={roomType.value}
-                    checked={localFilters.roomTypes?.includes(roomType.value as any) || false}
-                    onCheckedChange={(checked) => 
-                      checked 
-                        ? toggleArrayFilter('roomTypes', roomType.value)
-                        : toggleArrayFilter('roomTypes', roomType.value)
-                    }
-                  />
-                  <Label htmlFor={roomType.value} className="text-sm">
-                    {roomType.label}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Amenities */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Amenities</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                'wifi', 'heating', 'washing_machine', 'dishwasher',
-                'garden', 'balcony', 'elevator', 'parking'
-              ].map(amenity => (
-                <div key={amenity} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={amenity}
-                    checked={localFilters.accessibility?.includes(amenity as any) || false}
-                    onCheckedChange={(checked) => 
-                      checked 
-                        ? toggleArrayFilter('accessibility', amenity)
-                        : toggleArrayFilter('accessibility', amenity)
-                    }
-                  />
-                  <Label htmlFor={amenity} className="text-xs capitalize">
-                    {amenity.replace('_', ' ')}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* University Verified */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="universityVerified"
-                checked={localFilters.universityVerifiedOnly || false}
-                onCheckedChange={(checked) => updateFilter('universityVerifiedOnly', checked)}
-              />
-              <Label htmlFor="universityVerified" className="text-sm font-medium flex items-center gap-2">
-                <Shield className="h-4 w-4 text-green-600" />
-                University-Verified Only
-              </Label>
-            </div>
-          </div>
-
-          {/* Compatibility */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Compatibility
-            </Label>
-            <div>
-              <Label htmlFor="minCompatibility">Minimum Compatibility</Label>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-ink-500">Minimum match</span>
+                <span className="font-medium tabular-nums text-ink-900 dark:text-white">
+                  {local.minCompatibility ?? 70}%
+                </span>
+              </div>
               <Slider
-                value={[localFilters.minCompatibility || 70]}
-                onValueChange={([value]) => updateFilter('minCompatibility', value)}
-                max={100}
+                value={[local.minCompatibility ?? 70]}
+                onValueChange={([value]) => update('minCompatibility', value)}
                 min={0}
+                max={100}
                 step={5}
-                className="w-full"
               />
-              <div className="text-xs text-gray-500 text-center">
-                {localFilters.minCompatibility || 70}% match
+              {(local.minCompatibility ?? 70) < 50 ? (
+                <div
+                  role="status"
+                  className="flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+                >
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p>
+                    Your chances of being accepted reduce when the match is that
+                    low.
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          </Section>
+
+          <Section title="Lifestyle preferences">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm text-ink-500">Quiet hours</p>
+                <div className="flex flex-wrap gap-2">
+                  {QUIET_OPTIONS.map((option) => (
+                    <OptionChip
+                      key={option.value}
+                      selected={local.quietHours === option.value}
+                      onClick={() =>
+                        update(
+                          'quietHours',
+                          local.quietHours === option.value
+                            ? undefined
+                            : option.value
+                        )
+                      }
+                    >
+                      {option.label}
+                    </OptionChip>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-ink-500">Cleanliness</p>
+                <div className="flex flex-wrap gap-2">
+                  {CLEANLINESS_OPTIONS.map((option) => (
+                    <OptionChip
+                      key={option.value}
+                      selected={local.cleanlinessLevel === option.value}
+                      onClick={() =>
+                        update(
+                          'cleanlinessLevel',
+                          local.cleanlinessLevel === option.value
+                            ? undefined
+                            : option.value
+                        )
+                      }
+                    >
+                      {option.label}
+                    </OptionChip>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Lifestyle */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Lifestyle</Label>
-            <div className="space-y-2">
-              <div>
-                <Label htmlFor="quietHours">Quiet Hours</Label>
-                <Select
-                  value={localFilters.quietHours || ''}
-                  onValueChange={(value) => updateFilter('quietHours', value || undefined)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="strict">Strict (22:00-08:00)</SelectItem>
-                    <SelectItem value="normal">Normal (23:00-07:00)</SelectItem>
-                    <SelectItem value="flexible">Flexible</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="cleanlinessLevel">Cleanliness Level</Label>
-                <Select
-                  value={localFilters.cleanlinessLevel?.toString() || ''}
-                  onValueChange={(value) => updateFilter('cleanlinessLevel', value ? parseInt(value) : undefined)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Very relaxed</SelectItem>
-                    <SelectItem value="2">Relaxed</SelectItem>
-                    <SelectItem value="3">Moderate</SelectItem>
-                    <SelectItem value="4">Strict</SelectItem>
-                    <SelectItem value="5">Very strict</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+          </Section>
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex gap-3 pt-6 border-t">
-          <Button variant="outline" onClick={handleClear} className="flex-1">
-            Clear All
-          </Button>
-          <Button variant="outline" onClick={handleReset} className="flex-1">
-            Reset
-          </Button>
-          <Button onClick={handleApply} className="flex-1">
-            Apply Filters
-          </Button>
+        <div className="shrink-0 border-t border-zinc-100 bg-white px-5 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] dark:border-zinc-800 dark:bg-zinc-950 sm:px-6 sm:pb-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-sm font-medium text-ink-500 underline-offset-2 transition hover:text-ink-900 hover:underline dark:hover:text-white"
+            >
+              Clear all
+            </button>
+            <button
+              type="button"
+              onClick={handleApply}
+              className="ml-auto inline-flex h-11 flex-1 items-center justify-center rounded-full bg-indigo-500 px-5 text-sm font-medium text-white transition hover:bg-indigo-600 sm:flex-none sm:px-8"
+            >
+              Show places
+            </button>
+          </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </div>,
+    document.body
   )
 }

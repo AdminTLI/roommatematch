@@ -1,0 +1,11 @@
+@import 'leaflet/dist/leaflet.css';
+
+.domu-map-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-container {
+  font: inherit;
+  background: #eef2ff;
+}

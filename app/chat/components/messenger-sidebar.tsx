@@ -15,7 +15,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { MoreVertical, Archive, ArchiveRestore, Bell, BellOff, CheckCheck, RotateCcw } from 'lucide-react'
+import {
+  MoreVertical,
+  Archive,
+  ArchiveRestore,
+  Bell,
+  BellOff,
+  CheckCheck,
+  RotateCcw,
+  Plus,
+  MessageSquarePlus,
+  Users,
+} from 'lucide-react'
+import {
+  CreateConversationModal,
+  type CreateConversationMode,
+} from './create-conversation-modal'
+import { GroupInvitesEntry, GroupInvitesPanel } from './group-invites-sidebar-section'
 import { createClient } from '@/lib/supabase/client'
 import { fetchWithCSRF } from '@/lib/utils/fetch-with-csrf'
 import { queryKeys, queryClient } from '@/app/providers'
@@ -25,6 +41,12 @@ import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
 import { preferStableAvatarUrl } from '@/lib/avatars/stable-url'
 import { dedupeDirectChatsByPartner } from '@/lib/chat/dedupe-direct-chats'
+import { bumpChatInList } from '@/lib/chat/bump-chat-in-list'
+import {
+  DELETED_PROFILE_DISPLAY_NAME,
+  isAnonymizedDeletedProfile,
+  isDeletedPartnerLabel,
+} from '@/lib/chat/deleted-profile'
 import { VerifiedBadge } from '@/components/verification/verified-badge'
 
 interface ChatRoom {
@@ -48,6 +70,10 @@ interface ChatRoom {
   unreadCount: number
   isRecentlyMatched: boolean
   mostRecentMessageTime?: number
+  /** Present when this is a host↔applicant housing chat */
+  housingApplicationId?: string | null
+  housingListingTitle?: string | null
+  isHousingHostChat?: boolean
 }
 
 interface MessengerSidebarProps {
@@ -92,15 +118,22 @@ const formatMessageTime = (timestamp: string) => {
 export function MessengerSidebar({ user, onChatSelect, selectedChatId }: MessengerSidebarProps) {
   const router = useRouter()
   const supabase = createClient()
-  const [isMounted, setIsMounted] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
   const [showMuted, setShowMuted] = useState(false)
+  const [showGroupInvites, setShowGroupInvites] = useState(false)
   const [archivedChats, setArchivedChats] = useState<string[]>([])
   const [mutedChats, setMutedChats] = useState<string[]>([])
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false)
   const [isClearingReadReceipts, setIsClearingReadReceipts] = useState(false)
+  const [createModalMode, setCreateModalMode] = useState<CreateConversationMode | null>(null)
+  // Radix DropdownMenu useId mismatches under React 19.2 / Next 16 SSR.
+  const [radixReady, setRadixReady] = useState(false)
   /** Keep prior avatar URLs across refetches so signed tokens don't flash initials. */
   const stableAvatarByUserIdRef = useRef<Map<string, string>>(new Map())
+
+  useEffect(() => {
+    setRadixReady(true)
+  }, [])
 
   const stabilizeAvatar = useCallback((userId: string, next?: string) => {
     const prev = stableAvatarByUserIdRef.current.get(userId)
@@ -108,11 +141,6 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
     if (chosen) stableAvatarByUserIdRef.current.set(userId, chosen)
     else stableAvatarByUserIdRef.current.delete(userId)
     return chosen
-  }, [])
-
-  // Ensure component only renders DropdownMenu after hydration to avoid ID mismatch
-  useEffect(() => {
-    setIsMounted(true)
   }, [])
 
   // Load archived chats from localStorage and listen for changes
@@ -187,12 +215,26 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
   const handleViewArchived = () => {
     setShowArchived(true)
     setShowMuted(false)
+    setShowGroupInvites(false)
   }
 
   // Handle view muted chats
   const handleViewMuted = () => {
     setShowMuted(true)
     setShowArchived(false)
+    setShowGroupInvites(false)
+  }
+
+  const handleViewGroupInvites = () => {
+    setShowGroupInvites(true)
+    setShowArchived(false)
+    setShowMuted(false)
+  }
+
+  const handleBackToChats = () => {
+    setShowArchived(false)
+    setShowMuted(false)
+    setShowGroupInvites(false)
   }
 
   // Handle mark all chats as read
@@ -311,20 +353,26 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
     try {
       const { data: memberships } = await supabase
         .from('chat_members')
-        .select('chat_id, user_id, last_read_at')
+        .select('chat_id, user_id, last_read_at, joined_at')
         .eq('user_id', user.id)
 
       if (!memberships || memberships.length === 0) return []
 
       const chatIds = memberships.map(m => m.chat_id)
+      const myJoinedAtByChat = new Map<string, string>()
+      for (const m of memberships) {
+        if (m.chat_id && m.joined_at) {
+          myJoinedAtByChat.set(m.chat_id, m.joined_at)
+        }
+      }
       const { data: chatRooms } = await supabase
         .from('chats')
         .select(`
           *,
-          chat_members!inner(user_id, last_read_at)
+          chat_members!inner(user_id, last_read_at, joined_at)
         `)
         .in('id', chatIds)
-        .order('created_at', { ascending: false })
+        .order('updated_at', { ascending: false })
 
       if (!chatRooms) return []
 
@@ -454,15 +502,19 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
             try {
               const { data: fallbackProfiles, error: fallbackError } = await supabase
                 .from('profiles')
-                .select('user_id, first_name, last_name, avatar_id')
+                .select('user_id, first_name, last_name, avatar_id, program')
                 .in('user_id', Array.from(allUserIds))
 
               if (!fallbackError && fallbackProfiles) {
                 fallbackProfiles.forEach((profile: any) => {
                   if (profile?.user_id) {
+                    const deleted = isAnonymizedDeletedProfile(profile)
                     profilesMap.set(profile.user_id, {
                       ...profile,
-                      avatar_url: programmaticAvatarUrl(profile.avatar_id, profile.user_id),
+                      is_deleted: deleted || profile.is_deleted === true,
+                      avatar_url: deleted
+                        ? undefined
+                        : programmaticAvatarUrl(profile.avatar_id, profile.user_id),
                     })
                   }
                 })
@@ -531,20 +583,31 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
         ? chatsWithUserMessagesRaw 
         : new Set<string>()
       
-      const transformedChats: ChatRoom[] = chatRooms.map((room: any) => {
+      const transformedChats: ChatRoom[] = chatRooms.flatMap((room: any) => {
         const latestMessage = latestMessagesMap.get(room.id)
         // Get all messages for this chat to check if there are any user messages
         const allChatMessages = allMessagesMap.get(room.id) || []
         // Use the reliable check from the non-system messages query first, then fall back to checking fetched messages
         const hasUserMessages = chatsWithUserMessages.has(room.id) || 
                                 allChatMessages.some((msg: any) => msg.content !== systemGreeting)
-        const isRecentlyMatched = !hasUserMessages
 
         const otherParticipant = room.chat_members?.find((p: any) => p.user_id !== user.id)
         const otherProfile = otherParticipant ? profilesMap.get(otherParticipant.user_id) : null
+        const otherIsDeleted =
+          !room.is_group && isAnonymizedDeletedProfile(otherProfile)
+
+        // Deleted accounts with no prior conversation should not appear in New Matches
+        if (otherIsDeleted && !hasUserMessages) {
+          return []
+        }
+
+        // Groups belong in Chats, never in the New Matches strip
+        const isRecentlyMatched = !room.is_group && !hasUserMessages
 
         let participantName = 'User'
-        if (otherProfile) {
+        if (otherIsDeleted) {
+          participantName = DELETED_PROFILE_DISPLAY_NAME
+        } else if (otherProfile) {
           const firstName = otherProfile.first_name?.trim()
           const lastName = otherProfile.last_name?.trim()
           if (firstName && lastName) {
@@ -575,7 +638,12 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
         const useReactionPreview = Boolean(reactionSnap && reactionTime > lastMessageTime)
 
         let lastMessage: ChatRoom['lastMessage'] = undefined
-        let mostRecentMessageTime = room.created_at ? new Date(room.created_at).getTime() : 0
+        const createdAtMs = room.created_at ? new Date(room.created_at).getTime() : 0
+        const updatedAtMs = room.updated_at ? new Date(room.updated_at).getTime() : 0
+        const joinedAtRaw = myJoinedAtByChat.get(room.id)
+        const joinedAtMs = joinedAtRaw ? new Date(joinedAtRaw).getTime() : 0
+        // Rank by latest real activity: message, reaction, chat bump (e.g. join), or my join time
+        let mostRecentMessageTime = Math.max(createdAtMs, updatedAtMs, joinedAtMs, 0)
 
         if (useReactionPreview && reactionSnap) {
           const reactorProfile = profilesMap.get(reactionSnap.reactor_id)
@@ -609,23 +677,22 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
             created_at: lastMessageRaw.created_at,
           }
           mostRecentMessageTime = Math.max(mostRecentMessageTime, lastMessageTime)
-        } else {
-          mostRecentMessageTime = Math.max(
-            mostRecentMessageTime,
-            room.created_at ? new Date(room.created_at).getTime() : 0,
-          )
         }
 
-        return {
+        return [{
           id: room.id,
-          name: room.is_group ? `Group Chat` : participantName,
+          name: room.is_group
+            ? (typeof room.name === 'string' && room.name.trim() ? room.name.trim() : 'Group chat')
+            : participantName,
           type: room.is_group ? 'group' : 'individual',
           lastMessage,
           mostRecentMessageTime,
           participants: room.chat_members?.map((p: any) => {
             const profile = profilesMap.get(p.user_id)
             let fullName = 'User'
-            if (profile) {
+            if (p.user_id !== user.id && otherIsDeleted) {
+              fullName = DELETED_PROFILE_DISPLAY_NAME
+            } else if (profile) {
               const firstName = profile.first_name?.trim()
               const lastName = profile.last_name?.trim()
               if (firstName && lastName) {
@@ -640,18 +707,65 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
             return {
               id: p.user_id,
               name: fullName,
-              avatar: profile?.avatar_url || undefined,
+              avatar: otherIsDeleted && p.user_id !== user.id
+                ? undefined
+                : profile?.avatar_url || undefined,
               isOnline: false,
-              isVerified: Boolean(profile?.is_verified),
+              isVerified: otherIsDeleted && p.user_id !== user.id
+                ? false
+                : Boolean(profile?.is_verified),
             }
           }) || [],
           unreadCount: unreadMap.get(room.id) || 0,
-          isRecentlyMatched
-        }
+          isRecentlyMatched,
+          housingApplicationId: room.housing_application_id || null,
+          housingListingTitle: null,
+          isHousingHostChat: Boolean(room.housing_application_id),
+        }]
       })
 
-      let chatsWithPartners = transformedChats
-      const individualIds = transformedChats.filter((c) => c.type === 'individual').map((c) => c.id)
+      // Enrich housing chats with listing titles; keep host-side threads off the student inbox
+      const housingAppIds = [
+        ...new Set(
+          transformedChats
+            .map((c) => c.housingApplicationId)
+            .filter((id): id is string => Boolean(id))
+        ),
+      ]
+      let applicantOnlyChats = transformedChats
+      if (housingAppIds.length > 0) {
+        try {
+          const { data: housingApps } = await supabase
+            .from('housing_applications')
+            .select('id, user_id, housing_listings(title)')
+            .in('id', housingAppIds)
+          const titleByApp = new Map<string, string>()
+          const applicantByApp = new Map<string, string>()
+          for (const row of housingApps || []) {
+            applicantByApp.set(row.id, row.user_id)
+            const listing = row.housing_listings as { title?: string } | { title?: string }[] | null
+            const title = Array.isArray(listing)
+              ? listing[0]?.title
+              : listing?.title
+            if (title) titleByApp.set(row.id, title)
+          }
+          applicantOnlyChats = transformedChats.filter((chat) => {
+            if (!chat.housingApplicationId) return true
+            // Dual-role users: host-owned housing chats belong on /host/messages only
+            return applicantByApp.get(chat.housingApplicationId) === user.id
+          })
+          for (const chat of applicantOnlyChats) {
+            if (chat.housingApplicationId) {
+              chat.housingListingTitle = titleByApp.get(chat.housingApplicationId) || 'Housing'
+            }
+          }
+        } catch {
+          // Non-fatal — still show Host chip without title
+        }
+      }
+
+      let chatsWithPartners = applicantOnlyChats
+      const individualIds = applicantOnlyChats.filter((c) => c.type === 'individual').map((c) => c.id)
       if (individualIds.length > 0) {
         try {
           const pr = await fetchWithCSRF('/api/chat/privacy-state/batch', {
@@ -673,8 +787,18 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
               if (!snap?.partner_user_id || snap.partner_user_id === user.id) return chat
 
               const partnerId = snap.partner_user_id
-              const partnerName = snap.partner_display_name || chat.name
-              const partnerAvatar = snap.partner_avatar_url || undefined
+              const partnerDeleted =
+                isDeletedPartnerLabel(snap.partner_display_name) ||
+                isAnonymizedDeletedProfile(profilesMap.get(partnerId))
+              const partnerName = partnerDeleted
+                ? DELETED_PROFILE_DISPLAY_NAME
+                : snap.partner_display_name || chat.name
+              const partnerAvatar = partnerDeleted
+                ? undefined
+                : snap.partner_avatar_url || undefined
+              if (partnerDeleted) {
+                stableAvatarByUserIdRef.current.delete(partnerId)
+              }
               const hasPartner = chat.participants.some((p) => p.id === partnerId)
               const participants = hasPartner
                 ? chat.participants.map((p) =>
@@ -682,7 +806,8 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                       ? {
                           ...p,
                           name: partnerName || p.name,
-                          avatar: partnerAvatar || p.avatar,
+                          avatar: partnerDeleted ? undefined : partnerAvatar || p.avatar,
+                          isVerified: partnerDeleted ? false : p.isVerified,
                         }
                       : p,
                   )
@@ -693,7 +818,9 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                       name: partnerName,
                       avatar: partnerAvatar,
                       isOnline: false,
-                      isVerified: Boolean(profilesMap.get(partnerId)?.is_verified),
+                      isVerified: partnerDeleted
+                        ? false
+                        : Boolean(profilesMap.get(partnerId)?.is_verified),
                     },
                   ]
 
@@ -709,18 +836,37 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
         }
       }
 
-      // Drop broken 1:1 chats that only contain the current user (would render as "yourself")
+      // Drop broken 1:1 chats that only contain the current user (would render as "yourself"),
+      // and drop deleted partners with no prior conversation (they must not appear in New Matches).
       const usableChats = chatsWithPartners
         .filter((chat) => {
           if (chat.type !== 'individual') return true
-          return chat.participants.some((p) => p.id !== user.id)
+          const other = chat.participants.find((p) => p.id !== user.id)
+          if (!other) return false
+          if (
+            chat.isRecentlyMatched &&
+            (isDeletedPartnerLabel(chat.name) || isDeletedPartnerLabel(other.name))
+          ) {
+            return false
+          }
+          return true
         })
         .map((chat) => ({
           ...chat,
-          participants: chat.participants.map((p) => ({
-            ...p,
-            avatar: stabilizeAvatar(p.id, p.avatar),
-          })),
+          participants: chat.participants.map((p) => {
+            const deleted =
+              p.id !== user.id &&
+              (isDeletedPartnerLabel(p.name) ||
+                isAnonymizedDeletedProfile(profilesMap.get(p.id)))
+            if (deleted) {
+              stableAvatarByUserIdRef.current.delete(p.id)
+              return { ...p, avatar: undefined, isVerified: false }
+            }
+            return {
+              ...p,
+              avatar: stabilizeAvatar(p.id, p.avatar),
+            }
+          }),
         }))
 
       return dedupeDirectChatsByPartner(usableChats, user.id)
@@ -743,15 +889,129 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
     queryKey: chatsQueryKeys,
     queryFn: fetchChats,
     staleTime: 10_000,
-    refetchInterval: 15_000,
+    // Backup only — realtime + optimistic bumps should keep the list current
+    refetchInterval: 30_000,
   })
 
-  // Keep sidebar chat list fresh when new messages arrive.
+  const chatsRef = useRef(chats)
+  const selectedChatIdRef = useRef(selectedChatId)
+  useEffect(() => {
+    chatsRef.current = chats
+  }, [chats])
+  useEffect(() => {
+    selectedChatIdRef.current = selectedChatId
+  }, [selectedChatId])
+
+  const resolveSenderLabel = useCallback(
+    (chatId: string, senderId: string | undefined, fallback?: string) => {
+      if (senderId && senderId === user.id) return 'You'
+      const chat = chatsRef.current.find((c) => c.id === chatId)
+      if (chat) {
+        if (chat.type === 'group' && fallback) return fallback
+        const other = chat.participants.find((p) => p.id !== user.id)
+        if (other?.name) return other.name
+        if (fallback) return fallback
+        if (chat.name && chat.name !== 'User') return chat.name
+      }
+      return fallback || 'User'
+    },
+    [user.id],
+  )
+
+  const bumpFromIncomingMessage = useCallback(
+    (msg: {
+      chat_id?: string
+      user_id?: string
+      content?: string
+      created_at?: string
+    }) => {
+      if (!msg.chat_id || typeof msg.content !== 'string' || !msg.created_at) return
+      const isOwn = msg.user_id === user.id
+      bumpChatInList({
+        viewerUserId: user.id,
+        chatId: msg.chat_id,
+        content: msg.content,
+        senderLabel: resolveSenderLabel(msg.chat_id, msg.user_id),
+        createdAt: msg.created_at,
+        incrementUnread: !isOwn && selectedChatIdRef.current !== msg.chat_id,
+        markAsActiveConversation: true,
+        refetch: false,
+      })
+    },
+    [resolveSenderLabel, user.id],
+  )
+
+  const bumpFromChatNotification = useCallback(
+    (notification: {
+      type?: string
+      message?: string
+      created_at?: string
+      metadata?: { chat_id?: string; sender_name?: string; sender_id?: string }
+    }) => {
+      if (notification.type !== 'chat_message') return
+      const chatId = notification.metadata?.chat_id
+      if (!chatId) return
+
+      const raw = typeof notification.message === 'string' ? notification.message : ''
+      const colon = raw.indexOf(': ')
+      const senderFromBody = colon > 0 ? raw.slice(0, colon).trim() : ''
+      const contentFromBody = colon > 0 ? raw.slice(colon + 2) : raw
+
+      bumpChatInList({
+        viewerUserId: user.id,
+        chatId,
+        content: contentFromBody || 'New message',
+        senderLabel: resolveSenderLabel(
+          chatId,
+          notification.metadata?.sender_id,
+          senderFromBody || notification.metadata?.sender_name,
+        ),
+        createdAt: notification.created_at || new Date().toISOString(),
+        incrementUnread: selectedChatIdRef.current !== chatId,
+        markAsActiveConversation: true,
+        refetch: true,
+      })
+    },
+    [resolveSenderLabel, user.id],
+  )
+
+  // Instant left-pane reorder when messages arrive (postgres_changes backup path).
   useRealtimeInvalidation({
     table: 'messages',
     event: 'INSERT',
     queryKeys: chatsQueryKeys,
     enabled: !!user.id,
+    onPayload: (payload) => {
+      bumpFromIncomingMessage(
+        (payload.new || {}) as {
+          chat_id?: string
+          user_id?: string
+          content?: string
+          created_at?: string
+        },
+      )
+    },
+  })
+
+  // Notifications realtime is reliable even when messages postgres_changes lags —
+  // bump the thread to the top as soon as the toast/notification lands.
+  useRealtimeInvalidation({
+    table: 'notifications',
+    event: 'INSERT',
+    filter: `user_id=eq.${user.id}`,
+    queryKeys: [],
+    enabled: !!user.id,
+    invalidateQueries: false,
+    onPayload: (payload) => {
+      bumpFromChatNotification(
+        (payload.new || {}) as {
+          type?: string
+          message?: string
+          created_at?: string
+          metadata?: { chat_id?: string; sender_name?: string; sender_id?: string }
+        },
+      )
+    },
   })
 
   useRealtimeInvalidation({
@@ -844,10 +1104,12 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
     >()
     for (const u of onlineUsersList) {
       if (u?.id && u.id !== user.id) {
+        const displayName = (u.firstName || 'User').trim() || 'User'
+        if (isDeletedPartnerLabel(displayName)) continue
         const fromChat = avatarByUserId.get(u.id)
         map.set(u.id, {
           id: u.id,
-          displayName: (u.firstName || 'User').trim() || 'User',
+          displayName,
           avatar: preferStableAvatarUrl(fromChat, u.avatar) ?? fromChat ?? u.avatar,
           presence: u.presence === 'recent' ? 'recent' : 'online',
           isVerified: Boolean(u.isVerified) || verifiedByUserId.get(u.id) === true,
@@ -856,6 +1118,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
     }
     for (const u of onlineUsers) {
       if (u.id === user.id) continue
+      if (isDeletedPartnerLabel(u.name)) continue
       if (!map.has(u.id)) {
         const fromChat = avatarByUserId.get(u.id)
         map.set(u.id, {
@@ -925,11 +1188,20 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
     chat.participants.find((p) => p.id !== user.id) ?? null
 
   const recentlyMatchedChats = filteredChats
-    .filter((chat) => chat.isRecentlyMatched && !!getOtherParticipant(chat))
+    .filter((chat) => {
+      if (chat.type === 'group' || !chat.isRecentlyMatched) return false
+      const other = getOtherParticipant(chat)
+      if (!other) return false
+      // Never show anonymized/deleted accounts in New Matches
+      if (isDeletedPartnerLabel(chat.name) || isDeletedPartnerLabel(other.name)) {
+        return false
+      }
+      return true
+    })
     .sort((a, b) => (b.mostRecentMessageTime || 0) - (a.mostRecentMessageTime || 0))
 
   const activeConversations = filteredChats
-    .filter(chat => !chat.isRecentlyMatched)
+    .filter((chat) => chat.type === 'group' || !chat.isRecentlyMatched)
     .sort((a, b) => (b.mostRecentMessageTime || 0) - (a.mostRecentMessageTime || 0))
 
   const userName = user.name || user.email?.split('@')[0] || 'User'
@@ -939,24 +1211,86 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
       data-messenger-sidebar
       className="flex h-full w-full flex-col overflow-hidden bg-[hsl(var(--chat-bg-primary))]"
     >
-      {/* Current User Header */}
-      <div className="flex flex-shrink-0 items-center justify-between px-3 py-3">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Avatar className="w-10 h-10 flex-shrink-0">
+      {/* Current User Header — round + next to ⋮; title truncates on narrow screens */}
+      <div className="flex flex-shrink-0 items-center gap-2 px-3 py-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
+          <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src={undefined} />
             <AvatarFallback className="bg-purple-600 text-white">
               {userName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">My Messages</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{userName}</p>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+              My Messages
+            </p>
+            <p className="truncate text-xs text-gray-500 dark:text-gray-400">{userName}</p>
           </div>
         </div>
-        {isMounted ? (
+        <div className="flex shrink-0 items-center gap-0.5">
+          {radixReady ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-11 w-11 shrink-0 touch-manipulation p-0">
+              <Button
+                type="button"
+                size="sm"
+                aria-label="Create"
+                className="h-9 w-9 shrink-0 rounded-full bg-indigo-600 p-0 text-white shadow-md shadow-indigo-500/25 hover:bg-indigo-700 touch-manipulation"
+              >
+                <Plus className="h-5 w-5" strokeWidth={2.5} />
+                <span className="sr-only">Create</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-56 rounded-xl border border-zinc-200/90 bg-white p-1.5 text-zinc-900 shadow-[0_10px_30px_-6px_rgba(15,23,42,0.28),0_4px_10px_-4px_rgba(15,23,42,0.16)] ring-1 ring-black/5 dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-100 dark:shadow-[0_12px_32px_-6px_rgba(0,0,0,0.65)] dark:ring-white/10"
+            >
+              <DropdownMenuLabel className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Start something
+              </DropdownMenuLabel>
+              <DropdownMenuItem
+                className="cursor-pointer gap-2 rounded-lg py-2.5 focus:bg-zinc-100 dark:focus:bg-white/10"
+                onClick={() => setCreateModalMode('individual')}
+              >
+                <MessageSquarePlus className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <div className="flex flex-col">
+                  <span className="font-medium">New chat</span>
+                  <span className="text-[11px] text-zinc-500 dark:text-zinc-400">Message a mutual match</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer gap-2 rounded-lg py-2.5 focus:bg-zinc-100 dark:focus:bg-white/10"
+                onClick={() => setCreateModalMode('group')}
+              >
+                <Users className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <div className="flex flex-col">
+                  <span className="font-medium">New group</span>
+                  <span className="text-[11px] text-zinc-500 dark:text-zinc-400">Invite 2+ matches together</span>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          ) : (
+              <Button
+                type="button"
+                size="sm"
+                aria-label="Create"
+                disabled
+                className="h-9 w-9 shrink-0 rounded-full bg-indigo-600 p-0 text-white shadow-md shadow-indigo-500/25 touch-manipulation"
+              >
+                <Plus className="h-5 w-5" strokeWidth={2.5} />
+                <span className="sr-only">Create</span>
+              </Button>
+          )}
+          {radixReady ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 shrink-0 touch-manipulation p-0"
+              >
                 <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                 <span className="sr-only">More options</span>
               </Button>
@@ -982,11 +1316,8 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                   <span className="ml-auto text-xs text-gray-500">({mutedChats.length})</span>
                 )}
               </DropdownMenuItem>
-              {(showArchived || showMuted) && (
-                <DropdownMenuItem onClick={() => {
-                  setShowArchived(false)
-                  setShowMuted(false)
-                }}>
+              {(showArchived || showMuted || showGroupInvites) && (
+                <DropdownMenuItem onClick={handleBackToChats}>
                   <ArchiveRestore className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-400" />
                   Back to Active Chats
                 </DropdownMenuItem>
@@ -1026,22 +1357,56 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-        ) : (
-          <Button variant="ghost" size="sm" className="h-11 w-11 shrink-0 p-0" disabled>
-            <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-            <span className="sr-only">More options</span>
-          </Button>
-        )}
+          ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled
+                className="h-9 w-9 shrink-0 touch-manipulation p-0"
+                aria-label="More options"
+              >
+                <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                <span className="sr-only">More options</span>
+              </Button>
+          )}
+        </div>
       </div>
 
+      <CreateConversationModal
+        isOpen={createModalMode !== null}
+        mode={createModalMode || 'individual'}
+        user={user}
+        onClose={() => setCreateModalMode(null)}
+        onCreated={(chatId) => {
+          setCreateModalMode(null)
+          queryClient.invalidateQueries({ queryKey: queryKeys.chats(user.id) })
+          onChatSelect(chatId)
+        }}
+      />
+
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 scrollbar-visible">
-        {/* View Header (when viewing archived or muted) */}
-        {(showArchived || showMuted) && (
-          <div className="px-4 py-3 bg-[hsl(var(--chat-active-fill))]/60 dark:bg-violet-950/30">
+      <div
+        className={cn(
+          'min-h-0 flex-1 scrollbar-visible',
+          showGroupInvites ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'
+        )}
+      >
+        {/* View Header (archived / muted / group invites) */}
+        {(showArchived || showMuted || showGroupInvites) && (
+          <div
+            className={cn(
+              'shrink-0 px-4 py-3',
+              !showGroupInvites && 'bg-[hsl(var(--chat-active-fill))]/60 dark:bg-violet-950/30'
+            )}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {showArchived ? (
+                {showGroupInvites ? (
+                  <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    Group Invites
+                  </h2>
+                ) : showArchived ? (
                   <>
                     <Archive className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                     <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -1066,10 +1431,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setShowArchived(false)
-                  setShowMuted(false)
-                }}
+                onClick={handleBackToChats}
                 className="h-7 text-xs"
               >
                 Back
@@ -1078,8 +1440,26 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
           </div>
         )}
 
+        {showGroupInvites ? (
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <GroupInvitesPanel
+              userId={user.id}
+              onOpenGroup={(chatId) => {
+                setShowGroupInvites(false)
+                onChatSelect(chatId)
+              }}
+              className="min-h-full"
+            />
+          </div>
+        ) : null}
+
+        {/* Compact entry — opens dedicated invites list */}
+        {!showArchived && !showMuted && !showGroupInvites && (
+          <GroupInvitesEntry onOpen={handleViewGroupInvites} />
+        )}
+
         {/* Stories-style online row */}
-        {!showArchived && !showMuted && (
+        {!showArchived && !showMuted && !showGroupInvites && (
           <div className="px-3 py-3">
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Active now
@@ -1136,7 +1516,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
         )}
 
         {/* Recently matched — horizontal scroll */}
-        {!showArchived && !showMuted && recentlyMatchedChats.length > 0 && (
+        {!showArchived && !showMuted && !showGroupInvites && recentlyMatchedChats.length > 0 && (
           <div className="px-3 pb-3">
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
               New matches ({recentlyMatchedChats.length})
@@ -1185,6 +1565,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
         )}
 
         {/* Messages list — tonal hover cards */}
+        {!showGroupInvites && (
         <div className="px-2 pb-3">
           <div className="flex items-center justify-between px-1 py-2">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -1227,6 +1608,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                 const isArchivedRow = archivedChats.includes(chat.id)
                 const partnerId = otherParticipant?.id
                 const unread = chat.unreadCount > 0 && !isArchivedRow ? chat.unreadCount : 0
+                const isHousing = Boolean(chat.isHousingHostChat)
                 const rowName =
                   chat.type === 'group'
                     ? chat.name
@@ -1248,16 +1630,30 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                       className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-3 pr-2 text-left touch-manipulation"
                     >
                       <div className="relative shrink-0">
-                        <Avatar className="h-11 w-11">
-                          <AvatarImage src={otherParticipant?.avatar} alt="" />
-                          <AvatarFallback
-                            delayMs={otherParticipant?.avatar ? 400 : 0}
-                            className="bg-purple-600 text-white"
+                        {chat.type === 'group' ? (
+                          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-600 text-white">
+                            <Users className="h-5 w-5" aria-hidden />
+                          </div>
+                        ) : (
+                          <Avatar
+                            className={cn(
+                              'h-11 w-11',
+                              isHousing && 'ring-2 ring-indigo-300/90 dark:ring-indigo-500/40'
+                            )}
                           >
-                            {rowName.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        {partnerId && onlineIdSet.has(partnerId) ? (
+                            <AvatarImage src={otherParticipant?.avatar} alt="" />
+                            <AvatarFallback
+                              delayMs={otherParticipant?.avatar ? 400 : 0}
+                              className={cn(
+                                'text-white',
+                                isHousing ? 'bg-indigo-600' : 'bg-purple-600'
+                              )}
+                            >
+                              {rowName.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        {chat.type !== 'group' && partnerId && onlineIdSet.has(partnerId) ? (
                           <span
                             className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-white bg-[#10B981] dark:ring-slate-900"
                             aria-hidden
@@ -1270,21 +1666,38 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
                             <p className="min-w-0 truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
                               {rowName}
                             </p>
-                            {chat.type !== 'group' ? (
+                            {chat.type === 'group' ? (
+                              <span className="shrink-0 rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
+                                Group
+                              </span>
+                            ) : isHousing ? (
+                              <span className="shrink-0 rounded-full bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">
+                                Host
+                              </span>
+                            ) : (
                               <VerifiedBadge
                                 verified={otherParticipant?.isVerified}
                                 size="sm"
                                 className="shrink-0"
                               />
-                            ) : null}
+                            )}
                           </div>
                           {isArchivedRow ? <Archive className="h-3.5 w-3.5 shrink-0 text-gray-400" aria-hidden /> : null}
-                          {chat.lastMessage ? (
+                          {(chat.lastMessage || chat.mostRecentMessageTime) ? (
                             <span className="shrink-0 text-[10px] tabular-nums text-gray-500 dark:text-gray-400">
-                              {formatMessageTime(chat.lastMessage.created_at || chat.lastMessage.timestamp)}
+                              {formatMessageTime(
+                                chat.lastMessage?.created_at ||
+                                  chat.lastMessage?.timestamp ||
+                                  new Date(chat.mostRecentMessageTime || 0).toISOString()
+                              )}
                             </span>
                           ) : null}
                         </div>
+                        {isHousing ? (
+                          <p className="mb-0.5 line-clamp-1 text-[11px] font-medium text-indigo-600/90 dark:text-indigo-300/90">
+                            Housing · {chat.housingListingTitle || 'Listing'}
+                          </p>
+                        ) : null}
                         {chat.lastMessage ? (
                           <p className="line-clamp-1 text-xs text-gray-600 dark:text-gray-400">
                             {chat.lastMessage.sender ? `${chat.lastMessage.sender}: ` : ''}
@@ -1347,6 +1760,7 @@ export function MessengerSidebar({ user, onChatSelect, selectedChatId }: Messeng
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
   )

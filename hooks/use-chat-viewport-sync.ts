@@ -1,9 +1,16 @@
 'use client'
 
+/** Mobile chat keyboard / visual-viewport sync (thread shell uses 100dvh, not vv.height). */
 import { useLayoutEffect, type RefObject } from 'react'
 
 const MOBILE_MAX = 1023
 const MIN_CHAT_HEIGHT = 220
+/** Bust stale Turbopack client cache after keyboard shell fix. */
+const CHAT_VIEWPORT_SYNC_REV = 'thread-v2'
+/** Ignore sub-pixel / toolbar noise when estimating an overlay keyboard. */
+const KB_INSET_FLOOR = 48
+/** If layout height already tracks the visual viewport, interactive-widget resized us. */
+const LAYOUT_RESIZED_SLOP = 48
 
 function resetMobileLayoutScroll() {
   if (typeof window === 'undefined') return
@@ -17,18 +24,48 @@ function isMobileThreadLayout() {
   return document.body.classList.contains('mobile-chat-active-conversation')
 }
 
-function publishViewportVars(root: HTMLElement, vv: VisualViewport) {
+/**
+ * Overlay-keyboard gap below the visual viewport (layout coords).
+ * When `interactive-widget: resizes-content` is active, layout already shrank and this is ~0.
+ */
+function overlayKeyboardInsetPx(vv: VisualViewport): number {
+  const innerH = window.innerHeight || 0
+  const clientH =
+    document.documentElement?.clientHeight && document.documentElement.clientHeight > 0
+      ? document.documentElement.clientHeight
+      : innerH
+  const layoutH = Math.max(innerH, clientH)
+  if (layoutH <= 0) return 0
+
+  // Layout already matches the visual viewport → do not add a second keyboard inset.
+  if (Math.abs(layoutH - vv.height) <= LAYOUT_RESIZED_SLOP) return 0
+
+  const obscured = Math.max(0, Math.round(layoutH - vv.offsetTop - vv.height))
+  if (obscured < KB_INSET_FLOOR) return 0
+
+  // Cap so a stuck offsetTop cannot collapse the thread to a sliver.
+  return Math.min(obscured, Math.round(layoutH * 0.55))
+}
+
+function publishListViewportVars(root: HTMLElement, vv: VisualViewport) {
   const measured = Math.round(vv.height)
   if (measured > 0) {
-    root.style.setProperty('--vv-height', `${measured}px`)
     root.style.setProperty('--chat-visual-vh', `${measured}px`)
   }
-
-  // Intentionally do not publish --vv-top / --kb-inset for chat.
-  // Translating by offsetTop or fixing the composer with keyboard inset double-counts the
-  // keyboard against an already-resized visual viewport and blanks the thread on iOS.
-  root.style.setProperty('--vv-top', '0px')
   root.style.setProperty('--kb-inset', '0px')
+  root.style.removeProperty('--vv-height')
+  root.style.setProperty('--vv-top', '0px')
+}
+
+function publishThreadViewportVars(root: HTMLElement, vv: VisualViewport) {
+  // Active thread uses CSS 100dvh / inset:0 — never publish vv.height as the shell height.
+  // Sizing body/[data-chat-page] to vv.height while offsetTop > 0 parks the UI above the
+  // visible viewport (blank white/dark page) on iOS Chrome and some Safari builds.
+  root.style.removeProperty('--vv-height')
+  root.style.removeProperty('--chat-visual-vh')
+  root.style.setProperty('--vv-top', '0px')
+  root.style.setProperty('--kb-inset', `${overlayKeyboardInsetPx(vv)}px`)
+  root.dataset.chatViewportSync = 'thread-v3'
 }
 
 function clearViewportVars(root: HTMLElement) {
@@ -39,8 +76,10 @@ function clearViewportVars(root: HTMLElement) {
 }
 
 /**
- * Publishes `--vv-height` (and zeros `--vv-top` / `--kb-inset`) for mobile chat keyboard handling.
- * Also sizes the chat list column when not in an active thread (inline height on `containerRef`).
+ * Mobile chat viewport sync:
+ * - Chat list: size the column to the visual viewport (browser chrome).
+ * - Open thread: keep a full-bleed in-flow/fixed shell on 100dvh; only publish `--kb-inset`
+ *   when the keyboard overlays without resizing the layout (no vv.height shell shrink).
  */
 export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | null>) {
   useLayoutEffect(() => {
@@ -65,13 +104,19 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
           return
         }
 
-        publishViewportVars(root, vv)
-
         if (isMobileThreadLayout()) {
+          // If iOS scrolled the layout/visual viewport while focusing the composer, pin back
+          // to the top so a fixed full-bleed shell stays on-screen (without translating by offsetTop).
+          if (vv.offsetTop > 0 || window.scrollY > 0 || document.documentElement.scrollTop > 0) {
+            resetMobileLayoutScroll()
+          }
+          publishThreadViewportVars(root, vv)
           node.style.removeProperty('height')
           node.style.removeProperty('max-height')
           return
         }
+
+        publishListViewportVars(root, vv)
 
         const rect = node.getBoundingClientRect()
         const visualBottom = vv.offsetTop + vv.height
@@ -92,7 +137,7 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
 
     const focusSyncTimers = new Set<number>()
     const scheduleFocusResync = () => {
-      const delays = [40, 90, 160, 260, 380, 520, 700, 920, 1200]
+      const delays = [50, 120, 240, 400, 650, 900]
       for (const delay of delays) {
         const timer = window.setTimeout(() => {
           focusSyncTimers.delete(timer)
@@ -113,11 +158,17 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
       if (!el.contains(target)) return
 
       clearFocusResyncTimers()
-      resetMobileLayoutScroll()
-      sync()
-      window.setTimeout(sync, 80)
-      window.setTimeout(sync, 250)
-      window.setTimeout(sync, 500)
+      // After the keyboard closes, pin scroll and resync inset — do not fight focus-open.
+      window.setTimeout(() => {
+        resetMobileLayoutScroll()
+        sync()
+      }, 0)
+      window.setTimeout(sync, 120)
+      window.setTimeout(sync, 320)
+      window.setTimeout(() => {
+        resetMobileLayoutScroll()
+        sync()
+      }, 520)
     }
 
     const onFocusIn = (ev: FocusEvent) => {
@@ -126,7 +177,7 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
       if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT') return
       if (!el.contains(target)) return
 
-      resetMobileLayoutScroll()
+      // Do not scrollTo(0) here — it races Safari/Chrome keyboard scroll and blanks the thread.
       sync()
       requestAnimationFrame(sync)
       scheduleFocusResync()
@@ -176,3 +227,7 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
     }
   }, [containerRef])
 }
+
+
+
+

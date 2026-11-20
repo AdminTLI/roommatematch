@@ -29,6 +29,7 @@ import {
   clearNotificationInvalidateSuppress,
   shouldSuppressNotificationInvalidate,
 } from '@/lib/notifications/invalidate-suppress'
+import { hrefForNotification } from '@/lib/notifications/live-toast'
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -266,26 +267,12 @@ export function NotificationDropdown({
           router.push('/verify?from=settings&redirect=/settings')
           break
         case 'housing_update':
-          router.push('/housing')
-          break
         case 'agreement_update':
-          router.push('/agreements')
-          break
         case 'safety_alert':
-          router.push('/safety')
-          break
         case 'system_announcement':
         case 'admin_alert':
-          if (typeof meta.link === 'string' && meta.link.startsWith('/')) {
-            router.push(meta.link)
-          } else if (meta.report_status) {
-            router.push('/safety')
-          } else {
-            router.push('/notifications')
-          }
-          break
         default:
-          router.push('/notifications')
+          router.push(hrefForNotification(notification))
       }
     },
     [onClose, queryClient, removeThreadFromCache, router]

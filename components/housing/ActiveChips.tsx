@@ -1,111 +1,171 @@
-// Active Filter Chips Component
-// Shows dismissible chips for active filters with clear all option
-
 'use client'
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { X, Trash2 } from 'lucide-react'
+import { X } from 'lucide-react'
 import { FiltersState } from '@/types/housing'
+import {
+  formatNlDateShort,
+  formatPriceRangeLabel,
+} from '@/lib/housing/format'
 
 interface ActiveChipsProps {
   filters: FiltersState
-  onFiltersChange: (filters: FiltersState) => void
+  onFiltersChange: (
+    filters: FiltersState | ((prev: FiltersState) => FiltersState)
+  ) => void
   onClearAll: () => void
+  selectedCampusId?: string
+  campusName?: string
+  onCampusClear?: () => void
+  searchQuery?: string
+  onSearchClear?: () => void
 }
 
-export function ActiveChips({ filters, onFiltersChange, onClearAll }: ActiveChipsProps) {
-  const chips = []
+type Chip = {
+  key: string
+  label: string
+  onRemove: () => void
+}
 
-  // Search query
-  if (filters.q) {
+export function ActiveChips({
+  filters,
+  onFiltersChange,
+  onClearAll,
+  selectedCampusId,
+  campusName,
+  onCampusClear,
+  searchQuery,
+  onSearchClear,
+}: ActiveChipsProps) {
+  const chips: Chip[] = []
+
+  if (searchQuery?.trim()) {
+    chips.push({
+      key: 'q',
+      label: `"${searchQuery.trim()}"`,
+      onRemove: () => {
+        onSearchClear?.()
+        onFiltersChange({ ...filters, q: undefined })
+      },
+    })
+  } else if (filters.q) {
     chips.push({
       key: 'q',
       label: `"${filters.q}"`,
-      onRemove: () => onFiltersChange({ ...filters, q: undefined })
+      onRemove: () => onFiltersChange({ ...filters, q: undefined }),
     })
   }
 
-  // Price range
   if (filters.priceMin !== undefined || filters.priceMax !== undefined) {
-    const min = filters.priceMin || 0
-    const max = filters.priceMax || '∞'
     chips.push({
       key: 'price',
-      label: `€${min} - €${max}`,
-      onRemove: () => onFiltersChange({ 
-        ...filters, 
-        priceMin: undefined, 
-        priceMax: undefined 
-      })
+      label:
+        formatPriceRangeLabel(filters.priceMin, filters.priceMax) || 'Price',
+      onRemove: () =>
+        onFiltersChange({
+          ...filters,
+          priceMin: undefined,
+          priceMax: undefined,
+        }),
     })
   }
 
-  // City
+  if (selectedCampusId && campusName) {
+    chips.push({
+      key: 'campus',
+      label: campusName,
+      onRemove: () => onCampusClear?.(),
+    })
+  }
+
   if (filters.city) {
     chips.push({
       key: 'city',
       label: filters.city,
-      onRemove: () => onFiltersChange({ ...filters, city: undefined })
+      onRemove: () => onFiltersChange({ ...filters, city: undefined }),
     })
   }
 
-  // Radius
+  if (filters.address) {
+    chips.push({
+      key: 'address',
+      label: filters.address,
+      onRemove: () =>
+        onFiltersChange({
+          ...filters,
+          address: undefined,
+          lat: undefined,
+          lng: undefined,
+        }),
+    })
+  }
+
   if (filters.radiusKm !== undefined) {
     chips.push({
       key: 'radius',
-      label: `≤${filters.radiusKm}km`,
-      onRemove: () => onFiltersChange({ ...filters, radiusKm: undefined })
+      label: `Within ${filters.radiusKm} km`,
+      onRemove: () => onFiltersChange({ ...filters, radiusKm: undefined }),
     })
   }
 
-  // Move-in dates
   if (filters.moveInFrom || filters.moveInTo) {
-    const from = filters.moveInFrom ? new Date(filters.moveInFrom).toLocaleDateString() : 'Any'
-    const to = filters.moveInTo ? new Date(filters.moveInTo).toLocaleDateString() : 'Any'
+    let label = 'Move-in'
+    if (filters.moveInFrom && filters.moveInTo) {
+      label = `${formatNlDateShort(filters.moveInFrom)} – ${formatNlDateShort(filters.moveInTo)}`
+    } else if (filters.moveInFrom) {
+      label = `From ${formatNlDateShort(filters.moveInFrom)}`
+    } else if (filters.moveInTo) {
+      label = `Until ${formatNlDateShort(filters.moveInTo)}`
+    }
     chips.push({
       key: 'moveIn',
-      label: `Move-in: ${from} - ${to}`,
-      onRemove: () => onFiltersChange({ 
-        ...filters, 
-        moveInFrom: undefined, 
-        moveInTo: undefined 
-      })
+      label,
+      onRemove: () =>
+        onFiltersChange({
+          ...filters,
+          moveInFrom: undefined,
+          moveInTo: undefined,
+        }),
     })
   }
 
-  // Lease months
-  if (filters.leaseMonths && filters.leaseMonths.length > 0) {
+  if (filters.leaseMonths?.length) {
+    const leaseLabel = filters.leaseMonths
+      .map((months) => (months === 24 ? '12+' : String(months)))
+      .join(', ')
     chips.push({
       key: 'lease',
-      label: `${filters.leaseMonths.join(', ')} months`,
-      onRemove: () => onFiltersChange({ ...filters, leaseMonths: undefined })
+      label: `${leaseLabel} mo`,
+      onRemove: () => onFiltersChange({ ...filters, leaseMonths: undefined }),
     })
   }
 
-  // Room types
-  if (filters.roomTypes && filters.roomTypes.length > 0) {
-    const labels = filters.roomTypes.map(type => {
+  if (filters.roomTypes?.length) {
+    const labels = filters.roomTypes.map((type) => {
       switch (type) {
-        case 'room': return 'Private Room'
-        case 'studio': return 'Studio'
-        case 'apartment': return 'Apartment'
-        default: return type
+        case 'room':
+          return 'Private room'
+        case 'studio':
+          return 'Studio'
+        case 'apartment':
+          return 'Apartment'
+        case 'shared':
+          return 'Shared house'
+        default:
+          return type
       }
     })
     chips.push({
       key: 'roomTypes',
       label: labels.join(', '),
-      onRemove: () => onFiltersChange({ ...filters, roomTypes: undefined })
+      onRemove: () => onFiltersChange({ ...filters, roomTypes: undefined }),
     })
   }
 
-  // Boolean filters
   if (filters.furnished) {
     chips.push({
       key: 'furnished',
       label: 'Furnished',
-      onRemove: () => onFiltersChange({ ...filters, furnished: undefined })
+      onRemove: () => onFiltersChange({ ...filters, furnished: undefined }),
     })
   }
 
@@ -113,7 +173,8 @@ export function ActiveChips({ filters, onFiltersChange, onClearAll }: ActiveChip
     chips.push({
       key: 'utilities',
       label: 'Utilities included',
-      onRemove: () => onFiltersChange({ ...filters, utilitiesIncluded: undefined })
+      onRemove: () =>
+        onFiltersChange({ ...filters, utilitiesIncluded: undefined }),
     })
   }
 
@@ -121,85 +182,92 @@ export function ActiveChips({ filters, onFiltersChange, onClearAll }: ActiveChip
     chips.push({
       key: 'pets',
       label: 'Pets allowed',
-      onRemove: () => onFiltersChange({ ...filters, petsAllowed: undefined })
+      onRemove: () => onFiltersChange({ ...filters, petsAllowed: undefined }),
     })
   }
 
-  // Smoking policy
   if (filters.smokingPolicy) {
     const labels = {
       none: 'No smoking',
       outdoor: 'Outdoor smoking',
-      allowed: 'Smoking allowed'
+      allowed: 'Smoking allowed',
     }
     chips.push({
       key: 'smoking',
       label: labels[filters.smokingPolicy],
-      onRemove: () => onFiltersChange({ ...filters, smokingPolicy: undefined })
+      onRemove: () =>
+        onFiltersChange({ ...filters, smokingPolicy: undefined }),
     })
   }
 
-  // Accessibility
-  if (filters.accessibility && filters.accessibility.length > 0) {
-    const labels = filters.accessibility.map(acc => {
+  if (filters.accessibility?.length) {
+    const labels = filters.accessibility.map((acc) => {
       switch (acc) {
-        case 'elevator': return 'Elevator'
-        case 'stepFree': return 'Step-free'
-        case 'groundFloor': return 'Ground floor'
-        default: return acc
+        case 'elevator':
+          return 'Elevator'
+        case 'stepFree':
+          return 'Step-free'
+        case 'groundFloor':
+          return 'Ground floor'
+        default:
+          return acc
       }
     })
     chips.push({
       key: 'accessibility',
       label: labels.join(', '),
-      onRemove: () => onFiltersChange({ ...filters, accessibility: undefined })
+      onRemove: () =>
+        onFiltersChange({ ...filters, accessibility: undefined }),
     })
   }
 
-  // University verified
   if (filters.universityVerifiedOnly) {
     chips.push({
       key: 'verified',
-      label: 'University-verified',
-      onRemove: () => onFiltersChange({ ...filters, universityVerifiedOnly: undefined })
+      label: 'Verified only',
+      onRemove: () =>
+        onFiltersChange({ ...filters, universityVerifiedOnly: undefined }),
     })
   }
 
-  // Compatibility
-  if (filters.minCompatibility !== undefined && filters.minCompatibility !== 70) {
+  if (
+    filters.minCompatibility !== undefined &&
+    filters.minCompatibility !== 70
+  ) {
     chips.push({
       key: 'compatibility',
       label: `≥${filters.minCompatibility}% match`,
-      onRemove: () => onFiltersChange({ ...filters, minCompatibility: undefined })
+      onRemove: () =>
+        onFiltersChange({ ...filters, minCompatibility: undefined }),
     })
   }
 
-  // Lifestyle filters
   if (filters.quietHours) {
     const labels = {
       strict: 'Strict quiet hours',
       normal: 'Normal quiet hours',
-      flexible: 'Flexible quiet hours'
+      flexible: 'Flexible quiet hours',
     }
     chips.push({
       key: 'quietHours',
       label: labels[filters.quietHours],
-      onRemove: () => onFiltersChange({ ...filters, quietHours: undefined })
+      onRemove: () => onFiltersChange({ ...filters, quietHours: undefined }),
     })
   }
 
   if (filters.cleanlinessLevel) {
-    const labels = {
-      1: 'Very relaxed',
-      2: 'Relaxed',
-      3: 'Moderate',
-      4: 'Strict',
-      5: 'Very strict'
+    const labels: Record<number, string> = {
+      1: 'Relaxed cleanliness',
+      2: 'Relaxed cleanliness',
+      3: 'Moderate cleanliness',
+      4: 'Strict cleanliness',
+      5: 'Strict cleanliness',
     }
     chips.push({
       key: 'cleanliness',
-      label: `Cleanliness: ${labels[filters.cleanlinessLevel]}`,
-      onRemove: () => onFiltersChange({ ...filters, cleanlinessLevel: undefined })
+      label: labels[filters.cleanlinessLevel] || 'Cleanliness',
+      onRemove: () =>
+        onFiltersChange({ ...filters, cleanlinessLevel: undefined }),
     })
   }
 
@@ -207,62 +275,52 @@ export function ActiveChips({ filters, onFiltersChange, onClearAll }: ActiveChip
     const labels = {
       rare: 'Rare guests',
       occasional: 'Occasional guests',
-      frequent: 'Frequent guests'
+      frequent: 'Frequent guests',
     }
     chips.push({
       key: 'guests',
       label: labels[filters.guestPolicy],
-      onRemove: () => onFiltersChange({ ...filters, guestPolicy: undefined })
+      onRemove: () => onFiltersChange({ ...filters, guestPolicy: undefined }),
     })
   }
 
-  // Lifestyle tags
-  if (filters.lifestyleTags && filters.lifestyleTags.length > 0) {
+  if (filters.lifestyleTags?.length) {
     chips.push({
       key: 'lifestyle',
       label: filters.lifestyleTags.join(', '),
-      onRemove: () => onFiltersChange({ ...filters, lifestyleTags: undefined })
+      onRemove: () =>
+        onFiltersChange({ ...filters, lifestyleTags: undefined }),
     })
   }
 
-  if (chips.length === 0) {
-    return null
-  }
+  if (chips.length === 0) return null
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-sm text-gray-500 mr-2">Active filters:</span>
-      
+    <div className="flex flex-wrap items-center gap-2">
       {chips.map((chip) => (
-        <Badge
+        <button
           key={chip.key}
-          variant="secondary"
-          className="flex items-center gap-1 pr-1"
+          type="button"
+          onClick={chip.onRemove}
+          aria-label={`Remove ${chip.label} filter`}
+          className="group inline-flex h-8 max-w-full items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 pl-3 pr-2 text-sm text-ink-700 transition hover:border-zinc-300 hover:bg-zinc-100 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
         >
-          <span>{chip.label}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-4 w-4 p-0 hover:bg-transparent"
-            onClick={chip.onRemove}
-            aria-label={`Remove ${chip.label} filter`}
-          >
+          <span className="truncate">{chip.label}</span>
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-ink-400 transition group-hover:bg-zinc-200 group-hover:text-ink-700 dark:group-hover:bg-white/10 dark:group-hover:text-white">
             <X className="h-3 w-3" />
-          </Button>
-        </Badge>
+          </span>
+        </button>
       ))}
-      
-      {chips.length > 1 && (
-        <Button
-          variant="ghost"
-          size="sm"
+
+      {chips.length > 1 ? (
+        <button
+          type="button"
           onClick={onClearAll}
-          className="text-gray-500 hover:text-gray-700 flex items-center gap-1"
+          className="h-8 px-2 text-sm font-medium text-ink-500 transition hover:text-ink-900 dark:hover:text-white"
         >
-          <Trash2 className="h-3 w-3" />
           Clear all
-        </Button>
-      )}
+        </button>
+      ) : null}
     </div>
   )
 }

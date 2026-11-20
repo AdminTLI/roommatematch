@@ -16,6 +16,28 @@ export function getAppBaseUrl(): string {
   return base
 }
 
+/** Session key for post-email-verification destination (e.g. host onboarding). */
+export const POST_VERIFY_REDIRECT_KEY = 'post-verify-redirect'
+
+/**
+ * Only allow same-origin relative paths (open-redirect safe).
+ * Rejects protocol-relative URLs, absolute URLs, and auth loops.
+ */
+export function getSafeAppRedirectPath(
+  value: string | null | undefined,
+  fallback = '/dashboard'
+): string {
+  if (!value) return fallback
+  const path = value.trim()
+  if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\')) {
+    return fallback
+  }
+  if (path.includes('://') || path.toLowerCase().includes('javascript:')) {
+    return fallback
+  }
+  return path
+}
+
 /** Server-side OAuth/email callback used by Supabase Auth (PKCE `code` exchange). */
 export function getAuthCallbackUrl(redirectPath: string): string {
   return `${getAppBaseUrl()}/auth/callback?redirect=${encodeURIComponent(redirectPath)}`

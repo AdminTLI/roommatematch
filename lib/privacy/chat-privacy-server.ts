@@ -2,6 +2,10 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { createServiceClient } from '@/lib/supabase/service'
 import type { ChatPrivacySnapshot, ProfileAccessFlags } from '@/lib/privacy/profile-access-types'
 import { programmaticAvatarUrl } from '@/lib/avatars/programmatic'
+import {
+  DELETED_PROFILE_DISPLAY_NAME,
+  isAnonymizedDeletedProfile,
+} from '@/lib/chat/deleted-profile'
 
 /** In-process cache so warm instances reuse signed photo URLs across chat refetches. */
 const signedPhotoCache = new Map<string, { url: string; expiresAt: number }>()
@@ -17,6 +21,14 @@ function partnerDisplayName(params: {
   firstName: string | null
   lastName: string | null
 }): string {
+  if (
+    isAnonymizedDeletedProfile({
+      first_name: params.firstName,
+      last_name: params.lastName,
+    })
+  ) {
+    return DELETED_PROFILE_DISPLAY_NAME
+  }
   const first = params.firstName?.trim() || ''
   const last = params.lastName?.trim() || ''
   if (first && last) return `${first} ${last}`
@@ -43,7 +55,11 @@ export async function resolvePairMatchId(
 }
 
 export async function ensureProfileAccessRows(admin: SupabaseClient, chatId: string): Promise<void> {
-  const { data: chat, error: chatErr } = await admin.from('chats').select('id, is_group, match_id').eq('id', chatId).maybeSingle()
+  const { data: chat, error: chatErr } = await admin
+    .from('chats')
+    .select('id, is_group, match_id, housing_application_id')
+    .eq('id', chatId)
+    .maybeSingle()
   if (chatErr || !chat || chat.is_group) return
 
   const { data: members, error: memErr } = await admin.from('chat_members').select('user_id').eq('chat_id', chatId)
@@ -52,8 +68,11 @@ export async function ensureProfileAccessRows(admin: SupabaseClient, chatId: str
   const a = members[0]!.user_id as string
   const b = members[1]!.user_id as string
 
-  let matchId: string | null = chat.match_id ?? null
-  if (!matchId) {
+  // Host↔applicant rooms must stay unlinked from roommate match_id / pair history
+  const isHousingChat = Boolean(chat.housing_application_id)
+
+  let matchId: string | null = isHousingChat ? null : chat.match_id ?? null
+  if (!isHousingChat && !matchId) {
     matchId = await resolvePairMatchId(admin, a, b)
     if (matchId) {
       await admin.from('chats').update({ match_id: matchId }).eq('id', chatId)
@@ -173,6 +192,10 @@ export async function getChatPrivacySnapshot(
     partner_picture_signed_url ?? programmaticAvatarUrl(partnerProfile?.avatar_id, partnerUserId)
 
   const cnt = Number(chat.messages_exchanged_count ?? 0)
+  const partnerIsDeleted = isAnonymizedDeletedProfile({
+    first_name: partnerProfile?.first_name ?? null,
+    last_name: partnerProfile?.last_name ?? null,
+  })
 
   return {
     chat_id: chatId,
@@ -181,12 +204,12 @@ export async function getChatPrivacySnapshot(
     show_reveal_prompt: false,
     viewer,
     partner: peerRevealFlags,
-    mutual_details,
-    mutual_picture,
+    mutual_details: partnerIsDeleted ? false : mutual_details,
+    mutual_picture: partnerIsDeleted ? false : mutual_picture,
     viewer_has_uploaded_picture,
-    partner_has_uploaded_picture,
-    partner_avatar_url,
-    partner_picture_signed_url,
+    partner_has_uploaded_picture: partnerIsDeleted ? false : partner_has_uploaded_picture,
+    partner_avatar_url: partnerIsDeleted ? null : partner_avatar_url,
+    partner_picture_signed_url: partnerIsDeleted ? null : partner_picture_signed_url,
     partner_display_name: partnerDisplayName({
       firstName: partnerProfile?.first_name ?? null,
       lastName: partnerProfile?.last_name ?? null,

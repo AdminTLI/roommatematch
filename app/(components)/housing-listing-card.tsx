@@ -25,6 +25,7 @@ import {
 import { HousingListingWithCompatibility } from '@/lib/housing/types'
 import { HousingUtils } from '@/lib/housing/utils'
 import { formatCompatibilityScore, getCompatibilityLabel } from '@/lib/utils'
+import { formatNlDate } from '@/lib/housing/format'
 import Image from 'next/image'
 
 interface HousingListingCardProps {
@@ -306,7 +307,7 @@ export function HousingListingCard({
           </div>
           
           <div className="text-xs text-gray-500">
-            Listed {new Date(listing.created_at).toLocaleDateString()}
+            Listed {formatNlDate(listing.created_at) || listing.created_at}
           </div>
         </div>
       </CardContent>

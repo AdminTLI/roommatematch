@@ -6,6 +6,8 @@ import { createNotificationsForUsers, createNotification } from '@/lib/notificat
 import { calculateGroupCompatibility } from '@/lib/group-compatibility/calculator'
 import { checkRateLimit, getUserRateLimitKey } from '@/lib/rate-limit'
 import { getMaxGroupMembers, getPlatformSettings } from '@/lib/platform-settings'
+import { ensurePairwiseAmongActiveMembers } from '@/lib/chat/ensure-group-pairwise'
+import { sendGroupInviteDirectMessages } from '@/lib/chat/send-group-invite-dms'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +22,10 @@ export async function POST(request: NextRequest) {
     const maxGroupMembers = getMaxGroupMembers(platformSettings)
     const maxOtherMembers = maxGroupMembers - 1
 
-    const { member_ids, name, group_intent, context_message } = await request.json()
+    const { member_ids, name, description, group_intent, context_message } = await request.json()
+
+    const groupDescription =
+      typeof description === 'string' ? description.trim().slice(0, 500) || null : null
     
     if (!member_ids || !Array.isArray(member_ids) || member_ids.length < 2) {
       return NextResponse.json({ error: 'At least 2 members required for group chat' }, { status: 400 })
@@ -72,48 +77,55 @@ export async function POST(request: NextRequest) {
 
     const admin = await createAdminClient()
     
-    // Verify creator is matched with each invitee (required)
+    // Verify creator has a relationship with each invitee: pair suggestion (not declined),
+    // locked match, or an existing 1:1 chat (covers pending matches you already message).
     for (const inviteeId of uniqueMemberIds) {
-      // Check for confirmed match suggestion
-      const { data: confirmedSuggestion } = await admin
+      const { data: pairSuggestions } = await admin
         .from('match_suggestions')
-        .select('id')
-        .eq('status', 'confirmed')
+        .select('id, status, member_ids')
+        .eq('kind', 'pair')
+        .neq('status', 'declined')
         .contains('member_ids', [user.id, inviteeId])
-        .maybeSingle()
-      
-      // Check for locked match record
+
+      const hasPairSuggestion = (pairSuggestions || []).some((row) => {
+        const members = (row.member_ids || []) as string[]
+        return members.includes(user.id) && members.includes(inviteeId)
+      })
+
       const { data: lockedMatch } = await admin
         .from('match_records')
         .select('id')
         .eq('locked', true)
         .contains('user_ids', [user.id, inviteeId])
         .maybeSingle()
-    
-      // If no confirmed match found and not admin, reject
-      if (!confirmedSuggestion && !lockedMatch && !isAdmin) {
+
+      let hasSharedDm = false
+      if (!hasPairSuggestion && !lockedMatch) {
+        const { data: myChats } = await admin
+          .from('chat_members')
+          .select('chat_id')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+
+        const myChatIds = (myChats || []).map((c) => c.chat_id)
+        if (myChatIds.length > 0) {
+          const { data: shared } = await admin
+            .from('chat_members')
+            .select('chat_id, chats!inner(id, is_group)')
+            .eq('user_id', inviteeId)
+            .in('chat_id', myChatIds)
+            .eq('chats.is_group', false)
+            .limit(1)
+          hasSharedDm = Boolean(shared && shared.length > 0)
+        }
+      }
+
+      if (!hasPairSuggestion && !lockedMatch && !hasSharedDm && !isAdmin) {
         return NextResponse.json(
           { error: `You must be matched with all group members. You are not matched with one of the selected members.` },
           { status: 403 }
         )
       }
-    }
-
-    // Verify all invitees are verified users
-    const { data: inviteeProfiles } = await admin
-      .from('profiles')
-      .select('user_id, verification_status')
-      .in('user_id', uniqueMemberIds)
-
-    const unverifiedUsers = inviteeProfiles?.filter(
-      p => p.verification_status !== 'verified'
-    ) || []
-
-    if (unverifiedUsers.length > 0 && !isAdmin) {
-      return NextResponse.json(
-        { error: 'All group members must be verified users' },
-        { status: 403 }
-      )
     }
 
     // Set lock expiration (72 hours from now)
@@ -127,6 +139,7 @@ export async function POST(request: NextRequest) {
         is_group: true, 
         created_by: user.id,
         name: name || null,
+        description: groupDescription,
         group_intent: group_intent || 'general',
         invitation_status: 'inviting',
         is_locked: true,
@@ -181,29 +194,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const invitationIdByInvitee = new Map(
-      (createdInvitations || []).map((row) => [row.invitee_id as string, row.id as string])
-    )
-
-    // Add invitees as 'invited' members (they'll become 'active' when they accept)
-    const invitedMembers = uniqueMemberIds.map((inviteeId) => ({
-      chat_id: chatId,
-      user_id: inviteeId,
-      status: 'invited',
-      invitation_id: invitationIdByInvitee.get(inviteeId) || null
-    }))
-
-    const { error: invitedMembersErr } = await admin
-      .from('chat_members')
-      .insert(invitedMembers)
-
-    if (invitedMembersErr) {
-      safeLogger.error('Failed to add invited members', { error: invitedMembersErr, chatId })
-      return NextResponse.json(
-        { error: `Failed to add invited members: ${invitedMembersErr.message}` },
-        { status: 500 }
-      )
-    }
+    // Consent-first: do NOT insert invitees into chat_members until they accept.
+    // Invitations alone track pending consent; RLS requires active membership for messages.
 
     // Calculate initial compatibility score
     try {
@@ -213,59 +205,13 @@ export async function POST(request: NextRequest) {
       // Don't fail - compatibility can be calculated later
     }
 
-    // Check for existing matches between invitees and create pairwise match records
-    // Only create records for pairs that don't already have confirmed matches
-    const pairwiseMatches: Array<{ user_a_id: string; user_b_id: string }> = []
-    
-    // Generate all pairs (excluding creator since they're already matched with everyone)
-    for (let i = 0; i < uniqueMemberIds.length; i++) {
-      for (let j = i + 1; j < uniqueMemberIds.length; j++) {
-        const userA = uniqueMemberIds[i]
-        const userB = uniqueMemberIds[j]
-        
-        // Ensure consistent ordering (smaller ID first)
-        const userAId = userA < userB ? userA : userB
-        const userBId = userA < userB ? userB : userA
-        
-        // Check if they already have a confirmed match
-        const { data: existingMatch } = await admin
-          .from('match_suggestions')
-          .select('id')
-          .eq('status', 'confirmed')
-          .contains('member_ids', [userAId, userBId])
-          .maybeSingle()
-        
-        const { data: existingLockedMatch } = await admin
-          .from('match_records')
-          .select('id')
-          .eq('locked', true)
-          .contains('user_ids', [userAId, userBId])
-          .maybeSingle()
-        
-        // If no existing match, create a pending pairwise match record
-        if (!existingMatch && !existingLockedMatch) {
-          pairwiseMatches.push({ user_a_id: userAId, user_b_id: userBId })
-        }
-      }
-    }
-
-    // Create pairwise match records for pairs that need matching
-    if (pairwiseMatches.length > 0) {
-      const pairwiseRecords = pairwiseMatches.map(pair => ({
-        chat_id: chatId,
-        user_a_id: pair.user_a_id,
-        user_b_id: pair.user_b_id,
-        status: 'pending'
-      }))
-
-      const { error: pairwiseErr } = await admin
-        .from('group_pairwise_matches')
-        .insert(pairwiseRecords)
-
-      if (pairwiseErr) {
-        safeLogger.warn('Failed to create pairwise matches', { error: pairwiseErr })
-        // Don't fail - this is not critical
-      }
+    // Seed pairwise rows for invitee pairs that are not already matched.
+    // As invitees accept, ensurePairwiseAmongActiveMembers adds any missing
+    // pairs among currently-active members so matching can start early.
+    try {
+      await ensurePairwiseAmongActiveMembers(admin, chatId, uniqueMemberIds)
+    } catch (pairwiseErr) {
+      safeLogger.warn('Failed to seed pairwise matches', { error: pairwiseErr })
     }
 
     // Get creator's name and find mutual connections
@@ -279,41 +225,26 @@ export async function POST(request: NextRequest) {
       ? [creatorProfile.first_name, creatorProfile.last_name].filter(Boolean).join(' ') || 'Someone'
       : 'Someone'
 
-    // Get mutual connections for each invitee
+    // Count mutual matches among invitees — names stay private until the group unlocks
     const { data: allMatches } = await admin
       .from('match_suggestions')
       .select('member_ids')
       .eq('status', 'confirmed')
       .contains('member_ids', [user.id])
 
-    const mutualConnectionsMap = new Map<string, string[]>()
-    
+    const mutualCountMap = new Map<string, number>()
+
     for (const inviteeId of uniqueMemberIds) {
-      const mutual: string[] = []
-      // Find other invitees that this invitee is also matched with
+      let mutualCount = 0
       for (const otherInviteeId of uniqueMemberIds) {
         if (otherInviteeId === inviteeId) continue
-        
-        const hasMatch = allMatches?.some(m => {
+        const hasMatch = allMatches?.some((m) => {
           const memberIds = m.member_ids as string[]
           return memberIds.includes(inviteeId) && memberIds.includes(otherInviteeId)
         })
-        
-        if (hasMatch) {
-          // Get the other invitee's name
-          const { data: otherProfile } = await admin
-            .from('profiles')
-            .select('first_name, last_name')
-            .eq('user_id', otherInviteeId)
-            .maybeSingle()
-          
-          if (otherProfile) {
-            const otherName = [otherProfile.first_name, otherProfile.last_name].filter(Boolean).join(' ') || 'Someone'
-            mutual.push(otherName)
-          }
-        }
+        if (hasMatch) mutualCount += 1
       }
-      mutualConnectionsMap.set(inviteeId, mutual)
+      mutualCountMap.set(inviteeId, mutualCount)
     }
 
     // Get compatibility scores for invitation metadata
@@ -326,15 +257,16 @@ export async function POST(request: NextRequest) {
     // Send invitation notifications to each invitee
     for (const inviteeId of uniqueMemberIds) {
       try {
-        const mutual = mutualConnectionsMap.get(inviteeId) || []
-        const mutualText = mutual.length > 0 
-          ? ` You're also matched with ${mutual.length === 1 ? mutual[0] : mutual.slice(0, -1).join(', ') + (mutual.length > 1 ? ' and ' + mutual[mutual.length - 1] : '')}.`
-          : ''
-        
+        const mutualCount = mutualCountMap.get(inviteeId) || 0
+        const mutualText =
+          mutualCount > 0
+            ? ` You're also matched with ${mutualCount} other invited student${mutualCount === 1 ? '' : 's'}.`
+            : ''
+
         const groupNameText = name ? ` "${name}"` : ''
         const intentText = group_intent ? ` (${group_intent})` : ''
         const contextText = context_message ? `\n\n"${context_message}"` : ''
-        
+
         await createNotification({
           user_id: inviteeId,
           type: 'group_invitation',
@@ -347,25 +279,45 @@ export async function POST(request: NextRequest) {
             group_name: name || undefined,
             group_intent: group_intent || 'general',
             context_message: context_message || undefined,
-            mutual_connections: mutual,
-            compatibility: compatibility ? {
-              overall: compatibility.overall_score,
-              personality: compatibility.personality_score,
-              schedule: compatibility.schedule_score,
-              lifestyle: compatibility.lifestyle_score,
-              social: compatibility.social_score,
-              academic: compatibility.academic_score
-            } : undefined,
-            member_count: allMemberIds.length
-          }
+            mutual_connection_count: mutualCount,
+            compatibility: compatibility
+              ? {
+                  overall: compatibility.overall_score,
+                  personality: compatibility.personality_score,
+                  schedule: compatibility.schedule_score,
+                  lifestyle: compatibility.lifestyle_score,
+                  social: compatibility.social_score,
+                  academic: compatibility.academic_score,
+                }
+              : undefined,
+            member_count: allMemberIds.length,
+          },
         })
       } catch (notificationError) {
         safeLogger.error('Failed to send invitation notification', {
           error: notificationError,
           chatId,
-          inviteeId
+          inviteeId,
         })
       }
+    }
+
+    // Post interactive invite cards into each invitee's private chat with the creator
+    try {
+      await sendGroupInviteDirectMessages(admin, user.id, {
+        groupChatId: chatId,
+        groupName: name || null,
+        groupDescription: groupDescription,
+        groupIntent: (group_intent || 'general') as 'housing' | 'study' | 'social' | 'general',
+        contextMessage: context_message || null,
+        memberCount: uniqueMemberIds.length,
+        invitations: (createdInvitations || []).map((inv) => ({
+          id: inv.id,
+          invitee_id: inv.invitee_id,
+        })),
+      })
+    } catch (dmError) {
+      safeLogger.warn('Failed to send group invite DMs', { error: dmError, chatId })
     }
 
     return NextResponse.json({ 

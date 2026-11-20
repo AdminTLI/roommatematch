@@ -25,6 +25,7 @@ import {
   Settings
 } from 'lucide-react'
 import { chatHrefFromMetadata } from '@/lib/notifications/chat-navigation'
+import { hrefForNotification } from '@/lib/notifications/live-toast'
 
 interface NotificationsPageProps {
   user: {
@@ -229,16 +230,11 @@ export function NotificationsPage({ user }: NotificationsPageProps) {
         router.push('/verify?from=settings&redirect=/settings')
         break
       case 'housing_update':
-        router.push('/housing')
-        break
       case 'agreement_update':
-        router.push('/agreements')
-        break
       case 'safety_alert':
-        router.push('/safety')
-        break
       case 'system_announcement':
-        // Could navigate to a specific announcement page
+      case 'admin_alert':
+        router.push(hrefForNotification(notification))
         break
       default:
         break

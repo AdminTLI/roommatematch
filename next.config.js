@@ -119,18 +119,27 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
-    domains: ['localhost'],
     remotePatterns: [
+      // Signed listing photos include ?token=… — allow any path + search on project host
       {
         protocol: 'https',
-        hostname: '**.supabase.co',
-        port: '',
-        pathname: '/storage/v1/object/public/**',
+        hostname: 'nffdthkwduxgrfadszbl.supabase.co',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        port: '',
+        pathname: '/**',
+      },
+      // Seed / placeholder listing photos
+      {
+        protocol: 'https',
+        hostname: 'example.com',
         pathname: '/**',
       },
     ],

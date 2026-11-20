@@ -25,6 +25,76 @@ export function truncateText(value: string, maxChars: number): string {
   return `${value.slice(0, maxChars).trimEnd()}...`
 }
 
+/** Prefer explicit deep links; fall back by audience / known host titles / related ids. */
+export function hrefForHousingUpdate(
+  notification: Pick<Notification, 'title' | 'metadata'>
+): string {
+  const meta = (notification.metadata || {}) as Record<string, unknown>
+  const explicit =
+    (typeof meta.link === 'string' && meta.link.startsWith('/') && meta.link) ||
+    (typeof meta.href === 'string' && meta.href.startsWith('/') && meta.href) ||
+    null
+  if (explicit) return explicit
+
+  const audience = meta.audience === 'host' || meta.for_host === true || meta.anonymous === true
+  const title = (notification.title || '').trim().toLowerCase()
+  const hostByTitle =
+    title === 'viewing requested' ||
+    title === 'new application' ||
+    title === 'offer accepted' ||
+    title === 'viewing times updated' ||
+    title === 'viewing cancelled'
+
+  if (audience || hostByTitle) {
+    if (
+      meta.viewing_id ||
+      title === 'viewing requested' ||
+      title === 'viewing times updated' ||
+      (title === 'viewing cancelled' && meta.audience !== 'student')
+    ) {
+      return '/host/viewings'
+    }
+    if (
+      (title === 'new application' || meta.application_id) &&
+      typeof meta.listing_id === 'string' &&
+      meta.listing_id.length > 0
+    ) {
+      return `/host/listings/${meta.listing_id}`
+    }
+    if (meta.application_id || title === 'new application' || title === 'offer accepted') {
+      return '/host/applications'
+    }
+    return '/host'
+  }
+
+  // Co-applicant included in someone else's application → open the listing
+  if (
+    meta.applied_on_behalf === true &&
+    typeof meta.listing_id === 'string' &&
+    meta.listing_id.length > 0
+  ) {
+    return `/housing/${meta.listing_id}`
+  }
+
+  if (typeof meta.chat_id === 'string' && meta.chat_id.length > 0) {
+    return chatHrefFromMetadata(meta)
+  }
+  if (
+    meta.viewing_id ||
+    title.includes('viewing') ||
+    title === 'new viewing times from host'
+  ) {
+    return '/housing/viewings'
+  }
+  if (typeof meta.listing_id === 'string' && meta.listing_id.length > 0) {
+    return `/housing/${meta.listing_id}`
+  }
+  if (meta.application_id) {
+    return '/housing/applications'
+  }
+  return '/housing'
+}
+
 export function hrefForNotification(notification: Notification): string {
   const meta = (notification.metadata || {}) as Record<string, unknown>
 
@@ -55,7 +125,7 @@ export function hrefForNotification(notification: Notification): string {
     case 'verification_status':
       return '/verify'
     case 'housing_update':
-      return '/housing'
+      return hrefForHousingUpdate(notification)
     case 'agreement_update':
       return '/agreements'
     case 'safety_alert':

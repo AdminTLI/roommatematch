@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Notification } from '@/lib/notifications/types'
 import { useRealtimeInvalidation } from '@/hooks/use-realtime-invalidation'
 import {
@@ -18,6 +18,10 @@ import {
 
 const AUTO_DISMISS_MS = 8000
 
+function isChatPath(pathname: string | null): boolean {
+  return pathname === '/chat' || Boolean(pathname?.startsWith('/chat/'))
+}
+
 interface PopupNotification extends LiveNotificationCardModel {
   raw: Notification
 }
@@ -29,7 +33,11 @@ interface MessageNotificationPopupProps {
 export function MessageNotificationPopup({ userId }: MessageNotificationPopupProps) {
   const [notifications, setNotifications] = useState<PopupNotification[]>([])
   const router = useRouter()
+  const pathname = usePathname()
+  const onChatPage = isChatPath(pathname)
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  const onChatPageRef = useRef(onChatPage)
+  onChatPageRef.current = onChatPage
 
   const removeNotification = useCallback((id: string) => {
     const timer = timersRef.current.get(id)
@@ -109,6 +117,16 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
     }
   }, [])
 
+  // Chat already surfaces new messages / invites in the left pane — drop any toasts.
+  useEffect(() => {
+    if (!onChatPage) return
+    for (const timer of timersRef.current.values()) {
+      clearTimeout(timer)
+    }
+    timersRef.current.clear()
+    setNotifications([])
+  }, [onChatPage])
+
   const markAsRead = async (notificationId: string) => {
     try {
       const { fetchWithCSRF } = await import('@/lib/utils/fetch-with-csrf')
@@ -149,14 +167,17 @@ export function MessageNotificationPopup({ userId }: MessageNotificationPopupPro
     event: 'INSERT',
     filter: `user_id=eq.${userId}`,
     queryKeys: [],
-    enabled: !!userId,
+    enabled: !!userId && !onChatPage,
     invalidateQueries: false,
     onPayload: (payload) => {
+      if (onChatPageRef.current) return
       const notification = payload.new as Notification | undefined
       if (!notification || notification.user_id !== userId) return
       addPopupNotification(notification)
     },
   })
+
+  if (onChatPage) return null
 
   const handleOpen = async (notification: PopupNotification) => {
     const targetHref =
