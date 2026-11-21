@@ -1,16 +1,12 @@
 'use client'
 
-/** Mobile chat keyboard / visual-viewport sync (thread shell uses 100dvh, not vv.height). */
+/** Mobile chat keyboard / visual-viewport sync for list + open-thread shells. */
 import { useLayoutEffect, type RefObject } from 'react'
 
 const MOBILE_MAX = 1023
 const MIN_CHAT_HEIGHT = 220
-/** Bust stale Turbopack client cache after keyboard shell fix. */
-const CHAT_VIEWPORT_SYNC_REV = 'thread-v2'
-/** Ignore sub-pixel / toolbar noise when estimating an overlay keyboard. */
-const KB_INSET_FLOOR = 48
-/** If layout height already tracks the visual viewport, interactive-widget resized us. */
-const LAYOUT_RESIZED_SLOP = 48
+/** Bust stale Turbopack client cache after list top-clip + composer fixes. */
+const CHAT_VIEWPORT_SYNC_REV = 'list-v5'
 
 function resetMobileLayoutScroll() {
   if (typeof window === 'undefined') return
@@ -24,48 +20,37 @@ function isMobileThreadLayout() {
   return document.body.classList.contains('mobile-chat-active-conversation')
 }
 
-/**
- * Overlay-keyboard gap below the visual viewport (layout coords).
- * When `interactive-widget: resizes-content` is active, layout already shrank and this is ~0.
- */
-function overlayKeyboardInsetPx(vv: VisualViewport): number {
-  const innerH = window.innerHeight || 0
-  const clientH =
-    document.documentElement?.clientHeight && document.documentElement.clientHeight > 0
-      ? document.documentElement.clientHeight
-      : innerH
-  const layoutH = Math.max(innerH, clientH)
-  if (layoutH <= 0) return 0
-
-  // Layout already matches the visual viewport → do not add a second keyboard inset.
-  if (Math.abs(layoutH - vv.height) <= LAYOUT_RESIZED_SLOP) return 0
-
-  const obscured = Math.max(0, Math.round(layoutH - vv.offsetTop - vv.height))
-  if (obscured < KB_INSET_FLOOR) return 0
-
-  // Cap so a stuck offsetTop cannot collapse the thread to a sliver.
-  return Math.min(obscured, Math.round(layoutH * 0.55))
-}
-
 function publishListViewportVars(root: HTMLElement, vv: VisualViewport) {
   const measured = Math.round(vv.height)
+  const top = Math.max(0, Math.round(vv.offsetTop))
   if (measured > 0) {
+    // Used by the chat column height math below; not applied to html/body (that clipped the topbar).
     root.style.setProperty('--chat-visual-vh', `${measured}px`)
   }
   root.style.setProperty('--kb-inset', '0px')
   root.style.removeProperty('--vv-height')
-  root.style.setProperty('--vv-top', '0px')
+  // Pad .safe-area-inset when the visual viewport is shifted (see chat-page.css list rules).
+  root.style.setProperty('--vv-top', `${top}px`)
+  root.dataset.chatViewportSync = CHAT_VIEWPORT_SYNC_REV
 }
 
 function publishThreadViewportVars(root: HTMLElement, vv: VisualViewport) {
-  // Active thread uses CSS 100dvh / inset:0 — never publish vv.height as the shell height.
-  // Sizing body/[data-chat-page] to vv.height while offsetTop > 0 parks the UI above the
-  // visible viewport (blank white/dark page) on iOS Chrome and some Safari builds.
-  root.style.removeProperty('--vv-height')
+  // Size the open-thread shell to the *visual* viewport so the in-flow composer stays above
+  // iOS Safari / Chrome bottom chrome. 100dvh alone often extends under that chrome and the
+  // composer looks "missing".
+  //
+  // When the keyboard opens, iOS may set visualViewport.offsetTop > 0. Pin `top` to that
+  // offset (see chat-page.css) so a vv.height-tall shell is not parked above the visible
+  // area (blank page). Do not also apply --kb-inset — that double-counts against vv.height.
+  const measured = Math.round(vv.height)
+  const top = Math.max(0, Math.round(vv.offsetTop))
+  if (measured > 0) {
+    root.style.setProperty('--vv-height', `${measured}px`)
+  }
   root.style.removeProperty('--chat-visual-vh')
-  root.style.setProperty('--vv-top', '0px')
-  root.style.setProperty('--kb-inset', `${overlayKeyboardInsetPx(vv)}px`)
-  root.dataset.chatViewportSync = 'thread-v3'
+  root.style.setProperty('--vv-top', `${top}px`)
+  root.style.setProperty('--kb-inset', '0px')
+  root.dataset.chatViewportSync = CHAT_VIEWPORT_SYNC_REV
 }
 
 function clearViewportVars(root: HTMLElement) {
@@ -77,9 +62,10 @@ function clearViewportVars(root: HTMLElement) {
 
 /**
  * Mobile chat viewport sync:
- * - Chat list: size the column to the visual viewport (browser chrome).
- * - Open thread: keep a full-bleed in-flow/fixed shell on 100dvh; only publish `--kb-inset`
- *   when the keyboard overlays without resizing the layout (no vv.height shell shrink).
+ * - Chat list: keep html/body on 100svh; size the column to the visual viewport; publish
+ *   `--vv-top` so sticky Topbar/Search are not clipped under browser chrome on navigate-in.
+ * - Open thread: size the fixed shell to `--vv-height` and pin `--vv-top` so the composer
+ *   stays in the visible viewport (including above overlay browser chrome / keyboard).
  */
 export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | null>) {
   useLayoutEffect(() => {
@@ -105,15 +91,20 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
         }
 
         if (isMobileThreadLayout()) {
-          // If iOS scrolled the layout/visual viewport while focusing the composer, pin back
-          // to the top so a fixed full-bleed shell stays on-screen (without translating by offsetTop).
-          if (vv.offsetTop > 0 || window.scrollY > 0 || document.documentElement.scrollTop > 0) {
+          // Keep document scroll pinned; visualViewport.offsetTop is applied via --vv-top.
+          if (window.scrollY > 0 || document.documentElement.scrollTop > 0) {
             resetMobileLayoutScroll()
           }
           publishThreadViewportVars(root, vv)
           node.style.removeProperty('height')
           node.style.removeProperty('max-height')
           return
+        }
+
+        // List: pin document scroll so a leftover offset from the previous route cannot hide the Topbar.
+        // (offsetTop is handled via --vv-top padding — do not scrollTo-fight the visual viewport.)
+        if (window.scrollY > 0 || document.documentElement.scrollTop > 0) {
+          resetMobileLayoutScroll()
         }
 
         publishListViewportVars(root, vv)
@@ -207,12 +198,15 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
     requestAnimationFrame(sync)
     const t1 = window.setTimeout(sync, 100)
     const t2 = window.setTimeout(sync, 350)
+    // Extra pass after client navigations finish painting (Topbar sticky + route chrome).
+    const t3 = window.setTimeout(sync, 700)
 
     return () => {
       cancelAnimationFrame(raf)
       clearFocusResyncTimers()
       window.clearTimeout(t1)
       window.clearTimeout(t2)
+      window.clearTimeout(t3)
       observer.disconnect()
       vv.removeEventListener('resize', sync)
       vv.removeEventListener('scroll', sync)
@@ -227,7 +221,3 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
     }
   }, [containerRef])
 }
-
-
-
-

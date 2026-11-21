@@ -53,20 +53,35 @@ body:has([data-chat-page]) .safe-area-inset {
   }
 }
 
-/* Mobile: optional `--chat-visual-vh` (px) can shrink html/body; chat column uses ChatPageViewportRoot. */
+/*
+ * Mobile chat LIST: keep html/body on the small viewport (100svh), not --chat-visual-vh.
+ *
+ * Shrinking html/body to visualViewport.height while the box still originates at layout
+ * top:0 parks the sticky Topbar (logo + Search) under iOS Chrome's overlapping URL bar —
+ * exactly the "search field cut off at the top" bug when navigating into /chat.
+ *
+ * ChatPageViewportRoot still sizes [data-chat-page] to the visible column via the hook.
+ * Open-thread mode overrides height below with the fixed vv shell.
+ */
 @media (max-width: 1023px) {
   html.chat-page,
   html:has([data-chat-page]),
   body.chat-page,
   body:has([data-chat-page]) {
-    height: var(--chat-visual-vh, 100vh) !important;
-    max-height: var(--chat-visual-vh, 100vh) !important;
+    height: 100svh !important;
+    max-height: 100svh !important;
   }
 
   body.chat-page .safe-area-inset,
   body:has([data-chat-page]) .safe-area-inset {
     height: 100% !important;
     max-height: 100% !important;
+  }
+
+  /* When the visual viewport is shifted down, pad so sticky chat chrome stays on-screen. */
+  body.chat-page:not(.mobile-chat-active-conversation) .safe-area-inset,
+  body:has([data-chat-page]):not(.mobile-chat-active-conversation) .safe-area-inset {
+    padding-top: var(--vv-top, 0px) !important;
   }
 }
 
@@ -76,8 +91,8 @@ body:has([data-chat-page]) .safe-area-inset {
     html:has([data-chat-page]),
     body.chat-page,
     body:has([data-chat-page]) {
-      height: var(--chat-visual-vh, 100dvh) !important;
-      max-height: var(--chat-visual-vh, 100dvh) !important;
+      height: 100svh !important;
+      max-height: 100svh !important;
     }
   }
 }
@@ -146,33 +161,28 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
 }
 
 /*
- * Open thread on mobile: full-bleed shell locked to the layout viewport (100dvh), not vv.height.
+ * Open thread on mobile: lock the shell to the *visual* viewport.
  *
- * With `interactiveWidget: resizes-content`, 100dvh shrinks when the keyboard opens and the
- * flex column (messages + in-flow composer) stays above it.
+ * `--vv-height` / `--vv-top` come from useChatViewportSync (Visual Viewport API).
+ * Using 100dvh alone extends under iOS Safari / Chrome bottom chrome, so the in-flow
+ * composer sits off-screen and looks missing. Fallback `100svh` is safer than `100dvh`
+ * before JS publishes --vv-height (smallest viewport accounts for browser chrome).
  *
- * Do NOT size body / [data-chat-page] to `var(--vv-height)`:
- *   iOS Chrome often reports visualViewport.offsetTop > 0 while the keyboard is open. A shell
- *   that is only vv.height tall and pinned at layout top:0 then sits above the visible viewport
- *   → blank white/dark page and a missing composer.
- *
- * Do NOT translateY(var(--vv-top)) or position:fixed the composer with bottom: var(--kb-inset)
- * against an already-resized shell (double-counts the keyboard).
- *
- * Overlay-only keyboards (layout did not resize): `--kb-inset` pads the chat column so the
- * in-flow composer lifts above the keyboard without moving the shell.
+ * When the keyboard opens, iOS may set visualViewport.offsetTop > 0. Pinning `top` to
+ * `--vv-top` keeps a vv.height-tall shell in the visible area (top:0 would park it above
+ * the fold → blank page). Do NOT also pad with --kb-inset against a vv-sized shell.
  */
 @media (max-width: 1023px) {
   body.mobile-chat-active-conversation,
   body:has([data-chat-page]).mobile-chat-active-conversation {
     position: fixed !important;
-    top: 0 !important;
+    top: var(--vv-top, 0px) !important;
     left: 0 !important;
     right: 0 !important;
-    bottom: 0 !important;
+    bottom: auto !important;
     width: 100% !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
+    height: var(--vv-height, 100svh) !important;
+    max-height: var(--vv-height, 100svh) !important;
     overflow: hidden !important;
     overscroll-behavior: none !important;
     touch-action: pan-y !important;
@@ -186,25 +196,24 @@ body:has([data-chat-page]) main>div>div[data-chat-page] {
     min-height: 0 !important;
   }
 
-  body.mobile-chat-active-conversation.chat-page main > div > div[data-chat-page],
-  body:has([data-chat-page]).mobile-chat-active-conversation main > div > div[data-chat-page] {
+  body.mobile-chat-active-conversation [data-chat-page],
+  body:has([data-chat-page]).mobile-chat-active-conversation [data-chat-page] {
     position: fixed !important;
     z-index: 25 !important;
-    top: 0 !important;
+    top: var(--vv-top, 0px) !important;
     left: 0 !important;
     right: 0 !important;
-    bottom: 0 !important;
+    bottom: auto !important;
     width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    height: var(--vv-height, 100svh) !important;
+    max-height: var(--vv-height, 100svh) !important;
     transform: none !important;
     flex: none !important;
     box-sizing: border-box !important;
-    /* Overlay keyboard only; 0 when interactive-widget already resized the layout. */
-    padding-bottom: var(--kb-inset, 0px) !important;
+    padding-bottom: 0 !important;
   }
 
-  /* Composer stays in document flow at the bottom of the shell. */
+  /* Composer stays in document flow at the bottom of the resized shell. */
   body.mobile-chat-active-conversation [data-messenger-composer],
   body:has([data-chat-page]).mobile-chat-active-conversation [data-messenger-composer] {
     position: relative !important;

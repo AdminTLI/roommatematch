@@ -22,6 +22,7 @@ import {
   collectBugDiagnosticsSnapshot,
   capDiagnosticsPayload,
 } from '@/lib/bugs/diagnostics'
+import { useMobileChatChrome } from '@/components/app/mobile-chat-chrome-context'
 
 const MIN_DESCRIPTION = 20
 const MAX_DESCRIPTION = 4000
@@ -46,6 +47,7 @@ const selectContentClass = cn(
 
 export function BugReportWidget() {
   const router = useRouter()
+  const { activeMobileConversation } = useMobileChatChrome()
   const [open, setOpen] = useState(false)
   const [panelStep, setPanelStep] = useState<'chooser' | 'bug'>('chooser')
   const [category, setCategory] = useState<BugReportCategory | ''>('')
@@ -321,6 +323,11 @@ export function BugReportWidget() {
       </div>
     </>
   )
+
+  // Same as the floating dock: stay out of the way while a mobile thread is open.
+  if (activeMobileConversation && !open) {
+    return null
+  }
 
   return (
     <div className="antialiased">
