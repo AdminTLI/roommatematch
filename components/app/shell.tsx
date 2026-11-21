@@ -208,7 +208,7 @@ export function AppShell({
                   className={
                     isHousingDetailRoute
                       ? 'chat-page-main flex-1 overflow-y-auto px-0 pb-24 pt-4 sm:pt-6 md:pb-40'
-                      : isHostMessagesRoute
+                      : isFixedMessengerSurface
                         ? 'chat-page-main flex min-h-0 flex-1 flex-col overflow-hidden p-0'
                         : 'chat-page-main flex-1 overflow-y-auto p-4 pb-24 sm:p-6 md:pb-40 lg:p-8'
                   }
@@ -216,11 +216,6 @@ export function AppShell({
                   {isFixedMessengerSurface ? (
                     <div className="mx-auto flex h-full min-h-0 w-full max-w-7xl flex-col overflow-hidden">
                       {children}
-                      {!isHostMessagesRoute ? (
-                        <div className="mt-6 sm:mt-8">
-                          <AppFooter />
-                        </div>
-                      ) : null}
                     </div>
                   ) : (
                     <motion.div
