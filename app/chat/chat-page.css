@@ -53,20 +53,35 @@ body:has([data-chat-page]) .safe-area-inset {
   }
 }
 
-/* Mobile: optional `--chat-visual-vh` (px) can shrink html/body; chat column uses ChatPageViewportRoot. */
+/*
+ * Mobile chat LIST: keep html/body on the small viewport (100svh), not --chat-visual-vh.
+ *
+ * Shrinking html/body to visualViewport.height while the box still originates at layout
+ * top:0 parks the sticky Topbar (logo + Search) under iOS Chrome's overlapping URL bar —
+ * exactly the "search field cut off at the top" bug when navigating into /chat.
+ *
+ * ChatPageViewportRoot still sizes [data-chat-page] to the visible column via the hook.
+ * Open-thread mode overrides height below with the fixed vv shell.
+ */
 @media (max-width: 1023px) {
   html.chat-page,
   html:has([data-chat-page]),
   body.chat-page,
   body:has([data-chat-page]) {
-    height: var(--chat-visual-vh, 100vh) !important;
-    max-height: var(--chat-visual-vh, 100vh) !important;
+    height: 100svh !important;
+    max-height: 100svh !important;
   }
 
   body.chat-page .safe-area-inset,
   body:has([data-chat-page]) .safe-area-inset {
     height: 100% !important;
     max-height: 100% !important;
+  }
+
+  /* When the visual viewport is shifted down, pad so sticky chat chrome stays on-screen. */
+  body.chat-page:not(.mobile-chat-active-conversation) .safe-area-inset,
+  body:has([data-chat-page]):not(.mobile-chat-active-conversation) .safe-area-inset {
+    padding-top: var(--vv-top, 0px) !important;
   }
 }
 
@@ -76,8 +91,8 @@ body:has([data-chat-page]) .safe-area-inset {
     html:has([data-chat-page]),
     body.chat-page,
     body:has([data-chat-page]) {
-      height: var(--chat-visual-vh, 100dvh) !important;
-      max-height: var(--chat-visual-vh, 100dvh) !important;
+      height: 100svh !important;
+      max-height: 100svh !important;
     }
   }
 }

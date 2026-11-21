@@ -5,8 +5,8 @@ import { useLayoutEffect, type RefObject } from 'react'
 
 const MOBILE_MAX = 1023
 const MIN_CHAT_HEIGHT = 220
-/** Bust stale Turbopack client cache after composer visibility fix. */
-const CHAT_VIEWPORT_SYNC_REV = 'thread-v4'
+/** Bust stale Turbopack client cache after list top-clip + composer fixes. */
+const CHAT_VIEWPORT_SYNC_REV = 'list-v5'
 
 function resetMobileLayoutScroll() {
   if (typeof window === 'undefined') return
@@ -22,12 +22,16 @@ function isMobileThreadLayout() {
 
 function publishListViewportVars(root: HTMLElement, vv: VisualViewport) {
   const measured = Math.round(vv.height)
+  const top = Math.max(0, Math.round(vv.offsetTop))
   if (measured > 0) {
+    // Used by the chat column height math below; not applied to html/body (that clipped the topbar).
     root.style.setProperty('--chat-visual-vh', `${measured}px`)
   }
   root.style.setProperty('--kb-inset', '0px')
   root.style.removeProperty('--vv-height')
-  root.style.setProperty('--vv-top', '0px')
+  // Pad .safe-area-inset when the visual viewport is shifted (see chat-page.css list rules).
+  root.style.setProperty('--vv-top', `${top}px`)
+  root.dataset.chatViewportSync = CHAT_VIEWPORT_SYNC_REV
 }
 
 function publishThreadViewportVars(root: HTMLElement, vv: VisualViewport) {
@@ -58,7 +62,8 @@ function clearViewportVars(root: HTMLElement) {
 
 /**
  * Mobile chat viewport sync:
- * - Chat list: size the column to the visual viewport (browser chrome).
+ * - Chat list: keep html/body on 100svh; size the column to the visual viewport; publish
+ *   `--vv-top` so sticky Topbar/Search are not clipped under browser chrome on navigate-in.
  * - Open thread: size the fixed shell to `--vv-height` and pin `--vv-top` so the composer
  *   stays in the visible viewport (including above overlay browser chrome / keyboard).
  */
@@ -94,6 +99,12 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
           node.style.removeProperty('height')
           node.style.removeProperty('max-height')
           return
+        }
+
+        // List: pin document scroll so a leftover offset from the previous route cannot hide the Topbar.
+        // (offsetTop is handled via --vv-top padding — do not scrollTo-fight the visual viewport.)
+        if (window.scrollY > 0 || document.documentElement.scrollTop > 0) {
+          resetMobileLayoutScroll()
         }
 
         publishListViewportVars(root, vv)
@@ -187,12 +198,15 @@ export function useChatViewportSync(containerRef: RefObject<HTMLDivElement | nul
     requestAnimationFrame(sync)
     const t1 = window.setTimeout(sync, 100)
     const t2 = window.setTimeout(sync, 350)
+    // Extra pass after client navigations finish painting (Topbar sticky + route chrome).
+    const t3 = window.setTimeout(sync, 700)
 
     return () => {
       cancelAnimationFrame(raf)
       clearFocusResyncTimers()
       window.clearTimeout(t1)
       window.clearTimeout(t2)
+      window.clearTimeout(t3)
       observer.disconnect()
       vv.removeEventListener('resize', sync)
       vv.removeEventListener('scroll', sync)
