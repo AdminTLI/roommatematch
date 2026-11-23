@@ -271,6 +271,20 @@ export async function processInactiveAccounts(
       // Delete verification nudge cadence state (GDPR Art. 5 — storage limitation)
       await supabase.from('verification_nudge_state').delete().eq('user_id', userId)
 
+      // Scrub host profile personal data (GDPR Art. 5 — storage limitation)
+      // phone, bio, and display_name are personal data; kvk_number and company_name
+      // are retained as business registration data under Art. 6(1)(f) for fraud prevention.
+      await supabase
+        .from('host_profiles')
+        .update({
+          phone: null,
+          bio: null,
+          display_name: '[Anonymized Host]',
+          agency_license: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+
       await supabase
         .from('users')
         .update({

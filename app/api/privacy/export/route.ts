@@ -537,6 +537,35 @@ export async function GET(req: NextRequest) {
         exportData.verification_nudge_state = nudgeState
       }
 
+      // 22. Host profile (GDPR Art. 15 — landlord contact data, identity-review status)
+      const adminForHost = createAdminClient()
+      const { data: hostProfile } = await adminForHost
+        .from('host_profiles')
+        .select(
+          'id, host_type, display_name, company_name, kvk_number, agency_license, phone, bio, email_verified, onboarding_completed, identity_review_status, verification_deadline_at, created_at, updated_at'
+        )
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (hostProfile) {
+        exportData.host_profile = hostProfile
+      }
+
+      // 23. Housing applications (GDPR Art. 15 — motivation letters, application history)
+      const adminForApps = createAdminClient()
+      const { data: housingApplications } = await adminForApps
+        .from('housing_applications')
+        .select(
+          'id, listing_id, application_type, status, motivation_letter, anonymous_label, fit_score, cohesion_score, verification_badges, rejection_reason_code, rejection_note, shortlisted_at, offer_made_at, offer_accepted_at, offer_declined_at, created_at, updated_at'
+        )
+        .or(`user_id.eq.${user.id},group_members.cs.{${user.id}}`)
+        .order('created_at', { ascending: false })
+        .limit(500)
+
+      if (housingApplications && housingApplications.length > 0) {
+        exportData.housing_applications = housingApplications
+      }
+
       // Convert to JSON string
       const jsonData = JSON.stringify(exportData, null, 2)
       const blob = new Blob([jsonData], { type: 'application/json' })

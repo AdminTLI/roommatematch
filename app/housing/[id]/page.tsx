@@ -1,5 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { AppShell } from '@/components/app/shell'
 import { ListingDetailClient } from '@/components/housing/ListingDetailClient'
 import { Listing } from '@/types/housing'
@@ -31,7 +31,13 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     redirect('/auth/sign-in')
   }
 
-  const { data: listingData, error } = await supabase
+  // Use the admin client for the listing + host_profiles join so that the query
+  // is not gated by the user-scoped RLS policy on host_profiles. The "Public can
+  // read host display fields" RLS policy (USING true) was removed because it exposed
+  // PII columns (phone, agency_license, identity-review fields) to all authenticated
+  // users. Host authentication is already enforced above via createClient().
+  const admin = createAdminClient()
+  const { data: listingData, error } = await admin
     .from('housing_listings')
     .select(
       `*,
@@ -56,14 +62,14 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
   let responseTimeHrs: number | undefined
   if (host?.id) {
     const [{ count }, estimatedHours] = await Promise.all([
-      supabase
+      admin
         .from('housing_listings')
         .select('id', { count: 'exact', head: true })
         .eq('host_id', host.id)
         .eq('status', 'active')
         .eq('moderation_status', 'approved')
         .neq('id', id),
-      estimateHostResponseHours(supabase, host.id),
+      estimateHostResponseHours(admin, host.id),
     ])
     otherListingsCount = count ?? 0
     if (estimatedHours != null) responseTimeHrs = estimatedHours
