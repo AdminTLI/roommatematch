@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { ListingsResponse, Listing } from '@/types/housing'
 import { getSortComparator } from '@/lib/housing/sorting'
 import { loadMemberHousingSignals } from '@/lib/housing/applicant-signals'
@@ -101,11 +101,15 @@ export async function GET(request: NextRequest) {
     }
 
     const isAuthenticated = !!user
-    const selectFields = isAuthenticated
-      ? `*,
-        host_profiles(
+    // Safe host display columns only — never phone / agency_license / identity-review fields.
+    // Admin client is required after dropping the overpermissive
+    // "Public can read host display fields" RLS policy (USING true) that leaked PII.
+    const hostDisplayEmbed = `host_profiles(
           id, display_name, host_type, email_verified, id_verified, kvk_number, company_name
         )`
+    const selectFields = isAuthenticated
+      ? `*,
+        ${hostDisplayEmbed}`
       : `id, title, address, city, latitude, longitude, postal_code, property_type,
         rent_monthly, available_from, available_until, min_stay_months, max_stay_months,
         room_type, total_rooms, available_rooms, seeking_people, total_bathrooms, square_meters,
@@ -114,11 +118,10 @@ export async function GET(request: NextRequest) {
         lifestyle_prefs, dealbreakers, photos, virtual_tour_url, floor_plan_url, description, status,
         verified_by_university, verification_date, university_id, landlord_name, agency_name,
         host_id, host_type, created_at, updated_at, expires_at,
-        host_profiles(
-          id, display_name, host_type, email_verified, id_verified, kvk_number, company_name
-        )`
+        ${hostDisplayEmbed}`
 
-    let queryBuilder = supabase
+    const admin = createAdminClient()
+    let queryBuilder = admin
       .from('housing_listings')
       .select(selectFields)
       .eq('status', 'active')

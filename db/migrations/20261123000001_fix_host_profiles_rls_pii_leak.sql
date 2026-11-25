@@ -1,3 +1,7 @@
+-- Canonical copy lives in:
+--   supabase/migrations/20261125143102_fix_host_profiles_rls_pii_leak.sql
+-- Kept here for continuity with the original security-audit branch path.
+
 -- Fix: host_profiles PII leak via overpermissive RLS policy
 -- [CRITICAL BUG - PII/GDPR LEAK]
 --
@@ -10,9 +14,8 @@
 -- including PII fields: phone, agency_license, and internal identity-review fields
 -- (identity_review_message, identity_review_notes, identity_review_matched_org, etc.).
 --
--- Fix: Drop the permissive policy. The listing detail page (app/housing/[id]/page.tsx)
--- is updated to use createAdminClient() for the host_profiles join, so no user-facing
--- page relies on this open RLS policy. Hosts still read their own full row via the
--- existing "Hosts can read own profile" policy.
+-- Fix: Drop the permissive policy. Public listing pages/APIs use createAdminClient()
+-- with an explicit safe column list for host display fields. Hosts still read their
+-- own full row via the existing "Hosts can read own profile" policy.
 
 DROP POLICY IF EXISTS "Public can read host display fields" ON public.host_profiles;
