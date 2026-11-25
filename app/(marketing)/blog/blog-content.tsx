@@ -36,6 +36,16 @@ const content = {
     noResults: 'No articles in this category yet.',
     posts: [
       {
+        slug: 'student-money-stress-2027-cost-checklist-netherlands',
+        title: 'Student Money Stress: Your 2027 Cost Checklist',
+        excerpt:
+          'More Dutch students ask for money help. Use this 2027 health insurance and zorgtoeslag checklist plus a house chat script.',
+        readTime: '7 min read',
+        date: '2026-11-25',
+        category: 'Finance',
+        icon: TrendingUp,
+      },
+      {
         slug: 'december-empty-house-loneliness-netherlands',
         title: 'December Stay-Behind Loneliness for Students',
         excerpt:
@@ -429,6 +439,16 @@ const content = {
     pageOf: (page: number, total: number) => `Pagina ${page} van ${total}`,
     noResults: 'Nog geen artikelen in deze categorie.',
     posts: [
+      {
+        slug: 'student-money-stress-2027-cost-checklist-netherlands',
+        title: 'Studenten en geldstress: je kostenchecklist 2027',
+        excerpt:
+          'Meer studenten vragen hulp bij geldzaken. Gebruik de checklist voor zorgverzekering en zorgtoeslag 2027 plus een appje voor je huisgroep.',
+        readTime: '7 min lezen',
+        date: '2026-11-25',
+        category: 'Financiën',
+        icon: TrendingUp,
+      },
       {
         slug: 'december-empty-house-loneliness-netherlands',
         title: 'December-thuisblijvers: eenzaamheid in het lege huis',
