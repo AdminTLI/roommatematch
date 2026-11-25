@@ -244,11 +244,16 @@ export function Topbar({ user, context = 'user' }: TopbarProps) {
     return Search
   }
 
+  // On chat list, avoid the -20px entrance slide — it compounds with iOS Chrome URL-bar
+  // overlap and makes Search look permanently clipped when navigating into /chat.
+  const isChatListChrome =
+    (isChatThreadRoute || isHostMessagesRoute) && !hideTopBarOnMobileForChat
+
   return (
     <motion.header
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: isChatListChrome ? 0 : -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: isChatListChrome ? 0.2 : 0.4 }}
       className={cn(
         'sticky top-0 z-40 bg-white/70 app-pt-safe-top backdrop-blur-xl dark:bg-bg-body',
         hideTopBarOnMobileForChat && 'max-lg:hidden',
