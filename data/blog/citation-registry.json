@@ -2,6 +2,23 @@
   "description": "Tracks primary source URLs and anchor stats used in blog posts to enforce citation rotation.",
   "entries": [
     {
+      "slug": "student-money-stress-2027-cost-checklist-netherlands",
+      "date": "2026-11-25",
+      "primarySourceUrls": [
+        "https://nos.nl/artikel/2639827-meer-studenten-vragen-hulp-bij-geldzaken-zien-onderwijsinstellingen",
+        "https://www.nibud.nl/nieuws/meer-huishoudens-komen-moeilijker-rond/",
+        "https://www.rijksoverheid.nl/documenten/vraag-en-antwoord/zorgverzekering/overstappen-zorgverzekeraar",
+        "https://www.belastingdienst.nl/wps/wcm/connect/nl/zorgtoeslag/content/maximaal-inkomen-voor-zorgtoeslag",
+        "https://zoek.officielebekendmakingen.nl/stcrt-2026-34372.html"
+      ],
+      "statsUsed": [
+        "Nibud 2026: 54% of 18-30 year olds struggle to make ends meet (40% in 2024)",
+        "Eigen risico 2027: EUR 400 (Staatscourant 2026, 34372)",
+        "Zorgtoeslag 2027: max EUR 140/month single, income limit EUR 43,017 (Dienst Toeslagen)",
+        "Average basic premium 2027 about EUR 173/month (SlimmeTGeld/Zorgwijzer)"
+      ]
+    },
+    {
       "slug": "december-empty-house-loneliness-netherlands",
       "date": "2026-11-18",
       "primarySourceUrls": [
